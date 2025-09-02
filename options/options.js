@@ -21,21 +21,16 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 async function loadAndDisplayConfig() {
   const config = await loadConfig();
-  if (config) {
-    // AI 配置
-    if (config.aiConfig && config.aiConfig.models && config.aiConfig.models.gemini) {
-      document.getElementById('api-key').value = config.aiConfig.models.gemini.apiKey || '';
-      document.getElementById('model-name').value = config.aiConfig.models.gemini.modelName || 'gemini-1.5-flash';
-    }
-    // Prompt 配置
-    if (config.promptTemplates) {
-      document.getElementById('custom-prompt').value = config.promptTemplates.custom || '';
-    }
-    // 语言配置
-    if (config.language) {
-        document.getElementById('language-select').value = config.language;
-    }
-  }
+
+  // 使用可选链 (?.) 安全地访问嵌套属性，并为每个字段提供默认值
+  const geminiConfig = config?.aiConfig?.models?.gemini;
+  document.getElementById('api-key').value = geminiConfig?.apiKey || '';
+  document.getElementById('model-name').value = geminiConfig?.modelName || 'gemini-1.5-flash';
+
+  document.getElementById('custom-prompt').value = config?.promptTemplates?.custom || '';
+  document.getElementById('language-select').value = config?.language || 'zh-CN';
+
+  console.log('配置已加载并显示。');
 }
 
 /**
