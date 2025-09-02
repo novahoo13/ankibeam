@@ -6,6 +6,9 @@ import { addNote } from '../utils/ankiconnect.js';
 import { loadConfig } from '../utils/storage.js';
 // import { i18n } from '../utils/i18n.js'; // 待实现
 
+// 模块级变量，用于存储加载的配置
+let config = {};
+
 document.addEventListener('DOMContentLoaded', () => {
   // 初始化：加载配置、绑定事件监听器
   initialize();
@@ -15,8 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
  * 初始化函数
  */
 async function initialize() {
-  // 加载配置
-  const config = await loadConfig();
+  // 加载配置并存储到模块级变量中，如果没配置则使用空对象
+  config = await loadConfig() || {};
   console.log('配置已加载:', config);
 
   // 绑定事件监听
@@ -41,8 +44,12 @@ async function handleParse() {
   setUiLoading(true, '解析中...');
 
   try {
-    // TODO: 从配置中获取prompt
-    const prompt = "请将以下单词查询结果解析为结构化数据..."; // 临时
+    // 优先使用自定义prompt，否则使用默认prompt
+    const customPrompt = config?.promptTemplates?.custom;
+    // 注意：默认prompt应该与ai-service.js中的一致，或从统一位置获取
+    const defaultPrompt = "请将以下单词查询结果解析为结构化数据..."; 
+    const prompt = customPrompt || defaultPrompt;
+    
     const result = await parseText(textInput, prompt);
 
     // 更新结果预览区域
@@ -78,13 +85,18 @@ async function handleWriteToAnki() {
   document.getElementById('write-btn').disabled = true;
 
   try {
-    // TODO: 从配置中获取牌组、模型等信息
+    // 从配置中获取牌组、模型等信息，并提供默认值
+    const deckName = config?.ankiConfig?.defaultDeck || 'Default';
+    const modelName = config?.ankiConfig?.defaultModel || 'Basic';
+    const tags = config?.ankiConfig?.defaultTags || [];
+
     const noteData = {
-      deckName: 'Default',
-      modelName: 'Basic',
+      deckName: deckName,
+      modelName: modelName,
       fields: { Front: front, Back: back },
-      tags: []
+      tags: tags
     };
+    
     const result = await addNote(noteData);
     if (result.error) {
       throw new Error(result.error);
