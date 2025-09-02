@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>配置</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <h1>配置选项</h1>
+
+    <section id="ai-config">
+      <h2>AI 服务配置</h2>
+      <div class="form-group">
+        <label for="ai-provider">AI 服务商</label>
+        <select id="ai-provider">
+          <option value="gemini">Gemini</option>
+          <!-- 预留 OpenAI -->
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="api-key">API Key</label>
+        <input type="password" id="api-key" placeholder="输入您的 API Key">
+      </div>
+      <div class="form-group">
+        <label for="model-name">模型名称</label>
+        <input type="text" id="model-name" placeholder="例如: gemini-1.5-flash">
+      </div>
+      <button id="test-ai-btn">测试 AI 连接</button>
+      <p id="ai-status"></p>
+    </section>
+
+    <section id="prompt-config">
+      <h2>Prompt 配置</h2>
+      <div class="form-group">
+        <label for="custom-prompt">自定义 Prompt</label>
+        <textarea id="custom-prompt" rows="5" placeholder="留空则使用默认Prompt"></textarea>
+      </div>
+      <button id="reset-prompt-btn">恢复默认</button>
+    </section>
+
+    <section id="anki-config">
+      <h2>AnkiConnect 配置</h2>
+      <button id="test-anki-btn">测试 Anki 连接</button>
+      <p id="anki-status"></p>
+    </section>
+
+    <section id="system-config">
+        <h2>系统设置</h2>
+        <div class="form-group">
+            <label for="language-select">语言</label>
+            <select id="language-select">
+                <option value="zh-CN">简体中文</option>
+                <!-- 预留其他语言 -->
+            </select>
+        </div>
+    </section>
+
+    <footer>
+      <button id="save-btn">保存配置</button>
+      <p id="save-status"></p>
+    </footer>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>

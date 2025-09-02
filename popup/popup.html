@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Anki 单词助手</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1 data-i18n="appName">Anki 单词助手</h1>
+      <div id="status-indicator"></div>
+    </header>
+
+    <main>
+      <div class="input-section">
+        <textarea id="text-input" rows="10" placeholder="在此处粘贴单词查询结果..."></textarea>
+      </div>
+
+      <div class="action-section">
+        <button id="parse-btn" data-i18n="parseBtn">解析</button>
+        <button id="write-btn" data-i18n="writeBtn" disabled>写入 Anki</button>
+      </div>
+
+      <div class="result-section">
+        <div class="form-group">
+          <label for="front-input" data-i18n="cardFront">正面:</label>
+          <input type="text" id="front-input" />
+        </div>
+        <div class="form-group">
+          <label for="back-input" data-i18n="cardBack">背面:</label>
+          <textarea id="back-input" rows="8"></textarea>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <p id="status-message"></p>
+    </footer>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

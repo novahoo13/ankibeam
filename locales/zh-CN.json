@@ -1,0 +1,17 @@
+{
+    "appName": {
+        "message": "Anki 单词助手"
+    },
+    "parseBtn": {
+        "message": "解析"
+    },
+    "writeBtn": {
+        "message": "写入 Anki"
+    },
+    "cardFront": {
+        "message": "正面"
+    },
+    "cardBack": {
+        "message": "背面"
+    }
+}
