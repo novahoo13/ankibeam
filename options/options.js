@@ -92,15 +92,16 @@ async function handleTestAnki() {
  */
 async function handleTestAi() {
   const apiKey = document.getElementById('api-key').value;
+  const modelName = document.getElementById('model-name').value; // 获取模型名称
   if (!apiKey) {
     updateStatus('ai-status', '请输入 API Key', 'error');
     return;
   }
   updateStatus('ai-status', '正在测试...', 'loading');
   try {
-    // 注意：testConnection 需要接收 key
-    await testAi(apiKey);
-    updateStatus('ai-status', '连接成功！API Key 有效。', 'success');
+    // 将 apiKey 和 modelName 一起传递给测试函数
+    await testAi(apiKey, modelName);
+    updateStatus('ai-status', '连接成功！API Key 和模型均有效。', 'success');
   } catch (error) {
     console.error('AI 连接测试失败:', error);
     updateStatus('ai-status', `连接失败: ${error.message}`, 'error');

@@ -44,13 +44,11 @@ async function handleParse() {
   setUiLoading(true, '解析中...');
 
   try {
-    // 优先使用自定义prompt，否则使用默认prompt
+    // 优先使用自定义prompt。如果不存在，则传递 undefined，
+    // ai-service 中的 buildPrompt 函数将自动使用其内部的默认模板。
     const customPrompt = config?.promptTemplates?.custom;
-    // 注意：默认prompt应该与ai-service.js中的一致，或从统一位置获取
-    const defaultPrompt = "请将以下单词查询结果解析为结构化数据..."; 
-    const prompt = customPrompt || defaultPrompt;
     
-    const result = await parseText(textInput, prompt);
+    const result = await parseText(textInput, customPrompt);
 
     // 更新结果预览区域
     document.getElementById('front-input').value = result.front || '';
