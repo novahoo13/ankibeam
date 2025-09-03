@@ -4,7 +4,10 @@
       "WebFetch(domain:git.sr.ht)",
       "WebSearch",
       "Bash(node:*)",
-      "Bash(del \"C:\\Dev\\anki-word-assistant\\test_style.js\")"
+      "Bash(del \"C:\\Dev\\anki-word-assistant\\test_style.js\")",
+      "WebFetch(domain:llmjs.themaximalist.com)",
+      "WebFetch(domain:ai-sdk.dev)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []
