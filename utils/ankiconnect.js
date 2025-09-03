@@ -65,21 +65,41 @@ export async function addNote(noteData) {
 }
 
 /**
- * (预留) 获取所有牌组的名称
- * @returns {Promise<any>}
+ * 获取所有牌组的名称
+ * @returns {Promise<{result: string[], error: null}|{result: null, error: string}>}
  */
 export async function getDeckNames() {
-  // return await invoke('deckNames');
-  console.warn('getDeckNames is not implemented yet.');
-  return Promise.resolve([]);
+  try {
+    const response = await invoke('deckNames');
+    return { result: response.result, error: null };
+  } catch (e) {
+    return { result: null, error: e.message };
+  }
 }
 
 /**
- * (预留) 获取所有模板的名称
- * @returns {Promise<any>}
+ * 获取所有模板的名称
+ * @returns {Promise<{result: string[], error: null}|{result: null, error: string}>}
  */
 export async function getModelNames() {
-  // return await invoke('modelNames');
-  console.warn('getModelNames is not implemented yet.');
-  return Promise.resolve([]);
+  try {
+    const response = await invoke('modelNames');
+    return { result: response.result, error: null };
+  } catch (e) {
+    return { result: null, error: e.message };
+  }
+}
+
+/**
+ * 获取特定模板的字段名称
+ * @param {string} modelName - 模板名称
+ * @returns {Promise<{result: string[], error: null}|{result: null, error: string}>}
+ */
+export async function getModelFieldNames(modelName) {
+  try {
+    const response = await invoke('modelFieldNames', { modelName: modelName });
+    return { result: response.result, error: null };
+  } catch (e) {
+    return { result: null, error: e.message };
+  }
 }

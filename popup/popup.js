@@ -2,7 +2,7 @@
 // 负责处理用户交互、调用服务并更新UI
 
 import { parseText } from '../utils/ai-service.js';
-import { addNote } from '../utils/ankiconnect.js';
+import { addNote, getModelFieldNames } from '../utils/ankiconnect.js';
 import { loadConfig } from '../utils/storage.js';
 // import { i18n } from '../utils/i18n.js'; // 待实现
 
@@ -84,14 +84,34 @@ async function handleWriteToAnki() {
 
   try {
     // 从配置中获取牌组、模型等信息，并提供默认值
-    const deckName = config?.ankiConfig?.defaultDeck || 'Default';
-    const modelName = config?.ankiConfig?.defaultModel || 'Basic';
+    const deckName = config?.ankiConfig?.defaultDeck || '系统默认';
+    const modelName = config?.ankiConfig?.defaultModel || '问答题';
     const tags = config?.ankiConfig?.defaultTags || [];
 
+    // 处理换行格式并应用样式：将普通换行转换为HTML换行标签，并包装样式
+    const frontHtml = wrapContentWithStyle(front);
+    const backHtml = wrapContentWithStyle(back);
+    
+    // 动态获取字段名称
+    const fieldsResult = await getModelFieldNames(modelName);
+    if (fieldsResult.error) {
+      throw new Error(`获取模板字段失败: ${fieldsResult.error}`);
+    }
+    
+    const fieldNames = fieldsResult.result;
+    if (fieldNames.length < 2) {
+      throw new Error(`模板 "${modelName}" 至少需要2个字段，当前只有${fieldNames.length}个字段`);
+    }
+    
+    // 使用模板的前两个字段
+    const fields = {};
+    fields[fieldNames[0]] = frontHtml; // 第一个字段作为正面
+    fields[fieldNames[1]] = backHtml;  // 第二个字段作为背面
+    
     const noteData = {
       deckName: deckName,
       modelName: modelName,
-      fields: { Front: front, Back: back },
+      fields: fields,
       tags: tags
     };
     
@@ -119,6 +139,25 @@ function setUiLoading(isLoading, message = '') {
   document.getElementById('write-btn').disabled = isLoading;
   // TODO: 实现更明显的加载指示器，例如一个spinner
   updateStatus(message, 'loading');
+}
+
+/**
+ * 将文本内容包装为带样式的 HTML
+ * @param {string} content - 原始文本内容
+ * @returns {string} - 包装后的 HTML 内容
+ */
+function wrapContentWithStyle(content) {
+  // 从配置中获取样式设置，提供默认值
+  const styleConfig = config?.styleConfig || {};
+  const fontSize = styleConfig.fontSize || '14px';
+  const textAlign = styleConfig.textAlign || 'left';
+  const lineHeight = styleConfig.lineHeight || '1.4';
+  
+  // 处理换行符
+  const contentWithBreaks = content.replace(/\n/g, '<br>');
+  
+  // 包装为带内联样式的 div
+  return `<div style="font-size: ${fontSize}; text-align: ${textAlign}; line-height: ${lineHeight};">${contentWithBreaks}</div>`;
 }
 
 /**
