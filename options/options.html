@@ -43,6 +43,29 @@
       <h2>AnkiConnect 配置</h2>
       <button id="test-anki-btn">测试 Anki 连接</button>
       <p id="anki-status"></p>
+      
+      <div class="form-group">
+        <label for="default-deck">默认牌组</label>
+        <select id="default-deck">
+          <option value="">请先测试 Anki 连接</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="default-model">默认模板</label>
+        <select id="default-model">
+          <option value="">请先测试 Anki 连接</option>
+        </select>
+      </div>
+      
+      <div id="field-mapping" class="form-group" style="display: none;">
+        <h3>字段映射</h3>
+        <div class="field-mapping-container">
+          <!-- 动态生成的字段映射选项将插入这里 -->
+        </div>
+      </div>
+      
+      <button id="refresh-anki-data" style="display: none;">刷新 Anki 数据</button>
     </section>
 
     <section id="system-config">
@@ -53,6 +76,41 @@
                 <option value="zh-CN">简体中文</option>
                 <!-- 预留其他语言 -->
             </select>
+        </div>
+    </section>
+
+    <section id="style-config">
+        <h2>显示样式</h2>
+        <div class="form-group">
+            <label for="font-size-select">字号大小</label>
+            <select id="font-size-select">
+                <option value="12px">小 (12px)</option>
+                <option value="14px">中 (14px)</option>
+                <option value="16px">大 (16px)</option>
+                <option value="18px">特大 (18px)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="text-align-select">文本对齐</label>
+            <select id="text-align-select">
+                <option value="left">居左</option>
+                <option value="center">居中</option>
+                <option value="right">居右</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="line-height-select">行高</label>
+            <select id="line-height-select">
+                <option value="1.2">紧凑 (1.2)</option>
+                <option value="1.4">标准 (1.4)</option>
+                <option value="1.6">宽松 (1.6)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>样式预览</label>
+            <div id="style-preview" style="border: 1px solid #ccc; padding: 10px; margin-top: 5px; background-color: #f9f9f9;">
+                <div id="preview-content">这是一个示例文本<br>用于预览样式效果</div>
+            </div>
         </div>
     </section>
 
