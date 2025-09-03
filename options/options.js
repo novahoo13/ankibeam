@@ -35,6 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // 为所有API Key输入框和切换按钮绑定事件
   setupApiKeyInputs();
   
+  // 为所有测试供应商按钮绑定事件
+  setupTestProviderButtons();
+  
   // 样式配置事件监听
   document.getElementById('font-size-select').addEventListener('change', updateStylePreview);
   document.getElementById('text-align-select').addEventListener('change', updateStylePreview);
@@ -43,6 +46,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // 初始化供应商状态显示
   refreshProviderStatus();
 });
+
+/**
+ * 为所有测试供应商按钮设置事件监听器
+ */
+function setupTestProviderButtons() {
+  document.querySelectorAll('.test-provider-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const provider = e.target.getAttribute('data-provider');
+      if (provider) {
+        handleTestProvider(provider);
+      }
+    });
+  });
+}
 
 /**
  * 为所有API密钥输入和可见性切换按钮设置事件监听器
@@ -406,13 +423,13 @@ async function refreshProviderStatus() {
  * 测试单个供应商连接
  */
 async function handleTestProvider(provider) {
-  const apiKeyInput = document.getElementById(`${provider}-api-key`);
   const modelSelect = document.getElementById(`${provider}-model-name`);
   
-  const apiKey = apiKeyInput.value;
+  // 从内存中获取实际的API密钥，而不是从DOM
+  const apiKey = actualApiKeys[provider];
   const modelName = modelSelect.value;
   
-  if (!apiKey) {
+  if (!apiKey || apiKey === '') {
     updateStatus('ai-status', `请先输入 ${provider} 的 API Key`, 'error');
     return;
   }
