@@ -42,7 +42,7 @@ async function callGoogleAPI(apiKey, modelName, prompt, options = {}) {
   const config = await loadConfig();
   const providerConfig = config?.aiConfig?.models?.google || {};
   const baseUrl = providerConfig.apiUrl || PROVIDERS.google.apiUrl;
-  const url = `${baseUrl}/${modelName}:generateContent?key=${apiKey}`;
+  const url = `${baseUrl}/${modelName}:generateContent`;
   
   const requestBody = {
     contents: [{
@@ -61,7 +61,8 @@ async function callGoogleAPI(apiKey, modelName, prompt, options = {}) {
   const response = await fetch(url, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'x-goog-api-key': apiKey
     },
     body: JSON.stringify(requestBody)
   });

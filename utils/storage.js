@@ -49,6 +49,7 @@ const DEFAULT_CONFIG = {
   ankiConfig: {
     defaultDeck: '',
     defaultModel: '',
+    modelFields: [], // 新增：用于存储当前模板的字段列表
     defaultTags: []
   },
   styleConfig: {

@@ -36,7 +36,10 @@
         <h3>Google Gemini 配置</h3>
         <div class="form-group">
           <label for="google-api-key">Gemini API Key</label>
-          <input type="password" id="google-api-key" placeholder="输入您的 Gemini API Key">
+          <div class="password-wrapper">
+            <input type="password" id="google-api-key" placeholder="输入您的 Gemini API Key">
+            <button type="button" class="toggle-visibility-btn" data-target="google-api-key">显示</button>
+          </div>
           <small>获取API Key: <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a></small>
         </div>
         <div class="form-group">
@@ -88,7 +91,10 @@
         <h3>Anthropic Claude 配置</h3>
         <div class="form-group">
           <label for="anthropic-api-key">Claude API Key</label>
-          <input type="password" id="anthropic-api-key" placeholder="sk-ant-...">
+          <div class="password-wrapper">
+            <input type="password" id="anthropic-api-key" placeholder="sk-ant-...">
+            <button type="button" class="toggle-visibility-btn" data-target="anthropic-api-key">显示</button>
+          </div>
           <small>获取API Key: <a href="https://console.anthropic.com/account/keys" target="_blank">Anthropic Console</a></small>
         </div>
         <div class="form-group">

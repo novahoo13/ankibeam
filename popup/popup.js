@@ -92,15 +92,10 @@ async function handleWriteToAnki() {
     const frontHtml = wrapContentWithStyle(front);
     const backHtml = wrapContentWithStyle(back);
     
-    // 动态获取字段名称
-    const fieldsResult = await getModelFieldNames(modelName);
-    if (fieldsResult.error) {
-      throw new Error(`获取模板字段失败: ${fieldsResult.error}`);
-    }
-    
-    const fieldNames = fieldsResult.result;
-    if (fieldNames.length < 2) {
-      throw new Error(`模板 "${modelName}" 至少需要2个字段，当前只有${fieldNames.length}个字段`);
+    // 从配置中获取字段列表，不再进行API调用
+    const fieldNames = config?.ankiConfig?.modelFields;
+    if (!fieldNames || fieldNames.length < 2) {
+      throw new Error("模板配置不完整，请前往设置页面，重新选择并保存模板。");
     }
     
     // 使用模板的前两个字段

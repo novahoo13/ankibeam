@@ -5,6 +5,18 @@ import { saveConfig, loadConfig } from '../utils/storage.js';
 import { testConnection as testAnki, getDeckNames, getModelNames, getModelFieldNames } from '../utils/ankiconnect.js';
 import { testConnection as testAi, getProvidersHealth, testAllProviders } from '../utils/ai-service.js';
 
+// 用于安全存储解密后的API密钥，避免暴露在DOM中
+let actualApiKeys = {
+  google: '',
+  openai: '',
+  anthropic: ''
+};
+
+// 新增：用于暂存当前选定模板的字段列表
+let currentModelFields = [];
+
+const API_KEY_PLACEHOLDER = '********';
+
 document.addEventListener('DOMContentLoaded', () => {
   // 加载现有配置并填充表单
   loadAndDisplayConfig();
@@ -20,13 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('refresh-status-btn').addEventListener('click', refreshProviderStatus);
   document.getElementById('test-all-btn').addEventListener('click', handleTestAllProviders);
   
-  // 单个供应商测试按钮
-  document.querySelectorAll('.test-provider-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const provider = e.target.getAttribute('data-provider');
-      handleTestProvider(provider);
-    });
-  });
+  // 为所有API Key输入框和切换按钮绑定事件
+  setupApiKeyInputs();
   
   // 样式配置事件监听
   document.getElementById('font-size-select').addEventListener('change', updateStylePreview);
@@ -36,6 +43,49 @@ document.addEventListener('DOMContentLoaded', () => {
   // 初始化供应商状态显示
   refreshProviderStatus();
 });
+
+/**
+ * 为所有API密钥输入和可见性切换按钮设置事件监听器
+ */
+function setupApiKeyInputs() {
+  document.querySelectorAll('.toggle-visibility-btn').forEach(btn => {
+    btn.addEventListener('click', handleToggleVisibility);
+  });
+
+  Object.keys(actualApiKeys).forEach(provider => {
+    const input = document.getElementById(`${provider}-api-key`);
+    if (input) {
+      input.addEventListener('input', (e) => {
+        // 当用户在输入框中键入时，更新我们内存中的密钥
+        if (e.target.value !== API_KEY_PLACEHOLDER) {
+          actualApiKeys[provider] = e.target.value;
+        }
+      });
+    }
+  });
+}
+
+/**
+ * 处理API密钥可见性切换
+ * @param {Event} e - 点击事件
+ */
+function handleToggleVisibility(e) {
+  const targetId = e.target.getAttribute('data-target');
+  const input = document.getElementById(targetId);
+  const provider = targetId.replace('-api-key', '');
+
+  if (input) {
+    if (input.type === 'password') {
+      input.type = 'text';
+      input.value = actualApiKeys[provider];
+      e.target.textContent = '隐藏';
+    } else {
+      input.type = 'password';
+      input.value = API_KEY_PLACEHOLDER;
+      e.target.textContent = '显示';
+    }
+  }
+}
 
 /**
  * 加载并显示配置
@@ -52,26 +102,25 @@ async function loadAndDisplayConfig() {
   // 加载各供应商配置
   const models = aiConfig.models || {};
   
-  // Google配置
-  const googleConfig = models.google || {};
-  document.getElementById('google-api-key').value = googleConfig.apiKey || '';
-  document.getElementById('google-model-name').value = googleConfig.modelName || 'gemini-1.5-flash';
-  document.getElementById('google-api-url').value = googleConfig.apiUrl || 'https://generativelanguage.googleapis.com/v1beta/models';
-  document.getElementById('google-enabled').checked = googleConfig.enabled !== false;
-  
-  // OpenAI配置
-  const openaiConfig = models.openai || {};
-  document.getElementById('openai-api-key').value = openaiConfig.apiKey || '';
-  document.getElementById('openai-model-name').value = openaiConfig.modelName || 'gpt-4o';
-  document.getElementById('openai-api-url').value = openaiConfig.apiUrl || 'https://api.openai.com/v1/chat/completions';
-  document.getElementById('openai-enabled').checked = openaiConfig.enabled === true;
-  
-  // Anthropic配置
-  const anthropicConfig = models.anthropic || {};
-  document.getElementById('anthropic-api-key').value = anthropicConfig.apiKey || '';
-  document.getElementById('anthropic-model-name').value = anthropicConfig.modelName || 'claude-3-5-sonnet-20241022';
-  document.getElementById('anthropic-api-url').value = anthropicConfig.apiUrl || 'https://api.anthropic.com/v1/messages';
-  document.getElementById('anthropic-enabled').checked = anthropicConfig.enabled === true;
+  // 封装加载逻辑
+  const loadProviderConfig = (provider) => {
+    const providerConfig = models[provider] || {};
+    const input = document.getElementById(`${provider}-api-key`);
+    if (providerConfig.apiKey) {
+      actualApiKeys[provider] = providerConfig.apiKey;
+      input.value = API_KEY_PLACEHOLDER;
+    } else {
+      actualApiKeys[provider] = '';
+      input.value = '';
+    }
+    document.getElementById(`${provider}-model-name`).value = providerConfig.modelName || '';
+    document.getElementById(`${provider}-api-url`).value = providerConfig.apiUrl || '';
+    document.getElementById(`${provider}-enabled`).checked = providerConfig.enabled !== false;
+  };
+
+  loadProviderConfig('google');
+  loadProviderConfig('openai');
+  loadProviderConfig('anthropic');
 
   // 其他配置
   document.getElementById('custom-prompt').value = config?.promptTemplates?.custom || '';
@@ -85,13 +134,17 @@ async function loadAndDisplayConfig() {
 
   // 加载Anki配置
   const ankiConfig = config?.ankiConfig;
-  if (ankiConfig?.defaultDeck) {
-    document.getElementById('default-deck').innerHTML = `<option value="${ankiConfig.defaultDeck}">${ankiConfig.defaultDeck}</option>`;
-    document.getElementById('default-deck').value = ankiConfig.defaultDeck;
-  }
-  if (ankiConfig?.defaultModel) {
-    document.getElementById('default-model').innerHTML = `<option value="${ankiConfig.defaultModel}">${ankiConfig.defaultModel}</option>`;
-    document.getElementById('default-model').value = ankiConfig.defaultModel;
+  if (ankiConfig) {
+    if (ankiConfig.defaultDeck) {
+      document.getElementById('default-deck').innerHTML = `<option value="${ankiConfig.defaultDeck}">${ankiConfig.defaultDeck}</option>`;
+      document.getElementById('default-deck').value = ankiConfig.defaultDeck;
+    }
+    if (ankiConfig.defaultModel) {
+      document.getElementById('default-model').innerHTML = `<option value="${ankiConfig.defaultModel}">${ankiConfig.defaultModel}</option>`;
+      document.getElementById('default-model').value = ankiConfig.defaultModel;
+    }
+    // 加载时，将存储的字段列表同步到模块级变量
+    currentModelFields = ankiConfig.modelFields || [];
   }
 
   // 显示当前供应商的配置面板
@@ -110,8 +163,9 @@ async function handleSave() {
   // 收集AI供应商配置
   const provider = document.getElementById('ai-provider').value;
   
+  // 从内存中的 actualApiKeys 获取密钥，而不是从DOM
   const googleConfig = {
-    apiKey: document.getElementById('google-api-key').value,
+    apiKey: actualApiKeys.google,
     modelName: document.getElementById('google-model-name').value,
     apiUrl: document.getElementById('google-api-url').value,
     enabled: document.getElementById('google-enabled').checked,
@@ -119,7 +173,7 @@ async function handleSave() {
   };
   
   const openaiConfig = {
-    apiKey: document.getElementById('openai-api-key').value,
+    apiKey: actualApiKeys.openai,
     modelName: document.getElementById('openai-model-name').value,
     apiUrl: document.getElementById('openai-api-url').value,
     enabled: document.getElementById('openai-enabled').checked,
@@ -127,7 +181,7 @@ async function handleSave() {
   };
   
   const anthropicConfig = {
-    apiKey: document.getElementById('anthropic-api-key').value,
+    apiKey: actualApiKeys.anthropic,
     modelName: document.getElementById('anthropic-model-name').value,
     apiUrl: document.getElementById('anthropic-api-url').value,
     enabled: document.getElementById('anthropic-enabled').checked,
@@ -162,6 +216,7 @@ async function handleSave() {
     ankiConfig: {
       defaultDeck: defaultDeck,
       defaultModel: defaultModel,
+      modelFields: currentModelFields, // 保存字段列表
       defaultTags: []
     },
     styleConfig: {
@@ -184,6 +239,62 @@ async function handleSave() {
   } catch (error) {
     console.error('保存配置失败:', error);
     updateStatus('save-status', `保存失败: ${error.message}`, 'error');
+  }
+}
+
+/**
+ * 处理模板变化事件
+ */
+async function handleModelChange() {
+  const modelName = document.getElementById('default-model').value;
+  if (!modelName) {
+    document.getElementById('field-mapping').style.display = 'none';
+    currentModelFields = []; // 清空字段
+    return;
+  }
+  
+  try {
+    const fieldsResult = await getModelFieldNames(modelName);
+    if (fieldsResult.error) {
+      throw new Error(fieldsResult.error);
+    }
+    
+    // 将获取到的字段列表存入模块级变量
+    currentModelFields = fieldsResult.result;
+
+    // 显示字段映射区域
+    const fieldMappingDiv = document.getElementById('field-mapping');
+    const container = fieldMappingDiv.querySelector('.field-mapping-container');
+    
+    container.innerHTML = '<p><strong>该模板包含以下字段：</strong></p>';
+    
+    fieldsResult.result.forEach((field, index) => {
+      const fieldDiv = document.createElement('div');
+      fieldDiv.innerHTML = `
+        <label>${field}</label>
+        <span style="margin-left: 10px; color: #666;">
+          (字段 ${index + 1})
+        </span>
+      `;
+      container.appendChild(fieldDiv);
+    });
+    
+    const noteDiv = document.createElement('div');
+    noteDiv.style.marginTop = '10px';
+    noteDiv.innerHTML = `
+      <p style="font-size: 0.9em; color: #888;">
+        <strong>注意：</strong>扩展将自动使用前两个字段作为"正面"和"背面"。
+        当前会使用：<strong>${fieldsResult.result[0] || '无'}</strong>（正面）和<strong>${fieldsResult.result[1] || '无'}</strong>（背面）。
+      </p>
+    `;
+    container.appendChild(noteDiv);
+    
+    fieldMappingDiv.style.display = 'block';
+    
+  } catch (error) {
+    console.error('获取字段信息失败:', error);
+    document.getElementById('field-mapping').style.display = 'none';
+    currentModelFields = []; // 出错时也要清空
   }
 }
 
@@ -348,7 +459,7 @@ async function handleTestAllProviders() {
       }
     });
     
-    const statusType = successCount === totalCount ? 'success' : 
+    const statusType = successCount === totalCount ? 'success' :
                       successCount === 0 ? 'error' : 'loading';
                       
     const summary = `测试完成: ${successCount}/${totalCount} 个供应商可用`;
@@ -414,57 +525,6 @@ async function loadAnkiData() {
  */
 async function handleRefreshAnkiData() {
   await loadAnkiData();
-}
-
-/**
- * 处理模板变化事件
- */
-async function handleModelChange() {
-  const modelName = document.getElementById('default-model').value;
-  if (!modelName) {
-    document.getElementById('field-mapping').style.display = 'none';
-    return;
-  }
-  
-  try {
-    const fieldsResult = await getModelFieldNames(modelName);
-    if (fieldsResult.error) {
-      throw new Error(fieldsResult.error);
-    }
-    
-    // 显示字段映射区域
-    const fieldMappingDiv = document.getElementById('field-mapping');
-    const container = fieldMappingDiv.querySelector('.field-mapping-container');
-    
-    container.innerHTML = '<p><strong>该模板包含以下字段：</strong></p>';
-    
-    fieldsResult.result.forEach((field, index) => {
-      const fieldDiv = document.createElement('div');
-      fieldDiv.innerHTML = `
-        <label>${field}</label>
-        <span style="margin-left: 10px; color: #666;">
-          (字段 ${index + 1})
-        </span>
-      `;
-      container.appendChild(fieldDiv);
-    });
-    
-    const noteDiv = document.createElement('div');
-    noteDiv.style.marginTop = '10px';
-    noteDiv.innerHTML = `
-      <p style="font-size: 0.9em; color: #888;">
-        <strong>注意：</strong>扩展将自动使用前两个字段作为"正面"和"背面"。
-        当前会使用：<strong>${fieldsResult.result[0] || '无'}</strong>（正面）和<strong>${fieldsResult.result[1] || '无'}</strong>（背面）。
-      </p>
-    `;
-    container.appendChild(noteDiv);
-    
-    fieldMappingDiv.style.display = 'block';
-    
-  } catch (error) {
-    console.error('获取字段信息失败:', error);
-    document.getElementById('field-mapping').style.display = 'none';
-  }
 }
 
 /**
