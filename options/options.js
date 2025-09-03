@@ -3,7 +3,7 @@
 
 import { saveConfig, loadConfig } from '../utils/storage.js';
 import { testConnection as testAnki, getDeckNames, getModelNames, getModelFieldNames } from '../utils/ankiconnect.js';
-import { testConnection as testAi } from '../utils/ai-service.js';
+import { testConnection as testAi, getProvidersHealth, testAllProviders } from '../utils/ai-service.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   // 加载现有配置并填充表单
@@ -12,16 +12,29 @@ document.addEventListener('DOMContentLoaded', () => {
   // 绑定事件监听器
   document.getElementById('save-btn').addEventListener('click', handleSave);
   document.getElementById('test-anki-btn').addEventListener('click', handleTestAnki);
-  document.getElementById('test-ai-btn').addEventListener('click', handleTestAi);
   document.getElementById('refresh-anki-data').addEventListener('click', handleRefreshAnkiData);
   document.getElementById('default-model').addEventListener('change', handleModelChange);
+  
+  // AI供应商相关事件监听
+  document.getElementById('ai-provider').addEventListener('change', handleProviderChange);
+  document.getElementById('refresh-status-btn').addEventListener('click', refreshProviderStatus);
+  document.getElementById('test-all-btn').addEventListener('click', handleTestAllProviders);
+  
+  // 单个供应商测试按钮
+  document.querySelectorAll('.test-provider-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const provider = e.target.getAttribute('data-provider');
+      handleTestProvider(provider);
+    });
+  });
   
   // 样式配置事件监听
   document.getElementById('font-size-select').addEventListener('change', updateStylePreview);
   document.getElementById('text-align-select').addEventListener('change', updateStylePreview);
   document.getElementById('line-height-select').addEventListener('change', updateStylePreview);
   
-  // TODO: 实现 'reset-prompt-btn' 的逻辑
+  // 初始化供应商状态显示
+  refreshProviderStatus();
 });
 
 /**
@@ -30,11 +43,37 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadAndDisplayConfig() {
   const config = await loadConfig();
 
-  // 使用可选链 (?.) 安全地访问嵌套属性，并为每个字段提供默认值
-  const geminiConfig = config?.aiConfig?.models?.gemini;
-  document.getElementById('api-key').value = geminiConfig?.apiKey || '';
-  document.getElementById('model-name').value = geminiConfig?.modelName || 'gemini-1.5-flash';
+  // 加载AI配置
+  const aiConfig = config?.aiConfig || {};
+  
+  // 设置当前主要供应商
+  document.getElementById('ai-provider').value = aiConfig.provider || 'google';
+  
+  // 加载各供应商配置
+  const models = aiConfig.models || {};
+  
+  // Google配置
+  const googleConfig = models.google || {};
+  document.getElementById('google-api-key').value = googleConfig.apiKey || '';
+  document.getElementById('google-model-name').value = googleConfig.modelName || 'gemini-1.5-flash';
+  document.getElementById('google-api-url').value = googleConfig.apiUrl || 'https://generativelanguage.googleapis.com/v1beta/models';
+  document.getElementById('google-enabled').checked = googleConfig.enabled !== false;
+  
+  // OpenAI配置
+  const openaiConfig = models.openai || {};
+  document.getElementById('openai-api-key').value = openaiConfig.apiKey || '';
+  document.getElementById('openai-model-name').value = openaiConfig.modelName || 'gpt-4o';
+  document.getElementById('openai-api-url').value = openaiConfig.apiUrl || 'https://api.openai.com/v1/chat/completions';
+  document.getElementById('openai-enabled').checked = openaiConfig.enabled === true;
+  
+  // Anthropic配置
+  const anthropicConfig = models.anthropic || {};
+  document.getElementById('anthropic-api-key').value = anthropicConfig.apiKey || '';
+  document.getElementById('anthropic-model-name').value = anthropicConfig.modelName || 'claude-3-5-sonnet-20241022';
+  document.getElementById('anthropic-api-url').value = anthropicConfig.apiUrl || 'https://api.anthropic.com/v1/messages';
+  document.getElementById('anthropic-enabled').checked = anthropicConfig.enabled === true;
 
+  // 其他配置
   document.getElementById('custom-prompt').value = config?.promptTemplates?.custom || '';
   document.getElementById('language-select').value = config?.language || 'zh-CN';
   
@@ -55,6 +94,9 @@ async function loadAndDisplayConfig() {
     document.getElementById('default-model').value = ankiConfig.defaultModel;
   }
 
+  // 显示当前供应商的配置面板
+  handleProviderChange();
+  
   // 更新样式预览
   updateStylePreview();
   
@@ -65,9 +107,34 @@ async function loadAndDisplayConfig() {
  * 处理保存按钮点击事件
  */
 async function handleSave() {
-  // 从表单收集数据
-  const apiKey = document.getElementById('api-key').value;
-  const modelName = document.getElementById('model-name').value;
+  // 收集AI供应商配置
+  const provider = document.getElementById('ai-provider').value;
+  
+  const googleConfig = {
+    apiKey: document.getElementById('google-api-key').value,
+    modelName: document.getElementById('google-model-name').value,
+    apiUrl: document.getElementById('google-api-url').value,
+    enabled: document.getElementById('google-enabled').checked,
+    healthStatus: 'unknown'
+  };
+  
+  const openaiConfig = {
+    apiKey: document.getElementById('openai-api-key').value,
+    modelName: document.getElementById('openai-model-name').value,
+    apiUrl: document.getElementById('openai-api-url').value,
+    enabled: document.getElementById('openai-enabled').checked,
+    healthStatus: 'unknown'
+  };
+  
+  const anthropicConfig = {
+    apiKey: document.getElementById('anthropic-api-key').value,
+    modelName: document.getElementById('anthropic-model-name').value,
+    apiUrl: document.getElementById('anthropic-api-url').value,
+    enabled: document.getElementById('anthropic-enabled').checked,
+    healthStatus: 'unknown'
+  };
+
+  // 其他配置
   const customPrompt = document.getElementById('custom-prompt').value;
   const language = document.getElementById('language-select').value;
   const defaultDeck = document.getElementById('default-deck').value;
@@ -78,16 +145,16 @@ async function handleSave() {
   const textAlign = document.getElementById('text-align-select').value;
   const lineHeight = document.getElementById('line-height-select').value;
 
-  // 构建配置对象 (结构参考开发文档)
+  // 构建完整的配置对象
   const newConfig = {
     aiConfig: {
-      provider: 'gemini',
+      provider: provider,
       models: {
-        gemini: {
-          apiKey: apiKey, // 存储前应加密
-          modelName: modelName,
-        }
-      }
+        google: googleConfig,
+        openai: openaiConfig,
+        anthropic: anthropicConfig
+      },
+      fallbackOrder: ['google', 'openai', 'anthropic']
     },
     promptTemplates: {
       custom: customPrompt
@@ -95,7 +162,7 @@ async function handleSave() {
     ankiConfig: {
       defaultDeck: defaultDeck,
       defaultModel: defaultModel,
-      defaultTags: [] // 暂时为空数组，以后可以扩展
+      defaultTags: []
     },
     styleConfig: {
       fontSize: fontSize,
@@ -108,6 +175,12 @@ async function handleSave() {
   try {
     await saveConfig(newConfig);
     updateStatus('save-status', '配置已保存！', 'success');
+    
+    // 保存后刷新供应商状态
+    setTimeout(() => {
+      refreshProviderStatus();
+    }, 500);
+    
   } catch (error) {
     console.error('保存配置失败:', error);
     updateStatus('save-status', `保存失败: ${error.message}`, 'error');
@@ -135,23 +208,158 @@ async function handleTestAnki() {
 }
 
 /**
- * 处理测试 AI 连接按钮点击事件
+ * 处理供应商切换事件
  */
-async function handleTestAi() {
-  const apiKey = document.getElementById('api-key').value;
-  const modelName = document.getElementById('model-name').value; // 获取模型名称
+function handleProviderChange() {
+  const selectedProvider = document.getElementById('ai-provider').value;
+  
+  // 隐藏所有配置面板
+  document.querySelectorAll('.provider-config').forEach(config => {
+    config.style.display = 'none';
+  });
+  
+  // 显示选中的配置面板
+  const activeConfig = document.getElementById(`config-${selectedProvider}`);
+  if (activeConfig) {
+    activeConfig.style.display = 'block';
+  }
+}
+
+/**
+ * 刷新供应商状态显示
+ */
+async function refreshProviderStatus() {
+  try {
+    const health = await getProvidersHealth();
+    const statusContainer = document.getElementById('provider-status');
+    
+    statusContainer.innerHTML = '';
+    
+    const providerNames = {
+      google: 'Google Gemini',
+      openai: 'OpenAI GPT',
+      anthropic: 'Anthropic Claude'
+    };
+    
+    Object.entries(health).forEach(([provider, status]) => {
+      const statusItem = document.createElement('div');
+      statusItem.className = `provider-status-item ${status.enabled ? '' : 'disabled'}`;
+      
+      const indicator = document.createElement('div');
+      indicator.className = `status-indicator ${status.status}`;
+      
+      const providerName = document.createElement('div');
+      providerName.className = 'provider-name';
+      providerName.textContent = providerNames[provider] || provider;
+      
+      const statusText = document.createElement('div');
+      statusText.className = 'status-text';
+      
+      let statusMessage = '';
+      if (!status.hasApiKey) {
+        statusMessage = '未配置API Key';
+      } else if (!status.enabled) {
+        statusMessage = '已禁用';
+      } else {
+        switch (status.status) {
+          case 'healthy':
+            statusMessage = '连接正常';
+            break;
+          case 'error':
+            statusMessage = `连接错误: ${status.lastError || '未知错误'}`;
+            break;
+          default:
+            statusMessage = '状态未知';
+        }
+      }
+      
+      if (status.lastCheck) {
+        const checkTime = new Date(status.lastCheck).toLocaleString();
+        statusMessage += ` (最后检查: ${checkTime})`;
+      }
+      
+      statusText.textContent = statusMessage;
+      
+      statusItem.appendChild(indicator);
+      statusItem.appendChild(providerName);
+      statusItem.appendChild(statusText);
+      statusContainer.appendChild(statusItem);
+    });
+    
+  } catch (error) {
+    console.error('刷新供应商状态失败:', error);
+  }
+}
+
+/**
+ * 测试单个供应商连接
+ */
+async function handleTestProvider(provider) {
+  const apiKeyInput = document.getElementById(`${provider}-api-key`);
+  const modelSelect = document.getElementById(`${provider}-model-name`);
+  
+  const apiKey = apiKeyInput.value;
+  const modelName = modelSelect.value;
+  
   if (!apiKey) {
-    updateStatus('ai-status', '请输入 API Key', 'error');
+    updateStatus('ai-status', `请先输入 ${provider} 的 API Key`, 'error');
     return;
   }
-  updateStatus('ai-status', '正在测试...', 'loading');
+  
+  updateStatus('ai-status', `正在测试 ${provider} 连接...`, 'loading');
+  
   try {
-    // 将 apiKey 和 modelName 一起传递给测试函数
-    await testAi(apiKey, modelName);
-    updateStatus('ai-status', '连接成功！API Key 和模型均有效。', 'success');
+    const result = await testAi(provider, apiKey, modelName);
+    if (result.success) {
+      updateStatus('ai-status', result.message, 'success');
+    } else {
+      updateStatus('ai-status', result.message, 'error');
+    }
+    
+    // 刷新状态显示
+    refreshProviderStatus();
+    
   } catch (error) {
-    console.error('AI 连接测试失败:', error);
-    updateStatus('ai-status', `连接失败: ${error.message}`, 'error');
+    console.error(`${provider} 连接测试失败:`, error);
+    updateStatus('ai-status', `连接测试失败: ${error.message}`, 'error');
+  }
+}
+
+/**
+ * 测试所有已配置的供应商
+ */
+async function handleTestAllProviders() {
+  updateStatus('ai-status', '正在测试所有供应商...', 'loading');
+  
+  try {
+    const results = await testAllProviders();
+    
+    let successCount = 0;
+    let totalCount = 0;
+    let messages = [];
+    
+    Object.entries(results).forEach(([provider, result]) => {
+      totalCount++;
+      if (result.success) {
+        successCount++;
+        messages.push(`✓ ${provider}: ${result.message}`);
+      } else {
+        messages.push(`✗ ${provider}: ${result.message}`);
+      }
+    });
+    
+    const statusType = successCount === totalCount ? 'success' : 
+                      successCount === 0 ? 'error' : 'loading';
+                      
+    const summary = `测试完成: ${successCount}/${totalCount} 个供应商可用`;
+    updateStatus('ai-status', `${summary}\n${messages.join('\n')}`, statusType);
+    
+    // 刷新状态显示
+    refreshProviderStatus();
+    
+  } catch (error) {
+    console.error('测试所有供应商失败:', error);
+    updateStatus('ai-status', `测试失败: ${error.message}`, 'error');
   }
 }
 

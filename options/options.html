@@ -11,23 +11,108 @@
 
     <section id="ai-config">
       <h2>AI 服务配置</h2>
+      
+      <!-- 主要供应商选择 -->
       <div class="form-group">
-        <label for="ai-provider">AI 服务商</label>
+        <label for="ai-provider">主要AI服务商</label>
         <select id="ai-provider">
-          <option value="gemini">Gemini</option>
-          <!-- 预留 OpenAI -->
+          <option value="google">Google (Gemini)</option>
+          <option value="openai">OpenAI (GPT)</option>
+          <option value="anthropic">Anthropic (Claude)</option>
         </select>
       </div>
+
+      <!-- 供应商健康状态显示 -->
       <div class="form-group">
-        <label for="api-key">API Key</label>
-        <input type="password" id="api-key" placeholder="输入您的 API Key">
+        <label>供应商状态</label>
+        <div id="provider-status" class="provider-status-container">
+          <!-- 动态生成的状态信息 -->
+        </div>
+        <button id="refresh-status-btn" type="button">刷新状态</button>
       </div>
+
+      <!-- Google Gemini 配置 -->
+      <div id="config-google" class="provider-config">
+        <h3>Google Gemini 配置</h3>
+        <div class="form-group">
+          <label for="google-api-key">Gemini API Key</label>
+          <input type="password" id="google-api-key" placeholder="输入您的 Gemini API Key">
+          <small>获取API Key: <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a></small>
+        </div>
+        <div class="form-group">
+          <label for="google-model-name">模型名称</label>
+          <input type="text" id="google-model-name" placeholder="输入模型名称，如：gemini-1.5-flash">
+          <small>常用模型：gemini-1.5-flash, gemini-1.5-pro, gemini-1.0-pro</small>
+        </div>
+        <div class="form-group">
+          <label for="google-api-url">API 请求路径</label>
+          <input type="text" id="google-api-url" placeholder="输入API基础路径">
+          <small>默认：https://generativelanguage.googleapis.com/v1beta/models</small>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="google-enabled"> 启用Google Gemini
+          </label>
+        </div>
+        <button type="button" class="test-provider-btn" data-provider="google">测试 Gemini 连接</button>
+      </div>
+
+      <!-- OpenAI 配置 -->
+      <div id="config-openai" class="provider-config" style="display: none;">
+        <h3>OpenAI GPT 配置</h3>
+        <div class="form-group">
+          <label for="openai-api-key">OpenAI API Key</label>
+          <input type="password" id="openai-api-key" placeholder="sk-...">
+          <small>获取API Key: <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a></small>
+        </div>
+        <div class="form-group">
+          <label for="openai-model-name">模型名称</label>
+          <input type="text" id="openai-model-name" placeholder="输入模型名称，如：gpt-4o">
+          <small>常用模型：gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-3.5-turbo</small>
+        </div>
+        <div class="form-group">
+          <label for="openai-api-url">API 请求路径</label>
+          <input type="text" id="openai-api-url" placeholder="输入API基础路径">
+          <small>默认：https://api.openai.com/v1/chat/completions</small>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="openai-enabled"> 启用OpenAI GPT
+          </label>
+        </div>
+        <button type="button" class="test-provider-btn" data-provider="openai">测试 OpenAI 连接</button>
+      </div>
+
+      <!-- Anthropic Claude 配置 -->
+      <div id="config-anthropic" class="provider-config" style="display: none;">
+        <h3>Anthropic Claude 配置</h3>
+        <div class="form-group">
+          <label for="anthropic-api-key">Claude API Key</label>
+          <input type="password" id="anthropic-api-key" placeholder="sk-ant-...">
+          <small>获取API Key: <a href="https://console.anthropic.com/account/keys" target="_blank">Anthropic Console</a></small>
+        </div>
+        <div class="form-group">
+          <label for="anthropic-model-name">模型名称</label>
+          <input type="text" id="anthropic-model-name" placeholder="输入模型名称，如：claude-3-5-sonnet-20241022">
+          <small>常用模型：claude-3-5-sonnet-20241022, claude-3-5-haiku-20241022, claude-3-opus-20240229</small>
+        </div>
+        <div class="form-group">
+          <label for="anthropic-api-url">API 请求路径</label>
+          <input type="text" id="anthropic-api-url" placeholder="输入API基础路径">
+          <small>默认：https://api.anthropic.com/v1/messages</small>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="anthropic-enabled"> 启用Anthropic Claude
+          </label>
+        </div>
+        <button type="button" class="test-provider-btn" data-provider="anthropic">测试 Claude 连接</button>
+      </div>
+
       <div class="form-group">
-        <label for="model-name">模型名称</label>
-        <input type="text" id="model-name" placeholder="例如: gemini-1.5-flash">
+        <button id="test-all-btn" type="button">测试所有已配置的供应商</button>
+        <p id="ai-status"></p>
       </div>
-      <button id="test-ai-btn">测试 AI 连接</button>
-      <p id="ai-status"></p>
     </section>
 
     <section id="prompt-config">

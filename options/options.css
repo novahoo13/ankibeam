@@ -73,3 +73,125 @@ p[id$="-status"] {
 .status-success { color: #28a745; }
 .status-error { color: #dc3545; }
 .status-loading { color: #6c757d; }
+
+/* 多供应商配置样式 */
+.provider-config {
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 15px;
+  background-color: #f8f9fa;
+}
+
+.provider-config h3 {
+  margin-top: 0;
+  color: #495057;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 8px;
+}
+
+.provider-config small {
+  color: #6c757d;
+  font-size: 0.85em;
+}
+
+.provider-config small a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.provider-config small a:hover {
+  text-decoration: underline;
+}
+
+/* 供应商状态显示 */
+.provider-status-container {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.provider-status-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+}
+
+.provider-status-item .provider-name {
+  font-weight: bold;
+  margin-right: 10px;
+  min-width: 120px;
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.status-indicator.healthy {
+  background-color: #28a745;
+}
+
+.status-indicator.error {
+  background-color: #dc3545;
+}
+
+.status-indicator.unknown {
+  background-color: #6c757d;
+}
+
+.provider-status-item .status-text {
+  flex: 1;
+  font-size: 0.9em;
+}
+
+.provider-status-item.disabled {
+  opacity: 0.6;
+}
+
+/* 测试按钮样式 */
+.test-provider-btn {
+  background-color: #28a745;
+  font-size: 0.9em;
+  padding: 8px 12px;
+  margin-top: 10px;
+}
+
+.test-provider-btn:hover {
+  background-color: #218838;
+}
+
+#test-all-btn {
+  background-color: #17a2b8;
+  padding: 10px 20px;
+  font-weight: bold;
+}
+
+#test-all-btn:hover {
+  background-color: #138496;
+}
+
+/* 复选框样式优化 */
+input[type="checkbox"] {
+  margin-right: 8px;
+  transform: scale(1.2);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .provider-status-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .provider-status-item .provider-name {
+    min-width: auto;
+    margin-bottom: 5px;
+  }
+}

@@ -1,7 +1,249 @@
 // ai-service.js - AI 服务统一接口
-// 目前只实现 Gemini, 但为其他服务预留了结构
+// 支持多AI供应商：Google (Gemini), OpenAI (GPT), Anthropic (Claude)
+// 使用原生 fetch API 实现
 
-import { loadConfig } from './storage.js';
+import { loadConfig, saveConfig } from './storage.js';
+
+// AI 供应商配置
+const PROVIDERS = {
+  google: {
+    defaultModel: 'gemini-1.5-flash',
+    supportedModels: ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-1.0-pro'],
+    testModel: 'gemini-1.5-flash',
+    apiUrl: 'https://generativelanguage.googleapis.com/v1beta/models',
+    name: 'Google Gemini'
+  },
+  openai: {
+    defaultModel: 'gpt-4o',
+    supportedModels: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'],
+    testModel: 'gpt-4o-mini',
+    apiUrl: 'https://api.openai.com/v1/chat/completions',
+    name: 'OpenAI GPT'
+  },
+  anthropic: {
+    defaultModel: 'claude-3-5-sonnet-20241022',
+    supportedModels: ['claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022', 'claude-3-opus-20240229'],
+    testModel: 'claude-3-5-haiku-20241022',
+    apiUrl: 'https://api.anthropic.com/v1/messages',
+    name: 'Anthropic Claude'
+  }
+};
+
+/**
+ * 调用Google Gemini API
+ * @param {string} apiKey - API Key
+ * @param {string} modelName - 模型名称
+ * @param {string} prompt - 提示词
+ * @param {object} options - 可选参数
+ * @returns {Promise<string>} - AI响应文本
+ */
+async function callGoogleAPI(apiKey, modelName, prompt, options = {}) {
+  // 使用配置中的API URL，如果没有则使用默认值
+  const config = await loadConfig();
+  const providerConfig = config?.aiConfig?.models?.google || {};
+  const baseUrl = providerConfig.apiUrl || PROVIDERS.google.apiUrl;
+  const url = `${baseUrl}/${modelName}:generateContent?key=${apiKey}`;
+  
+  const requestBody = {
+    contents: [{
+      parts: [{
+        text: prompt
+      }]
+    }],
+    generationConfig: {
+      temperature: options.temperature || 0.3,
+      maxOutputTokens: options.maxTokens || 2000,
+      topP: 0.8,
+      topK: 10
+    }
+  };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(requestBody)
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(`Google API请求失败: ${response.status} ${response.statusText}. ${errorData.error?.message || ''}`);
+  }
+
+  const data = await response.json();
+  
+  if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+    return data.candidates[0].content.parts[0].text;
+  }
+  
+  throw new Error('Google API返回格式异常');
+}
+
+/**
+ * 调用OpenAI API
+ * @param {string} apiKey - API Key
+ * @param {string} modelName - 模型名称
+ * @param {string} prompt - 提示词
+ * @param {object} options - 可选参数
+ * @returns {Promise<string>} - AI响应文本
+ */
+async function callOpenAIAPI(apiKey, modelName, prompt, options = {}) {
+  // 使用配置中的API URL，如果没有则使用默认值
+  const config = await loadConfig();
+  const providerConfig = config?.aiConfig?.models?.openai || {};
+  const apiUrl = providerConfig.apiUrl || PROVIDERS.openai.apiUrl;
+  
+  const requestBody = {
+    model: modelName,
+    messages: [{
+      role: 'user',
+      content: prompt
+    }],
+    temperature: options.temperature || 0.3,
+    max_tokens: options.maxTokens || 2000
+  };
+
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify(requestBody)
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(`OpenAI API请求失败: ${response.status} ${response.statusText}. ${errorData.error?.message || ''}`);
+  }
+
+  const data = await response.json();
+  
+  if (data.choices && data.choices[0] && data.choices[0].message) {
+    return data.choices[0].message.content;
+  }
+  
+  throw new Error('OpenAI API返回格式异常');
+}
+
+/**
+ * 调用Anthropic API
+ * @param {string} apiKey - API Key
+ * @param {string} modelName - 模型名称
+ * @param {string} prompt - 提示词
+ * @param {object} options - 可选参数
+ * @returns {Promise<string>} - AI响应文本
+ */
+async function callAnthropicAPI(apiKey, modelName, prompt, options = {}) {
+  // 使用配置中的API URL，如果没有则使用默认值
+  const config = await loadConfig();
+  const providerConfig = config?.aiConfig?.models?.anthropic || {};
+  const apiUrl = providerConfig.apiUrl || PROVIDERS.anthropic.apiUrl;
+  
+  const requestBody = {
+    model: modelName,
+    max_tokens: options.maxTokens || 2000,
+    messages: [{
+      role: 'user',
+      content: prompt
+    }],
+    temperature: options.temperature || 0.3
+  };
+
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify(requestBody)
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(`Anthropic API请求失败: ${response.status} ${response.statusText}. ${errorData.error?.message || ''}`);
+  }
+
+  const data = await response.json();
+  
+  if (data.content && data.content[0] && data.content[0].text) {
+    return data.content[0].text;
+  }
+  
+  throw new Error('Anthropic API返回格式异常');
+}
+
+/**
+ * 根据供应商调用对应的API
+ * @param {string} provider - 供应商名称
+ * @param {string} apiKey - API Key
+ * @param {string} modelName - 模型名称
+ * @param {string} prompt - 提示词
+ * @param {object} options - 可选参数
+ * @returns {Promise<string>} - AI响应文本
+ */
+async function callProviderAPI(provider, apiKey, modelName, prompt, options = {}) {
+  switch (provider) {
+    case 'google':
+      return await callGoogleAPI(apiKey, modelName, prompt, options);
+    case 'openai':
+      return await callOpenAIAPI(apiKey, modelName, prompt, options);
+    case 'anthropic':
+      return await callAnthropicAPI(apiKey, modelName, prompt, options);
+    default:
+      throw new Error(`不支持的AI供应商: ${provider}`);
+  }
+}
+
+/**
+ * 获取当前配置的AI模型信息
+ * @param {string} overrideProvider - 可选的供应商覆盖
+ * @returns {Promise<{provider: string, apiKey: string, modelName: string}>}
+ */
+async function getCurrentModel(overrideProvider = null) {
+  const config = await loadConfig();
+  const provider = overrideProvider || config.aiConfig.provider;
+  const providerConfig = config.aiConfig.models[provider];
+
+  if (!providerConfig) {
+    throw new Error(`未找到 ${provider} 的配置`);
+  }
+
+  if (!providerConfig.apiKey) {
+    throw new Error(`未配置 ${provider} 的 API Key`);
+  }
+
+  const providerInfo = PROVIDERS[provider];
+  const modelName = providerConfig.modelName || providerInfo.defaultModel;
+
+  return { 
+    provider, 
+    apiKey: providerConfig.apiKey, 
+    modelName 
+  };
+}
+
+/**
+ * 更新供应商健康状态
+ * @param {string} provider - 供应商名称
+ * @param {string} status - 健康状态：'healthy', 'error', 'unknown'
+ * @param {string} error - 可选的错误信息
+ */
+async function updateProviderHealth(provider, status, error = null) {
+  try {
+    const config = await loadConfig();
+    if (config.aiConfig.models[provider]) {
+      config.aiConfig.models[provider].healthStatus = status;
+      config.aiConfig.models[provider].lastError = error;
+      config.aiConfig.models[provider].lastCheck = new Date().toISOString();
+      await saveConfig(config);
+    }
+  } catch (err) {
+    console.warn('更新供应商健康状态失败:', err);
+  }
+}
 
 /**
  * 使用 AI 服务解析文本
@@ -10,68 +252,91 @@ import { loadConfig } from './storage.js';
  * @returns {Promise<{front: string, back: string}>} - 解析后的结构化数据
  */
 export async function parseText(inputText, promptTemplate) {
-  const config = await loadConfig();
-  const geminiConfig = config?.aiConfig?.models?.gemini;
-  const apiKey = geminiConfig?.apiKey;
-  const modelName = geminiConfig?.modelName || 'gemini-1.5-flash'; // 使用配置的模型或默认值
+  try {
+    const { provider, apiKey, modelName } = await getCurrentModel();
+    const fullPrompt = buildPrompt(inputText, promptTemplate);
 
-  if (!apiKey) {
-    throw new Error('未配置 Gemini API Key');
-  }
+    console.log(`使用 ${provider} (${modelName}) 解析文本`);
 
-  const apiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`;
-  const fullPrompt = buildPrompt(inputText, promptTemplate);
+    const responseText = await callProviderAPI(provider, apiKey, modelName, fullPrompt, {
+      temperature: 0.3,
+      maxTokens: 2000
+    });
 
-  const response = await fetch(apiEndpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-goog-api-key': apiKey
-    },
-    body: JSON.stringify({
-      contents: [{
-        parts: [{ "text": fullPrompt }]
-      }],
-      generationConfig: {
-        "response_mime_type": "application/json",
+    // 更新供应商健康状态
+    await updateProviderHealth(provider, 'healthy');
+
+    // 解析返回的JSON
+    try {
+      const parsedResult = JSON.parse(responseText);
+      return parsedResult;
+    } catch (parseError) {
+      console.warn('JSON解析失败，尝试提取结构化内容:', parseError);
+      // 如果直接解析失败，尝试从文本中提取JSON
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
       }
-    })
-  });
+      throw new Error('无法解析AI返回的结果为JSON格式');
+    }
 
-  if (!response.ok) {
-    const errorBody = await response.text();
-    console.error("AI API Error:", errorBody);
-    throw new Error(`AI 服务请求失败: ${response.status}`);
+  } catch (error) {
+    console.error('AI解析失败:', error);
+    
+    // 更新供应商健康状态
+    const config = await loadConfig();
+    await updateProviderHealth(config.aiConfig.provider, 'error', error.message);
+    
+    throw new Error(`AI服务请求失败: ${error.message}`);
   }
-
-  const data = await response.json();
-  
-  // Gemini 返回的 JSON 内容在 text 字段中，是一个字符串，需要再次解析
-  const jsonText = data.candidates[0].content.parts[0].text;
-  return JSON.parse(jsonText);
 }
 
 /**
  * 测试 AI 服务连接
+ * @param {string} provider - 供应商名称
  * @param {string} apiKey - 用于测试的 API Key
  * @param {string} modelName - 用于测试的模型名称
- * @returns {Promise<void>} - 如果连接成功则 resolve, 否则 reject
+ * @returns {Promise<{success: boolean, message: string}>} - 测试结果
  */
-export async function testConnection(apiKey, modelName) {
-  const effectiveModel = modelName || 'gemini-1.5-flash';
-  // 构造一个非常简单的请求来验证 key 和 model 的有效性
-  const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/${effectiveModel}`;
-  const response = await fetch(testUrl, {
-    method: 'GET',
-    headers: {
-      'x-goog-api-key': apiKey
+export async function testConnection(provider, apiKey, modelName) {
+  try {
+    if (!apiKey) {
+      throw new Error('API Key不能为空');
     }
-  });
 
-  if (!response.ok) {
-    throw new Error(`API Key 或模型名称无效，或网络错误 (状态: ${response.status})`);
+    const providerConfig = PROVIDERS[provider];
+    if (!providerConfig) {
+      throw new Error(`不支持的供应商: ${provider}`);
+    }
+
+    // 使用测试模型或指定模型
+    const testModel = modelName || providerConfig.testModel;
+
+    // 发送简单的测试请求
+    const responseText = await callProviderAPI(provider, apiKey, testModel, '测试连接，请回复"连接成功"', {
+      maxTokens: 10,
+      temperature: 0
+    });
+
+    // 更新供应商健康状态
+    await updateProviderHealth(provider, 'healthy');
+
+    return {
+      success: true,
+      message: `${providerConfig.name} 连接测试成功`
+    };
+
+  } catch (error) {
+    console.error(`${provider} 连接测试失败:`, error);
+    
+    // 更新供应商健康状态
+    await updateProviderHealth(provider, 'error', error.message);
+
+    return {
+      success: false,
+      message: `连接测试失败: ${error.message}`
+    };
   }
-  // 如果请求成功，说明 key 至少是有效的
 }
 
 /**
@@ -110,4 +375,133 @@ ${inputText}
   
   // 否则，使用默认模板
   return defaultPromptTemplate;
+}
+
+/**
+ * 使用降级策略解析文本
+ * @param {string} inputText - 用户输入的原始文本
+ * @param {string} promptTemplate - 用于指导 AI 的 Prompt 模板
+ * @returns {Promise<{front: string, back: string}>} - 解析后的结构化数据
+ */
+export async function parseTextWithFallback(inputText, promptTemplate) {
+  const config = await loadConfig();
+  const primaryProvider = config.aiConfig.provider;
+  const fallbackOrder = config.aiConfig.fallbackOrder || ['google', 'openai', 'anthropic'];
+  
+  // 构建尝试顺序：当前主供应商 + 其他可用供应商
+  const providersToTry = [primaryProvider, ...fallbackOrder.filter(p => p !== primaryProvider)];
+  
+  let lastError = null;
+  
+  for (const provider of providersToTry) {
+    const providerConfig = config.aiConfig.models[provider];
+    
+    // 跳过没有API Key的供应商
+    if (!providerConfig?.apiKey || !providerConfig.enabled) {
+      console.log(`跳过 ${provider}：未配置或未启用`);
+      continue;
+    }
+    
+    try {
+      console.log(`尝试使用 ${provider} 解析文本...`);
+      
+      const { apiKey, modelName } = await getCurrentModel(provider);
+      const fullPrompt = buildPrompt(inputText, promptTemplate);
+
+      const responseText = await callProviderAPI(provider, apiKey, modelName, fullPrompt, {
+        temperature: 0.3,
+        maxTokens: 2000
+      });
+
+      // 更新供应商健康状态
+      await updateProviderHealth(provider, 'healthy');
+
+      // 如果使用了备用供应商，记录日志
+      if (provider !== primaryProvider) {
+        console.warn(`主供应商 ${primaryProvider} 不可用，使用备用方案 ${provider}`);
+      }
+
+      // 解析返回的JSON
+      try {
+        return JSON.parse(responseText);
+      } catch (parseError) {
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          return JSON.parse(jsonMatch[0]);
+        }
+        throw new Error('无法解析AI返回的结果为JSON格式');
+      }
+
+    } catch (error) {
+      console.error(`${provider} 解析失败:`, error.message);
+      lastError = error;
+      await updateProviderHealth(provider, 'error', error.message);
+      continue; // 尝试下一个供应商
+    }
+  }
+  
+  throw new Error(`所有AI供应商都不可用。最后错误: ${lastError?.message}`);
+}
+
+/**
+ * 获取所有供应商信息
+ * @returns {object} - 供应商信息对象
+ */
+export function getProvidersInfo() {
+  return PROVIDERS;
+}
+
+/**
+ * 获取供应商健康状态
+ * @returns {Promise<object>} - 所有供应商的健康状态
+ */
+export async function getProvidersHealth() {
+  const config = await loadConfig();
+  const health = {};
+  
+  for (const [provider, providerConfig] of Object.entries(config.aiConfig.models)) {
+    health[provider] = {
+      status: providerConfig.healthStatus || 'unknown',
+      lastCheck: providerConfig.lastCheck || null,
+      lastError: providerConfig.lastError || null,
+      enabled: providerConfig.enabled || false,
+      hasApiKey: !!providerConfig.apiKey
+    };
+  }
+  
+  return health;
+}
+
+/**
+ * 批量测试所有配置的供应商
+ * @returns {Promise<object>} - 测试结果
+ */
+export async function testAllProviders() {
+  const config = await loadConfig();
+  const results = {};
+  
+  for (const [provider, providerConfig] of Object.entries(config.aiConfig.models)) {
+    if (!providerConfig.apiKey) {
+      results[provider] = {
+        success: false,
+        message: '未配置API Key'
+      };
+      continue;
+    }
+    
+    try {
+      results[provider] = await testConnection(
+        provider, 
+        providerConfig.apiKey, 
+        providerConfig.modelName
+      );
+    } catch (error) {
+      results[provider] = {
+        success: false,
+        message: error.message
+      };
+    }
+  }
+  
+  return results;
 }
