@@ -13,3 +13,15 @@
     "ask": []
   }
 }
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:git.sr.ht)",
+      "WebSearch",
+      "Bash(node:*)",
+      "Bash(del \"C:\\Dev\\anki-word-assistant\\test_style.js\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
