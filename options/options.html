@@ -125,7 +125,18 @@
       <h2>Prompt 配置</h2>
       <div class="form-group">
         <label for="custom-prompt">自定义 Prompt</label>
-        <textarea id="custom-prompt" rows="5" placeholder="留空则使用默认Prompt"></textarea>
+        <textarea id="custom-prompt" rows="5" placeholder="请将以下单词查询结果解析为结构化数据。
+你的输出必须是一个纯粹的JSON对象，不要包含任何解释性文字或代码块标记。
+JSON格式如下:
+{
+  &quot;front&quot;: &quot;单词&quot;,
+  &quot;back&quot;: &quot;完整的单词查询结果（保留原始换行格式）&quot;
+}
+
+待解析的文本如下：
+---
+${inputText}
+---"></textarea>
       </div>
       <button id="reset-prompt-btn">恢复默认</button>
     </section>
