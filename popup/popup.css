@@ -27,7 +27,7 @@ textarea, input[type="text"] {
   border-radius: 4px;
 }
 
-.action-section {
+.action-section, .write-section {
   display: flex;
   justify-content: space-around;
   gap: 10px;

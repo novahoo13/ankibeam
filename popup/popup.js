@@ -9,6 +9,9 @@ import { loadConfig } from '../utils/storage.js';
 // 模块级变量，用于存储加载的配置
 let config = {};
 
+// 用于管理状态消息自动清除的定时器
+let statusTimer = null;
+
 document.addEventListener('DOMContentLoaded', () => {
   // 初始化：加载配置、绑定事件监听器
   initialize();
@@ -164,4 +167,19 @@ function updateStatus(message, type = '') {
   const statusElement = document.getElementById('status-message');
   statusElement.textContent = message;
   statusElement.className = `status-${type}`;
+  
+  // 清除之前的定时器
+  if (statusTimer) {
+    clearTimeout(statusTimer);
+    statusTimer = null;
+  }
+  
+  // 为成功和错误消息设置2秒后自动清除
+  if (type === 'success' || type === 'error') {
+    statusTimer = setTimeout(() => {
+      statusElement.textContent = '';
+      statusElement.className = '';
+      statusTimer = null;
+    }, 2000);
+  }
 }
