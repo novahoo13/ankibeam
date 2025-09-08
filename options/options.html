@@ -3,129 +3,228 @@
 <head>
   <meta charset="UTF-8">
   <title>配置</title>
-  <link rel="stylesheet" href="options.css">
+  <link rel="stylesheet" href="../css/tailwind.min.css">
+  <link rel="stylesheet" href="../css/custom-classes.css">
 </head>
 <body>
-  <div class="container">
-    <h1>配置选项</h1>
+  <div class="min-h-screen bg-gray-50">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8 text-center">配置选项</h1>
 
-    <section id="ai-config">
-      <h2>AI 服务配置</h2>
-      
-      <!-- 主要供应商选择 -->
-      <div class="form-group">
-        <label for="ai-provider">主要AI服务商</label>
-        <select id="ai-provider">
-          <option value="google">Google (Gemini)</option>
-          <option value="openai">OpenAI (GPT)</option>
-          <option value="anthropic">Anthropic (Claude)</option>
-        </select>
-      </div>
-
-      <!-- 供应商健康状态显示 -->
-      <div class="form-group">
-        <label>供应商状态</label>
-        <div id="provider-status" class="provider-status-container">
-          <!-- 动态生成的状态信息 -->
-        </div>
-        <button id="refresh-status-btn" type="button">刷新状态</button>
-      </div>
-
-      <!-- Google Gemini 配置 -->
-      <div id="config-google" class="provider-config">
-        <h3>Google Gemini 配置</h3>
-        <div class="form-group">
-          <label for="google-api-key">Gemini API Key</label>
-          <div class="password-wrapper">
-            <input type="password" id="google-api-key" placeholder="输入您的 Gemini API Key">
-            <button type="button" class="toggle-visibility-btn" data-target="google-api-key">显示</button>
+        <section id="ai-config" class="mb-8">
+          <h2 class="text-2xl font-semibold text-gray-800 mb-6 pb-2 border-b border-gray-200">AI 服务配置</h2>
+          
+          <!-- 主要供应商选择 -->
+          <div class="mb-6">
+            <label for="ai-provider" class="block text-sm font-medium text-gray-700 mb-2">主要AI服务商</label>
+            <select 
+              id="ai-provider"
+              class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="google">Google (Gemini)</option>
+              <option value="openai">OpenAI (GPT)</option>
+              <option value="anthropic">Anthropic (Claude)</option>
+            </select>
           </div>
-          <small>获取API Key: <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a></small>
-        </div>
-        <div class="form-group">
-          <label for="google-model-name">模型名称</label>
-          <input type="text" id="google-model-name" placeholder="输入模型名称，如：gemini-1.5-flash">
-          <small>常用模型：gemini-1.5-flash, gemini-1.5-pro, gemini-1.0-pro</small>
-        </div>
-        <div class="form-group">
-          <label for="google-api-url">API 请求路径</label>
-          <input type="text" id="google-api-url" placeholder="输入API基础路径">
-          <small>默认：https://generativelanguage.googleapis.com/v1beta/models</small>
-        </div>
-        <div class="form-group">
-          <label>
-            <input type="checkbox" id="google-enabled"> 启用Google Gemini
-          </label>
-        </div>
-        <button type="button" class="test-provider-btn" data-provider="google">测试 Gemini 连接</button>
-      </div>
 
-      <!-- OpenAI 配置 -->
-      <div id="config-openai" class="provider-config" style="display: none;">
-        <h3>OpenAI GPT 配置</h3>
-        <div class="form-group">
-          <label for="openai-api-key">OpenAI API Key</label>
-          <input type="password" id="openai-api-key" placeholder="sk-...">
-          <small>获取API Key: <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a></small>
-        </div>
-        <div class="form-group">
-          <label for="openai-model-name">模型名称</label>
-          <input type="text" id="openai-model-name" placeholder="输入模型名称，如：gpt-4o">
-          <small>常用模型：gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-3.5-turbo</small>
-        </div>
-        <div class="form-group">
-          <label for="openai-api-url">API 请求路径</label>
-          <input type="text" id="openai-api-url" placeholder="输入API基础路径">
-          <small>默认：https://api.openai.com/v1/chat/completions</small>
-        </div>
-        <div class="form-group">
-          <label>
-            <input type="checkbox" id="openai-enabled"> 启用OpenAI GPT
-          </label>
-        </div>
-        <button type="button" class="test-provider-btn" data-provider="openai">测试 OpenAI 连接</button>
-      </div>
-
-      <!-- Anthropic Claude 配置 -->
-      <div id="config-anthropic" class="provider-config" style="display: none;">
-        <h3>Anthropic Claude 配置</h3>
-        <div class="form-group">
-          <label for="anthropic-api-key">Claude API Key</label>
-          <div class="password-wrapper">
-            <input type="password" id="anthropic-api-key" placeholder="sk-ant-...">
-            <button type="button" class="toggle-visibility-btn" data-target="anthropic-api-key">显示</button>
+          <!-- 供应商健康状态显示 -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-3">供应商状态</label>
+            <div id="provider-status" class="bg-gray-50 border border-gray-200 rounded-md p-4 mb-3">
+              <!-- 动态生成的状态信息 -->
+            </div>
+            <button 
+              id="refresh-status-btn" 
+              type="button"
+              class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-md transition duration-200"
+            >
+              刷新状态
+            </button>
           </div>
-          <small>获取API Key: <a href="https://console.anthropic.com/account/keys" target="_blank">Anthropic Console</a></small>
-        </div>
-        <div class="form-group">
-          <label for="anthropic-model-name">模型名称</label>
-          <input type="text" id="anthropic-model-name" placeholder="输入模型名称，如：claude-3-5-sonnet-20241022">
-          <small>常用模型：claude-3-5-sonnet-20241022, claude-3-5-haiku-20241022, claude-3-opus-20240229</small>
-        </div>
-        <div class="form-group">
-          <label for="anthropic-api-url">API 请求路径</label>
-          <input type="text" id="anthropic-api-url" placeholder="输入API基础路径">
-          <small>默认：https://api.anthropic.com/v1/messages</small>
-        </div>
-        <div class="form-group">
-          <label>
-            <input type="checkbox" id="anthropic-enabled"> 启用Anthropic Claude
-          </label>
-        </div>
-        <button type="button" class="test-provider-btn" data-provider="anthropic">测试 Claude 连接</button>
-      </div>
 
-      <div class="form-group">
-        <button id="test-all-btn" type="button">测试所有已配置的供应商</button>
-        <p id="ai-status"></p>
-      </div>
-    </section>
+          <!-- Google Gemini 配置 -->
+          <div id="config-google" class="provider-config bg-blue-50 border border-blue-200 rounded-md p-6 mb-6">
+            <h3 class="text-xl font-semibold text-blue-800 mb-4">Google Gemini 配置</h3>
+            <div class="mb-4">
+              <label for="google-api-key" class="block text-sm font-medium text-gray-700 mb-2">Gemini API Key</label>
+              <div class="flex gap-2">
+                <input 
+                  type="password" 
+                  id="google-api-key" 
+                  placeholder="输入您的 Gemini API Key"
+                  class="flex-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                <button 
+                  type="button" 
+                  class="toggle-visibility-btn bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded-md transition" 
+                  data-target="google-api-key"
+                >
+                  显示
+                </button>
+              </div>
+              <small class="text-xs text-gray-500 mt-1 block">获取API Key: <a href="https://makersuite.google.com/app/apikey" target="_blank" class="text-blue-600 hover:underline">Google AI Studio</a></small>
+            </div>
+            <div class="mb-4">
+              <label for="google-model-name" class="block text-sm font-medium text-gray-700 mb-2">模型名称</label>
+              <input 
+                type="text" 
+                id="google-model-name" 
+                placeholder="输入模型名称，如：gemini-1.5-flash"
+                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+              <small class="text-xs text-gray-500 mt-1 block">常用模型：gemini-1.5-flash, gemini-1.5-pro, gemini-1.0-pro</small>
+            </div>
+            <div class="mb-4">
+              <label for="google-api-url" class="block text-sm font-medium text-gray-700 mb-2">API 请求路径</label>
+              <input 
+                type="text" 
+                id="google-api-url" 
+                placeholder="输入API基础路径"
+                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+              <small class="text-xs text-gray-500 mt-1 block">默认：https://generativelanguage.googleapis.com/v1beta/models</small>
+            </div>
+            <div class="mb-4">
+              <label class="flex items-center text-sm font-medium text-gray-700">
+                <input type="checkbox" id="google-enabled" class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"> 
+                启用Google Gemini
+              </label>
+            </div>
+            <button 
+              type="button" 
+              class="test-provider-btn bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition" 
+              data-provider="google"
+            >
+              测试 Gemini 连接
+            </button>
+          </div>
 
-    <section id="prompt-config">
-      <h2>Prompt 配置</h2>
-      <div class="form-group">
-        <label for="custom-prompt">自定义 Prompt</label>
-        <textarea id="custom-prompt" rows="5" placeholder="请将以下单词查询结果解析为结构化数据。
+          <!-- OpenAI 配置 -->
+          <div id="config-openai" class="provider-config bg-green-50 border border-green-200 rounded-md p-6 mb-6" style="display: none;">
+            <h3 class="text-xl font-semibold text-green-800 mb-4">OpenAI GPT 配置</h3>
+            <div class="mb-4">
+              <label for="openai-api-key" class="block text-sm font-medium text-gray-700 mb-2">OpenAI API Key</label>
+              <input 
+                type="password" 
+                id="openai-api-key" 
+                placeholder="sk-..."
+                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+              <small class="text-xs text-gray-500 mt-1 block">获取API Key: <a href="https://platform.openai.com/api-keys" target="_blank" class="text-green-600 hover:underline">OpenAI Platform</a></small>
+            </div>
+            <div class="mb-4">
+              <label for="openai-model-name" class="block text-sm font-medium text-gray-700 mb-2">模型名称</label>
+              <input 
+                type="text" 
+                id="openai-model-name" 
+                placeholder="输入模型名称，如：gpt-4o"
+                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+              <small class="text-xs text-gray-500 mt-1 block">常用模型：gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-3.5-turbo</small>
+            </div>
+            <div class="mb-4">
+              <label for="openai-api-url" class="block text-sm font-medium text-gray-700 mb-2">API 请求路径</label>
+              <input 
+                type="text" 
+                id="openai-api-url" 
+                placeholder="输入API基础路径"
+                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+              <small class="text-xs text-gray-500 mt-1 block">默认：https://api.openai.com/v1/chat/completions</small>
+            </div>
+            <div class="mb-4">
+              <label class="flex items-center text-sm font-medium text-gray-700">
+                <input type="checkbox" id="openai-enabled" class="mr-2 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"> 
+                启用OpenAI GPT
+              </label>
+            </div>
+            <button 
+              type="button" 
+              class="test-provider-btn bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-md transition" 
+              data-provider="openai"
+            >
+              测试 OpenAI 连接
+            </button>
+          </div>
+
+          <!-- Anthropic Claude 配置 -->
+          <div id="config-anthropic" class="provider-config bg-purple-50 border border-purple-200 rounded-md p-6 mb-6" style="display: none;">
+            <h3 class="text-xl font-semibold text-purple-800 mb-4">Anthropic Claude 配置</h3>
+            <div class="mb-4">
+              <label for="anthropic-api-key" class="block text-sm font-medium text-gray-700 mb-2">Claude API Key</label>
+              <div class="flex gap-2">
+                <input 
+                  type="password" 
+                  id="anthropic-api-key" 
+                  placeholder="sk-ant-..."
+                  class="flex-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                <button 
+                  type="button" 
+                  class="toggle-visibility-btn bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded-md transition" 
+                  data-target="anthropic-api-key"
+                >
+                  显示
+                </button>
+              </div>
+              <small class="text-xs text-gray-500 mt-1 block">获取API Key: <a href="https://console.anthropic.com/account/keys" target="_blank" class="text-purple-600 hover:underline">Anthropic Console</a></small>
+            </div>
+            <div class="mb-4">
+              <label for="anthropic-model-name" class="block text-sm font-medium text-gray-700 mb-2">模型名称</label>
+              <input 
+                type="text" 
+                id="anthropic-model-name" 
+                placeholder="输入模型名称，如：claude-3-5-sonnet-20241022"
+                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+              <small class="text-xs text-gray-500 mt-1 block">常用模型：claude-3-5-sonnet-20241022, claude-3-5-haiku-20241022, claude-3-opus-20240229</small>
+            </div>
+            <div class="mb-4">
+              <label for="anthropic-api-url" class="block text-sm font-medium text-gray-700 mb-2">API 请求路径</label>
+              <input 
+                type="text" 
+                id="anthropic-api-url" 
+                placeholder="输入API基础路径"
+                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+              <small class="text-xs text-gray-500 mt-1 block">默认：https://api.anthropic.com/v1/messages</small>
+            </div>
+            <div class="mb-4">
+              <label class="flex items-center text-sm font-medium text-gray-700">
+                <input type="checkbox" id="anthropic-enabled" class="mr-2 h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"> 
+                启用Anthropic Claude
+              </label>
+            </div>
+            <button 
+              type="button" 
+              class="test-provider-btn bg-purple-500 hover:bg-purple-600 text-white font-medium py-2 px-4 rounded-md transition" 
+              data-provider="anthropic"
+            >
+              测试 Claude 连接
+            </button>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-gray-200">
+            <button 
+              id="test-all-btn" 
+              type="button"
+              class="bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-3 px-6 rounded-md transition w-full mb-3"
+            >
+              测试所有已配置的供应商
+            </button>
+            <p id="ai-status" class="text-sm text-gray-600"></p>
+          </div>
+        </section>
+
+        <section id="prompt-config" class="mb-8">
+          <h2 class="text-2xl font-semibold text-gray-800 mb-6 pb-2 border-b border-gray-200">Prompt 配置</h2>
+          <div class="mb-4">
+            <label for="custom-prompt" class="block text-sm font-medium text-gray-700 mb-2">自定义 Prompt</label>
+            <textarea 
+              id="custom-prompt" 
+              rows="8" 
+              placeholder="请将以下单词查询结果解析为结构化数据。
 你的输出必须是一个纯粹的JSON对象，不要包含任何解释性文字或代码块标记。
 JSON格式如下:
 {
@@ -136,90 +235,144 @@ JSON格式如下:
 待解析的文本如下：
 ---
 ${inputText}
----"></textarea>
-      </div>
-      <button id="reset-prompt-btn">恢复默认</button>
-    </section>
+---"
+              class="w-full p-3 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
+            ></textarea>
+          </div>
+          <button 
+            id="reset-prompt-btn"
+            class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-md transition"
+          >
+            恢复默认
+          </button>
+        </section>
 
-    <section id="anki-config">
-      <h2>AnkiConnect 配置</h2>
-      <button id="test-anki-btn">测试 Anki 连接</button>
-      <p id="anki-status"></p>
-      
-      <div class="form-group">
-        <label for="default-deck">默认牌组</label>
-        <select id="default-deck">
-          <option value="">请先测试 Anki 连接</option>
-        </select>
-      </div>
-      
-      <div class="form-group">
-        <label for="default-model">默认模板</label>
-        <select id="default-model">
-          <option value="">请先测试 Anki 连接</option>
-        </select>
-      </div>
-      
-      <div id="field-mapping" class="form-group" style="display: none;">
-        <h3>字段映射</h3>
-        <div class="field-mapping-container">
-          <!-- 动态生成的字段映射选项将插入这里 -->
-        </div>
-      </div>
-      
-      <button id="refresh-anki-data" style="display: none;">刷新 Anki 数据</button>
-    </section>
+        <section id="anki-config" class="mb-8">
+          <h2 class="text-2xl font-semibold text-gray-800 mb-6 pb-2 border-b border-gray-200">AnkiConnect 配置</h2>
+          <div class="mb-4">
+            <button 
+              id="test-anki-btn"
+              class="bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 px-4 rounded-md transition"
+            >
+              测试 Anki 连接
+            </button>
+            <p id="anki-status" class="text-sm text-gray-600 mt-2"></p>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div>
+              <label for="default-deck" class="block text-sm font-medium text-gray-700 mb-2">默认牌组</label>
+              <select 
+                id="default-deck"
+                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              >
+                <option value="">请先测试 Anki 连接</option>
+              </select>
+            </div>
+            
+            <div>
+              <label for="default-model" class="block text-sm font-medium text-gray-700 mb-2">默认模板</label>
+              <select 
+                id="default-model"
+                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              >
+                <option value="">请先测试 Anki 连接</option>
+              </select>
+            </div>
+          </div>
+          
+          <div id="field-mapping" class="mb-4" style="display: none;">
+            <h3 class="text-lg font-semibold text-gray-700 mb-3">字段映射</h3>
+            <div class="field-mapping-container bg-gray-50 border border-gray-200 rounded-md p-4">
+              <!-- 动态生成的字段映射选项将插入这里 -->
+            </div>
+          </div>
+          
+          <button 
+            id="refresh-anki-data" 
+            style="display: none;"
+            class="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-md transition"
+          >
+            刷新 Anki 数据
+          </button>
+        </section>
 
-    <section id="system-config">
-        <h2>系统设置</h2>
-        <div class="form-group">
-            <label for="language-select">语言</label>
-            <select id="language-select">
-                <option value="zh-CN">简体中文</option>
-                <!-- 预留其他语言 -->
+        <section id="system-config" class="mb-8">
+          <h2 class="text-2xl font-semibold text-gray-800 mb-6 pb-2 border-b border-gray-200">系统设置</h2>
+          <div class="mb-4">
+            <label for="language-select" class="block text-sm font-medium text-gray-700 mb-2">语言</label>
+            <select 
+              id="language-select"
+              class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="zh-CN">简体中文</option>
+              <!-- 预留其他语言 -->
             </select>
-        </div>
-    </section>
+          </div>
+        </section>
 
-    <section id="style-config">
-        <h2>显示样式</h2>
-        <div class="form-group">
-            <label for="font-size-select">字号大小</label>
-            <select id="font-size-select">
+        <section id="style-config" class="mb-8">
+          <h2 class="text-2xl font-semibold text-gray-800 mb-6 pb-2 border-b border-gray-200">显示样式</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div>
+              <label for="font-size-select" class="block text-sm font-medium text-gray-700 mb-2">字号大小</label>
+              <select 
+                id="font-size-select"
+                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
                 <option value="12px">小 (12px)</option>
                 <option value="14px">中 (14px)</option>
                 <option value="16px">大 (16px)</option>
                 <option value="18px">特大 (18px)</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="text-align-select">文本对齐</label>
-            <select id="text-align-select">
+              </select>
+            </div>
+            <div>
+              <label for="text-align-select" class="block text-sm font-medium text-gray-700 mb-2">文本对齐</label>
+              <select 
+                id="text-align-select"
+                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
                 <option value="left">居左</option>
                 <option value="center">居中</option>
                 <option value="right">居右</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="line-height-select">行高</label>
-            <select id="line-height-select">
+              </select>
+            </div>
+            <div>
+              <label for="line-height-select" class="block text-sm font-medium text-gray-700 mb-2">行高</label>
+              <select 
+                id="line-height-select"
+                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
                 <option value="1.2">紧凑 (1.2)</option>
                 <option value="1.4">标准 (1.4)</option>
                 <option value="1.6">宽松 (1.6)</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>样式预览</label>
-            <div id="style-preview" style="border: 1px solid #ccc; padding: 10px; margin-top: 5px; background-color: #f9f9f9;">
-                <div id="preview-content">这是一个示例文本<br>用于预览样式效果</div>
+              </select>
             </div>
-        </div>
-    </section>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">样式预览</label>
+            <div 
+              id="style-preview" 
+              class="border border-gray-300 rounded-md p-4 bg-gray-50"
+            >
+              <div id="preview-content">这是一个示例文本<br>用于预览样式效果</div>
+            </div>
+          </div>
+        </section>
 
-    <footer>
-      <button id="save-btn">保存配置</button>
-      <p id="save-status"></p>
-    </footer>
+        <footer class="mt-8 pt-6 border-t border-gray-200">
+          <div class="flex flex-col items-center space-y-3">
+            <button 
+              id="save-btn"
+              class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-8 rounded-md transition duration-200 w-full md:w-auto"
+            >
+              保存配置
+            </button>
+            <p id="save-status" class="text-sm text-gray-600"></p>
+          </div>
+        </footer>
+      </div>
+    </div>
   </div>
   <script type="module" src="options.js"></script>
 </body>
