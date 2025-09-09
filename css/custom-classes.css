@@ -1,369 +1,58 @@
-/* 自定义功能类 - 补充Tailwind CSS */
+/* カスタム CSS（Tailwind とは別管理）
+   目的: 状態表示やプロバイダ状態 UI など、
+   Tailwind のユーティリティではなく独自意味を持つクラスのみを定義する。 */
 
-/* JavaScript动态状态类 */
-.status-success {
-	color: #10b981; /* green-500 */
-}
-.status-error {
-	color: #ef4444; /* red-500 */
-}
-.status-loading {
-	color: #6b7280; /* gray-500 */
-}
+/* JavaScript から適用する状態色 */
+.status-success { color: #10b981; /* green-500 */ }
+.status-error   { color: #ef4444; /* red-500 */ }
+.status-loading { color: #6b7280; /* gray-500 */ }
 
-/* 供应商状态指示器 */
+/* ステータスインジケータ（丸色ドット） */
 .status-indicator {
-	width: 12px;
-	height: 12px;
-	border-radius: 50%;
-	margin-right: 8px;
-	flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+  flex-shrink: 0;
 }
+.status-indicator.healthy { background-color: #10b981; /* green-500 */ }
+.status-indicator.error   { background-color: #ef4444; /* red-500 */ }
+.status-indicator.unknown { background-color: #6b7280; /* gray-500 */ }
 
-.status-indicator.healthy {
-	background-color: #10b981; /* green-500 */
-}
-
-.status-indicator.error {
-	background-color: #ef4444; /* red-500 */
-}
-
-.status-indicator.unknown {
-	background-color: #6b7280; /* gray-500 */
-}
-
-/* 供应商状态项 */
+/* プロバイダ状態リスト */
 .provider-status-item {
-	display: flex;
-	align-items: center;
-	padding: 8px 12px;
-	border-radius: 4px;
-	background-color: #f9fafb; /* gray-50 */
-	border: 1px solid #e5e7eb; /* gray-200 */
-	margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background-color: #f9fafb; /* gray-50 */
+  border: 1px solid #e5e7eb; /* gray-200 */
+  margin-bottom: 8px;
 }
-
-.provider-status-item.disabled {
-	opacity: 0.6;
-}
-
+.provider-status-item.disabled { opacity: 0.6; }
 .provider-status-item .provider-name {
-	font-weight: 600; /* font-semibold */
-	margin-right: 10px;
-	min-width: 120px;
+  font-weight: 600; /* font-semibold */
+  margin-right: 10px;
+  min-width: 120px;
 }
-
 .status-text {
-	flex: 1;
-	font-size: 0.875rem; /* text-sm */
+  flex: 1;
+  font-size: 0.875rem; /* text-sm */
 }
 
-/* 响应式设计 */
+/* 小画面レイアウト調整 */
 @media (max-width: 768px) {
-	.provider-status-item {
-		flex-direction: column;
-		align-items: flex-start;
-	}
-
-	.provider-status-item .provider-name {
-		min-width: auto;
-		margin-bottom: 5px;
-	}
+  .provider-status-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .provider-status-item .provider-name {
+    min-width: auto;
+    margin-bottom: 5px;
+  }
 }
 
-/* 补充缺失的Tailwind颜色类 */
-/* 背景颜色 */
-.bg-gray-50 {
-	background-color: #f9fafb;
-}
-.bg-gray-200 {
-	background-color: #e5e7eb;
-}
-.bg-gray-300 {
-	background-color: #d1d5db;
-}
-.bg-gray-500 {
-	background-color: #6b7280;
-}
-.bg-gray-600 {
-	background-color: #4b5563;
-}
-
-.bg-blue-50 {
-	background-color: #eff6ff;
-}
-.bg-blue-200 {
-	background-color: #bfdbfe;
-}
-.bg-blue-500 {
-	background-color: #3b82f6;
-}
-.bg-blue-600 {
-	background-color: #2563eb;
-}
-.bg-blue-800 {
-	background-color: #1e40af;
-}
-
-.bg-green-50 {
-	background-color: #f0fdf4;
-}
-.bg-green-200 {
-	background-color: #bbf7d0;
-}
-.bg-green-500 {
-	background-color: #22c55e;
-}
-.bg-green-600 {
-	background-color: #16a34a;
-}
-.bg-green-800 {
-	background-color: #166534;
-}
-
-.bg-purple-50 {
-	background-color: #faf5ff;
-}
-.bg-purple-200 {
-	background-color: #e9d5ff;
-}
-.bg-purple-500 {
-	background-color: #a855f7;
-}
-.bg-purple-600 {
-	background-color: #9333ea;
-}
-.bg-purple-800 {
-	background-color: #6b21a8;
-}
-
-.bg-indigo-500 {
-	background-color: #6366f1;
-}
-.bg-indigo-600 {
-	background-color: #4f46e5;
-}
-
-.bg-orange-500 {
-	background-color: #f97316;
-}
-.bg-orange-600 {
-	background-color: #ea580c;
-}
-
-.bg-white {
-	background-color: #ffffff;
-}
-
-/* 悬停状态 */
-.hover\:bg-gray-300:hover {
-	background-color: #d1d5db;
-}
-.hover\:bg-gray-600:hover {
-	background-color: #4b5563;
-}
-.hover\:bg-blue-600:hover {
-	background-color: #2563eb;
-}
-.hover\:bg-green-600:hover {
-	background-color: #16a34a;
-}
-.hover\:bg-purple-600:hover {
-	background-color: #9333ea;
-}
-.hover\:bg-indigo-600:hover {
-	background-color: #4f46e5;
-}
-.hover\:bg-orange-600:hover {
-	background-color: #ea580c;
-}
-
-/* 文字颜色 */
-.text-white {
-	color: #ffffff;
-}
-.text-gray-500 {
-	color: #6b7280;
-}
-.text-gray-600 {
-	color: #4b5563;
-}
-.text-gray-700 {
-	color: #374151;
-}
-.text-gray-800 {
-	color: #1f2937;
-}
-.text-gray-900 {
-	color: #111827;
-}
-.text-blue-600 {
-	color: #2563eb;
-}
-.text-blue-800 {
-	color: #1e40af;
-}
-.text-green-600 {
-	color: #16a34a;
-}
-.text-green-800 {
-	color: #166534;
-}
-.text-purple-600 {
-	color: #9333ea;
-}
-.text-purple-800 {
-	color: #6b21a8;
-}
-
-/* 边框颜色 */
-.border-gray-200 {
-	border-color: #e5e7eb;
-}
-.border-gray-300 {
-	border-color: #d1d5db;
-}
-.border-blue-200 {
-	border-color: #bfdbfe;
-}
-.border-green-200 {
-	border-color: #bbf7d0;
-}
-.border-purple-200 {
-	border-color: #e9d5ff;
-}
-
-/* 其他常用样式 */
-.font-medium {
-	font-weight: 500;
-}
-.font-semibold {
-	font-weight: 600;
-}
-.font-bold {
-	font-weight: 700;
-}
-.rounded-md {
-	border-radius: 0.375rem;
-}
-.rounded-lg {
-	border-radius: 0.5rem;
-}
-.shadow-md {
-	box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-}
-.transition {
-	transition-property: color, background-color, border-color,
-		text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter,
-		backdrop-filter;
-	transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-	transition-duration: 150ms;
-}
-.duration-200 {
-	transition-duration: 200ms;
-}
-
-/* 布局相关 */
-.w-full {
-	width: 100%;
-}
-.mb-3 {
-	margin-bottom: 0.75rem;
-}
-.py-2 {
-	padding-top: 0.5rem;
-	padding-bottom: 0.5rem;
-}
-.py-3 {
-	padding-top: 0.75rem;
-	padding-bottom: 0.75rem;
-}
-.px-4 {
-	padding-left: 1rem;
-	padding-right: 1rem;
-}
-.px-6 {
-	padding-left: 1.5rem;
-	padding-right: 1.5rem;
-}
-.px-8 {
-	padding-left: 2rem;
-	padding-right: 2rem;
-}
-
-/* 追加ユーティリティ（popup/options 用の不足分） */
-/* レイアウト/サイズ */
-.w-96 {
-	width: 24rem; /* 384px */
-}
-.max-w-2xl {
-	max-width: 42rem; /* 672px */
-}
-.flex-1 {
-	flex: 1 1 0%;
-}
-.grid {
-	display: grid;
-}
-.grid-cols-1 {
-	grid-template-columns: repeat(1, minmax(0, 1fr));
-}
-.gap-2 { gap: 0.5rem; }
-.gap-4 { gap: 1rem; }
-
-/* 角丸/境界線 */
-.rounded-t-lg {
-	border-top-left-radius: 0.5rem;
-	border-top-right-radius: 0.5rem;
-}
-.border-t { border-top-width: 1px; }
-
-/* 余白 */
-.mt-8 { margin-top: 2rem; }
-.mb-8 { margin-bottom: 2rem; }
-.pt-4 { padding-top: 1rem; }
-.pt-6 { padding-top: 1.5rem; }
-.pb-2 { padding-bottom: 0.5rem; }
-.py-8 {
-	padding-top: 2rem;
-	padding-bottom: 2rem;
-}
-
-/* テキスト */
-.text-center { text-align: center; }
-.font-mono {
-	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-		"Liberation Mono", "Courier New", monospace;
-}
-
-/* space-y-3（縦方向のギャップ） */
-.space-y-3 > :not([hidden]) ~ :not([hidden]){
-	--tw-space-y-reverse: 0;
-	margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));
-	margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));
-}
-
-/* ホバー/フォーカス/ディスエーブル variants */
-.hover\:underline:hover { text-decoration: underline; }
-
-.focus\:border-blue-500:focus { border-color: #3b82f6; }
-.focus\:border-orange-500:focus { border-color: #f97316; }
-.focus\:ring-blue-500:focus { box-shadow: 0 0 0 2px rgba(59,130,246,0.5); }
-.focus\:ring-green-500:focus { box-shadow: 0 0 0 2px rgba(34,197,94,0.5); }
-.focus\:ring-purple-500:focus { box-shadow: 0 0 0 2px rgba(168,85,247,0.5); }
-.focus\:ring-orange-500:focus { box-shadow: 0 0 0 2px rgba(249,115,22,0.5); }
-
-.disabled\:opacity-50:disabled { opacity: 0.5; }
-.disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
-
-/* レスポンシブ（md: 768px～）*/
-@media (min-width: 768px) {
-	.md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-	.md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-	.md\:w-auto { width: auto; }
-}
-
-/* ページ固有のクラス（フック用。必要に応じて拡張） */
+/* フック用クラス（見た目は未定義。DOM/JS セレクタ用） */
 .input-section {}
 .action-section {}
 .result-section {}

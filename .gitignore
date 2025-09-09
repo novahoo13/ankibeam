@@ -1,0 +1,33 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Env
+.env*
+
+# Editor/OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Caches
+.cache/
+.parcel-cache/
+
+# Tests/coverage
+coverage/
+
+# Build outputs (keep CSS built file committed for extension packaging)
+# dist/
+# build/
+
+# Local backups
+*.swp
+*.swo
+*.tmp
+~$*
+

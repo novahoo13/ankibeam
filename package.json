@@ -1,0 +1,14 @@
+{
+  "name": "anki-word-assistant",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser extension for Anki word assistant",
+  "scripts": {
+    "css:build": "tailwindcss -i styles/input.css -o css/tailwind.min.css --minify",
+    "css:watch": "tailwindcss -i styles/input.css -o css/tailwind.min.css --minify --watch",
+    "dev": "npm run css:watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.13"
+  }
+}
