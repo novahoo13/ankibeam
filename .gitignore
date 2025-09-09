@@ -31,3 +31,29 @@ coverage/
 *.tmp
 ~$*
 
+#
+AGENTS.md
+ 
+# Additional ignores (safe additions)
+# Local AI/assistant settings
+.claude/
+
+# Backup/temporary files
+**/*.backup
+**/__backup_*
+**/*.bak
+**/*.old
+
+# CSS sourcemaps (keep built CSS committed)
+css/*.map
+
+# OS/filesystem noise
+desktop.ini
+
+# Extension packaging artifacts
+web-ext-artifacts/
+*.zip
+
+# Optional logs
+logs/
+*.log
