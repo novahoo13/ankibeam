@@ -1,28 +1,28 @@
 {
-  "manifest_version": 3,
-  "name": "Anki Word Assistant",
-  "version": "1.0",
-  "description": "An AI-powered assistant to help create Anki cards from dictionary lookup results.",
-  "permissions": [
-    "storage"
-  ],
-  "host_permissions": [
-    "http://127.0.0.1:8765/*",
-    "https://*.googleapis.com/*"
-  ],
-  "action": {
-    "default_popup": "popup/popup.html",
-    "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    }
-  },
-  "options_page": "options/options.html",
-  "default_locale": "zh_CN",
-  "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
-  }
+	"manifest_version": 3,
+	"name": "Anki Word Assistant",
+	"version": "1.0",
+	"description": "An AI-powered assistant to help create Anki cards from dictionary lookup results.",
+	"permissions": ["storage"],
+	"host_permissions": [
+		"http://127.0.0.1:8765/*",
+		"https://*.googleapis.com/*",
+		"https://api.openai.com/*",
+		"https://api.anthropic.com/*"
+	],
+	"action": {
+		"default_popup": "popup/popup.html",
+		"default_icon": {
+			"16": "icons/icon16.png",
+			"48": "icons/icon48.png",
+			"128": "icons/icon128.png"
+		}
+	},
+	"options_page": "options/options.html",
+	"default_locale": "zh_CN",
+	"icons": {
+		"16": "icons/icon16.png",
+		"48": "icons/icon48.png",
+		"128": "icons/icon128.png"
+	}
 }
