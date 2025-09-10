@@ -18,6 +18,9 @@ let currentModelFields = [];
 const API_KEY_PLACEHOLDER = '********';
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Tab导航初始化
+  initTabNavigation();
+  
   // 設定のロードと表示
   loadAndDisplayConfig();
 
@@ -541,5 +544,87 @@ function updateStatus(elementId, message, type) {
   const statusElement = document.getElementById(elementId);
   statusElement.textContent = message;
   statusElement.className = `status-${type}`;
+}
+
+/**
+ * Tab导航初始化函数
+ */
+function initTabNavigation() {
+  const tabButtons = document.querySelectorAll('.settings-tab-btn');
+  const tabContents = document.querySelectorAll('.tab-content');
+  
+  tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const targetTab = button.getAttribute('data-tab');
+      
+      // 移除所有active状态
+      tabButtons.forEach(btn => {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-selected', 'false');
+        // 重置按钮样式
+        btn.classList.remove('text-slate-600', 'bg-slate-50', 'border-slate-500');
+        btn.classList.add('text-gray-500', 'border-transparent');
+      });
+      
+      tabContents.forEach(content => {
+        content.classList.remove('active');
+      });
+      
+      // 设置当前按钮为active
+      button.classList.add('active');
+      button.setAttribute('aria-selected', 'true');
+      button.classList.remove('text-gray-500', 'border-transparent');
+      button.classList.add('text-slate-600', 'bg-slate-50', 'border-slate-500');
+      
+      // 显示对应内容
+      const targetContent = document.getElementById(targetTab);
+      if (targetContent) {
+        targetContent.classList.add('active');
+      }
+    });
+    
+    // 键盘支持
+    button.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        button.click();
+      }
+      
+      // 左右箭头键导航
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        const currentIndex = Array.from(tabButtons).indexOf(button);
+        const nextIndex = e.key === 'ArrowLeft' 
+          ? (currentIndex - 1 + tabButtons.length) % tabButtons.length
+          : (currentIndex + 1) % tabButtons.length;
+        
+        tabButtons[nextIndex].focus();
+        tabButtons[nextIndex].click();
+      }
+    });
+  });
+}
+
+/**
+ * 可选：URL hash路由支持
+ */
+function initTabRouting() {
+  // 监听hash变化
+  window.addEventListener('hashchange', () => {
+    const hash = window.location.hash.slice(1);
+    const targetButton = document.querySelector(`[data-tab="${hash}"]`);
+    if (targetButton) {
+      targetButton.click();
+    }
+  });
+  
+  // 页面加载时根据hash设置初始tab
+  if (window.location.hash) {
+    const hash = window.location.hash.slice(1);
+    const targetButton = document.querySelector(`[data-tab="${hash}"]`);
+    if (targetButton) {
+      targetButton.click();
+    }
+  }
 }
 
