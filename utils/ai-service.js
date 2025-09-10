@@ -7,23 +7,23 @@ import { loadConfig, saveConfig } from './storage.js';
 // AI 供应商配置
 const PROVIDERS = {
   google: {
-    defaultModel: 'gemini-1.5-flash',
-    supportedModels: ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-1.0-pro'],
-    testModel: 'gemini-1.5-flash',
+    defaultModel: 'gemini-2.5-flash-lite',
+    supportedModels: ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.5-flash-lite'],
+    testModel: 'gemini-2.5-flash-lite',
     apiUrl: 'https://generativelanguage.googleapis.com/v1beta/models',
     name: 'Google Gemini'
   },
   openai: {
     defaultModel: 'gpt-4o',
-    supportedModels: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'],
+    supportedModels: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-5'],
     testModel: 'gpt-4o-mini',
     apiUrl: 'https://api.openai.com/v1/chat/completions',
     name: 'OpenAI GPT'
   },
   anthropic: {
-    defaultModel: 'claude-3-5-sonnet-20241022',
-    supportedModels: ['claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022', 'claude-3-opus-20240229'],
-    testModel: 'claude-3-5-haiku-20241022',
+    defaultModel: 'claude-3-7-sonnet-all',
+    supportedModels: ['claude-3-7-sonnet-all', 'claude-sonnet-4-all', 'claude-opus-4-all'],
+    testModel: 'claude-3-7-sonnet-all',
     apiUrl: 'https://api.anthropic.com/v1/messages',
     name: 'Anthropic Claude'
   }
@@ -295,14 +295,34 @@ export async function parseText(inputText, promptTemplate) {
 /**
  * 测试 AI 服务连接
  * @param {string} provider - 供应商名称
- * @param {string} apiKey - 用于测试的 API Key
- * @param {string} modelName - 用于测试的模型名称
+ * @param {string|object} apiKeyOrOptions - API Key 或选项对象
+ * @param {string} modelName - 用于测试的模型名称（仅当第二个参数为 API Key 时使用）
  * @returns {Promise<{success: boolean, message: string}>} - 测试结果
  */
-export async function testConnection(provider, apiKey, modelName) {
+export async function testConnection(provider, apiKeyOrOptions, modelName) {
   try {
-    if (!apiKey) {
-      throw new Error('API Key不能为空');
+    let apiKey, testModelName;
+    
+    // 处理不同的调用方式
+    if (typeof apiKeyOrOptions === 'object' && apiKeyOrOptions !== null) {
+      // 单个测试调用方式: testConnection(provider, {modelName: ...})
+      const config = await loadConfig();
+      const providerConfig = config?.aiConfig?.models?.[provider];
+      
+      if (!providerConfig?.apiKey) {
+        throw new Error('API Key不能为空');
+      }
+      
+      apiKey = providerConfig.apiKey;
+      testModelName = apiKeyOrOptions.modelName || providerConfig.modelName;
+    } else {
+      // 批量测试调用方式: testConnection(provider, apiKey, modelName)
+      apiKey = apiKeyOrOptions;
+      testModelName = modelName;
+      
+      if (!apiKey) {
+        throw new Error('API Key不能为空');
+      }
     }
 
     const providerConfig = PROVIDERS[provider];
@@ -311,7 +331,7 @@ export async function testConnection(provider, apiKey, modelName) {
     }
 
     // 使用测试模型或指定模型
-    const testModel = modelName || providerConfig.testModel;
+    const testModel = testModelName || providerConfig.testModel;
 
     // 发送简单的测试请求
     const responseText = await callProviderAPI(provider, apiKey, testModel, '测试连接，请回复"连接成功"', {
