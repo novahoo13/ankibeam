@@ -2,6 +2,15 @@
    目的: 状態表示やプロバイダ状態 UI など、
    Tailwind のユーティリティではなく独自意味を持つクラスのみを定義する。 */
 
+/* 状态消息容器 - 固定高度避免布局跳动 */
+.status-message {
+  min-height: 1.5em; /* 确保至少1行高度 */
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* JavaScript から適用する状態色 */
 .status-success { color: #10b981; /* green-500 */ }
 .status-error   { color: #ef4444; /* red-500 */ }
