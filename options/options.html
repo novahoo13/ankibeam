@@ -130,15 +130,10 @@
           </div>
 
           <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-3">连接状态</label>
-            <div id="provider-status" class="bg-gray-50 border border-gray-200 rounded-md p-4 mb-3">
-              <!-- 运行时填充各提供商状态 -->
+            <label class="block text-sm font-medium text-gray-700 mb-3">当前提供商状态</label>
+            <div id="current-provider-status" class="bg-gray-50 border border-gray-200 rounded-md p-4">
+              <!-- 运行时填充当前选中提供商状态 -->
             </div>
-            <button 
-              id="refresh-status-btn" 
-              type="button"
-              class="bg-slate-500 hover:bg-slate-600 text-white font-medium py-2 px-4 rounded-md transition duration-200"
-            >刷新状态</button>
           </div>
 
           <!-- Google Gemini 配置 -->
@@ -287,11 +282,6 @@
           </div>
 
           <div class="mt-6 pt-4 border-t border-gray-200">
-            <button 
-              id="test-all-btn" 
-              type="button"
-              class="bg-slate-700 hover:bg-slate-800 text-white font-medium py-3 px-6 rounded-md transition w-full mb-3"
-            >测试所有提供商连接</button>
             <p id="ai-status" class="text-sm text-gray-600"></p>
           </div>
             </div>

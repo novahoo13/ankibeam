@@ -41,8 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // AIプロバイダ関連
   document.getElementById('ai-provider').addEventListener('change', handleProviderChange);
-  document.getElementById('refresh-status-btn').addEventListener('click', refreshProviderStatus);
-  document.getElementById('test-all-btn').addEventListener('click', handleTestAllProviders);
   
   // APIキーの表示切替
   setupApiKeyInputs();
@@ -64,8 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('text-align-select').addEventListener('change', updateStylePreview);
   document.getElementById('line-height-select').addEventListener('change', updateStylePreview);
 
-  // 初回の状態更新
-  refreshProviderStatus();
+  // 初始显示当前选中提供商状态
+  updateCurrentProviderStatus();
 });
 
 /**
@@ -794,9 +792,9 @@ async function handleSave() {
 
     updateStatus('save-status', '设置已保存', 'success');
 
-    // 保存後に状態更新
+    // 保存后更新当前提供商状态
     setTimeout(() => {
-      refreshProviderStatus();
+      updateCurrentProviderStatus();
     }, 500);
 
   } catch (error) {
@@ -896,82 +894,92 @@ async function handleTestAnki() {
  */
 function handleProviderChange() {
   const selectedProvider = document.getElementById('ai-provider').value;
-  
+
   // 先隐藏全部
   document.querySelectorAll('.provider-config').forEach(config => {
     config.style.display = 'none';
   });
-  
+
   // 显示选中项
   const activeConfig = document.getElementById(`config-${selectedProvider}`);
   if (activeConfig) {
     activeConfig.style.display = 'block';
   }
+
+  // 更新当前提供商状态显示
+  updateCurrentProviderStatus();
 }
 
 /**
- * 刷新各提供商状态
+ * 更新当前选中提供商状态
  */
-async function refreshProviderStatus() {
+async function updateCurrentProviderStatus() {
   try {
+    const selectedProvider = document.getElementById('ai-provider').value;
     const health = await getProvidersHealth();
-    const statusContainer = document.getElementById('provider-status');
-    
-    statusContainer.innerHTML = '';
-    
+    const statusContainer = document.getElementById('current-provider-status');
+
+    if (!selectedProvider || !health[selectedProvider]) {
+      statusContainer.innerHTML = '<p class="text-gray-500">未选择提供商</p>';
+      return;
+    }
+
+    const status = health[selectedProvider];
     const providerNames = {
       google: 'Google Gemini',
       openai: 'OpenAI GPT',
       anthropic: 'Anthropic Claude'
     };
-    
-    Object.entries(health).forEach(([provider, status]) => {
-      const statusItem = document.createElement('div');
-      statusItem.className = `provider-status-item ${status.enabled ? '' : 'disabled'}`;
-      
-      const indicator = document.createElement('div');
-      indicator.className = `status-indicator ${status.status}`;
-      
-      const providerName = document.createElement('div');
-      providerName.className = 'provider-name';
-      providerName.textContent = providerNames[provider] || provider;
-      
-      const statusText = document.createElement('div');
-      statusText.className = 'status-text';
-      
-      let statusMessage = '';
-      if (!status.hasApiKey) {
-        statusMessage = '未设置 API Key';
-      } else if (!status.enabled) {
-        statusMessage = '未启用';
-      } else {
-        switch (status.status) {
-          case 'healthy':
-            statusMessage = '连接正常';
-            break;
-          case 'error':
-            statusMessage = `异常: ${status.lastError || '未知错误'}`;
-            break;
-          default:
-            statusMessage = '未知';
-        }
+
+    const statusItem = document.createElement('div');
+    statusItem.className = `provider-status-item ${status.enabled ? '' : 'disabled'}`;
+
+    const indicator = document.createElement('div');
+    indicator.className = `status-indicator ${status.status}`;
+
+    const providerName = document.createElement('div');
+    providerName.className = 'provider-name';
+    providerName.textContent = providerNames[selectedProvider] || selectedProvider;
+
+    const statusText = document.createElement('div');
+    statusText.className = 'status-text';
+
+    let statusMessage = '';
+    if (!status.hasApiKey) {
+      statusMessage = '未设置 API Key';
+    } else if (!status.enabled) {
+      statusMessage = '未启用';
+    } else {
+      switch (status.status) {
+        case 'healthy':
+          statusMessage = '连接正常';
+          break;
+        case 'error':
+          statusMessage = `异常: ${status.lastError || '未知错误'}`;
+          break;
+        default:
+          statusMessage = '未知状态';
       }
-      
-      if (status.lastCheck) {
-        const checkTime = new Date(status.lastCheck).toLocaleString();
-        statusMessage += `（上次检查: ${checkTime}）`;
-      }
-      
-      statusText.textContent = statusMessage;
-      
-      statusItem.appendChild(indicator);
-      statusItem.appendChild(providerName);
-      statusItem.appendChild(statusText);
-      statusContainer.appendChild(statusItem);
-    });
-    
+    }
+
+    if (status.lastCheck) {
+      const checkTime = new Date(status.lastCheck).toLocaleString();
+      statusMessage += ` (检查时间: ${checkTime})`;
+    }
+
+    statusText.textContent = statusMessage;
+
+    statusItem.appendChild(indicator);
+    statusItem.appendChild(providerName);
+    statusItem.appendChild(statusText);
+
+    statusContainer.innerHTML = '';
+    statusContainer.appendChild(statusItem);
+
   } catch (error) {
-    console.error('刷新状态出错:', error);
+    console.error('更新状态出错:', error);
+    const statusContainer = document.getElementById('current-provider-status');
+    statusContainer.innerHTML = '<p class="text-red-500">状态获取失败</p>';
   }
 }
 
@@ -991,53 +999,16 @@ async function handleTestProvider(provider) {
     } else {
       updateStatus('ai-status', result.message, 'error');
     }
-    
-    // 刷新状态
-    refreshProviderStatus();
-    
+
+    // 刷新当前提供商状态
+    updateCurrentProviderStatus();
+
   } catch (error) {
     console.error(`${provider} 测试失败:`, error);
     updateStatus('ai-status', `测试失败: ${error.message}`, 'error');
   }
 }
 
-/**
- * 测试全部提供商连接
- */
-async function handleTestAllProviders() {
-  updateStatus('ai-status', '正在测试全部连接...', 'loading');
-  
-  try {
-    const results = await testAllProviders();
-    
-    let successCount = 0;
-    let totalCount = 0;
-    let messages = [];
-    
-    Object.entries(results).forEach(([provider, result]) => {
-      totalCount++;
-      if (result.success) {
-        successCount++;
-        messages.push(`✓ ${provider}: ${result.message}`);
-      } else {
-        messages.push(`✗ ${provider}: ${result.message}`);
-      }
-    });
-    
-    const statusType = successCount === totalCount ? 'success' :
-                      successCount === 0 ? 'error' : 'loading';
-                      
-    const summary = `通过数: ${successCount}/${totalCount}`;
-    updateStatus('ai-status', `${summary}\n${messages.join('\n')}`, statusType);
-    
-    // 刷新状态
-    refreshProviderStatus();
-    
-  } catch (error) {
-    console.error('测试全部连接出错:', error);
-    updateStatus('ai-status', `出错: ${error.message}`, 'error');
-  }
-}
 
 /**
  * 读取 Anki 数据（牌组/模型）
