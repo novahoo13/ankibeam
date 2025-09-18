@@ -3,7 +3,7 @@
 
 import { saveConfig, loadConfig, getDefaultConfig } from '../utils/storage.js';
 import { testConnection as testAnki, getDeckNames, getModelNames, getModelFieldNames } from '../utils/ankiconnect.js';
-import { testConnection as testAi, getProvidersHealth, testAllProviders } from '../utils/ai-service.js';
+import { testConnection as testAi, getProvidersHealth, testCurrentProvider } from '../utils/ai-service.js';
 import { loadPromptForModel, savePromptForModel } from '../utils/prompt-engine.js';
 
 // APIキーの実値（DOMには伏せ字を表示）
