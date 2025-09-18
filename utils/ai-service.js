@@ -3,6 +3,7 @@
 // 使用原生 fetch API 实现
 
 import { loadConfig, saveConfig } from './storage.js';
+import { buildIntegratedPrompt, validateAIOutput } from './prompt-engine.js';
 
 // AI 供应商配置
 const PROVIDERS = {
@@ -500,7 +501,7 @@ export async function getProvidersHealth() {
 export async function testAllProviders() {
   const config = await loadConfig();
   const results = {};
-  
+
   for (const [provider, providerConfig] of Object.entries(config.aiConfig.models)) {
     if (!providerConfig.apiKey) {
       results[provider] = {
@@ -509,11 +510,11 @@ export async function testAllProviders() {
       };
       continue;
     }
-    
+
     try {
       results[provider] = await testConnection(
-        provider, 
-        providerConfig.apiKey, 
+        provider,
+        providerConfig.apiKey,
         providerConfig.modelName
       );
     } catch (error) {
@@ -523,6 +524,222 @@ export async function testAllProviders() {
       };
     }
   }
-  
+
   return results;
+}
+
+/**
+ * 使用动态字段进行AI解析 (增强版本，包含JSON验证和重试机制)
+ * @param {string} inputText - 用户输入的文本
+ * @param {string[]} fieldNames - 字段名数组
+ * @param {string} [customTemplate] - 自定义prompt模板
+ * @param {number} [maxRetries=2] - 最大重试次数
+ * @returns {Promise<object>} - 解析后的动态字段对象
+ */
+export async function parseTextWithDynamicFields(inputText, fieldNames, customTemplate, maxRetries = 2) {
+  const { provider, apiKey, modelName } = await getCurrentModel();
+  const integratedPrompt = buildIntegratedPrompt(inputText, fieldNames, customTemplate);
+
+  let retryCount = 0;
+  let lastError = null;
+
+  while (retryCount <= maxRetries) {
+    try {
+      const retryPrefix = retryCount > 0 ? `[重试${retryCount}/${maxRetries}] ` : '';
+      console.log(`${retryPrefix}使用 ${provider} (${modelName}) 进行一体化解析`);
+
+      // 根据重试次数调整temperature
+      const temperature = retryCount === 0 ? 0.3 : Math.max(0.1, 0.3 - retryCount * 0.1);
+
+      const responseText = await callProviderAPI(provider, apiKey, modelName, integratedPrompt, {
+        temperature: temperature,
+        maxTokens: 2000
+      });
+
+      // 验证AI输出
+      const validation = validateAIOutput(responseText, fieldNames);
+
+      if (!validation.isValid) {
+        const errorMsg = validation.error || `输出包含无效字段: ${validation.invalidFields?.join(', ')}`;
+
+        // 如果是JSON解析错误且还有重试机会，继续重试
+        if (validation.error && validation.error.includes('JSON解析失败') && retryCount < maxRetries) {
+          console.warn(`JSON解析失败，降低temperature重试: ${errorMsg}`);
+          throw new Error(errorMsg);
+        }
+
+        // 否则直接抛出错误
+        throw new Error(errorMsg);
+      }
+
+      if (!validation.hasContent) {
+        const errorMsg = 'AI输出的所有字段都为空，请检查输入内容或重试';
+
+        // 空内容错误可以重试
+        if (retryCount < maxRetries) {
+          console.warn('输出为空，重试...');
+          throw new Error(errorMsg);
+        }
+
+        throw new Error(errorMsg);
+      }
+
+      // 成功解析
+      await updateProviderHealth(provider, 'healthy');
+
+      if (retryCount > 0) {
+        console.log(`经过 ${retryCount} 次重试后成功解析`);
+      }
+
+      return validation.parsedData;
+
+    } catch (error) {
+      lastError = error;
+      retryCount++;
+
+      if (retryCount <= maxRetries) {
+        // 等待递增延迟后重试
+        const delay = 1000 * retryCount;
+        console.warn(`解析失败，${delay}ms后重试 (${retryCount}/${maxRetries}): ${error.message}`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        // 超过重试次数，更新健康状态并抛出错误
+        await updateProviderHealth(provider, 'error', error.message);
+        throw new Error(`AI解析失败: ${lastError.message}`);
+      }
+    }
+  }
+}
+
+/**
+ * 带回退机制的动态字段解析
+ * @param {string} inputText - 用户输入的文本
+ * @param {string[]} fieldNames - 字段名数组
+ * @param {string} [customTemplate] - 自定义prompt模板
+ * @param {number} [maxRetries=2] - 每个provider的最大重试次数
+ * @returns {Promise<object>} - 解析后的动态字段对象
+ */
+export async function parseTextWithDynamicFieldsFallback(inputText, fieldNames, customTemplate, maxRetries = 2) {
+  const config = await loadConfig();
+  const primaryProvider = config.aiConfig.provider;
+  const fallbackOrder = config.aiConfig.fallbackOrder || ['google', 'openai', 'anthropic'];
+
+  // 构建尝试顺序：当前主供应商 + 其他可用供应商
+  const providersToTry = [primaryProvider, ...fallbackOrder.filter(p => p !== primaryProvider)];
+
+  let lastError = null;
+
+  for (const provider of providersToTry) {
+    const providerConfig = config.aiConfig.models[provider];
+
+    // 跳过没有API Key的供应商
+    if (!providerConfig?.apiKey || !providerConfig.enabled) {
+      console.log(`跳过 ${provider}：未配置或未启用`);
+      continue;
+    }
+
+    // 对每个provider进行重试
+    let retryCount = 0;
+    let providerLastError = null;
+
+    while (retryCount <= maxRetries) {
+      try {
+        const retryPrefix = retryCount > 0 ? `[重试${retryCount}/${maxRetries}] ` : '';
+        console.log(`${retryPrefix}尝试使用 ${provider} 进行动态字段解析...`);
+
+        const { apiKey, modelName } = await getCurrentModel(provider);
+        const integratedPrompt = buildIntegratedPrompt(inputText, fieldNames, customTemplate);
+
+        // 根据重试次数调整temperature
+        const temperature = retryCount === 0 ? 0.3 : Math.max(0.1, 0.3 - retryCount * 0.1);
+
+        const responseText = await callProviderAPI(provider, apiKey, modelName, integratedPrompt, {
+          temperature: temperature,
+          maxTokens: 2000
+        });
+
+        // 验证AI输出
+        const validation = validateAIOutput(responseText, fieldNames);
+
+        if (!validation.isValid) {
+          const errorMsg = validation.error || `输出包含无效字段: ${validation.invalidFields?.join(', ')}`;
+
+          // 如果是JSON解析错误且还有重试机会，继续重试
+          if (validation.error && validation.error.includes('JSON解析失败') && retryCount < maxRetries) {
+            console.warn(`${provider} JSON解析失败，降低temperature重试: ${errorMsg}`);
+            throw new Error(errorMsg);
+          }
+
+          // 如果是字段验证错误，不重试直接跳到下一个provider
+          throw new Error(errorMsg);
+        }
+
+        if (!validation.hasContent) {
+          const errorMsg = 'AI输出的所有字段都为空';
+
+          // 空内容错误可以重试
+          if (retryCount < maxRetries) {
+            console.warn(`${provider} 输出为空，重试...`);
+            throw new Error(errorMsg);
+          }
+
+          throw new Error(errorMsg);
+        }
+
+        // 成功解析，更新供应商健康状态
+        await updateProviderHealth(provider, 'healthy');
+
+        // 如果使用了备用供应商或重试，记录日志
+        if (provider !== primaryProvider) {
+          console.warn(`主供应商 ${primaryProvider} 不可用，使用备用方案 ${provider}`);
+        }
+        if (retryCount > 0) {
+          console.log(`${provider} 经过 ${retryCount} 次重试后成功解析`);
+        }
+
+        return validation.parsedData;
+
+      } catch (error) {
+        providerLastError = error;
+        retryCount++;
+
+        if (retryCount <= maxRetries) {
+          // 等待递增延迟后重试
+          const delay = 1000 * retryCount;
+          console.warn(`${provider} 解析失败，${delay}ms后重试 (${retryCount}/${maxRetries}): ${error.message}`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        } else {
+          // 超过重试次数，跳到下一个provider
+          console.error(`${provider} 经过 ${maxRetries} 次重试后仍然失败: ${error.message}`);
+          await updateProviderHealth(provider, 'error', error.message);
+          lastError = providerLastError;
+          break; // 跳出重试循环，继续尝试下一个provider
+        }
+      }
+    }
+  }
+
+  // 所有动态解析都失败，尝试降级到legacy模式
+  console.warn('所有provider的动态字段解析都失败，尝试降级到legacy模式');
+  try {
+    const legacyResult = await parseTextWithFallback(inputText, customTemplate || '');
+
+    // 返回降级结果，但要适配到动态字段格式
+    const adaptedResult = {};
+    if (fieldNames.length >= 1) adaptedResult[fieldNames[0]] = legacyResult.front || '';
+    if (fieldNames.length >= 2) adaptedResult[fieldNames[1]] = legacyResult.back || '';
+
+    console.log('降级到legacy模式成功，返回适配结果');
+    return adaptedResult;
+
+  } catch (legacyError) {
+    throw new Error(`动态字段解析失败: ${lastError?.message}。降级到legacy模式也失败: ${legacyError.message}`);
+  }
+}
+
+/**
+ * 保持向后兼容的legacy解析函数（原parseText函数的重命名版本）
+ */
+export async function parseTextLegacy(inputText, promptTemplate) {
+  return await parseText(inputText, promptTemplate);
 }

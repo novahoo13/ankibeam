@@ -2,6 +2,7 @@
   "name": "anki-word-assistant",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "Browser extension for Anki word assistant",
   "scripts": {
     "css:build": "tailwindcss -i styles/input.css -o styles/tailwind.min.css --minify",

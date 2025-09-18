@@ -2,7 +2,7 @@
 // 使用 chrome.storage.local API 来存储和读取配置
 
 const CONFIG_KEY = 'ankiWordAssistantConfig';
-const CONFIG_VERSION = '2.0'; // 配置版本，用于数据迁移
+const CONFIG_VERSION = '2.1'; // 配置版本，用于数据迁移
 
 // --- 加密参数 ---
 // 警告: 在客户端代码中硬编码密钥和盐值本质上不是完全安全的，
@@ -44,13 +44,18 @@ const DEFAULT_CONFIG = {
     fallbackOrder: ['google', 'openai', 'anthropic']
   },
   promptTemplates: {
-    custom: ''
+    custom: '',
+    promptTemplatesByModel: {} // 新增：按模板存储的prompt配置
   },
   ankiConfig: {
     defaultDeck: '',
     defaultModel: '',
     modelFields: [], // 新增：用于存储当前模板的字段列表
+    promptTemplatesByModel: {}, // 新增：按模板存储的prompt配置（向后兼容）
     defaultTags: []
+  },
+  ui: {
+    fieldDisplayMode: 'auto' // auto|legacy|dynamic
   },
   styleConfig: {
     fontSize: '14px',
@@ -174,18 +179,53 @@ function migrateConfig(oldConfig) {
     };
   }
   
+  // 处理v2.0到v2.1的迁移
+  if (oldConfig.version === '2.0') {
+    console.log('从版本2.0迁移到2.1...');
+    // 保持现有配置不变，添加新字段
+    if (!newConfig.ankiConfig.promptTemplatesByModel) {
+      newConfig.ankiConfig.promptTemplatesByModel = {};
+    }
+    if (!newConfig.ui) {
+      newConfig.ui = { fieldDisplayMode: 'auto' };
+    }
+    if (!newConfig.promptTemplates.promptTemplatesByModel) {
+      newConfig.promptTemplates.promptTemplatesByModel = {};
+    }
+  }
+
   // 迁移其他配置
   if (oldConfig.promptTemplates) {
-    newConfig.promptTemplates = { ...oldConfig.promptTemplates };
+    newConfig.promptTemplates = {
+      ...newConfig.promptTemplates,
+      ...oldConfig.promptTemplates
+    };
+    // 确保新字段存在
+    if (!newConfig.promptTemplates.promptTemplatesByModel) {
+      newConfig.promptTemplates.promptTemplatesByModel = {};
+    }
   }
   if (oldConfig.ankiConfig) {
-    newConfig.ankiConfig = { ...oldConfig.ankiConfig };
+    newConfig.ankiConfig = {
+      ...newConfig.ankiConfig,
+      ...oldConfig.ankiConfig
+    };
+    // 确保新字段存在
+    if (!newConfig.ankiConfig.modelFields) {
+      newConfig.ankiConfig.modelFields = [];
+    }
+    if (!newConfig.ankiConfig.promptTemplatesByModel) {
+      newConfig.ankiConfig.promptTemplatesByModel = {};
+    }
   }
   if (oldConfig.styleConfig) {
     newConfig.styleConfig = { ...oldConfig.styleConfig };
   }
   if (oldConfig.language) {
     newConfig.language = oldConfig.language;
+  }
+  if (oldConfig.ui) {
+    newConfig.ui = { ...newConfig.ui, ...oldConfig.ui };
   }
 
   console.log('配置迁移完成');

@@ -15,6 +15,7 @@
 .status-success { color: #10b981; /* green-500 */ }
 .status-error   { color: #ef4444; /* red-500 */ }
 .status-loading { color: #6b7280; /* gray-500 */ }
+.status-warning { color: #f59e0b; /* amber-500 */ }
 
 /* ステータスインジケータ（丸色ドット） */
 .status-indicator {
@@ -59,6 +60,27 @@
     min-width: auto;
     margin-bottom: 5px;
   }
+}
+
+/* 动态字段状态样式 */
+.filled {
+  border-color: #10b981 !important; /* green-500 */
+  background-color: #f0fdf4; /* green-50 */
+}
+
+.partially-filled {
+  border-color: #f59e0b !important; /* amber-500 */
+  background-color: #fffbeb; /* amber-50 */
+}
+
+.empty {
+  border-color: #e5e7eb; /* gray-200 */
+  background-color: #ffffff;
+}
+
+/* 字段填充状态动画 */
+.filled, .partially-filled, .empty {
+  transition: border-color 0.3s ease, background-color 0.3s ease;
 }
 
 /* フック用クラス（見た目は未定義。DOM/JS セレクタ用） */

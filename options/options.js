@@ -4,6 +4,7 @@
 import { saveConfig, loadConfig } from '../utils/storage.js';
 import { testConnection as testAnki, getDeckNames, getModelNames, getModelFieldNames } from '../utils/ankiconnect.js';
 import { testConnection as testAi, getProvidersHealth, testAllProviders } from '../utils/ai-service.js';
+import { loadPromptForModel, savePromptForModel } from '../utils/prompt-engine.js';
 
 // APIキーの実値（DOMには伏せ字を表示）
 let actualApiKeys = {
@@ -14,6 +15,9 @@ let actualApiKeys = {
 
 // 現在のモデルフィールド一覧
 let currentModelFields = [];
+
+// 現在の設定オブジェクト
+let currentConfig = {};
 
 const API_KEY_PLACEHOLDER = '********';
 
@@ -113,6 +117,7 @@ function handleToggleVisibility(e) {
  */
 async function loadAndDisplayConfig() {
   const config = await loadConfig();
+  currentConfig = config;
 
   // AI設定
   const aiConfig = config?.aiConfig || {};
@@ -149,6 +154,11 @@ async function loadAndDisplayConfig() {
   document.getElementById('default-deck').value = config?.ankiConfig?.defaultDeck || '';
   document.getElementById('default-model').value = config?.ankiConfig?.defaultModel || '';
   currentModelFields = config?.ankiConfig?.modelFields || [];
+
+  // 如果已经有默认模型，触发字段显示
+  if (config?.ankiConfig?.defaultModel) {
+    handleModelChange();
+  }
 
   // StyleConfig
   document.getElementById('font-size-select').value = config?.styleConfig?.fontSize || '14px';
@@ -213,12 +223,14 @@ async function handleSave() {
       fallbackOrder: ['google', 'openai', 'anthropic']
     },
     promptTemplates: {
-      custom: customPrompt
+      custom: customPrompt,
+      promptTemplatesByModel: currentConfig?.promptTemplates?.promptTemplatesByModel || {}
     },
     ankiConfig: {
       defaultDeck: defaultDeck,
       defaultModel: defaultModel,
       modelFields: currentModelFields,
+      promptTemplatesByModel: currentConfig?.ankiConfig?.promptTemplatesByModel || {},
       defaultTags: []
     },
     styleConfig: {
@@ -231,13 +243,14 @@ async function handleSave() {
 
   try {
     await saveConfig(newConfig);
+    currentConfig = newConfig; // 更新本地配置缓存
     updateStatus('save-status', '设置已保存', 'success');
-    
+
     // 保存後に状態更新
     setTimeout(() => {
       refreshProviderStatus();
     }, 500);
-    
+
   } catch (error) {
     console.error('保存设置出错:', error);
     updateStatus('save-status', `保存出错: ${error.message}`, 'error');
@@ -264,32 +277,39 @@ async function handleModelChange() {
     // 取得したフィールド名を保持
     currentModelFields = fieldsResult.result;
 
-    // 表示更新
+    // 显示字段信息
     const fieldMappingDiv = document.getElementById('field-mapping');
     const container = fieldMappingDiv.querySelector('.field-mapping-container');
-    
-    container.innerHTML = '<p><strong>模型字段如下：</strong></p>';
-    
-    fieldsResult.result.forEach((field, index) => {
-      const fieldDiv = document.createElement('div');
-      fieldDiv.innerHTML = `
-        <label>${field}</label>
-        <span style="margin-left: 10px; color: #666;">
-          (字段 ${index + 1})
-        </span>
-      `;
-      container.appendChild(fieldDiv);
-    });
-    
-    const noteDiv = document.createElement('div');
-    noteDiv.style.marginTop = '10px';
-    noteDiv.innerHTML = `
-      <p style="font-size: 0.9em; color: #888;">
-        <strong>提示：</strong>推荐将“正面/背面”字段分别映射到上述前两个字段。
-      </p>
+
+    container.innerHTML = `
+      <h4>模型字段 (${fieldsResult.result.length}个):</h4>
+      <div class="field-tags">
+        ${fieldsResult.result.map(field => `<span class="field-tag">${field}</span>`).join('')}
+      </div>
     `;
-    container.appendChild(noteDiv);
-    
+
+    // 添加模式说明
+    const modeDiv = document.createElement('div');
+    modeDiv.className = 'mode-info';
+    modeDiv.style.marginTop = '15px';
+
+    if (fieldsResult.result.length <= 2) {
+      modeDiv.innerHTML = `
+        <div class="legacy-mode-info">
+          <p><strong>🔄 兼容模式</strong></p>
+          <p>该模型字段数 ≤ 2，将使用传统的正面/背面模式。</p>
+        </div>
+      `;
+    } else {
+      modeDiv.innerHTML = `
+        <div class="dynamic-mode-info">
+          <p><strong>✨ 动态字段模式</strong></p>
+          <p>该模型支持多字段，AI将自动填充所有字段。popup页面将根据字段名智能生成相应的输入区域。</p>
+        </div>
+      `;
+    }
+
+    container.appendChild(modeDiv);
     fieldMappingDiv.style.display = 'block';
     
   } catch (error) {
