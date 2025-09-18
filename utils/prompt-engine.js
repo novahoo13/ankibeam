@@ -106,8 +106,8 @@ export function validateAIOutput(aiOutput, expectedFields) {
  * @returns {string} - prompt模板
  */
 export function loadPromptForModel(modelName, config) {
-  return config?.ankiConfig?.promptTemplatesByModel?.[modelName]
-    || config?.promptTemplates?.promptTemplatesByModel?.[modelName]
+  return config?.promptTemplates?.promptTemplatesByModel?.[modelName]
+    || config?.ankiConfig?.promptTemplatesByModel?.[modelName] // 向后兼容旧版本
     || config?.promptTemplates?.custom
     || '';
 }
@@ -121,12 +121,6 @@ export function loadPromptForModel(modelName, config) {
  */
 export function savePromptForModel(modelName, prompt, config) {
   // 确保必要的对象结构存在
-  if (!config.ankiConfig) {
-    config.ankiConfig = {};
-  }
-  if (!config.ankiConfig.promptTemplatesByModel) {
-    config.ankiConfig.promptTemplatesByModel = {};
-  }
   if (!config.promptTemplates) {
     config.promptTemplates = {};
   }
@@ -134,9 +128,13 @@ export function savePromptForModel(modelName, prompt, config) {
     config.promptTemplates.promptTemplatesByModel = {};
   }
 
-  // 保存到两个位置以确保兼容性
-  config.ankiConfig.promptTemplatesByModel[modelName] = prompt;
+  // 只保存到 promptTemplates.promptTemplatesByModel，避免数据冗余
   config.promptTemplates.promptTemplatesByModel[modelName] = prompt;
+
+  // 如果存在旧版本的存储位置，清理它以避免混淆
+  if (config.ankiConfig?.promptTemplatesByModel?.[modelName]) {
+    delete config.ankiConfig.promptTemplatesByModel[modelName];
+  }
 
   return config;
 }

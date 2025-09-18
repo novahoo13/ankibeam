@@ -1,7 +1,7 @@
 // options.js - オプション画面
 // 目的: 設定の表示・保存、各種接続のテスト
 
-import { saveConfig, loadConfig } from '../utils/storage.js';
+import { saveConfig, loadConfig, getDefaultConfig } from '../utils/storage.js';
 import { testConnection as testAnki, getDeckNames, getModelNames, getModelFieldNames } from '../utils/ankiconnect.js';
 import { testConnection as testAi, getProvidersHealth, testAllProviders } from '../utils/ai-service.js';
 import { loadPromptForModel, savePromptForModel } from '../utils/prompt-engine.js';
@@ -18,6 +18,11 @@ let currentModelFields = [];
 
 // 現在の設定オブジェクト
 let currentConfig = {};
+
+const promptEditorState = {
+  currentModel: '',
+  lastSavedPrompt: ''
+};
 
 const API_KEY_PLACEHOLDER = '********';
 
@@ -44,12 +49,21 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // 各プロバイダ接続テストボタン
   setupTestProviderButtons();
-  
+
+  // Promptエディタの初期化
+  setupPromptEditor();
+
+  // 配置管理按钮
+  document.getElementById('export-config-btn').addEventListener('click', handleExportConfiguration);
+  document.getElementById('import-config-btn').addEventListener('click', handleImportConfigurationClick);
+  document.getElementById('import-config-input').addEventListener('change', handleImportConfigurationFile);
+  document.getElementById('reset-config-btn').addEventListener('click', handleResetConfiguration);
+
   // スタイルプレビュー
   document.getElementById('font-size-select').addEventListener('change', updateStylePreview);
   document.getElementById('text-align-select').addEventListener('change', updateStylePreview);
   document.getElementById('line-height-select').addEventListener('change', updateStylePreview);
-  
+
   // 初回の状態更新
   refreshProviderStatus();
 });
@@ -66,6 +80,511 @@ function setupTestProviderButtons() {
       }
     });
   });
+}
+
+/**
+ * Promptエディタ関連の初期化
+ */
+function setupPromptEditor() {
+  const promptTextarea = document.getElementById('custom-prompt-textarea');
+  const fieldTagsList = document.getElementById('field-tags-list');
+  const resetButton = document.getElementById('reset-prompt-btn');
+  const resetGlobalButton = document.getElementById('reset-global-prompt-btn');
+
+  if (promptTextarea) {
+    promptTextarea.addEventListener('input', () => {
+      updatePromptPreview();
+      markPromptDirtyFlag();
+    });
+  }
+
+  if (fieldTagsList) {
+    fieldTagsList.addEventListener('click', handleFieldTagInsert);
+  }
+
+  if (resetButton) {
+    resetButton.addEventListener('click', handleResetPromptTemplate);
+  }
+
+  if (resetGlobalButton) {
+    resetGlobalButton.addEventListener('click', handleResetGlobalPromptTemplate);
+  }
+
+  hidePromptConfig();
+  markPromptDirtyFlag(false);
+}
+
+/**
+ * フィールドタグのクリックでプレースホルダを挿入
+ * @param {MouseEvent} event - クリックイベント
+ */
+function handleFieldTagInsert(event) {
+  const target = event.target;
+  if (!target || !target.dataset.field) {
+    return;
+  }
+
+  event.preventDefault();
+
+  const promptTextarea = document.getElementById('custom-prompt-textarea');
+  if (!promptTextarea || promptTextarea.disabled) {
+    return;
+  }
+
+  const placeholder = `{{${target.dataset.field}}}`;
+  const selectionStart = promptTextarea.selectionStart ?? promptTextarea.value.length;
+  const selectionEnd = promptTextarea.selectionEnd ?? promptTextarea.value.length;
+
+  const before = promptTextarea.value.slice(0, selectionStart);
+  const after = promptTextarea.value.slice(selectionEnd);
+  promptTextarea.value = `${before}${placeholder}${after}`;
+
+  const cursorPosition = selectionStart + placeholder.length;
+  promptTextarea.selectionStart = cursorPosition;
+  promptTextarea.selectionEnd = cursorPosition;
+  promptTextarea.focus();
+
+  updatePromptPreview();
+  markPromptDirtyFlag();
+}
+
+/**
+ * モデル専用Promptをデフォルトに戻す
+ */
+function handleResetPromptTemplate() {
+  const promptTextarea = document.getElementById('custom-prompt-textarea');
+  if (!promptTextarea || promptTextarea.disabled) {
+    return;
+  }
+
+  promptTextarea.value = getDefaultPromptTemplate();
+  updatePromptPreview();
+  markPromptDirtyFlag();
+}
+
+/**
+ * グローバルPromptをリセット
+ */
+function handleResetGlobalPromptTemplate() {
+  const globalTextarea = document.getElementById('custom-prompt');
+  if (!globalTextarea) {
+    return;
+  }
+
+  globalTextarea.value = getDefaultGlobalPromptTemplate();
+}
+
+/**
+ * Prompt設定UIを表示
+ * @param {string} modelName - モデル名
+ * @param {string[]} fields - フィールド一覧
+ */
+function showPromptConfig(modelName, fields) {
+  const promptContainer = document.getElementById('prompt-field-tags');
+  const fieldTagsList = document.getElementById('field-tags-list');
+  const promptTextarea = document.getElementById('custom-prompt-textarea');
+  const preview = document.getElementById('prompt-preview-content');
+  const currentModelLabel = document.getElementById('prompt-current-model');
+  const resetButton = document.getElementById('reset-prompt-btn');
+  const modelHint = document.getElementById('prompt-model-hint');
+
+  if (!promptContainer || !fieldTagsList || !promptTextarea || !preview) {
+    console.warn('Prompt設定要素が見つかりません');
+    return;
+  }
+
+  promptEditorState.currentModel = modelName;
+
+  if (currentModelLabel) {
+    currentModelLabel.textContent = `当前模板：${modelName}`;
+  }
+
+  if (modelHint) {
+    modelHint.textContent = '提示：保存设置后将在 popup 中使用此 Prompt。';
+  }
+
+  if (fields.length > 0) {
+    promptContainer.style.display = 'block';
+    fieldTagsList.innerHTML = fields
+      .map((field) => `<button type="button" class="field-tag-btn" data-field="${field}">${field}</button>`)
+      .join('');
+  } else {
+    promptContainer.style.display = 'none';
+    fieldTagsList.innerHTML = '';
+  }
+
+  promptTextarea.disabled = false;
+  const template = loadPromptForModel(modelName, currentConfig) || getDefaultPromptTemplate();
+  promptTextarea.value = template;
+  promptEditorState.lastSavedPrompt = template;
+
+  if (resetButton) {
+    resetButton.disabled = false;
+  }
+
+  updatePromptPreview();
+  markPromptDirtyFlag(false);
+}
+
+/**
+ * Prompt設定UIをリセット
+ */
+function hidePromptConfig() {
+  const promptContainer = document.getElementById('prompt-field-tags');
+  const fieldTagsList = document.getElementById('field-tags-list');
+  const promptTextarea = document.getElementById('custom-prompt-textarea');
+  const preview = document.getElementById('prompt-preview-content');
+  const currentModelLabel = document.getElementById('prompt-current-model');
+  const resetButton = document.getElementById('reset-prompt-btn');
+  const modelHint = document.getElementById('prompt-model-hint');
+
+  if (!promptContainer || !fieldTagsList || !promptTextarea || !preview) {
+    console.warn('Prompt設定要素が見つかりません');
+    return;
+  }
+
+  promptEditorState.currentModel = '';
+  promptEditorState.lastSavedPrompt = '';
+
+  if (currentModelLabel) {
+    currentModelLabel.textContent = '当前模板：未选择';
+  }
+
+  if (modelHint) {
+    modelHint.textContent = '请在「Anki 连接」面板选择要编辑的模型，随后在这里自定义 Prompt。';
+  }
+
+  promptContainer.style.display = 'none';
+  fieldTagsList.innerHTML = '';
+  promptTextarea.value = '';
+  promptTextarea.disabled = true;
+
+  if (resetButton) {
+    resetButton.disabled = true;
+  }
+
+  preview.textContent = '请选择模板并编辑 Prompt 后，这里会显示预览效果';
+  markPromptDirtyFlag(false);
+}
+
+/**
+ * 加载并显示指定模型的Prompt模板
+ * @param {string} modelName - 模型名称
+ */
+function loadAndDisplayPromptForModel(modelName) {
+  if (!modelName) return;
+
+  const promptTextarea = document.getElementById('custom-prompt-textarea');
+  if (!promptTextarea) return;
+
+  // 从配置中加载对应模型的prompt
+  const savedPrompt = loadPromptForModel(modelName, currentConfig);
+
+  // 如果没有保存的prompt，使用默认模板
+  if (savedPrompt) {
+    promptTextarea.value = savedPrompt;
+  } else {
+    // 使用默认模板
+    promptTextarea.value = getDefaultPromptTemplate();
+  }
+
+  // 启用编辑器
+  promptTextarea.disabled = false;
+
+  // 启用重置按钮
+  const resetButton = document.getElementById('reset-prompt-btn');
+  if (resetButton) {
+    resetButton.disabled = false;
+  }
+
+  // 更新预览
+  updatePromptPreview();
+  markPromptDirtyFlag(false);
+}
+
+/**
+ * 获取默认Prompt模板
+ * @returns {string} - 默认模板
+ */
+function getDefaultPromptTemplate() {
+  return `# Role: 专业单词查询助手
+
+请完成以下任务：
+1. 查询单词/短语: "{{INPUT_TEXT}}"
+2. 生成详细解析信息
+3. 按以下JSON格式输出：
+{{FIELD_SCHEMA}}
+
+要求：
+- 输出纯JSON格式，不包含任何解释文字
+- 根据单词/短语的特点，填充相应字段
+- 如果某个字段不适用，可以不输出该字段`;
+}
+
+/**
+ * Promptの編集状態を表示
+ * @param {boolean} [forced] - 強制表示/非表示
+ */
+function markPromptDirtyFlag(forced) {
+  const flag = document.getElementById('prompt-dirty-flag');
+  const promptTextarea = document.getElementById('custom-prompt-textarea');
+  if (!flag || !promptTextarea) {
+    return;
+  }
+
+  if (typeof forced === 'boolean') {
+    flag.style.display = forced ? 'inline' : 'none';
+    return;
+  }
+
+  const isDirty = promptTextarea.value !== promptEditorState.lastSavedPrompt;
+  flag.style.display = isDirty ? 'inline' : 'none';
+}
+
+/**
+ * モデル専用Promptのデフォルトテンプレート
+ * @returns {string}
+ */
+/**
+ * グローバルPromptのデフォルトテンプレート
+ * @returns {string}
+ */
+function getDefaultGlobalPromptTemplate() {
+  return '';
+}
+
+/**
+ * Promptプレビューを更新
+ */
+function updatePromptPreview() {
+  const promptTextarea = document.getElementById('custom-prompt-textarea');
+  const preview = document.getElementById('prompt-preview-content');
+  if (!promptTextarea || !preview) {
+    return;
+  }
+
+  const template = promptTextarea.value;
+  if (!template || !template.trim()) {
+    preview.textContent = '请选择模板并编辑 Prompt 后，这里会显示预览效果';
+    return;
+  }
+
+  if (!currentModelFields || currentModelFields.length === 0) {
+    preview.textContent = template;
+    return;
+  }
+
+  let rendered = template.replace(/\{\{INPUT_TEXT\}\}/g, '"示例词汇"');
+  rendered = rendered.replace(/\{\{FIELD_SCHEMA\}\}/g, generatePreviewSchema(currentModelFields));
+  rendered = rendered.replace(/\{\{AVAILABLE_FIELDS\}\}/g, currentModelFields.join(', '));
+
+  currentModelFields.forEach((field) => {
+    const pattern = new RegExp(`\\{\\{${escapeRegExp(field)}\\}\\}`, 'g');
+    rendered = rendered.replace(pattern, `${field} 示例内容`);
+  });
+
+  preview.textContent = rendered;
+}
+
+/**
+ * フィールド構造のプレビューJSONを生成
+ * @param {string[]} fields - フィールド一覧
+ * @returns {string}
+ */
+function generatePreviewSchema(fields) {
+  const schema = {};
+  fields.forEach((field) => {
+    const lower = field.toLowerCase();
+    if (lower.includes('word') || lower.includes('front')) {
+      schema[field] = '单词本身';
+    } else if (lower.includes('reading') || lower.includes('pronunciation')) {
+      schema[field] = '读音或音标';
+    } else if (lower.includes('meaning') || lower.includes('definition')) {
+      schema[field] = '释义与解释';
+    } else if (lower.includes('example') || lower.includes('sentence')) {
+      schema[field] = '例句或用法';
+    } else {
+      schema[field] = `${field} 相关内容`;
+    }
+  });
+  return JSON.stringify(schema, null, 2);
+}
+
+/**
+ * 正規表現用に文字列をエスケープ
+ * @param {string} value - 対象文字列
+ * @returns {string}
+ */
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&");
+}
+/**
+ * 設定ファイルをエクスポート
+ */
+async function handleExportConfiguration() {
+  try {
+    updateStatus('save-status', '正在导出配置...', 'loading');
+    const baseConfig = currentConfig && Object.keys(currentConfig).length ? currentConfig : getDefaultConfig();
+    const exportData = JSON.parse(JSON.stringify(baseConfig));
+    exportData.version = exportData.version || '2.1';
+    exportData.exportedAt = new Date().toISOString();
+
+    if (exportData.aiConfig?.models) {
+      Object.keys(exportData.aiConfig.models).forEach((provider) => {
+        if (!exportData.aiConfig.models[provider]) {
+          exportData.aiConfig.models[provider] = {};
+        }
+        exportData.aiConfig.models[provider].apiKey = '';
+        exportData.aiConfig.models[provider].healthStatus = 'unknown';
+      });
+    }
+
+    const timestamp = new Date().toISOString().replace(/[:T]/g, '-').slice(0, 19);
+    const fileName = `anki-word-assistant-config-${timestamp}.json`;
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = fileName;
+    anchor.click();
+    URL.revokeObjectURL(url);
+
+    updateStatus('save-status', '配置导出成功', 'success');
+  } catch (error) {
+    console.error('設定エクスポートに失敗しました:', error);
+    updateStatus('save-status', `配置导出失败: ${error.message}`, 'error');
+  }
+}
+
+/**
+ * インポートダイアログを開く
+ */
+function triggerImportDialog() {
+  const fileInput = document.getElementById('import-config-input');
+  if (fileInput) {
+    fileInput.value = '';
+    fileInput.click();
+  }
+}
+
+/**
+ * 設定ファイルをインポート
+ * @param {Event} event - changeイベント
+ */
+async function handleImportConfiguration(event) {
+  const fileInput = event?.target;
+  const file = fileInput?.files && fileInput.files[0];
+  if (!file) {
+    return;
+  }
+
+  try {
+    updateStatus('save-status', '正在导入配置...', 'loading');
+    const text = await file.text();
+    let importedConfig;
+    try {
+      importedConfig = JSON.parse(text);
+    } catch (parseError) {
+      throw new Error('配置文件不是有效的 JSON');
+    }
+
+    if (!importedConfig || typeof importedConfig !== 'object') {
+      throw new Error('配置文件格式不正确');
+    }
+
+    if (!importedConfig.aiConfig) {
+      throw new Error('配置文件缺少 aiConfig');
+    }
+
+    const baseConfig = getDefaultConfig();
+    const mergedConfig = {
+      ...baseConfig,
+      ...importedConfig,
+      aiConfig: {
+        ...baseConfig.aiConfig,
+        ...(importedConfig.aiConfig || {}),
+        models: {
+          ...baseConfig.aiConfig.models,
+          ...(importedConfig.aiConfig?.models || {}),
+        },
+      },
+      promptTemplates: {
+        ...baseConfig.promptTemplates,
+        ...(importedConfig.promptTemplates || {}),
+      },
+      ankiConfig: {
+        ...baseConfig.ankiConfig,
+        ...(importedConfig.ankiConfig || {}),
+      },
+      styleConfig: {
+        ...baseConfig.styleConfig,
+        ...(importedConfig.styleConfig || {}),
+      },
+      ui: {
+        ...baseConfig.ui,
+        ...(importedConfig.ui || {}),
+      },
+      language: importedConfig.language || baseConfig.language,
+    };
+
+    mergedConfig.aiConfig.fallbackOrder = importedConfig.aiConfig?.fallbackOrder || baseConfig.aiConfig.fallbackOrder;
+
+    const mergedModelPrompts = {
+      ...baseConfig.promptTemplates.promptTemplatesByModel,
+      ...(importedConfig.promptTemplates?.promptTemplatesByModel || {}),
+      ...(importedConfig.ankiConfig?.promptTemplatesByModel || {}), // 向后兼容旧版本
+    };
+
+    mergedConfig.promptTemplates.promptTemplatesByModel = { ...mergedModelPrompts };
+
+    if (mergedConfig.aiConfig?.models) {
+      Object.keys(mergedConfig.aiConfig.models).forEach((provider) => {
+        const modelConfig = mergedConfig.aiConfig.models[provider] || {};
+        mergedConfig.aiConfig.models[provider] = {
+          ...modelConfig,
+          apiKey: '',
+          healthStatus: 'unknown',
+        };
+      });
+    }
+
+    mergedConfig.version = importedConfig.version || baseConfig.version;
+    delete mergedConfig.exportDate;
+    delete mergedConfig.exportedAt;
+
+    await saveConfig(mergedConfig);
+    currentConfig = mergedConfig;
+    updateStatus('save-status', '配置导入成功，请重新配置 API 密钥', 'success');
+    setTimeout(() => window.location.reload(), 1000);
+  } catch (error) {
+    console.error('設定インポートに失敗しました:', error);
+    updateStatus('save-status', `配置导入失败: ${error.message}`, 'error');
+  } finally {
+    if (event?.target) {
+      event.target.value = '';
+    }
+  }
+}
+
+/**
+ * 設定をデフォルト状態にリセット
+ */
+async function handleResetConfiguration() {
+  if (!confirm('确定要重置所有配置吗？此操作不可撤销。')) {
+    return;
+  }
+
+  try {
+    updateStatus('save-status', '正在重置配置...', 'loading');
+    const defaultConfig = getDefaultConfig();
+    await saveConfig(defaultConfig);
+    currentConfig = defaultConfig;
+    updateStatus('save-status', '配置已重置为默认值', 'success');
+    setTimeout(() => window.location.reload(), 800);
+  } catch (error) {
+    console.error('設定リセットに失敗しました:', error);
+    updateStatus('save-status', `重置配置失败: ${error.message}`, 'error');
+  }
 }
 
 /**
@@ -212,6 +731,8 @@ async function handleSave() {
   const lineHeight = document.getElementById('line-height-select').value;
 
   // 新しい設定
+  const existingPromptTemplatesByModel = { ...(currentConfig?.promptTemplates?.promptTemplatesByModel || {}) };
+
   const newConfig = {
     aiConfig: {
       provider: provider,
@@ -224,13 +745,12 @@ async function handleSave() {
     },
     promptTemplates: {
       custom: customPrompt,
-      promptTemplatesByModel: currentConfig?.promptTemplates?.promptTemplatesByModel || {}
+      promptTemplatesByModel: existingPromptTemplatesByModel
     },
     ankiConfig: {
       defaultDeck: defaultDeck,
       defaultModel: defaultModel,
       modelFields: currentModelFields,
-      promptTemplatesByModel: currentConfig?.ankiConfig?.promptTemplatesByModel || {},
       defaultTags: []
     },
     styleConfig: {
@@ -241,9 +761,37 @@ async function handleSave() {
     language: language
   };
 
+  let promptValueForSelectedModel = null;
+
+  // 获取当前选择的模型
+  const selectedModel = document.getElementById('default-model').value;
+
+  if (selectedModel) {
+    const promptTextarea = document.getElementById('custom-prompt-textarea');
+    if (promptTextarea && !promptTextarea.disabled) {
+      const normalizedValue = promptTextarea.value.trim();
+      if (normalizedValue) {
+        if (promptTextarea.value !== normalizedValue) {
+          promptTextarea.value = normalizedValue;
+        }
+        savePromptForModel(selectedModel, normalizedValue, newConfig);
+        promptValueForSelectedModel = normalizedValue;
+      } else {
+        delete existingPromptTemplatesByModel[selectedModel];
+        promptValueForSelectedModel = '';
+      }
+    }
+  }
+
   try {
     await saveConfig(newConfig);
     currentConfig = newConfig; // 更新本地配置缓存
+
+    if (selectedModel && promptEditorState.currentModel === selectedModel && promptValueForSelectedModel !== null) {
+      promptEditorState.lastSavedPrompt = promptValueForSelectedModel;
+      markPromptDirtyFlag(false);
+    }
+
     updateStatus('save-status', '设置已保存', 'success');
 
     // 保存後に状態更新
@@ -311,7 +859,11 @@ async function handleModelChange() {
 
     container.appendChild(modeDiv);
     fieldMappingDiv.style.display = 'block';
-    
+
+    // 显示Prompt配置区域并加载对应模板的Prompt
+    showPromptConfig(modelName, currentModelFields);
+    loadAndDisplayPromptForModel(modelName);
+
   } catch (error) {
     console.error('获取字段失败:', error);
     document.getElementById('field-mapping').style.display = 'none';
@@ -648,3 +1200,64 @@ function initTabRouting() {
   }
 }
 
+// ==================== 配置管理功能 ====================
+
+/**
+ * 点击导入配置按钮
+ */
+function handleImportConfigurationClick() {
+  document.getElementById('import-config-input').click();
+}
+
+/**
+ * 处理导入配置文件
+ */
+async function handleImportConfigurationFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  try {
+    const text = await file.text();
+    const importedConfig = JSON.parse(text);
+
+    // 简单验证配置格式
+    if (!importedConfig.version || !importedConfig.aiConfig) {
+      throw new Error('配置文件格式不正确');
+    }
+
+    // 合并配置（保留当前的API密钥，避免明文导入）
+    const mergedConfig = {
+      ...importedConfig,
+      aiConfig: {
+        ...importedConfig.aiConfig,
+        models: {
+          ...importedConfig.aiConfig.models
+        }
+      }
+    };
+
+    // 清空API Key（为安全考虑）
+    Object.keys(mergedConfig.aiConfig.models).forEach(provider => {
+      if (mergedConfig.aiConfig.models[provider]) {
+        mergedConfig.aiConfig.models[provider].apiKey = '';
+      }
+    });
+
+    await saveConfig(mergedConfig);
+    updateStatus('save-status', '配置导入成功，请重新配置API密钥', 'success');
+
+    // 重新加载页面配置
+    setTimeout(() => window.location.reload(), 1500);
+  } catch (error) {
+    console.error('导入配置失败:', error);
+    updateStatus('save-status', `导入失败: ${error.message}`, 'error');
+  }
+
+  // 清空文件输入，允许重复导入相同文件
+  event.target.value = '';
+}
+
+/**
+ * 重置配置 - 使用现有的handleResetConfiguration函数
+ */
+// 这个函数已经在文件中存在了，不需要重复定义

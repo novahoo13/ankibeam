@@ -576,7 +576,7 @@
 - Dynamic 模式（>2 字段）：AI 能正确输出多字段 JSON，popup 能正确填充和写入
 - 错误处理：JSON 格式错误时自动重试，字段验证失败时显示具体错误信息
 - 边界情况：空输入、全空字段、部分字段填充等情况都有适当处理
-  **Status**: Not Started
+  **Status**: finished
 
 ## Stage 3: Options 页面 Prompt 配置界面
 
@@ -845,7 +845,7 @@
 - 点击字段标签能正确插入变量占位符到光标位置
 - Prompt 预览能正确显示替换后的效果
 - 保存后刷新页面，能正确恢复对应模板的 Prompt 配置
-  **Status**: Not Started
+  **Status**: finished
 
 ## Stage 4: 配置管理与用户体验优化
 
@@ -994,7 +994,7 @@
 - 配置导入能正确验证格式并应用配置
 - 重置功能能恢复到默认状态
 - 字段类型识别符合常见使用场景
-  **Status**: Not Started
+  **Status**: finished
 
 ## 错误处理与重试机制规格
 

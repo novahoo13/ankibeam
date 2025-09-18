@@ -83,13 +83,32 @@
   transition: border-color 0.3s ease, background-color 0.3s ease;
 }
 
-/* フック用クラス（見た目は未定義。DOM/JS セレクタ用） */
-.input-section {}
-.action-section {}
-.result-section {}
-.form-group {}
-.write-section {}
-.provider-config {}
-.field-mapping-container {}
-.test-provider-btn {}
-.toggle-visibility-btn {}
+/* Promptエディタ用の追加スタイル */
+.field-tag-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background-color: #e2e8f0; /* slate-200 */
+  color: #0f172a; /* slate-900 */
+  font-size: 0.75rem; /* text-xs */
+  border: 1px solid #cbd5f5; /* slate-300 */
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.field-tag-btn:hover {
+  background-color: #cbd5f5;
+  border-color: #94a3b8;
+}
+
+.field-tag-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(100, 116, 139, 0.35);
+}
+
+.prompt-preview-area {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

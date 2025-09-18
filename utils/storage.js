@@ -51,7 +51,6 @@ const DEFAULT_CONFIG = {
     defaultDeck: '',
     defaultModel: '',
     modelFields: [], // 新增：用于存储当前模板的字段列表
-    promptTemplatesByModel: {}, // 新增：按模板存储的prompt配置（向后兼容）
     defaultTags: []
   },
   ui: {

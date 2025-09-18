@@ -37,16 +37,22 @@ export function getDynamicFieldMapping(modelFields) {
  */
 export function getInputTypeForField(fieldName) {
   const name = fieldName.toLowerCase();
+  const textareaKeywords = [
+    'example',
+    'sentence',
+    'meaning',
+    'definition',
+    'explanation',
+    'note',
+    'back',
+    '背面'
+  ];
 
-  // 简单的启发式规则判断字段类型
-  if (name.includes('example') || name.includes('sentence') ||
-      name.includes('meaning') || name.includes('definition') ||
-      name.includes('explanation') || name.includes('note') ||
-      name.includes('back') || name.includes('背面')) {
+  if (textareaKeywords.some((keyword) => name.includes(keyword))) {
     return { type: 'textarea', rows: 3 };
-  } else {
-    return { type: 'input' };
   }
+
+  return { type: 'input' };
 }
 
 /**
@@ -323,3 +329,4 @@ export function validateFields(fields, isLegacy = false, collectResult = null) {
     return validation;
   }
 }
+
