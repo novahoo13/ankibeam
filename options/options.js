@@ -722,15 +722,14 @@ async function loadAndDisplayConfig() {
   document.getElementById("custom-prompt").value = customPrompt;
 
   // AnkiConfig
-  document.getElementById("default-deck").value =
-    config?.ankiConfig?.defaultDeck || "";
-  document.getElementById("default-model").value =
-    config?.ankiConfig?.defaultModel || "";
   currentModelFields = config?.ankiConfig?.modelFields || [];
 
-  // 如果已经有默认模型，触发字段显示
-  if (config?.ankiConfig?.defaultModel) {
-    handleModelChange();
+  // 基于已保存配置填充Anki选项
+  populateSavedAnkiOptions(config);
+
+  // 如果已经有默认模型和字段，直接显示模板信息
+  if (config?.ankiConfig?.defaultModel && config?.ankiConfig?.modelFields) {
+    displaySavedModelInfo(config.ankiConfig.defaultModel, config.ankiConfig.modelFields);
   }
 
   // StyleConfig
@@ -927,10 +926,10 @@ async function handleModelChange() {
 }
 
 /**
- * 测试 Anki 连接
+ * 测试 Anki 连接并刷新数据
  */
 async function handleTestAnki() {
-  updateStatus("anki-status", "正在测试...", "loading");
+  updateStatus("anki-status", "正在测试连接并刷新数据...", "loading");
   try {
     const result = await testAnki();
     if (result.error) {
@@ -942,8 +941,33 @@ async function handleTestAnki() {
       "success"
     );
 
-    // 连接成功后，拉取 Anki 数据
+    // 保存当前用户选择的值
+    const currentDeck = document.getElementById("default-deck").value;
+    const currentModel = document.getElementById("default-model").value;
+
+    // 连接成功后，拉取最新的 Anki 数据
     await loadAnkiData();
+
+    // 尝试恢复用户之前的选择（如果仍然有效）
+    if (currentDeck) {
+      const deckSelect = document.getElementById("default-deck");
+      const deckOption = Array.from(deckSelect.options).find(opt => opt.value === currentDeck);
+      if (deckOption) {
+        deckSelect.value = currentDeck;
+      }
+    }
+
+    if (currentModel) {
+      const modelSelect = document.getElementById("default-model");
+      const modelOption = Array.from(modelSelect.options).find(opt => opt.value === currentModel);
+      if (modelOption) {
+        modelSelect.value = currentModel;
+        // 如果模型仍然有效，重新获取字段信息
+        await handleModelChange();
+      }
+    }
+
+    updateStatus("anki-status", "数据刷新完成", "success");
   } catch (error) {
     console.error("测试 Anki 连接错误:", error);
     updateStatus("anki-status", `连接错误: ${error.message}`, "error");
@@ -992,6 +1016,91 @@ async function handleTestProvider(provider) {
       "error"
     );
   }
+}
+
+/**
+ * 基于已保存配置填充Anki选项
+ * @param {object} config - 配置对象
+ */
+function populateSavedAnkiOptions(config) {
+  const ankiConfig = config?.ankiConfig || {};
+
+  // 处理牌组下拉框
+  const deckSelect = document.getElementById("default-deck");
+  if (ankiConfig.defaultDeck) {
+    deckSelect.innerHTML = '<option value="">请选择默认牌组</option>';
+    const deckOption = document.createElement("option");
+    deckOption.value = ankiConfig.defaultDeck;
+    deckOption.textContent = ankiConfig.defaultDeck;
+    deckOption.selected = true;
+    deckSelect.appendChild(deckOption);
+  }
+
+  // 处理模板下拉框
+  const modelSelect = document.getElementById("default-model");
+  if (ankiConfig.defaultModel) {
+    modelSelect.innerHTML = '<option value="">请选择默认模型</option>';
+    const modelOption = document.createElement("option");
+    modelOption.value = ankiConfig.defaultModel;
+    modelOption.textContent = ankiConfig.defaultModel;
+    modelOption.selected = true;
+    modelSelect.appendChild(modelOption);
+  }
+}
+
+/**
+ * 显示已保存的模板信息和字段
+ * @param {string} modelName - 模板名称
+ * @param {string[]} modelFields - 字段列表
+ */
+function displaySavedModelInfo(modelName, modelFields) {
+  if (!modelName || !modelFields || modelFields.length === 0) {
+    return;
+  }
+
+  // 更新全局变量
+  currentModelFields = modelFields;
+
+  // 显示字段信息
+  const fieldMappingDiv = document.getElementById("field-mapping");
+  const container = fieldMappingDiv.querySelector(".field-mapping-container");
+
+  container.innerHTML = `
+    <strong>模型字段 (${modelFields.length}个):</strong>
+    <div class="field-tags">
+      ${modelFields
+        .map((field) => `<span class="field-tag">${field}</span>`)
+        .join("; ")}
+    </div>
+  `;
+
+  // 添加模式说明
+  const modeDiv = document.createElement("div");
+  modeDiv.className = "mode-info";
+  modeDiv.style.marginTop = "15px";
+
+  if (modelFields.length <= 2) {
+    modeDiv.innerHTML = `
+      <div class="legacy-mode-info">
+        <p><strong>🔄 兼容模式</strong></p>
+        <p>该模型字段数 ≤ 2，将使用传统的正面/背面模式。</p>
+      </div>
+    `;
+  } else {
+    modeDiv.innerHTML = `
+      <div class="dynamic-mode-info">
+        <p><strong>✨ 动态字段模式</strong></p>
+        <p>该模型支持多字段，AI将自动填充所有字段。popup页面将根据字段名智能生成相应的输入区域。</p>
+      </div>
+    `;
+  }
+
+  container.appendChild(modeDiv);
+  fieldMappingDiv.style.display = "block";
+
+  // 激活Prompt配置区域
+  showPromptConfig(modelName, modelFields);
+  loadAndDisplayPromptForModel(modelName);
 }
 
 /**
