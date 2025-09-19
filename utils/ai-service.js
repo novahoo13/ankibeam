@@ -31,6 +31,44 @@ const PROVIDERS = {
 };
 
 /**
+ * 清理AI响应文本，移除markdown代码块格式
+ * @param {string} responseText - AI返回的原始文本
+ * @returns {string} - 清理后的JSON文本
+ */
+function cleanAIResponse(responseText) {
+  if (!responseText || typeof responseText !== 'string') {
+    return responseText;
+  }
+
+  let cleanText = responseText.trim();
+
+  // 尝试移除markdown代码块（支持多种格式）
+  const codeBlockPatterns = [
+    /```(?:json)?\s*([\s\S]*?)\s*```/g,  // ```json ... ``` 或 ``` ... ```
+    /`([\s\S]*?)`/g,                     // 单个反引号
+  ];
+
+  for (const pattern of codeBlockPatterns) {
+    const match = cleanText.match(pattern);
+    if (match) {
+      // 提取代码块内容
+      cleanText = cleanText.replace(pattern, '$1').trim();
+      break;
+    }
+  }
+
+  // 如果还没有找到JSON，尝试提取大括号内容
+  if (!cleanText.startsWith('{') && !cleanText.startsWith('[')) {
+    const jsonMatch = cleanText.match(/(\{[\s\S]*\})/);
+    if (jsonMatch) {
+      cleanText = jsonMatch[1];
+    }
+  }
+
+  return cleanText.trim();
+}
+
+/**
  * 调用Google Gemini API
  * @param {string} apiKey - API Key
  * @param {string} modelName - 模型名称
@@ -74,11 +112,12 @@ async function callGoogleAPI(apiKey, modelName, prompt, options = {}) {
   }
 
   const data = await response.json();
-  
+
   if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-    return data.candidates[0].content.parts[0].text;
+    const rawText = data.candidates[0].content.parts[0].text;
+    return cleanAIResponse(rawText);
   }
-  
+
   throw new Error('Google API返回格式异常');
 }
 
@@ -121,11 +160,12 @@ async function callOpenAIAPI(apiKey, modelName, prompt, options = {}) {
   }
 
   const data = await response.json();
-  
+
   if (data.choices && data.choices[0] && data.choices[0].message) {
-    return data.choices[0].message.content;
+    const rawText = data.choices[0].message.content;
+    return cleanAIResponse(rawText);
   }
-  
+
   throw new Error('OpenAI API返回格式异常');
 }
 
@@ -169,11 +209,12 @@ async function callAnthropicAPI(apiKey, modelName, prompt, options = {}) {
   }
 
   const data = await response.json();
-  
+
   if (data.content && data.content[0] && data.content[0].text) {
-    return data.content[0].text;
+    const rawText = data.content[0].text;
+    return cleanAIResponse(rawText);
   }
-  
+
   throw new Error('Anthropic API返回格式异常');
 }
 
@@ -274,12 +315,13 @@ export async function parseText(inputText, promptTemplate) {
       return parsedResult;
     } catch (parseError) {
       console.warn('JSON解析失败，尝试提取结构化内容:', parseError);
-      // 如果直接解析失败，尝试从文本中提取JSON
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
+      // 使用统一的清理函数再次尝试
+      const cleanedText = cleanAIResponse(responseText);
+      try {
+        return JSON.parse(cleanedText);
+      } catch (secondError) {
+        throw new Error('无法解析AI返回的结果为JSON格式');
       }
-      throw new Error('无法解析AI返回的结果为JSON格式');
     }
 
   } catch (error) {

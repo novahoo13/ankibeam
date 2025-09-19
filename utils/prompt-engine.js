@@ -11,7 +11,15 @@
 export function buildIntegratedPrompt(userInput, fieldNames, customTemplate) {
   const defaultTemplate = customTemplate || getDefaultIntegratedTemplate();
 
-  // 生成动态字段schema
+  // 检查是否为自定义prompt（不使用占位符系统）
+  if (customTemplate && customTemplate.trim() &&
+      !customTemplate.includes('{{INPUT_TEXT}}') &&
+      !customTemplate.includes('{{FIELD_SCHEMA}}')) {
+    // 对于完全自定义的prompt，直接在末尾追加用户输入
+    return `${customTemplate}\n-------------------------------\n以下是本次输入的内容：${userInput}`;
+  }
+
+  // 生成动态字段schema（用于占位符模式）
   const fieldSchema = generateFieldSchema(fieldNames);
 
   // 替换模板变量
@@ -20,8 +28,8 @@ export function buildIntegratedPrompt(userInput, fieldNames, customTemplate) {
     .replace(/\{\{FIELD_SCHEMA\}\}/g, fieldSchema)
     .replace(/\{\{AVAILABLE_FIELDS\}\}/g, fieldNames.map((f) => `"${f}"`).join(", "));
 
-  // 添加JSON格式强制约束
-  prompt += `\n\nCRITICAL要求:\n- 输出有效JSON格式\n- 只能使用字段: ${fieldNames.join(", ")}\n- 可部分输出，但字段名必须准确`;
+  // 添加JSON格式强制约束（仅用于默认模板）
+  prompt += `\n\n要求:\n- 输出有效JSON格式\n- 只能使用字段: ${fieldNames.join(", ")}\n- 可部分输出，但字段名必须准确`;
 
   return prompt;
 }
