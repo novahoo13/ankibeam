@@ -1,6 +1,8 @@
 // storage.js - 配置存储管理
 // 使用 chrome.storage.local API 来存储和读取配置
 
+import { normalizePromptTemplateConfig } from './prompt-engine.js';
+
 const CONFIG_KEY = 'ankiWordAssistantConfig';
 const CONFIG_VERSION = '2.1'; // 配置版本，用于数据迁移
 
@@ -60,6 +62,32 @@ const DEFAULT_CONFIG = {
   },
   language: 'zh-CN'
 };
+
+function normalizePromptTemplatesStore(config) {
+  if (!config) {
+    return;
+  }
+
+  if (!config.promptTemplates) {
+    config.promptTemplates = {
+      custom: '',
+      promptTemplatesByModel: {},
+    };
+  }
+
+  const map = config.promptTemplates.promptTemplatesByModel;
+  if (!map || typeof map !== 'object') {
+    config.promptTemplates.promptTemplatesByModel = {};
+    return;
+  }
+
+  const normalized = {};
+  Object.keys(map).forEach((modelName) => {
+    normalized[modelName] = normalizePromptTemplateConfig(map[modelName]);
+  });
+
+  config.promptTemplates.promptTemplatesByModel = normalized;
+}
 
 /**
  * 从固定密码和供应商特定盐值派生加密密钥
@@ -235,6 +263,8 @@ function migrateConfig(oldConfig) {
  */
 export async function saveConfig(config) {
   const configToSave = JSON.parse(JSON.stringify(config)); // 深拷贝以避免修改原始对象
+
+  normalizePromptTemplatesStore(configToSave);
   
   // 确保版本信息
   configToSave.version = CONFIG_VERSION;
@@ -276,6 +306,8 @@ export async function loadConfig() {
       
       // 检查并处理配置迁移
       config = migrateConfig(config);
+
+      normalizePromptTemplatesStore(config);
       
       // 解密所有供应商的API Key
       if (config.aiConfig && config.aiConfig.models) {

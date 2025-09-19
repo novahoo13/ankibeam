@@ -16,6 +16,8 @@ import {
 import {
   loadPromptForModel,
   savePromptForModel,
+  getPromptConfigForModel,
+  updatePromptConfigForModel,
 } from "../utils/prompt-engine.js";
 
 // APIキーの実値（DOMには伏せ字を表示）
@@ -34,6 +36,9 @@ let currentConfig = {};
 const promptEditorState = {
   currentModel: "",
   lastSavedPrompt: "",
+  selectedFields: [],
+  fieldConfigs: {},
+  availableFields: [],
 };
 
 const API_KEY_PLACEHOLDER = "********";
@@ -113,7 +118,8 @@ function setupTestProviderButtons() {
  */
 function setupPromptEditor() {
   const promptTextarea = document.getElementById("custom-prompt-textarea");
-  const fieldTagsList = document.getElementById("field-tags-list");
+  const fieldSelectionList = document.getElementById("field-selection-list");
+  const fieldConfigList = document.getElementById("field-config-list");
   const resetButton = document.getElementById("reset-prompt-btn");
   const resetGlobalButton = document.getElementById("reset-global-prompt-btn");
 
@@ -124,8 +130,12 @@ function setupPromptEditor() {
     });
   }
 
-  if (fieldTagsList) {
-    fieldTagsList.addEventListener("click", handleFieldTagInsert);
+  if (fieldSelectionList) {
+    fieldSelectionList.addEventListener("click", handleFieldSelectionClick);
+  }
+
+  if (fieldConfigList) {
+    fieldConfigList.addEventListener("input", handleFieldConfigInput);
   }
 
   if (resetButton) {
@@ -147,37 +157,342 @@ function setupPromptEditor() {
  * フィールドタグのクリックでプレースホルダを挿入
  * @param {MouseEvent} event - クリックイベント
  */
-function handleFieldTagInsert(event) {
-  const target = event.target;
-  if (!target || !target.dataset.field) {
+
+
+function handleFieldSelectionClick(event) {
+  const button = event.target.closest("[data-field-option]");
+  if (!button) {
+    return;
+  }
+
+  const fieldName = button.dataset.fieldOption;
+  if (!fieldName) {
     return;
   }
 
   event.preventDefault();
+  toggleFieldSelection(fieldName);
+}
 
-  const promptTextarea = document.getElementById("custom-prompt-textarea");
-  if (!promptTextarea || promptTextarea.disabled) {
+function toggleFieldSelection(fieldName) {
+  if (!fieldName) {
     return;
   }
 
-  const placeholder = `{{${target.dataset.field}}}`;
-  const selectionStart =
-    promptTextarea.selectionStart ?? promptTextarea.value.length;
-  const selectionEnd =
-    promptTextarea.selectionEnd ?? promptTextarea.value.length;
+  const availableFields = promptEditorState.availableFields || [];
+  if (!availableFields.includes(fieldName)) {
+    return;
+  }
 
-  const before = promptTextarea.value.slice(0, selectionStart);
-  const after = promptTextarea.value.slice(selectionEnd);
-  promptTextarea.value = `${before}${placeholder}${after}`;
+  const selected = promptEditorState.selectedFields || [];
+  const isSelected = selected.includes(fieldName);
 
-  const cursorPosition = selectionStart + placeholder.length;
-  promptTextarea.selectionStart = cursorPosition;
-  promptTextarea.selectionEnd = cursorPosition;
-  promptTextarea.focus();
+  if (isSelected) {
+    promptEditorState.selectedFields = selected.filter((field) => field !== fieldName);
+  } else {
+    promptEditorState.selectedFields = Array.from(new Set([...selected, fieldName]));
+  }
 
-  updatePromptPreview();
-  markPromptDirtyFlag();
+  const normalizedSelection = (promptEditorState.selectedFields || []).filter((field) =>
+    availableFields.includes(field)
+  );
+
+  promptEditorState.selectedFields = availableFields.filter((field) =>
+    normalizedSelection.includes(field)
+  );
+
+  if (!promptEditorState.fieldConfigs[fieldName]) {
+    promptEditorState.fieldConfigs[fieldName] = {
+      content: "",
+      example: "",
+    };
+  }
+
+  renderFieldSelection();
+  renderFieldConfigForm();
+  validateFieldConfigurations(false);
 }
+
+function handleFieldConfigInput(event) {
+  const target = event.target;
+  if (!target || target.tagName !== "TEXTAREA" || !target.dataset.fieldName) {
+    return;
+  }
+
+  const fieldName = target.dataset.fieldName;
+  const role = target.dataset.fieldRole;
+
+  const config = ensureFieldConfig(fieldName);
+
+  if (role === "content") {
+    config.content = target.value;
+  } else if (role === "example") {
+    config.example = target.value;
+  }
+
+  validateFieldConfigurations(false);
+}
+
+function renderFieldSelection(fields) {
+  if (Array.isArray(fields)) {
+    promptEditorState.availableFields = [...fields];
+  }
+
+  const selectionList = document.getElementById("field-selection-list");
+  const editorContainer = document.getElementById("prompt-field-editor");
+
+  if (!selectionList || !editorContainer) {
+    return;
+  }
+
+  const availableFields = promptEditorState.availableFields || [];
+
+  const normalizedSelection = (promptEditorState.selectedFields || []).filter((field) =>
+    availableFields.includes(field)
+  );
+  promptEditorState.selectedFields = availableFields.filter((field) =>
+    normalizedSelection.includes(field)
+  );
+
+  Object.keys(promptEditorState.fieldConfigs).forEach((field) => {
+    if (!availableFields.includes(field)) {
+      delete promptEditorState.fieldConfigs[field];
+    }
+  });
+
+  if (availableFields.length === 0) {
+    editorContainer.style.display = "none";
+    selectionList.innerHTML = "";
+    const configList = document.getElementById("field-config-list");
+    if (configList) {
+      configList.innerHTML = "";
+    }
+    setPromptConfigStatus("当前模板未返回任何字段。", "info");
+    return;
+  }
+
+  editorContainer.style.display = "block";
+
+  const baseButtonClass =
+    "px-3 py-1 rounded-md border text-xs font-medium transition-colors duration-150";
+
+  selectionList.innerHTML = availableFields
+    .map((field) => {
+      const isSelected = promptEditorState.selectedFields.includes(field);
+      const classes = isSelected
+        ? `${baseButtonClass} bg-slate-600 text-white border-slate-600`
+        : `${baseButtonClass} bg-white text-slate-600 border-slate-300 hover:border-slate-500`;
+      return `<button type="button" class="${classes}" data-field-option="${escapeHtml(
+        field
+      )}" aria-pressed="${isSelected}">${escapeHtml(field)}</button>`;
+    })
+    .join("");
+
+  if (promptEditorState.selectedFields.length === 0) {
+    setPromptConfigStatus("请选择需要输出的字段，并补全字段内容。", "info");
+  }
+}
+
+function renderFieldConfigForm() {
+  const container = document.getElementById("field-config-list");
+  if (!container) {
+    return;
+  }
+
+  const selectedFields = promptEditorState.selectedFields || [];
+  if (selectedFields.length === 0) {
+    container.innerHTML =
+      '<div class="text-xs text-gray-500 border border-dashed border-slate-300 rounded-md p-3 bg-slate-50">请选择字段后配置字段内容与样例。</div>';
+    return;
+  }
+
+  const cardsHtml = selectedFields
+    .map((field) => {
+      const safeField = escapeHtml(field);
+      return `
+        <div class="field-config-item border border-slate-200 rounded-md p-4 bg-white" data-field-config-item="${safeField}">
+          <div class="flex flex-col gap-1">
+            <h5 class="text-sm font-semibold text-slate-700">${safeField}</h5>
+            <span class="text-xs text-gray-500">配置生成 AI 输出该字段所需的信息</span>
+          </div>
+          <div class="mt-3">
+            <label class="block text-xs font-medium text-gray-600 mb-1">字段内容 <span class="text-red-500">*</span></label>
+            <textarea
+              class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+              rows="3"
+              data-field-name="${safeField}"
+              data-field-role="content"
+              placeholder="描述该字段应包含的内容，例如输出结构、语气等要求"
+            ></textarea>
+            <p class="text-xs text-red-600 mt-1" data-field-error></p>
+          </div>
+          <div class="mt-3">
+            <label class="block text-xs font-medium text-gray-600 mb-1">样例（可选）</label>
+            <textarea
+              class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+              rows="2"
+              data-field-name="${safeField}"
+              data-field-role="example"
+              placeholder="示例输出或格式说明（可选）"
+            ></textarea>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+
+  container.innerHTML = cardsHtml;
+
+  selectedFields.forEach((field) => {
+    const config = ensureFieldConfig(field);
+    const selector = `[data-field-config-item="${escapeCssSelector(field)}"]`;
+    const card = container.querySelector(selector);
+    if (!card) {
+      return;
+    }
+
+    const contentArea = card.querySelector('textarea[data-field-role="content"]');
+    const exampleArea = card.querySelector('textarea[data-field-role="example"]');
+
+    if (contentArea) {
+      contentArea.value = config.content || "";
+    }
+
+    if (exampleArea) {
+      exampleArea.value = config.example || "";
+    }
+  });
+
+  validateFieldConfigurations(false);
+}
+
+function ensureFieldConfig(fieldName) {
+  if (!promptEditorState.fieldConfigs[fieldName]) {
+    promptEditorState.fieldConfigs[fieldName] = {
+      content: "",
+      example: "",
+    };
+  }
+  return promptEditorState.fieldConfigs[fieldName];
+}
+
+function cloneSelectedFieldConfigs(selectedFields) {
+  const result = {};
+  selectedFields.forEach((field) => {
+    const config = ensureFieldConfig(field);
+    result[field] = {
+      content: (config.content || "").trim(),
+      example: (config.example || "").trim(),
+    };
+  });
+  return result;
+}
+
+function setPromptConfigStatus(message = "", level = "") {
+  const statusElement = document.getElementById("prompt-config-status");
+  if (!statusElement) {
+    return;
+  }
+
+  const baseClass = "text-xs mt-1";
+  let colorClass = "text-gray-500";
+
+  if (level === "error") {
+    colorClass = "text-red-600";
+  } else if (level === "success") {
+    colorClass = "text-green-600";
+  } else if (level === "info") {
+    colorClass = "text-gray-500";
+  }
+
+  statusElement.className = `${baseClass} ${colorClass}`;
+  statusElement.textContent = message;
+}
+
+function validateFieldConfigurations(showStatus = false) {
+  const selectedFields = promptEditorState.selectedFields || [];
+  const configList = document.getElementById("field-config-list");
+  const missingFields = [];
+
+  selectedFields.forEach((field) => {
+    const config = ensureFieldConfig(field);
+    const contentValue = (config.content || "").trim();
+    const selector = `[data-field-config-item="${escapeCssSelector(field)}"]`;
+    const card = configList ? configList.querySelector(selector) : null;
+    const errorLabel = card ? card.querySelector("[data-field-error]") : null;
+
+    if (!contentValue) {
+      missingFields.push(field);
+      if (card) {
+        card.classList.remove("border-slate-200");
+        card.classList.add("border-red-300");
+      }
+      if (errorLabel) {
+        errorLabel.textContent = "字段内容为必填项";
+      }
+    } else {
+      if (card) {
+        card.classList.remove("border-red-300");
+        if (!card.classList.contains("border-slate-200")) {
+          card.classList.add("border-slate-200");
+        }
+      }
+      if (errorLabel) {
+        errorLabel.textContent = "";
+      }
+    }
+  });
+
+  if (selectedFields.length === 0) {
+    if (showStatus) {
+      setPromptConfigStatus("请选择至少一个要输出的字段。", "error");
+    }
+    return { isValid: false, missingFields };
+  }
+
+  if (missingFields.length > 0) {
+    if (showStatus) {
+      const message =
+        missingFields.length === 1
+          ? `字段“${missingFields[0]}”的内容不能为空。`
+          : `以下字段内容不能为空：${missingFields.join("、")}`;
+      setPromptConfigStatus(message, "error");
+    }
+    return { isValid: false, missingFields };
+  }
+
+  if (showStatus) {
+    setPromptConfigStatus("字段配置已就绪。", "success");
+    setTimeout(() => {
+      setPromptConfigStatus("", "");
+    }, 1500);
+  } else {
+    setPromptConfigStatus("", "");
+  }
+
+  return { isValid: true, missingFields: [] };
+}
+
+function escapeCssSelector(value) {
+  if (window.CSS && typeof window.CSS.escape === "function") {
+    return window.CSS.escape(value);
+  }
+  return value.replace(/([\s!"#$%&'()*+,./:;<=>?@[\]^`{|}~])/g, "\$1");
+}
+
+function escapeHtml(value) {
+  if (typeof value !== "string") {
+    return "";
+  }
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+
 
 /**
  * モデル専用Promptをデフォルトに戻す
@@ -211,20 +526,47 @@ function handleResetGlobalPromptTemplate() {
  * @param {string[]} fields - フィールド一覧
  */
 function showPromptConfig(modelName, fields) {
-  const promptContainer = document.getElementById("prompt-field-tags");
-  const fieldTagsList = document.getElementById("field-tags-list");
+  const editorContainer = document.getElementById("prompt-field-editor");
+  const selectionList = document.getElementById("field-selection-list");
+  const configList = document.getElementById("field-config-list");
   const promptTextarea = document.getElementById("custom-prompt-textarea");
   const preview = document.getElementById("prompt-preview-content");
   const currentModelLabel = document.getElementById("prompt-current-model");
   const resetButton = document.getElementById("reset-prompt-btn");
   const modelHint = document.getElementById("prompt-model-hint");
 
-  if (!promptContainer || !fieldTagsList || !promptTextarea || !preview) {
+  if (!editorContainer || !selectionList || !configList || !promptTextarea || !preview) {
     console.warn("Prompt設定要素が見つかりません");
     return;
   }
 
   promptEditorState.currentModel = modelName;
+  promptEditorState.availableFields = Array.isArray(fields) ? [...fields] : [];
+
+  const promptConfig = getPromptConfigForModel(modelName, currentConfig);
+  promptEditorState.selectedFields = Array.isArray(promptConfig.selectedFields)
+    ? [...promptConfig.selectedFields]
+    : [];
+  promptEditorState.fieldConfigs = {};
+  if (promptConfig.fieldConfigs && typeof promptConfig.fieldConfigs === "object") {
+    Object.keys(promptConfig.fieldConfigs).forEach((fieldName) => {
+      const fieldConfig = promptConfig.fieldConfigs[fieldName] || {};
+      promptEditorState.fieldConfigs[fieldName] = {
+        content: typeof fieldConfig.content === "string" ? fieldConfig.content : "",
+        example: typeof fieldConfig.example === "string" ? fieldConfig.example : "",
+      };
+    });
+  }
+
+  const availableFields = promptEditorState.availableFields;
+  promptEditorState.selectedFields = promptEditorState.selectedFields.filter((field) =>
+    availableFields.includes(field)
+  );
+  Object.keys(promptEditorState.fieldConfigs).forEach((field) => {
+    if (!availableFields.includes(field)) {
+      delete promptEditorState.fieldConfigs[field];
+    }
+  });
 
   if (currentModelLabel) {
     currentModelLabel.textContent = `当前模板：${modelName}`;
@@ -234,18 +576,8 @@ function showPromptConfig(modelName, fields) {
     modelHint.textContent = "提示：保存设置后将在 popup 中使用此 Prompt。";
   }
 
-  if (fields.length > 0) {
-    promptContainer.style.display = "block";
-    fieldTagsList.innerHTML = fields
-      .map(
-        (field) =>
-          `<button type="button" class="field-tag-btn" data-field="${field}">${field}</button>`
-      )
-      .join("");
-  } else {
-    promptContainer.style.display = "none";
-    fieldTagsList.innerHTML = "";
-  }
+  renderFieldSelection(availableFields);
+  renderFieldConfigForm();
 
   promptTextarea.disabled = false;
   const template =
@@ -261,25 +593,30 @@ function showPromptConfig(modelName, fields) {
   markPromptDirtyFlag(false);
 }
 
+
 /**
  * Prompt設定UIをリセット
  */
 function hidePromptConfig() {
-  const promptContainer = document.getElementById("prompt-field-tags");
-  const fieldTagsList = document.getElementById("field-tags-list");
+  const editorContainer = document.getElementById("prompt-field-editor");
+  const selectionList = document.getElementById("field-selection-list");
+  const configList = document.getElementById("field-config-list");
   const promptTextarea = document.getElementById("custom-prompt-textarea");
   const preview = document.getElementById("prompt-preview-content");
   const currentModelLabel = document.getElementById("prompt-current-model");
   const resetButton = document.getElementById("reset-prompt-btn");
   const modelHint = document.getElementById("prompt-model-hint");
 
-  if (!promptContainer || !fieldTagsList || !promptTextarea || !preview) {
+  if (!editorContainer || !selectionList || !configList || !promptTextarea || !preview) {
     console.warn("Prompt設定要素が見つかりません");
     return;
   }
 
   promptEditorState.currentModel = "";
   promptEditorState.lastSavedPrompt = "";
+  promptEditorState.selectedFields = [];
+  promptEditorState.fieldConfigs = {};
+  promptEditorState.availableFields = [];
 
   if (currentModelLabel) {
     currentModelLabel.textContent = "当前模板：未选择";
@@ -290,8 +627,11 @@ function hidePromptConfig() {
       "请在「Anki 连接」面板选择要编辑的模型，随后在这里自定义 Prompt。";
   }
 
-  promptContainer.style.display = "none";
-  fieldTagsList.innerHTML = "";
+  editorContainer.style.display = "none";
+  selectionList.innerHTML = "";
+  configList.innerHTML = "";
+  setPromptConfigStatus("", "");
+
   promptTextarea.value = "";
   promptTextarea.disabled = true;
 
@@ -302,6 +642,7 @@ function hidePromptConfig() {
   preview.textContent = "请选择模板并编辑 Prompt 后，这里会显示预览效果";
   markPromptDirtyFlag(false);
 }
+
 
 /**
  * 加载并显示指定模型的Prompt模板
@@ -332,6 +673,8 @@ function loadAndDisplayPromptForModel(modelName) {
   if (resetButton) {
     resetButton.disabled = false;
   }
+
+  promptEditorState.lastSavedPrompt = promptTextarea.value;
 
   // 更新预览
   updatePromptPreview();
@@ -746,6 +1089,7 @@ async function loadAndDisplayConfig() {
 /**
  * 保存ボタン ハンドラ
  */
+
 async function handleSave() {
   // 選択中のAIプロバイダ
   const provider = document.getElementById("ai-provider").value;
@@ -773,6 +1117,7 @@ async function handleSave() {
   };
 
   // Prompt
+  const promptTextarea = document.getElementById("custom-prompt-textarea");
   const customPrompt = document.getElementById("custom-prompt").value;
   const language = document.getElementById("language-select").value;
   const defaultDeck = document.getElementById("default-deck").value;
@@ -783,10 +1128,47 @@ async function handleSave() {
   const textAlign = document.getElementById("text-align-select").value;
   const lineHeight = document.getElementById("line-height-select").value;
 
+  const isPromptEditorActive =
+    promptEditorState.currentModel && promptTextarea && !promptTextarea.disabled;
+
+  if (isPromptEditorActive) {
+    const validation = validateFieldConfigurations(true);
+    if (!validation.isValid) {
+      return;
+    }
+  }
+
   // 新しい設定
-  const existingPromptTemplatesByModel = {
-    ...(currentConfig?.promptTemplates?.promptTemplatesByModel || {}),
-  };
+  const existingPromptTemplatesByModel = {};
+  const storedPromptConfigs =
+    currentConfig?.promptTemplates?.promptTemplatesByModel || {};
+  const legacyPromptConfigs = currentConfig?.ankiConfig?.promptTemplatesByModel || {};
+
+  new Set([
+    ...Object.keys(storedPromptConfigs),
+    ...Object.keys(legacyPromptConfigs),
+  ]).forEach((modelName) => {
+    existingPromptTemplatesByModel[modelName] = getPromptConfigForModel(
+      modelName,
+      currentConfig
+    );
+  });
+
+  if (promptEditorState.currentModel) {
+    const selectedSnapshot = [...(promptEditorState.selectedFields || [])];
+    const existingConfig =
+      existingPromptTemplatesByModel[promptEditorState.currentModel] || {
+        selectedFields: [],
+        fieldConfigs: {},
+        customPrompt: "",
+      };
+
+    existingPromptTemplatesByModel[promptEditorState.currentModel] = {
+      ...existingConfig,
+      selectedFields: selectedSnapshot,
+      fieldConfigs: cloneSelectedFieldConfigs(selectedSnapshot),
+    };
+  }
 
   const newConfig = {
     aiConfig: {
@@ -817,25 +1199,34 @@ async function handleSave() {
   };
 
   let promptValueForSelectedModel = null;
-
-  // 获取当前选择的模型
   const selectedModel = document.getElementById("default-model").value;
 
-  if (selectedModel) {
-    const promptTextarea = document.getElementById("custom-prompt-textarea");
-    if (promptTextarea && !promptTextarea.disabled) {
-      const normalizedValue = promptTextarea.value.trim();
-      if (normalizedValue) {
-        if (promptTextarea.value !== normalizedValue) {
-          promptTextarea.value = normalizedValue;
-        }
-        savePromptForModel(selectedModel, normalizedValue, newConfig);
-        promptValueForSelectedModel = normalizedValue;
-      } else {
-        delete existingPromptTemplatesByModel[selectedModel];
-        promptValueForSelectedModel = "";
+  if (
+    selectedModel &&
+    promptEditorState.currentModel === selectedModel &&
+    promptTextarea &&
+    !promptTextarea.disabled
+  ) {
+    const normalizedValue = promptTextarea.value.trim();
+    if (normalizedValue) {
+      if (promptTextarea.value !== normalizedValue) {
+        promptTextarea.value = normalizedValue;
       }
+      savePromptForModel(selectedModel, normalizedValue, newConfig);
+      promptValueForSelectedModel = normalizedValue;
+    } else {
+      updatePromptConfigForModel(selectedModel, { customPrompt: "" }, newConfig);
+      promptValueForSelectedModel = "";
     }
+
+    updatePromptConfigForModel(
+      selectedModel,
+      {
+        selectedFields: [...(promptEditorState.selectedFields || [])],
+        fieldConfigs: cloneSelectedFieldConfigs(promptEditorState.selectedFields || []),
+      },
+      newConfig
+    );
   }
 
   try {
@@ -857,6 +1248,7 @@ async function handleSave() {
     updateStatus("save-status", `保存出错: ${error.message}`, "error");
   }
 }
+
 
 /**
  * モデル選択変更 ハンドラ
@@ -1332,3 +1724,7 @@ async function handleImportConfigurationFile(event) {
  * 重置配置 - 使用现有的handleResetConfiguration函数
  */
 // 这个函数已经在文件中存在了，不需要重复定义
+
+
+
+
