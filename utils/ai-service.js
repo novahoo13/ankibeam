@@ -463,7 +463,6 @@ export async function getProvidersHealth() {
       status: providerConfig.healthStatus || 'unknown',
       lastCheck: providerConfig.lastCheck || null,
       lastError: providerConfig.lastError || null,
-      enabled: providerConfig.enabled || false,
       hasApiKey: !!providerConfig.apiKey
     };
   }

@@ -25,19 +25,16 @@ const DEFAULT_CONFIG = {
       google: {
         apiKey: '',
         modelName: 'gemini-1.5-flash',
-        enabled: true,
         healthStatus: 'unknown' // unknown, healthy, error
       },
       openai: {
         apiKey: '',
         modelName: 'gpt-4o',
-        enabled: false,
         healthStatus: 'unknown'
       },
       anthropic: {
         apiKey: '',
         modelName: 'claude-3-5-sonnet-20241022',
-        enabled: false,
         healthStatus: 'unknown'
       }
     },

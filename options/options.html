@@ -176,17 +176,14 @@
               >
               <small class="text-xs text-gray-500 mt-1 block">默认：https://generativelanguage.googleapis.com/v1beta/models</small>
             </div>
-            <div class="mb-4">
-              <label class="flex items-center text-sm font-medium text-gray-700">
-                <input type="checkbox" id="google-enabled" class="mr-2 h-4 w-4 text-slate-600 focus:ring-slate-500 border-gray-300 rounded"> 
-                启用 Google Gemini
-              </label>
+            <div class="flex items-center gap-4">
+              <button
+                type="button"
+                class="test-provider-btn bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition"
+                data-provider="google"
+              >测试 Gemini 连接</button>
+              <div id="ai-status-google" class="text-sm text-gray-600 flex-1"></div>
             </div>
-            <button 
-              type="button" 
-              class="test-provider-btn bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition" 
-              data-provider="google"
-            >测试 Gemini 连接</button>
           </div>
 
           <!-- OpenAI 配置 -->
@@ -222,17 +219,14 @@
               >
               <small class="text-xs text-gray-500 mt-1 block">默认：https://api.openai.com/v1</small>
             </div>
-            <div class="mb-4">
-              <label class="flex items-center text-sm font-medium text-gray-700">
-                <input type="checkbox" id="openai-enabled" class="mr-2 h-4 w-4 text-slate-600 focus:ring-slate-500 border-gray-300 rounded"> 
-                启用 OpenAI GPT
-              </label>
+            <div class="flex items-center gap-4">
+              <button
+                type="button"
+                class="test-provider-btn bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition"
+                data-provider="openai"
+              >测试 GPT 连接</button>
+              <div id="ai-status-openai" class="text-sm text-gray-600 flex-1"></div>
             </div>
-            <button 
-              type="button" 
-              class="test-provider-btn bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition" 
-              data-provider="openai"
-            >测试 GPT 连接</button>
           </div>
 
           <!-- Anthropic 配置 -->
@@ -268,22 +262,16 @@
               >
               <small class="text-xs text-gray-500 mt-1 block">默认：https://api.anthropic.com/v1/messages</small>
             </div>
-            <div class="mb-4">
-              <label class="flex items-center text-sm font-medium text-gray-700">
-                <input type="checkbox" id="anthropic-enabled" class="mr-2 h-4 w-4 text-slate-600 focus:ring-slate-500 border-gray-300 rounded"> 
-                启用 Anthropic Claude
-              </label>
+            <div class="flex items-center gap-4">
+              <button
+                type="button"
+                class="test-provider-btn bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition"
+                data-provider="anthropic"
+              >测试 Claude 连接</button>
+              <div id="ai-status-anthropic" class="text-sm text-gray-600 flex-1"></div>
             </div>
-            <button 
-              type="button" 
-              class="test-provider-btn bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition" 
-              data-provider="anthropic"
-            >测试 Claude 连接</button>
           </div>
 
-          <div class="mt-6 pt-4 border-t border-gray-200">
-            <p id="ai-status" class="text-sm text-gray-600"></p>
-          </div>
             </div>
           </div>
 

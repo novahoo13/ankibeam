@@ -657,8 +657,6 @@ async function loadAndDisplayConfig() {
     if (modelInput) modelInput.value = providerConfig.modelName || '';
     const urlInput = document.getElementById(`${provider}-api-url`);
     if (urlInput) urlInput.value = providerConfig.apiUrl || '';
-    const enabledCheckbox = document.getElementById(`${provider}-enabled`);
-    if (enabledCheckbox) enabledCheckbox.checked = !!providerConfig.enabled;
   };
 
   ['google','openai','anthropic'].forEach(loadProviderConfig);
@@ -697,7 +695,6 @@ async function handleSave() {
     apiKey: actualApiKeys.google,
     modelName: document.getElementById('google-model-name').value,
     apiUrl: document.getElementById('google-api-url').value,
-    enabled: document.getElementById('google-enabled').checked,
     healthStatus: 'unknown'
   };
   
@@ -705,7 +702,6 @@ async function handleSave() {
     apiKey: actualApiKeys.openai,
     modelName: document.getElementById('openai-model-name').value,
     apiUrl: document.getElementById('openai-api-url').value,
-    enabled: document.getElementById('openai-enabled').checked,
     healthStatus: 'unknown'
   };
   
@@ -713,7 +709,6 @@ async function handleSave() {
     apiKey: actualApiKeys.anthropic,
     modelName: document.getElementById('anthropic-model-name').value,
     apiUrl: document.getElementById('anthropic-api-url').value,
-    enabled: document.getElementById('anthropic-enabled').checked,
     healthStatus: 'unknown'
   };
 
@@ -932,7 +927,7 @@ async function updateCurrentProviderStatus() {
     };
 
     const statusItem = document.createElement('div');
-    statusItem.className = `provider-status-item ${status.enabled ? '' : 'disabled'}`;
+    statusItem.className = `provider-status-item`;
 
     const indicator = document.createElement('div');
     indicator.className = `status-indicator ${status.status}`;
@@ -947,8 +942,6 @@ async function updateCurrentProviderStatus() {
     let statusMessage = '';
     if (!status.hasApiKey) {
       statusMessage = '未设置 API Key';
-    } else if (!status.enabled) {
-      statusMessage = '未启用';
     } else {
       switch (status.status) {
         case 'healthy':
@@ -995,9 +988,9 @@ async function handleTestProvider(provider) {
     });
     
     if (result.success) {
-      updateStatus('ai-status', result.message, 'success');
+      updateStatus(`ai-status-${provider}`, result.message, 'success');
     } else {
-      updateStatus('ai-status', result.message, 'error');
+      updateStatus(`ai-status-${provider}`, result.message, 'error');
     }
 
     // 刷新当前提供商状态
@@ -1005,7 +998,7 @@ async function handleTestProvider(provider) {
 
   } catch (error) {
     console.error(`${provider} 测试失败:`, error);
-    updateStatus('ai-status', `测试失败: ${error.message}`, 'error');
+    updateStatus(`ai-status-${provider}`, `测试失败: ${error.message}`, 'error');
   }
 }
 
@@ -1087,6 +1080,19 @@ function updateStatus(elementId, message, type) {
   const statusElement = document.getElementById(elementId);
   statusElement.textContent = message;
   statusElement.className = `status-${type}`;
+
+  // 清除之前的定时器（如果有）
+  if (statusElement.hideTimer) {
+    clearTimeout(statusElement.hideTimer);
+  }
+
+  // 对于success和error类型的消息，2秒后自动隐藏
+  if (type === 'success' || type === 'error') {
+    statusElement.hideTimer = setTimeout(() => {
+      statusElement.textContent = '';
+      statusElement.className = '';
+    }, 2000);
+  }
 }
 
 /**
