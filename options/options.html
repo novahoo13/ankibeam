@@ -350,11 +350,13 @@
           <div id="anki-config" class="tab-content" role="tabpanel" aria-labelledby="anki-config-tab">
             <div class="space-y-6">
           <div class="mb-4">
-            <button 
-              id="test-anki-btn"
-              class="bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition"
-            >测试 Anki 连接</button>
-            <p id="anki-status" class="text-sm text-gray-600 mt-2"></p>
+            <div class="flex items-center gap-4">
+              <button
+                id="test-anki-btn"
+                class="bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition"
+              >测试 Anki 连接</button>
+              <p id="anki-status" class="text-sm text-gray-600 flex-1"></p>
+            </div>
           </div>
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -386,11 +388,6 @@
             </div>
           </div>
           
-          <button 
-            id="refresh-anki-data" 
-            style="display: none;"
-            class="bg-slate-500 hover:bg-slate-600 text-white font-medium py-2 px-4 rounded-md transition"
-          >刷新 Anki 数据</button>
             </div>
           </div>
 
