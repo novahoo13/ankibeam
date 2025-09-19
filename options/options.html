@@ -1,533 +1,767 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <title>设置</title>
-  <link rel="stylesheet" href="../styles/tailwind.min.css">
-  <link rel="stylesheet" href="../styles/custom-classes.css">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    /* Tab切换样式 */
-    .tab-content { 
-      display: none; 
-      animation: fadeIn 0.3s ease-in-out;
-    }
-    .tab-content.active { 
-      display: block; 
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    /* Tab按钮样式优化 */
-    .settings-tab-btn {
-      position: relative;
-      transition: all 0.2s ease-in-out;
-    }
-    
-    .settings-tab-btn:focus {
-      outline: none;
-      box-shadow: 0 0 0 2px rgba(71, 85, 105, 0.2);
-    }
-    
-    .settings-tab-btn.active {
-      background-color: rgb(248, 250, 252);
-      color: rgb(71, 85, 105);
-      border-bottom-color: rgb(71, 85, 105);
-    }
-  </style>
-</head>
-<body>
-  <div class="min-h-screen bg-gray-50">
-    <div class="container mx-auto px-4 py-8 max-w-2xl">
-      <div class="bg-white rounded-lg shadow-md p-6">
-        <h1 class="text-3xl font-bold text-gray-900 mb-8 text-center">设置中心</h1>
-        
-        <!-- Tab导航栏 -->
-        <nav class="flex space-x-1 mb-6 border-b border-gray-200" role="tablist">
-          <button
-            role="tab"
-            aria-selected="true"
-            aria-controls="ai-config-panel"
-            class="settings-tab-btn flex items-center px-3 py-2 text-xs font-medium text-slate-600 bg-slate-50 border-b-2 border-slate-500 hover:bg-slate-100 transition-colors duration-200 active"
-            data-tab="ai-config"
-          >
-            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-            </svg>
-            AI 配置
-          </button>
-          <button
-            role="tab"
-            aria-selected="false"
-            aria-controls="prompt-config-panel"
-            class="settings-tab-btn flex items-center px-3 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent hover:border-gray-300 transition-colors duration-200"
-            data-tab="prompt-config"
-          >
-            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-            </svg>
-            Prompt 配置
-          </button>
-          <button
-            role="tab"
-            aria-selected="false"
-            aria-controls="anki-config-panel"
-            class="settings-tab-btn flex items-center px-3 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent hover:border-gray-300 transition-colors duration-200"
-            data-tab="anki-config"
-          >
-            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-            </svg>
-            Anki 连接
-          </button>
-          <button
-            role="tab"
-            aria-selected="false"
-            aria-controls="system-config-panel"
-            class="settings-tab-btn flex items-center px-3 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent hover:border-gray-300 transition-colors duration-200"
-            data-tab="system-config"
-          >
-            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-            </svg>
-            系统设置
-          </button>
-          <button
-            role="tab"
-            aria-selected="false"
-            aria-controls="style-config-panel"
-            class="settings-tab-btn flex items-center px-3 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent hover:border-gray-300 transition-colors duration-200"
-            data-tab="style-config"
-          >
-            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z"></path>
-            </svg>
-            样式设置
-          </button>
-        </nav>
-        
-        <!-- Tab内容容器 -->
-        <div class="settings-tab-content">
+  <head>
+    <meta charset="UTF-8" />
+    <title>设置</title>
+    <link rel="stylesheet" href="../styles/tailwind.min.css" />
+    <link rel="stylesheet" href="../styles/custom-classes.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      /* Tab切换样式 */
+      .tab-content {
+        display: none;
+        animation: fadeIn 0.3s ease-in-out;
+      }
+      .tab-content.active {
+        display: block;
+      }
 
-          <!-- AI配置面板 -->
-          <div id="ai-config" class="tab-content active" role="tabpanel" aria-labelledby="ai-config-tab">
-            <div class="space-y-6">
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
 
-          <div class="mb-6">
-            <label for="ai-provider" class="block text-sm font-medium text-gray-700 mb-2">选择 AI 提供商</label>
-            <select 
-              id="ai-provider"
-              class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+      /* Tab按钮样式优化 */
+      .settings-tab-btn {
+        position: relative;
+        transition: all 0.2s ease-in-out;
+      }
+
+      .settings-tab-btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(71, 85, 105, 0.2);
+      }
+
+      .settings-tab-btn.active {
+        background-color: rgb(248, 250, 252);
+        color: rgb(71, 85, 105);
+        border-bottom-color: rgb(71, 85, 105);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="min-h-screen bg-gray-50">
+      <div class="container mx-auto px-4 py-8 max-w-2xl">
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h1 class="text-3xl font-bold text-gray-900 mb-8 text-center">
+            设置中心
+          </h1>
+
+          <!-- Tab导航栏 -->
+          <nav
+            class="flex space-x-1 mb-6 border-b border-gray-200"
+            role="tablist"
+          >
+            <button
+              role="tab"
+              aria-selected="true"
+              aria-controls="ai-config-panel"
+              class="settings-tab-btn flex items-center px-3 py-2 text-xs font-medium text-slate-600 bg-slate-50 border-b-2 border-slate-500 hover:bg-slate-100 transition-colors duration-200 active"
+              data-tab="ai-config"
             >
-              <option value="google">Google (Gemini)</option>
-              <option value="openai">OpenAI (GPT)</option>
-              <option value="anthropic">Anthropic (Claude)</option>
-            </select>
-          </div>
+              <svg
+                class="w-3 h-3 mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                ></path>
+              </svg>
+              AI 配置
+            </button>
+            <button
+              role="tab"
+              aria-selected="false"
+              aria-controls="prompt-config-panel"
+              class="settings-tab-btn flex items-center px-3 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent hover:border-gray-300 transition-colors duration-200"
+              data-tab="prompt-config"
+            >
+              <svg
+                class="w-3 h-3 mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                ></path>
+              </svg>
+              Prompt 配置
+            </button>
+            <button
+              role="tab"
+              aria-selected="false"
+              aria-controls="anki-config-panel"
+              class="settings-tab-btn flex items-center px-3 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent hover:border-gray-300 transition-colors duration-200"
+              data-tab="anki-config"
+            >
+              <svg
+                class="w-3 h-3 mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                ></path>
+              </svg>
+              Anki 连接
+            </button>
+            <button
+              role="tab"
+              aria-selected="false"
+              aria-controls="system-config-panel"
+              class="settings-tab-btn flex items-center px-3 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent hover:border-gray-300 transition-colors duration-200"
+              data-tab="system-config"
+            >
+              <svg
+                class="w-3 h-3 mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                ></path>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                ></path>
+              </svg>
+              系统设置
+            </button>
+            <button
+              role="tab"
+              aria-selected="false"
+              aria-controls="style-config-panel"
+              class="settings-tab-btn flex items-center px-3 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent hover:border-gray-300 transition-colors duration-200"
+              data-tab="style-config"
+            >
+              <svg
+                class="w-3 h-3 mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z"
+                ></path>
+              </svg>
+              样式设置
+            </button>
+          </nav>
 
+          <!-- Tab内容容器 -->
+          <div class="settings-tab-content">
+            <!-- AI配置面板 -->
+            <div
+              id="ai-config"
+              class="tab-content active"
+              role="tabpanel"
+              aria-labelledby="ai-config-tab"
+            >
+              <div class="space-y-6">
+                <div class="mb-6">
+                  <label
+                    for="ai-provider"
+                    class="block text-sm font-medium text-gray-700 mb-2"
+                    >选择 AI 提供商</label
+                  >
+                  <select
+                    id="ai-provider"
+                    class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+                  >
+                    <option value="google">Google (Gemini)</option>
+                    <option value="openai">OpenAI (GPT)</option>
+                    <option value="anthropic">Anthropic (Claude)</option>
+                  </select>
+                </div>
 
-          <!-- Google Gemini 配置 -->
-          <div id="config-google" class="provider-config bg-slate-50 border border-slate-200 rounded-md p-6 mb-6">
-            <div class="mb-4">
-              <label for="google-api-key" class="block text-sm font-medium text-gray-700 mb-2">Gemini API Key</label>
-              <div class="flex gap-2">
-                <input 
-                  type="password" 
-                  id="google-api-key" 
-                  placeholder="输入 Gemini API Key"
-                  class="flex-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                <!-- Google Gemini 配置 -->
+                <div
+                  id="config-google"
+                  class="provider-config bg-slate-50 border border-slate-200 rounded-md p-6 mb-6"
                 >
-                <button 
-                  type="button" 
-                  class="toggle-visibility-btn bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded-md transition" 
-                  data-target="google-api-key"
-                >显示</button>
-              </div>
-              <small class="text-xs text-gray-500 mt-1 block">获取 API Key：<a href="https://makersuite.google.com/app/apikey" target="_blank" class="text-slate-600 hover:underline">Google AI Studio</a></small>
-            </div>
-            <div class="mb-4">
-              <label for="google-model-name" class="block text-sm font-medium text-gray-700 mb-2">模型名称</label>
-              <input 
-                type="text" 
-                id="google-model-name" 
-                placeholder="例如：gemini-2.5-flash-lite"
-                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-              >
-              <small class="text-xs text-gray-500 mt-1 block">常用模型：gemini-2.5-pro、gemini-2.5-flash、gemini-2.5-flash-lite</small>
-            </div>
-            <div class="mb-4">
-              <label for="google-api-url" class="block text-sm font-medium text-gray-700 mb-2">API 地址</label>
-              <input 
-                type="text" 
-                id="google-api-url" 
-                placeholder="例如：https://generativelanguage.googleapis.com/v1beta/models"
-                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-              >
-              <small class="text-xs text-gray-500 mt-1 block">默认：https://generativelanguage.googleapis.com/v1beta/models</small>
-            </div>
-            <div class="flex items-center gap-4">
-              <button
-                type="button"
-                class="test-provider-btn bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition"
-                data-provider="google"
-              >测试 Gemini 连接</button>
-              <div id="ai-status-google" class="text-sm text-gray-600 flex-1"></div>
-            </div>
-          </div>
-
-          <!-- OpenAI 配置 -->
-          <div id="config-openai" class="provider-config bg-slate-50 border border-slate-200 rounded-md p-6 mb-6" style="display: none;">
-            <div class="mb-4">
-              <label for="openai-api-key" class="block text-sm font-medium text-gray-700 mb-2">OpenAI API Key</label>
-              <input 
-                type="password" 
-                id="openai-api-key" 
-                placeholder="sk-..."
-                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-              >
-              <small class="text-xs text-gray-500 mt-1 block">获取 API Key：<a href="https://platform.openai.com/api-keys" target="_blank" class="text-slate-600 hover:underline">OpenAI Platform</a></small>
-            </div>
-            <div class="mb-4">
-              <label for="openai-model-name" class="block text-sm font-medium text-gray-700 mb-2">模型名称</label>
-              <input 
-                type="text" 
-                id="openai-model-name" 
-                placeholder="例如：gpt-4o-mini"
-                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-              >
-              <small class="text-xs text-gray-500 mt-1 block">常用模型：gpt-4o、gpt-4o-mini、gpt-4-turbo、gpt-5</small>
-            </div>
-            <div class="mb-4">
-              <label for="openai-api-url" class="block text-sm font-medium text-gray-700 mb-2">API 地址</label>
-              <input 
-                type="text" 
-                id="openai-api-url" 
-                placeholder="例如：https://api.openai.com/v1"
-                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-              >
-              <small class="text-xs text-gray-500 mt-1 block">默认：https://api.openai.com/v1</small>
-            </div>
-            <div class="flex items-center gap-4">
-              <button
-                type="button"
-                class="test-provider-btn bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition"
-                data-provider="openai"
-              >测试 GPT 连接</button>
-              <div id="ai-status-openai" class="text-sm text-gray-600 flex-1"></div>
-            </div>
-          </div>
-
-          <!-- Anthropic 配置 -->
-          <div id="config-anthropic" class="provider-config bg-slate-50 border border-slate-200 rounded-md p-6 mb-6" style="display: none;">
-            <div class="mb-4">
-              <label for="anthropic-api-key" class="block text-sm font-medium text-gray-700 mb-2">Anthropic API Key</label>
-              <input 
-                type="password" 
-                id="anthropic-api-key" 
-                placeholder="输入 API Key"
-                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-              >
-              <small class="text-xs text-gray-500 mt-1 block">获取 API Key：<a href="https://console.anthropic.com/settings/keys" target="_blank" class="text-slate-600 hover:underline">Anthropic Console</a></small>
-            </div>
-            <div class="mb-4">
-              <label for="anthropic-model-name" class="block text-sm font-medium text-gray-700 mb-2">模型名称</label>
-              <input 
-                type="text" 
-                id="anthropic-model-name" 
-                placeholder="例如：claude-3-7-sonnet-all"
-                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-              >
-              <small class="text-xs text-gray-500 mt-1 block">常用模型：claude-3-7-sonnet-all、claude-sonnet-4-all、claude-opus-4-all</small>
-            </div>
-            <div class="mb-4">
-              <label for="anthropic-api-url" class="block text-sm font-medium text-gray-700 mb-2">API 地址</label>
-              <input 
-                type="text" 
-                id="anthropic-api-url" 
-                placeholder="例如：https://api.anthropic.com/v1/messages"
-                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-              >
-              <small class="text-xs text-gray-500 mt-1 block">默认：https://api.anthropic.com/v1/messages</small>
-            </div>
-            <div class="flex items-center gap-4">
-              <button
-                type="button"
-                class="test-provider-btn bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition"
-                data-provider="anthropic"
-              >测试 Claude 连接</button>
-              <div id="ai-status-anthropic" class="text-sm text-gray-600 flex-1"></div>
-            </div>
-          </div>
-
-            </div>
-          </div>
-
-          <!-- Prompt配置面板 -->
-          <div id="prompt-config" class="tab-content" role="tabpanel" aria-labelledby="prompt-config-tab">
-            <div class="space-y-8">
-              <section class="bg-slate-50 border border-slate-200 rounded-md p-5 shadow-sm prompt-config-editor">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-                  <div>
-                    <h3 class="text-lg font-semibold text-gray-800">按模板配置 Prompt</h3>
-                    <p id="prompt-model-hint" class="text-sm text-gray-600">请在「Anki 连接」面板选择要编辑的模型，随后在这里自定义 Prompt。</p>
-                  </div>
-                  <span id="prompt-current-model" class="text-sm text-slate-600 bg-white border border-slate-200 rounded-md px-3 py-1">当前模板：未选择</span>
-                </div>
-
-                <div id="prompt-field-editor" class="bg-white border border-slate-200 rounded-md p-4 space-y-4" style="display: none;">
-                  <div>
-                    <div class="flex items-center justify-between">
-                      <h4 class="text-sm font-medium text-gray-700">字段选择</h4>
-                      <span class="text-xs text-gray-500">点击字段切换选中状态</span>
+                  <div class="mb-4">
+                    <label
+                      for="google-api-key"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                      >Gemini API Key</label
+                    >
+                    <div class="flex gap-2">
+                      <input
+                        type="password"
+                        id="google-api-key"
+                        placeholder="输入 Gemini API Key"
+                        class="flex-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                      />
+                      <button
+                        type="button"
+                        class="toggle-visibility-btn bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded-md transition"
+                        data-target="google-api-key"
+                      >
+                        显示
+                      </button>
                     </div>
-                    <div id="field-selection-list" class="flex flex-wrap gap-2 mt-3"></div>
+                    <small class="text-xs text-gray-500 mt-1 block"
+                      >获取 API Key：<a
+                        href="https://makersuite.google.com/app/apikey"
+                        target="_blank"
+                        class="text-slate-600 hover:underline"
+                        >Google AI Studio</a
+                      ></small
+                    >
                   </div>
-                  <div>
-                    <h4 class="text-sm font-medium text-gray-700">字段配置</h4>
-                    <div id="field-config-list" class="mt-3 space-y-4"></div>
+                  <div class="mb-4">
+                    <label
+                      for="google-model-name"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                      >模型名称</label
+                    >
+                    <input
+                      type="text"
+                      id="google-model-name"
+                      placeholder="例如：gemini-2.5-flash-lite"
+                      class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                    />
+                    <small class="text-xs text-gray-500 mt-1 block"
+                      >常用模型：gemini-2.5-pro、gemini-2.5-flash、gemini-2.5-flash-lite</small
+                    >
                   </div>
-                  <p id="prompt-config-status" class="text-xs text-gray-500"></p>
+                  <div class="mb-4">
+                    <label
+                      for="google-api-url"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                      >API 地址</label
+                    >
+                    <input
+                      type="text"
+                      id="google-api-url"
+                      placeholder="例如：https://generativelanguage.googleapis.com/v1beta/models"
+                      class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                    />
+                    <small class="text-xs text-gray-500 mt-1 block"
+                      >默认：https://generativelanguage.googleapis.com/v1beta/models</small
+                    >
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <button
+                      type="button"
+                      class="test-provider-btn bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition"
+                      data-provider="google"
+                    >
+                      测试 Gemini 连接
+                    </button>
+                    <div
+                      id="ai-status-google"
+                      class="text-sm text-gray-600 flex-1"
+                    ></div>
+                  </div>
                 </div>
 
-                <div class="form-group mt-4">
-                  <label for="custom-prompt-textarea" class="block text-sm font-medium text-gray-700 mb-2">自定义 Prompt 模板</label>
-                  <textarea
-                    id="custom-prompt-textarea"
-                    rows="12"
-                    class="w-full p-3 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 font-mono text-sm"
-                    placeholder="请选择模型后编写对应的 Prompt。
+                <!-- OpenAI 配置 -->
+                <div
+                  id="config-openai"
+                  class="provider-config bg-slate-50 border border-slate-200 rounded-md p-6 mb-6"
+                  style="display: none"
+                >
+                  <div class="mb-4">
+                    <label
+                      for="openai-api-key"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                      >OpenAI API Key</label
+                    >
+                    <input
+                      type="password"
+                      id="openai-api-key"
+                      placeholder="sk-..."
+                      class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                    />
+                    <small class="text-xs text-gray-500 mt-1 block"
+                      >获取 API Key：<a
+                        href="https://platform.openai.com/api-keys"
+                        target="_blank"
+                        class="text-slate-600 hover:underline"
+                        >OpenAI Platform</a
+                      ></small
+                    >
+                  </div>
+                  <div class="mb-4">
+                    <label
+                      for="openai-model-name"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                      >模型名称</label
+                    >
+                    <input
+                      type="text"
+                      id="openai-model-name"
+                      placeholder="例如：gpt-4o-mini"
+                      class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                    />
+                    <small class="text-xs text-gray-500 mt-1 block"
+                      >常用模型：gpt-4o、gpt-4o-mini、gpt-4-turbo、gpt-5</small
+                    >
+                  </div>
+                  <div class="mb-4">
+                    <label
+                      for="openai-api-url"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                      >API 地址</label
+                    >
+                    <input
+                      type="text"
+                      id="openai-api-url"
+                      placeholder="例如：https://api.openai.com/v1"
+                      class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                    />
+                    <small class="text-xs text-gray-500 mt-1 block"
+                      >默认：https://api.openai.com/v1</small
+                    >
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <button
+                      type="button"
+                      class="test-provider-btn bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition"
+                      data-provider="openai"
+                    >
+                      测试 GPT 连接
+                    </button>
+                    <div
+                      id="ai-status-openai"
+                      class="text-sm text-gray-600 flex-1"
+                    ></div>
+                  </div>
+                </div>
+
+                <!-- Anthropic 配置 -->
+                <div
+                  id="config-anthropic"
+                  class="provider-config bg-slate-50 border border-slate-200 rounded-md p-6 mb-6"
+                  style="display: none"
+                >
+                  <div class="mb-4">
+                    <label
+                      for="anthropic-api-key"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                      >Anthropic API Key</label
+                    >
+                    <input
+                      type="password"
+                      id="anthropic-api-key"
+                      placeholder="输入 API Key"
+                      class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                    />
+                    <small class="text-xs text-gray-500 mt-1 block"
+                      >获取 API Key：<a
+                        href="https://console.anthropic.com/settings/keys"
+                        target="_blank"
+                        class="text-slate-600 hover:underline"
+                        >Anthropic Console</a
+                      ></small
+                    >
+                  </div>
+                  <div class="mb-4">
+                    <label
+                      for="anthropic-model-name"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                      >模型名称</label
+                    >
+                    <input
+                      type="text"
+                      id="anthropic-model-name"
+                      placeholder="例如：claude-3-7-sonnet-all"
+                      class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                    />
+                    <small class="text-xs text-gray-500 mt-1 block"
+                      >常用模型：claude-3-7-sonnet-all、claude-sonnet-4-all、claude-opus-4-all</small
+                    >
+                  </div>
+                  <div class="mb-4">
+                    <label
+                      for="anthropic-api-url"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                      >API 地址</label
+                    >
+                    <input
+                      type="text"
+                      id="anthropic-api-url"
+                      placeholder="例如：https://api.anthropic.com/v1/messages"
+                      class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                    />
+                    <small class="text-xs text-gray-500 mt-1 block"
+                      >默认：https://api.anthropic.com/v1/messages</small
+                    >
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <button
+                      type="button"
+                      class="test-provider-btn bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition"
+                      data-provider="anthropic"
+                    >
+                      测试 Claude 连接
+                    </button>
+                    <div
+                      id="ai-status-anthropic"
+                      class="text-sm text-gray-600 flex-1"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Prompt配置面板 -->
+            <div
+              id="prompt-config"
+              class="tab-content"
+              role="tabpanel"
+              aria-labelledby="prompt-config-tab"
+            >
+              <div class="space-y-8">
+                <section
+                  class="bg-slate-50 border border-slate-200 rounded-md p-5 shadow-sm prompt-config-editor"
+                >
+                  <div
+                    class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4"
+                  >
+                    <div>
+                      <h3 class="text-lg font-semibold text-gray-800">
+                        按模板配置 Prompt
+                      </h3>
+                      <p id="prompt-model-hint" class="text-sm text-gray-600">
+                        请在「Anki 连接」面板选择要编辑的模型，随后在这里自定义
+                        Prompt。
+                      </p>
+                    </div>
+                    <span
+                      id="prompt-current-model"
+                      class="text-sm text-slate-600 bg-white border border-slate-200 rounded-md px-3 py-1"
+                      >当前模板：未选择</span
+                    >
+                  </div>
+
+                  <div
+                    id="prompt-field-editor"
+                    class="bg-white border border-slate-200 rounded-md p-4 space-y-4"
+                    style="display: none"
+                  >
+                    <div>
+                      <div class="flex items-center justify-between">
+                        <h4 class="text-sm font-medium text-gray-700">
+                          字段选择
+                        </h4>
+                        <span class="text-xs text-gray-500"
+                          >点击字段切换选中状态</span
+                        >
+                      </div>
+                      <div
+                        id="field-selection-list"
+                        class="flex flex-wrap gap-2 mt-3"
+                      ></div>
+                    </div>
+                    <div>
+                      <h4 class="text-sm font-medium text-gray-700">
+                        字段配置
+                      </h4>
+                      <div id="field-config-list" class="mt-3 space-y-4"></div>
+                    </div>
+                    <p
+                      id="prompt-config-status"
+                      class="text-xs text-gray-500"
+                    ></p>
+                  </div>
+
+                  <div class="form-group mt-4">
+                    <label
+                      for="custom-prompt-textarea"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                      >自定义 Prompt 模板</label
+                    >
+                    <textarea
+                      id="custom-prompt-textarea"
+                      rows="12"
+                      class="w-full p-3 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 font-mono text-sm"
+                      placeholder="请选择模型后编写对应的 Prompt。
 建议包含以下占位符：
 - {{INPUT_TEXT}} 表示用户输入
 - {{FIELD_SCHEMA}} 表示字段结构"
-                    disabled
-                  ></textarea>
-                  <p class="text-xs text-gray-500 mt-2">提示：点击上方字段标签可快速插入 {{字段名}} 占位符。</p>
-                </div>
+                      disabled
+                    ></textarea>
+                  </div>
 
-                <div class="flex items-center gap-3 mt-3">
-                  <button
-                    type="button"
-                    id="reset-prompt-btn"
-                    class="bg-slate-500 hover:bg-slate-600 text-white font-medium py-2 px-4 rounded-md transition disabled:opacity-50"
-                    disabled
-                  >重置为默认模板</button>
-                  <span id="prompt-dirty-flag" class="text-xs text-slate-500" style="display: none;">已修改，保存后生效</span>
-                </div>
-
-                <div class="form-group mt-4">
-                  <h4 class="text-sm font-medium text-gray-700 mb-2">预览效果</h4>
-                  <pre
-                    id="prompt-preview-content"
-                    class="prompt-preview-area bg-white border border-slate-200 rounded-md p-3 text-xs text-slate-700 max-h-56 overflow-y-auto"
-                  >请选择模板并编辑 Prompt 后，这里会显示预览效果</pre>
-                </div>
-              </section>
-
-              <section class="bg-white border border-gray-200 rounded-md p-5 shadow-sm">
-                <h3 class="text-lg font-semibold text-gray-800 mb-3">全局默认 Prompt</h3>
-                <p class="text-sm text-gray-600 mb-3">当未为模板配置专用 Prompt 时，将使用此模板。建议保留 {{INPUT_TEXT}} 与 {{FIELD_SCHEMA}} 占位符。</p>
-                <textarea
-                  id="custom-prompt"
-                  rows="8"
-                  class="w-full p-3 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 font-mono text-sm"
-                  placeholder="请编写一个能将输入文本解析为 JSON 的 Prompt。
-输出 JSON 结构示例：
-{
-  &quot;Front&quot;: &quot;正面内容&quot;,
-  &quot;Back&quot;: &quot;背面内容（可包含解释/例句）&quot;
-}
-
-输入文本：
----
-{{INPUT_TEXT}}
----"
-                ></textarea>
-                <div class="flex items-center gap-3 mt-3">
-                  <button
-                    type="button"
-                    id="reset-global-prompt-btn"
-                    class="bg-slate-500 hover:bg-slate-600 text-white font-medium py-2 px-4 rounded-md transition"
-                  >重置全局模板</button>
-                </div>
-              </section>
-            </div>
-          </div>
-          <!-- Anki配置面板 -->
-          <div id="anki-config" class="tab-content" role="tabpanel" aria-labelledby="anki-config-tab">
-            <div class="space-y-6">
-          <div class="mb-4">
-            <div class="flex items-center gap-4">
-              <button
-                id="test-anki-btn"
-                class="bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition"
-              >测试连接并刷新数据</button>
-              <p id="anki-status" class="text-sm text-gray-600 flex-1"></p>
-            </div>
-          </div>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div>
-              <label for="default-deck" class="block text-sm font-medium text-gray-700 mb-2">牌组</label>
-              <select 
-                id="default-deck"
-                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-              >
-                <option value="">请先测试 Anki 连接</option>
-              </select>
-            </div>
-            
-            <div>
-              <label for="default-model" class="block text-sm font-medium text-gray-700 mb-2">模型</label>
-              <select 
-                id="default-model"
-                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-              >
-                <option value="">请先测试 Anki 连接</option>
-              </select>
-            </div>
-          </div>
-          
-          <div id="field-mapping" class="mb-4" style="display: none;">
-            <h3 class="text-lg font-semibold text-gray-700 mb-3">字段信息</h3>
-            <div class="field-mapping-container bg-gray-50 border border-gray-200 rounded-md p-4">
-              <!-- 运行时填入字段列表 -->
-            </div>
-          </div>
-          
-            </div>
-          </div>
-
-          <!-- 系统配置面板 -->
-          <div id="system-config" class="tab-content" role="tabpanel" aria-labelledby="system-config-tab">
-            <div class="space-y-6">
-          <div class="mb-4">
-            <label for="language-select" class="block text-sm font-medium text-gray-700 mb-2">语言</label>
-            <select
-              id="language-select"
-              class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-            >
-              <option value="zh-CN">简体中文</option>
-            </select>
-          </div>
-
-          <!-- 配置管理区域 -->
-          <section class="p-6 bg-gray-50 border border-gray-200 rounded-md">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">配置管理</h3>
-            <p class="text-sm text-gray-600 mb-4">导出、导入或重置您的配置设置。注意：导出的配置文件不包含API密钥以确保安全。</p>
-
-            <div class="flex flex-col sm:flex-row gap-3">
-              <button
-                type="button"
-                id="export-config-btn"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-200"
-              >
-                📤 导出配置
-              </button>
-
-              <div class="flex items-center">
-                <input
-                  type="file"
-                  id="import-config-input"
-                  accept=".json"
-                  class="hidden"
-                />
-                <button
-                  type="button"
-                  id="import-config-btn"
-                  class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition duration-200"
-                >
-                  📥 导入配置
-                </button>
+                  <div class="flex items-center gap-3 mt-3">
+                    <button
+                      type="button"
+                      id="reset-prompt-btn"
+                      class="bg-slate-500 hover:bg-slate-600 text-white font-medium py-2 px-4 rounded-md transition disabled:opacity-50"
+                      disabled
+                    >
+                      重置为默认模板
+                    </button>
+                    <span
+                      id="prompt-dirty-flag"
+                      class="text-xs text-slate-500"
+                      style="display: none"
+                      >已修改，保存后生效</span
+                    >
+                  </div>
+                </section>
               </div>
-
-              <button
-                type="button"
-                id="reset-config-btn"
-                class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition duration-200"
-              >
-                🔄 重置配置
-              </button>
             </div>
-
-            <div class="mt-3">
-              <p id="config-management-status" class="text-sm text-gray-600"></p>
-            </div>
-          </section>
-            </div>
-          </div>
-
-          <!-- 样式配置面板 -->
-          <div id="style-config" class="tab-content" role="tabpanel" aria-labelledby="style-config-tab">
-            <div class="space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div>
-              <label for="font-size-select" class="block text-sm font-medium text-gray-700 mb-2">字体大小</label>
-              <select 
-                id="font-size-select"
-                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-              >
-                <option value="12px">小 (12px)</option>
-                <option value="14px">中 (14px)</option>
-                <option value="16px">大 (16px)</option>
-                <option value="18px">更大 (18px)</option>
-              </select>
-            </div>
-            <div>
-              <label for="text-align-select" class="block text-sm font-medium text-gray-700 mb-2">文本对齐</label>
-              <select 
-                id="text-align-select"
-                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-              >
-                <option value="left">左对齐</option>
-                <option value="center">居中</option>
-                <option value="right">右对齐</option>
-              </select>
-            </div>
-            <div>
-              <label for="line-height-select" class="block text-sm font-medium text-gray-700 mb-2">行高</label>
-              <select 
-                id="line-height-select"
-                class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-              >
-                <option value="1.2">紧凑 (1.2)</option>
-                <option value="1.4">适中 (1.4)</option>
-                <option value="1.6">宽松 (1.6)</option>
-              </select>
-            </div>
-          </div>
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">样式预览</label>
-            <div 
-              id="style-preview" 
-              class="border border-gray-300 rounded-md p-4 bg-gray-50"
+            <!-- Anki配置面板 -->
+            <div
+              id="anki-config"
+              class="tab-content"
+              role="tabpanel"
+              aria-labelledby="anki-config-tab"
             >
-              <div id="preview-content">这是一个示例文本。<br>用于预览字体、对齐与行高效果。</div>
+              <div class="space-y-6">
+                <div class="mb-4">
+                  <div class="flex items-center gap-4">
+                    <button
+                      id="test-anki-btn"
+                      class="bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition"
+                    >
+                      测试连接并刷新模型
+                    </button>
+                    <p
+                      id="anki-status"
+                      class="text-sm text-gray-600 flex-1"
+                    ></p>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <label
+                      for="default-deck"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                      >牌组</label
+                    >
+                    <select
+                      id="default-deck"
+                      class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+                    >
+                      <option value="">请先测试 Anki 连接</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label
+                      for="default-model"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                      >模型</label
+                    >
+                    <select
+                      id="default-model"
+                      class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+                    >
+                      <option value="">请先测试 Anki 连接</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div id="field-mapping" class="mb-4" style="display: none">
+                  <h3 class="text-lg font-semibold text-gray-700 mb-3">
+                    字段信息
+                  </h3>
+                  <div
+                    class="field-mapping-container bg-gray-50 border border-gray-200 rounded-md p-4"
+                  >
+                    <!-- 运行时填入字段列表 -->
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+
+            <!-- 系统配置面板 -->
+            <div
+              id="system-config"
+              class="tab-content"
+              role="tabpanel"
+              aria-labelledby="system-config-tab"
+            >
+              <div class="space-y-6">
+                <div class="mb-4">
+                  <label
+                    for="language-select"
+                    class="block text-sm font-medium text-gray-700 mb-2"
+                    >语言</label
+                  >
+                  <select
+                    id="language-select"
+                    class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+                  >
+                    <option value="zh-CN">简体中文</option>
+                  </select>
+                </div>
+
+                <!-- 配置管理区域 -->
+                <section
+                  class="p-6 bg-gray-50 border border-gray-200 rounded-md"
+                >
+                  <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                    配置管理
+                  </h3>
+                  <p class="text-sm text-gray-600 mb-4">
+                    导出、导入或重置您的配置设置。注意：导出的配置文件不包含API密钥以确保安全。
+                  </p>
+
+                  <div class="flex flex-col sm:flex-row gap-3">
+                    <button
+                      type="button"
+                      id="export-config-btn"
+                      class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-200"
+                    >
+                      📤 导出配置
+                    </button>
+
+                    <div class="flex items-center">
+                      <input
+                        type="file"
+                        id="import-config-input"
+                        accept=".json"
+                        class="hidden"
+                      />
+                      <button
+                        type="button"
+                        id="import-config-btn"
+                        class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition duration-200"
+                      >
+                        📥 导入配置
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      id="reset-config-btn"
+                      class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition duration-200"
+                    >
+                      🔄 重置配置
+                    </button>
+                  </div>
+
+                  <div class="mt-3">
+                    <p
+                      id="config-management-status"
+                      class="text-sm text-gray-600"
+                    ></p>
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            <!-- 样式配置面板 -->
+            <div
+              id="style-config"
+              class="tab-content"
+              role="tabpanel"
+              aria-labelledby="style-config-tab"
+            >
+              <div class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div>
+                    <label
+                      for="font-size-select"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                      >字体大小</label
+                    >
+                    <select
+                      id="font-size-select"
+                      class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+                    >
+                      <option value="12px">小 (12px)</option>
+                      <option value="14px">中 (14px)</option>
+                      <option value="16px">大 (16px)</option>
+                      <option value="18px">更大 (18px)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      for="text-align-select"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                      >文本对齐</label
+                    >
+                    <select
+                      id="text-align-select"
+                      class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+                    >
+                      <option value="left">左对齐</option>
+                      <option value="center">居中</option>
+                      <option value="right">右对齐</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label
+                      for="line-height-select"
+                      class="block text-sm font-medium text-gray-700 mb-2"
+                      >行高</label
+                    >
+                    <select
+                      id="line-height-select"
+                      class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+                    >
+                      <option value="1.2">紧凑 (1.2)</option>
+                      <option value="1.4">适中 (1.4)</option>
+                      <option value="1.6">宽松 (1.6)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="mb-4">
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >样式预览</label
+                  >
+                  <div
+                    id="style-preview"
+                    class="border border-gray-300 rounded-md p-4 bg-gray-50"
+                  >
+                    <div id="preview-content">
+                      这是一个示例文本。<br />用于预览字体、对齐与行高效果。
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
+          <footer class="mt-8 pt-6 border-t border-gray-200">
+            <div class="flex flex-col items-center space-y-3">
+              <button
+                id="save-btn"
+                class="bg-slate-700 hover:bg-slate-800 text-white font-semibold py-3 px-8 rounded-md transition duration-200 w-full md:w-auto"
+              >
+                保存设置
+              </button>
+              <p id="save-status" class="text-sm text-gray-600"></p>
+            </div>
+          </footer>
         </div>
-
-
-        <footer class="mt-8 pt-6 border-t border-gray-200">
-          <div class="flex flex-col items-center space-y-3">
-            <button 
-              id="save-btn"
-              class="bg-slate-700 hover:bg-slate-800 text-white font-semibold py-3 px-8 rounded-md transition duration-200 w-full md:w-auto"
-            >保存设置</button>
-            <p id="save-status" class="text-sm text-gray-600"></p>
-          </div>
-        </footer>
       </div>
     </div>
-  </div>
-  <script type="module" src="options.js"></script>
-</body>
+    <script type="module" src="options.js"></script>
+  </body>
 </html>
-
-

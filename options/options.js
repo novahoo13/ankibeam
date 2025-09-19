@@ -122,11 +122,8 @@ function setupPromptEditor() {
   const fieldSelectionList = document.getElementById("field-selection-list");
   const fieldConfigList = document.getElementById("field-config-list");
   const resetButton = document.getElementById("reset-prompt-btn");
-  const resetGlobalButton = document.getElementById("reset-global-prompt-btn");
-
   if (promptTextarea) {
     promptTextarea.addEventListener("input", () => {
-      updatePromptPreview();
       markPromptDirtyFlag();
     });
   }
@@ -143,12 +140,6 @@ function setupPromptEditor() {
     resetButton.addEventListener("click", handleResetPromptTemplate);
   }
 
-  if (resetGlobalButton) {
-    resetGlobalButton.addEventListener(
-      "click",
-      handleResetGlobalPromptTemplate
-    );
-  }
 
   hidePromptConfig();
   markPromptDirtyFlag(false);
@@ -214,7 +205,6 @@ function toggleFieldSelection(fieldName) {
   validateFieldConfigurations(false);
 
   synchronizeGeneratedPrompt();
-  updatePromptPreview();
   markPromptDirtyFlag();
 }
 
@@ -238,7 +228,6 @@ function handleFieldConfigInput(event) {
   validateFieldConfigurations(false);
 
   synchronizeGeneratedPrompt();
-  updatePromptPreview();
   markPromptDirtyFlag();
 }
 
@@ -606,17 +595,6 @@ function handleResetPromptTemplate() {
 }
 
 
-/**
- * グローバルPromptをリセット
- */
-function handleResetGlobalPromptTemplate() {
-  const globalTextarea = document.getElementById("custom-prompt");
-  if (!globalTextarea) {
-    return;
-  }
-
-  globalTextarea.value = getDefaultGlobalPromptTemplate();
-}
 
 /**
  * Prompt設定UIを表示
@@ -629,12 +607,11 @@ function showPromptConfig(modelName, fields) {
   const selectionList = document.getElementById("field-selection-list");
   const configList = document.getElementById("field-config-list");
   const promptTextarea = document.getElementById("custom-prompt-textarea");
-  const preview = document.getElementById("prompt-preview-content");
   const currentModelLabel = document.getElementById("prompt-current-model");
   const resetButton = document.getElementById("reset-prompt-btn");
   const modelHint = document.getElementById("prompt-model-hint");
 
-  if (!editorContainer || !selectionList || !configList || !promptTextarea || !preview) {
+  if (!editorContainer || !selectionList || !configList || !promptTextarea) {
     console.warn("Prompt設定要素が見つかりません");
     return;
   }
@@ -689,7 +666,6 @@ function showPromptConfig(modelName, fields) {
 
   const forceGenerate = !storedPrompt.trim();
   synchronizeGeneratedPrompt({ forceUpdate: forceGenerate });
-  updatePromptPreview();
   markPromptDirtyFlag();
 }
 
@@ -703,12 +679,11 @@ function hidePromptConfig() {
   const selectionList = document.getElementById("field-selection-list");
   const configList = document.getElementById("field-config-list");
   const promptTextarea = document.getElementById("custom-prompt-textarea");
-  const preview = document.getElementById("prompt-preview-content");
   const currentModelLabel = document.getElementById("prompt-current-model");
   const resetButton = document.getElementById("reset-prompt-btn");
   const modelHint = document.getElementById("prompt-model-hint");
 
-  if (!editorContainer || !selectionList || !configList || !promptTextarea || !preview) {
+  if (!editorContainer || !selectionList || !configList || !promptTextarea) {
     console.warn("Prompt設定要素が見つかりません");
     return;
   }
@@ -741,7 +716,6 @@ function hidePromptConfig() {
     resetButton.disabled = true;
   }
 
-  preview.textContent = "请选择模板并编辑 Prompt 后，这里会显示预览效果";
   markPromptDirtyFlag(false);
 }
 
@@ -766,36 +740,7 @@ function markPromptDirtyFlag(forced) {
   flag.style.display = isDirty ? "inline" : "none";
 }
 
-/**
- * モデル専用Promptのデフォルトテンプレート
- * @returns {string}
- */
-/**
- * グローバルPromptのデフォルトテンプレート
- * @returns {string}
- */
-function getDefaultGlobalPromptTemplate() {
-  return "";
-}
 
-/**
- * Promptプレビューを更新
- */
-function updatePromptPreview() {
-  const promptTextarea = document.getElementById("custom-prompt-textarea");
-  const preview = document.getElementById("prompt-preview-content");
-  if (!promptTextarea || !preview) {
-    return;
-  }
-
-  const template = promptTextarea.value;
-  if (!template || !template.trim()) {
-    preview.textContent = "请选择模板并编辑 Prompt 后，这里会显示预览效果";
-    return;
-  }
-
-  preview.textContent = template;
-}
 
 
 /**
@@ -1060,9 +1005,6 @@ async function loadAndDisplayConfig() {
 
   ["google", "openai", "anthropic"].forEach(loadProviderConfig);
 
-  // Prompt
-  const customPrompt = config?.promptTemplates?.custom || "";
-  document.getElementById("custom-prompt").value = customPrompt;
 
   // AnkiConfig
   currentModelFields = config?.ankiConfig?.modelFields || [];
@@ -1118,7 +1060,6 @@ async function handleSave() {
 
   // Prompt
   const promptTextarea = document.getElementById("custom-prompt-textarea");
-  const customPrompt = document.getElementById("custom-prompt").value;
   const language = document.getElementById("language-select").value;
   const defaultDeck = document.getElementById("default-deck").value;
   const defaultModel = document.getElementById("default-model").value;
@@ -1181,7 +1122,6 @@ async function handleSave() {
       fallbackOrder: ["google", "openai", "anthropic"],
     },
     promptTemplates: {
-      custom: customPrompt,
       promptTemplatesByModel: existingPromptTemplatesByModel,
     },
     ankiConfig: {

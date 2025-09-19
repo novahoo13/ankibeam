@@ -385,8 +385,7 @@ async function handleParse() {
 
 		if (isLegacyMode(config)) {
 			// Legacy模式：使用现有的解析逻辑
-			const customPrompt = config?.promptTemplates?.custom;
-			result = await parseTextWithFallback(textInput, customPrompt);
+			result = await parseTextWithFallback(textInput);
 			fillLegacyFields(result);
 		} else {
 			// Dynamic模式：使用动态字段解析
