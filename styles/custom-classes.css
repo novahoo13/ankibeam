@@ -51,6 +51,34 @@
   transition: border-color 0.3s ease, background-color 0.3s ease;
 }
 
+/* 自动调整高度的文本框样式 */
+.auto-resize-textarea {
+  /* 平滑的高度变化过渡效果 */
+  transition: height 0.15s ease-out;
+
+  /* 确保行高一致性 */
+  line-height: 1.5;
+
+  /* 禁用手动调整大小 */
+  resize: none;
+
+  /* 隐藏滚动条在不需要时 */
+  overflow-y: hidden;
+
+  /* 最小高度确保至少显示一行 */
+  min-height: 2.5rem;
+
+  /* 最大高度限制为5行（大约7.5rem） */
+  max-height: 7.5rem;
+}
+
+
+/* 聚焦时的样式优化 */
+.auto-resize-textarea:focus {
+  /* 保持平滑过渡 */
+  transition: height 0.15s ease-out, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
 /* Promptエディタ用の追加スタイル */
 .field-tag-btn {
   display: inline-flex;

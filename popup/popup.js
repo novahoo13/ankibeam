@@ -6,9 +6,6 @@ import { addNote, getModelFieldNames } from "../utils/ankiconnect.js";
 import { loadConfig } from "../utils/storage.js";
 import {
   isLegacyMode,
-  getLegacyFieldMapping,
-  getDynamicFieldMapping,
-  getInputTypeForField,
   collectFieldsForWrite,
   validateFields
 } from "../utils/field-handler.js";
@@ -648,28 +645,25 @@ function renderDynamicFields(fieldNames) {
 	}
 
 	const fieldsHtml = fieldNames.map((fieldName, index) => {
-
 		const inputId = `field-${index}`;
-		const inputConfig = getInputTypeForField(fieldName);
 
-		if (inputConfig.type === 'textarea') {
-			return `
-				<div class="form-group">
-					<label for="${inputId}" class="block text-sm font-medium text-gray-700 mb-1">${fieldName}:</label>
-					<textarea id="${inputId}" rows="${inputConfig.rows || 3}" placeholder="AI将自动填充此字段..." class="w-full p-2 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-sm"></textarea>
-				</div>
-			`;
-		} else {
-			return `
-				<div class="form-group">
-					<label for="${inputId}" class="block text-sm font-medium text-gray-700 mb-1">${fieldName}:</label>
-					<input type="text" id="${inputId}" placeholder="AI将自动填充此字段..." class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-sm" />
-				</div>
-			`;
-		}
+		return `
+			<div class="form-group">
+				<label for="${inputId}" class="block text-sm font-medium text-gray-700 mb-1">${fieldName}:</label>
+				<textarea
+					id="${inputId}"
+					rows="1"
+					placeholder="AI将自动填充此字段..."
+					class="auto-resize-textarea w-full p-2 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-sm"
+				></textarea>
+			</div>
+		`;
 	}).join('');
 
 	container.innerHTML = fieldsHtml;
+
+	// 为所有多行文本框添加动态高度功能
+	setupAutoResizeTextareas();
 }
 
 /**
@@ -719,6 +713,11 @@ function fillDynamicFields(aiResult, fieldNames) {
 
 			// 设置字段值
 			element.value = value;
+
+			// 调整文本框高度（如果是自动调整的文本框）
+			if (element.classList.contains('auto-resize-textarea')) {
+				adjustTextareaHeight(element);
+			}
 
 			// 添加填充状态样式
 			element.classList.remove('filled', 'partially-filled', 'empty');
@@ -877,6 +876,62 @@ function updateStatus(message, type = "") {
 			statusElement.className = "";
 			statusTimer = null;
 		}, timeout);
+	}
+}
+
+/**
+ * 设置自动调整高度的多行文本框
+ */
+function setupAutoResizeTextareas() {
+	const textareas = document.querySelectorAll('.auto-resize-textarea');
+
+	textareas.forEach(textarea => {
+		// 初始化高度
+		adjustTextareaHeight(textarea);
+
+		// 监听输入事件
+		textarea.addEventListener('input', () => {
+			adjustTextareaHeight(textarea);
+		});
+
+		// 监听粘贴事件
+		textarea.addEventListener('paste', () => {
+			setTimeout(() => {
+				adjustTextareaHeight(textarea);
+			}, 0);
+		});
+	});
+}
+
+/**
+ * 调整单个文本框的高度
+ * @param {HTMLTextAreaElement} textarea - 文本框元素
+ */
+function adjustTextareaHeight(textarea) {
+	// 重置高度以获取准确的scrollHeight
+	textarea.style.height = 'auto';
+
+	// 计算所需高度
+	const scrollHeight = textarea.scrollHeight;
+	const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 20;
+	const padding = parseInt(getComputedStyle(textarea).paddingTop) + parseInt(getComputedStyle(textarea).paddingBottom);
+
+	// 计算行数
+	const lines = Math.ceil((scrollHeight - padding) / lineHeight);
+
+	// 限制最大5行
+	const maxLines = 5;
+	const actualLines = Math.min(lines, maxLines);
+
+	// 设置新高度
+	const newHeight = Math.max(actualLines * lineHeight + padding, 40); // 最小高度40px
+	textarea.style.height = newHeight + 'px';
+
+	// 如果内容超过5行，显示滚动条
+	if (lines > maxLines) {
+		textarea.style.overflowY = 'auto';
+	} else {
+		textarea.style.overflowY = 'hidden';
 	}
 }
 

@@ -10,50 +10,7 @@ export function isLegacyMode(config) {
   return !config?.ankiConfig?.modelFields?.length || config.ankiConfig.modelFields.length <= 2;
 }
 
-/**
- * 获取传统模式的字段映射
- * @returns {object} - 传统字段ID映射
- */
-export function getLegacyFieldMapping() {
-  return { front: 'front-input', back: 'back-input' };
-}
 
-/**
- * 获取动态字段映射
- * @param {string[]} modelFields - 模型字段名数组
- * @returns {object} - 字段名到元素ID的映射
- */
-export function getDynamicFieldMapping(modelFields) {
-  return modelFields.reduce((mapping, field, index) => {
-    mapping[field] = `field-${index}`;
-    return mapping;
-  }, {});
-}
-
-/**
- * 根据字段名判断合适的输入类型
- * @param {string} fieldName - 字段名
- * @returns {object} - 包含type和其他属性的对象
- */
-export function getInputTypeForField(fieldName) {
-  const name = fieldName.toLowerCase();
-  const textareaKeywords = [
-    'example',
-    'sentence',
-    'meaning',
-    'definition',
-    'explanation',
-    'note',
-    'back',
-    '背面'
-  ];
-
-  if (textareaKeywords.some((keyword) => name.includes(keyword))) {
-    return { type: 'textarea', rows: 3 };
-  }
-
-  return { type: 'input' };
-}
 
 /**
  * 从DOM中收集字段值用于写入Anki (增强版本，包含错误处理和验证)
