@@ -12,7 +12,7 @@ import {
   collectFieldsForWrite,
   validateFields
 } from "../utils/field-handler.js";
-import { loadPromptForModel } from "../utils/prompt-engine.js";
+import { getPromptConfigForModel } from "../utils/prompt-engine.js";
 // import { i18n } from '../utils/i18n.js'; // 国際化（未使用）
 
 // 現在の設定（ロード後に格納）
@@ -21,6 +21,39 @@ let config = {};
 // ステータスメッセージのタイマー
 let statusTimer = null;
 
+
+
+function getActivePromptSetup() {
+  const allFields = Array.isArray(config?.ankiConfig?.modelFields)
+    ? [...config.ankiConfig.modelFields]
+    : [];
+  let modelName = config?.ankiConfig?.defaultModel || '';
+
+  const promptTemplates = config?.promptTemplates?.promptTemplatesByModel || {};
+  if (!modelName && Object.keys(promptTemplates).length > 0) {
+    modelName = Object.keys(promptTemplates)[0];
+  }
+
+  const promptConfig = getPromptConfigForModel(modelName, config);
+  let selectedFields = Array.isArray(promptConfig.selectedFields)
+    ? promptConfig.selectedFields.filter((field) => typeof field === 'string' && field.trim())
+    : [];
+
+  if (selectedFields.length > 0 && allFields.length > 0) {
+    selectedFields = selectedFields.filter((field) => allFields.includes(field));
+  }
+
+  if (selectedFields.length === 0) {
+    selectedFields = allFields.slice();
+  }
+
+  return {
+    modelName,
+    allFields,
+    selectedFields,
+    promptConfig,
+  };
+}
 // 错误边界管理器
 class ErrorBoundary {
 	constructor() {
@@ -360,9 +393,17 @@ async function handleParse() {
 			fillLegacyFields(result);
 		} else {
 			// Dynamic模式：使用动态字段解析
-			const customTemplate = loadPromptForModel(config.ankiConfig.defaultModel, config);
-			result = await parseTextWithDynamicFieldsFallback(textInput, modelFields, customTemplate);
-			fillDynamicFields(result, modelFields);
+			const { modelName, selectedFields, allFields } = getActivePromptSetup();
+			const dynamicFields = (selectedFields && selectedFields.length > 0)
+				? selectedFields
+				: (Array.isArray(modelFields) && modelFields.length > 0 ? modelFields : allFields);
+			if (!dynamicFields || dynamicFields.length === 0) {
+				throw new Error('当前模板未配置可解析的字段，请在选项页完成设置。');
+			}
+
+			const customTemplate = getPromptConfigForModel(modelName, config).customPrompt;
+			result = await parseTextWithDynamicFieldsFallback(textInput, dynamicFields, customTemplate);
+			fillDynamicFields(result, dynamicFields);
 		}
 
 		// UI: 書き込みボタン有効化
@@ -390,9 +431,19 @@ async function handleWriteToAnki() {
 	try {
 		const modelFields = config?.ankiConfig?.modelFields;
 		const isLegacy = isLegacyMode(config);
+		const { selectedFields, allFields } = getActivePromptSetup();
+		const dynamicFields = (selectedFields && selectedFields.length > 0)
+			? selectedFields
+			: (Array.isArray(modelFields) && !isLegacy ? modelFields : allFields);
+
+		if (!isLegacy && (!dynamicFields || dynamicFields.length === 0)) {
+			throw new Error('当前模板未配置可写入的字段，请在选项页完成设置。');
+		}
+
+		const targetFields = isLegacy ? modelFields : dynamicFields;
 
 		// 第一步：收集原始字段内容（不包装样式）
-		const rawCollectResult = collectFieldsForWrite(modelFields);
+		const rawCollectResult = collectFieldsForWrite(targetFields);
 
 		// 检查收集过程是否有错误
 		if (rawCollectResult.error) {
@@ -420,7 +471,7 @@ async function handleWriteToAnki() {
 		}
 
 		// 第三步：收集包装样式的字段内容
-		const styledCollectResult = collectFieldsForWrite(modelFields, wrapContentWithStyle);
+		const styledCollectResult = collectFieldsForWrite(targetFields, wrapContentWithStyle);
 
 		if (styledCollectResult.error) {
 			throw new Error(`样式包装失败: ${styledCollectResult.errors.join(', ')}`);
@@ -451,11 +502,21 @@ async function handleWriteToAnki() {
 					fields[fieldName] = styledValue;
 				}
 			});
+
+			// 确保所有模型字段至少写入空字符串，避免Anki报错
+			(allFields || []).forEach((fieldName) => {
+				if (!(fieldName in fields)) {
+					fields[fieldName] = '';
+				}
+			});
 		}
 
 		// 最终检查：确保至少有一个字段有内容
-		const finalFieldCount = Object.keys(fields).length;
-		if (finalFieldCount === 0) {
+		const filledFieldCount = Object.values(fields).filter((value) =>
+			typeof value === 'string' && value.trim()
+		).length;
+		const payloadFieldCount = Object.keys(fields).length;
+		if (filledFieldCount === 0) {
 			throw new Error('没有可写入的字段内容');
 		}
 
@@ -476,7 +537,8 @@ async function handleWriteToAnki() {
 			mode: isLegacy ? 'legacy' : 'dynamic',
 			totalFields: rawCollectResult.totalFields,
 			collectedFields: rawCollectResult.collectedFields,
-			finalFields: finalFieldCount,
+			finalFields: filledFieldCount,
+			payloadFields: payloadFieldCount,
 			validation: validation.isValid,
 			warnings: validation.warnings.length,
 			noteData
@@ -487,7 +549,7 @@ async function handleWriteToAnki() {
 			throw new Error(result.error);
 		}
 
-		updateStatus(`写入成功！已添加 ${finalFieldCount} 个字段 (ID: ${result.result})`, "success");
+		updateStatus(`写入成功！已添加 ${filledFieldCount} 个字段 (ID: ${result.result})`, "success");
 
 		// 触发写入成功事件
 		const event = new CustomEvent('ankiWriteSuccess', {
@@ -525,14 +587,20 @@ async function handleWriteToAnki() {
  */
 async function initializeDynamicFields() {
 	try {
+		const { selectedFields, allFields } = getActivePromptSetup();
 		const modelFields = config?.ankiConfig?.modelFields;
 
 		if (isLegacyMode(config)) {
 			// Legacy模式：使用现有的front/back字段
 			renderLegacyFields();
 		} else {
-			// Dynamic模式：根据modelFields动态生成
-			renderDynamicFields(modelFields);
+			const fieldsToRender = (selectedFields && selectedFields.length > 0)
+				? selectedFields
+				: (Array.isArray(modelFields) ? modelFields : allFields);
+			if (!fieldsToRender || fieldsToRender.length === 0) {
+				throw new Error('当前模板未配置字段，请在选项页完成配置。');
+			}
+			renderDynamicFields(fieldsToRender);
 		}
 	} catch (error) {
 		await errorBoundary.handleError(error, 'fields');
@@ -566,9 +634,21 @@ function renderLegacyFields() {
  * 渲染动态字段
  * @param {string[]} fieldNames - 字段名数组
  */
+
 function renderDynamicFields(fieldNames) {
 	const container = document.getElementById('fields-container');
+
+	if (!container) {
+		return;
+	}
+
+	if (!Array.isArray(fieldNames) || fieldNames.length === 0) {
+		container.innerHTML = '<div class="text-xs text-gray-500 border border-dashed border-slate-300 rounded-md p-3 bg-slate-50">当前未配置可填充的字段，请先在选项页完成字段配置。</div>';
+		return;
+	}
+
 	const fieldsHtml = fieldNames.map((fieldName, index) => {
+
 		const inputId = `field-${index}`;
 		const inputConfig = getInputTypeForField(fieldName);
 
@@ -799,3 +879,5 @@ function updateStatus(message, type = "") {
 		}, timeout);
 	}
 }
+
+
