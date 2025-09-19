@@ -29,38 +29,6 @@
 .status-indicator.error   { background-color: #ef4444; /* red-500 */ }
 .status-indicator.unknown { background-color: #6b7280; /* gray-500 */ }
 
-/* プロバイダ状態リスト */
-.provider-status-item {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  border-radius: 4px;
-  background-color: #f9fafb; /* gray-50 */
-  border: 1px solid #e5e7eb; /* gray-200 */
-  margin-bottom: 8px;
-}
-.provider-status-item.disabled { opacity: 0.6; }
-.provider-status-item .provider-name {
-  font-weight: 600; /* font-semibold */
-  margin-right: 10px;
-  min-width: 120px;
-}
-.status-text {
-  flex: 1;
-  font-size: 0.875rem; /* text-sm */
-}
-
-/* 小画面レイアウト調整 */
-@media (max-width: 768px) {
-  .provider-status-item {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .provider-status-item .provider-name {
-    min-width: auto;
-    margin-bottom: 5px;
-  }
-}
 
 /* 动态字段状态样式 */
 .filled {

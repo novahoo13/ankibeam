@@ -62,8 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('text-align-select').addEventListener('change', updateStylePreview);
   document.getElementById('line-height-select').addEventListener('change', updateStylePreview);
 
-  // 初始显示当前选中提供商状态
-  updateCurrentProviderStatus();
 });
 
 /**
@@ -787,10 +785,6 @@ async function handleSave() {
 
     updateStatus('save-status', '设置已保存', 'success');
 
-    // 保存后更新当前提供商状态
-    setTimeout(() => {
-      updateCurrentProviderStatus();
-    }, 500);
 
   } catch (error) {
     console.error('保存设置出错:', error);
@@ -901,80 +895,8 @@ function handleProviderChange() {
     activeConfig.style.display = 'block';
   }
 
-  // 更新当前提供商状态显示
-  updateCurrentProviderStatus();
 }
 
-/**
- * 更新当前选中提供商状态
- */
-async function updateCurrentProviderStatus() {
-  try {
-    const selectedProvider = document.getElementById('ai-provider').value;
-    const health = await getProvidersHealth();
-    const statusContainer = document.getElementById('current-provider-status');
-
-    if (!selectedProvider || !health[selectedProvider]) {
-      statusContainer.innerHTML = '<p class="text-gray-500">未选择提供商</p>';
-      return;
-    }
-
-    const status = health[selectedProvider];
-    const providerNames = {
-      google: 'Google Gemini',
-      openai: 'OpenAI GPT',
-      anthropic: 'Anthropic Claude'
-    };
-
-    const statusItem = document.createElement('div');
-    statusItem.className = `provider-status-item`;
-
-    const indicator = document.createElement('div');
-    indicator.className = `status-indicator ${status.status}`;
-
-    const providerName = document.createElement('div');
-    providerName.className = 'provider-name';
-    providerName.textContent = providerNames[selectedProvider] || selectedProvider;
-
-    const statusText = document.createElement('div');
-    statusText.className = 'status-text';
-
-    let statusMessage = '';
-    if (!status.hasApiKey) {
-      statusMessage = '未设置 API Key';
-    } else {
-      switch (status.status) {
-        case 'healthy':
-          statusMessage = '连接正常';
-          break;
-        case 'error':
-          statusMessage = `异常: ${status.lastError || '未知错误'}`;
-          break;
-        default:
-          statusMessage = '未知状态';
-      }
-    }
-
-    if (status.lastCheck) {
-      const checkTime = new Date(status.lastCheck).toLocaleString();
-      statusMessage += ` (检查时间: ${checkTime})`;
-    }
-
-    statusText.textContent = statusMessage;
-
-    statusItem.appendChild(indicator);
-    statusItem.appendChild(providerName);
-    statusItem.appendChild(statusText);
-
-    statusContainer.innerHTML = '';
-    statusContainer.appendChild(statusItem);
-
-  } catch (error) {
-    console.error('更新状态出错:', error);
-    const statusContainer = document.getElementById('current-provider-status');
-    statusContainer.innerHTML = '<p class="text-red-500">状态获取失败</p>';
-  }
-}
 
 /**
  * 单个提供商连接测试
@@ -993,8 +915,6 @@ async function handleTestProvider(provider) {
       updateStatus(`ai-status-${provider}`, result.message, 'error');
     }
 
-    // 刷新当前提供商状态
-    updateCurrentProviderStatus();
 
   } catch (error) {
     console.error(`${provider} 测试失败:`, error);
