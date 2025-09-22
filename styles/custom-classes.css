@@ -3,7 +3,13 @@
    Tailwind のユーティリティではなく独自意味を持つクラスのみを定義する。 */
 
 /* 状态消息容器 - 固定高度避免布局跳动 */
-.status-message {
+.status-message,
+#status-message,
+#save-status,
+#anki-status,
+#config-management-status,
+[id^="ai-status-"],
+[id^="prompt-config-status"] {
   min-height: 1.5em; /* 确保至少1行高度 */
   line-height: 1.5;
   display: flex;
@@ -16,6 +22,23 @@
 .status-error   { color: #ef4444; /* red-500 */ }
 .status-loading { color: #6b7280; /* gray-500 */ }
 .status-warning { color: #f59e0b; /* amber-500 */ }
+
+/* Header中状态消息的特殊样式（深色背景适配） */
+header .status-success { color: #86efac; /* green-300 - 在深色背景下更显眼 */ }
+header .status-error   { color: #fca5a5; /* red-300 */ }
+header .status-loading { color: #d1d5db; /* gray-300 */ }
+header .status-warning { color: #fcd34d; /* amber-300 */ }
+
+/* Header中的状态消息特殊布局 */
+header #status-message {
+  min-height: auto; /* 覆盖通用的min-height设置 */
+  font-size: 0.75rem; /* text-xs */
+  white-space: nowrap; /* 防止文字换行 */
+  max-width: 120px; /* 限制最大宽度 */
+  overflow: hidden;
+  text-overflow: ellipsis; /* 超长文本显示省略号 */
+  justify-content: flex-end; /* 右对齐 */
+}
 
 /* ステータスインジケータ（丸色ドット） */
 .status-indicator {
