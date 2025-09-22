@@ -196,7 +196,6 @@ function toggleFieldSelection(fieldName) {
   if (!promptEditorState.fieldConfigs[fieldName]) {
     promptEditorState.fieldConfigs[fieldName] = {
       content: "",
-      example: "",
     };
   }
 
@@ -221,8 +220,6 @@ function handleFieldConfigInput(event) {
 
   if (role === "content") {
     config.content = target.value;
-  } else if (role === "example") {
-    config.example = target.value;
   }
 
   validateFieldConfigurations(false);
@@ -300,7 +297,7 @@ function renderFieldConfigForm() {
   const selectedFields = promptEditorState.selectedFields || [];
   if (selectedFields.length === 0) {
     container.innerHTML =
-      '<div class="text-xs text-gray-500 border border-dashed border-slate-300 rounded-md p-3 bg-slate-50">请选择字段后配置字段内容与样例。</div>';
+      '<div class="text-xs text-gray-500 border border-dashed border-slate-300 rounded-md p-3 bg-slate-50">请选择字段后配置字段内容。</div>';
     return;
   }
 
@@ -311,7 +308,6 @@ function renderFieldConfigForm() {
         <div class="field-config-item border border-slate-200 rounded-md p-4 bg-white" data-field-config-item="${safeField}">
           <div class="flex flex-col gap-1">
             <h5 class="text-sm font-semibold text-slate-700">${safeField}</h5>
-            <span class="text-xs text-gray-500">配置生成 AI 输出该字段所需的信息</span>
           </div>
           <div class="mt-3">
             <label class="block text-xs font-medium text-gray-600 mb-1">字段内容 <span class="text-red-500">*</span></label>
@@ -323,16 +319,6 @@ function renderFieldConfigForm() {
               placeholder="描述该字段应包含的内容，例如输出结构、语气等要求"
             ></textarea>
             <p class="text-xs text-red-600 mt-1" data-field-error></p>
-          </div>
-          <div class="mt-3">
-            <label class="block text-xs font-medium text-gray-600 mb-1">样例（可选）</label>
-            <textarea
-              class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-              rows="2"
-              data-field-name="${safeField}"
-              data-field-role="example"
-              placeholder="示例输出或格式说明（可选）"
-            ></textarea>
           </div>
         </div>
       `;
@@ -350,14 +336,9 @@ function renderFieldConfigForm() {
     }
 
     const contentArea = card.querySelector('textarea[data-field-role="content"]');
-    const exampleArea = card.querySelector('textarea[data-field-role="example"]');
 
     if (contentArea) {
       contentArea.value = config.content || "";
-    }
-
-    if (exampleArea) {
-      exampleArea.value = config.example || "";
     }
   });
 
@@ -368,7 +349,6 @@ function ensureFieldConfig(fieldName) {
   if (!promptEditorState.fieldConfigs[fieldName]) {
     promptEditorState.fieldConfigs[fieldName] = {
       content: "",
-      example: "",
     };
   }
   return promptEditorState.fieldConfigs[fieldName];
@@ -380,7 +360,6 @@ function cloneSelectedFieldConfigs(selectedFields) {
     const config = ensureFieldConfig(field);
     result[field] = {
       content: (config.content || "").trim(),
-      example: (config.example || "").trim(),
     };
   });
   return result;
@@ -401,12 +380,8 @@ function generateDefaultPrompt() {
   selectedFields.forEach((field) => {
     const config = ensureFieldConfig(field);
     const content = (config.content || "").trim();
-    const example = (config.example || "").trim();
 
     lines.push(`${field}：${content || "请生成与该字段相关的内容。"}`);
-    if (example) {
-      lines.push(`样例：${example}`);
-    }
     lines.push("");
   });
 
@@ -629,7 +604,6 @@ function showPromptConfig(modelName, fields) {
       const fieldConfig = promptConfig.fieldConfigs[fieldName] || {};
       promptEditorState.fieldConfigs[fieldName] = {
         content: typeof fieldConfig.content === "string" ? fieldConfig.content : "",
-        example: typeof fieldConfig.example === "string" ? fieldConfig.example : "",
       };
     });
   }

@@ -68,8 +68,6 @@ function generateFieldSchema(fieldNames) {
       schema[field] = "读音/音标";
     } else if (field.toLowerCase().includes("meaning") || field.toLowerCase().includes("definition")) {
       schema[field] = "释义和解释";
-    } else if (field.toLowerCase().includes("example")) {
-      schema[field] = "使用例句";
     } else {
       schema[field] = `${field}相关内容`;
     }
@@ -109,7 +107,7 @@ export function validateAIOutput(aiOutput, expectedFields) {
 
 /**
  * 创建一个空的 Prompt 配置对象
- * @returns {{selectedFields: string[], fieldConfigs: Record<string, {content: string, example: string}>, customPrompt: string}}
+ * @returns {{selectedFields: string[], fieldConfigs: Record<string, {content: string}>, customPrompt: string}}
  */
 export function createEmptyPromptTemplateConfig() {
   return {
@@ -121,8 +119,8 @@ export function createEmptyPromptTemplateConfig() {
 
 /**
  * 深拷贝 Prompt 配置对象
- * @param {{selectedFields: string[], fieldConfigs: Record<string, {content: string, example: string}>, customPrompt: string}} config
- * @returns {{selectedFields: string[], fieldConfigs: Record<string, {content: string, example: string}>, customPrompt: string}}
+ * @param {{selectedFields: string[], fieldConfigs: Record<string, {content: string}>, customPrompt: string}} config
+ * @returns {{selectedFields: string[], fieldConfigs: Record<string, {content: string}>, customPrompt: string}}
  */
 function clonePromptTemplateConfig(config) {
   const cloned = createEmptyPromptTemplateConfig();
@@ -138,7 +136,6 @@ function clonePromptTemplateConfig(config) {
       }
       cloned.fieldConfigs[fieldName] = {
         content: typeof fieldConfig.content === "string" ? fieldConfig.content : "",
-        example: typeof fieldConfig.example === "string" ? fieldConfig.example : "",
       };
     });
   }
@@ -149,7 +146,7 @@ function clonePromptTemplateConfig(config) {
 /**
  * 标准化 Prompt 配置对象，兼容旧格式
  * @param {unknown} entry
- * @returns {{selectedFields: string[], fieldConfigs: Record<string, {content: string, example: string}>, customPrompt: string}}
+ * @returns {{selectedFields: string[], fieldConfigs: Record<string, {content: string}>, customPrompt: string}}
  */
 export function normalizePromptTemplateConfig(entry) {
   if (typeof entry === "string") {
@@ -179,7 +176,6 @@ export function normalizePromptTemplateConfig(entry) {
       }
       fieldConfigs[fieldName] = {
         content: typeof fieldConfig.content === "string" ? fieldConfig.content : "",
-        example: typeof fieldConfig.example === "string" ? fieldConfig.example : "",
       };
     });
     normalized.fieldConfigs = fieldConfigs;
@@ -196,7 +192,7 @@ export function normalizePromptTemplateConfig(entry) {
  * 获取指定模型的 Prompt 配置（深拷贝）
  * @param {string} modelName
  * @param {object} config
- * @returns {{selectedFields: string[], fieldConfigs: Record<string, {content: string, example: string}>, customPrompt: string}}
+ * @returns {{selectedFields: string[], fieldConfigs: Record<string, {content: string}>, customPrompt: string}}
  */
 export function getPromptConfigForModel(modelName, config) {
   if (!modelName || !config) {
@@ -219,7 +215,7 @@ export function getPromptConfigForModel(modelName, config) {
  * @param {string} modelName
  * @param {object} partialConfig
  * @param {object} config
- * @returns {{selectedFields: string[], fieldConfigs: Record<string, {content: string, example: string}>, customPrompt: string}}
+ * @returns {{selectedFields: string[], fieldConfigs: Record<string, {content: string}>, customPrompt: string}}
  */
 export function updatePromptConfigForModel(modelName, partialConfig, config) {
   if (!config) {
@@ -256,7 +252,6 @@ export function updatePromptConfigForModel(modelName, partialConfig, config) {
         }
         next.fieldConfigs[fieldName] = {
           content: typeof fieldConfig.content === "string" ? fieldConfig.content : "",
-          example: typeof fieldConfig.example === "string" ? fieldConfig.example : "",
         };
       });
     }
