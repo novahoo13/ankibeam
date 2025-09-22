@@ -670,8 +670,40 @@ function renderDynamicFields(fieldNames) {
  * @param {object} result - AI解析结果 {front, back}
  */
 function fillLegacyFields(result) {
-	document.getElementById('front-input').value = result.front || '';
-	document.getElementById('back-input').value = result.back || '';
+	const frontInput = document.getElementById('front-input');
+	const backInput = document.getElementById('back-input');
+
+	// 设置字段值
+	frontInput.value = result.front || '';
+	backInput.value = result.back || '';
+
+	// 应用状态样式，保持与动态字段一致
+	applyFieldStatusStyle(frontInput, result.front || '');
+	applyFieldStatusStyle(backInput, result.back || '');
+}
+
+/**
+ * 为字段元素应用状态样式
+ * @param {HTMLElement} element - 字段元素
+ * @param {string} value - 字段值
+ */
+function applyFieldStatusStyle(element, value) {
+	// 移除现有状态样式
+	element.classList.remove('filled', 'partially-filled', 'empty');
+
+	const trimmedValue = value.trim();
+
+	if (trimmedValue) {
+		element.classList.add('filled');
+		// 检查内容长度，如果很短可能是部分填充
+		if (trimmedValue.length <= 1) {
+			element.classList.add('partially-filled');
+		}
+		element.title = `已填充: ${trimmedValue.substring(0, 20)}${trimmedValue.length > 20 ? '...' : ''}`;
+	} else {
+		element.classList.add('empty');
+		element.title = '待填充';
+	}
 }
 
 /**
@@ -727,7 +759,7 @@ function fillDynamicFields(aiResult, fieldNames) {
 				element.classList.add('filled');
 
 				// 检查内容长度，如果很短可能是部分填充
-				if (trimmedValue.length <= 5) {
+				if (trimmedValue.length <= 1) {
 					partiallyFilledCount++;
 					element.classList.add('partially-filled');
 				}
