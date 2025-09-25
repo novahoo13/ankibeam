@@ -7,59 +7,58 @@
 		<link rel="stylesheet" href="../styles/custom-classes.css" />
 	</head>
 	<body>
-		<div class="w-96 bg-white">
-			<header class="sticky top-0 z-50 bg-slate-800 text-white p-4">
-				<div class="flex items-center justify-between">
-					<h1 class="text-lg font-semibold" data-i18n="appName">
-						Anki 单词助手
-					</h1>
-					<p
-						id="status-message"
-						class="status-message text-xs text-white opacity-80"
-					></p>
-				</div>
-			</header>
-
-			<main class="pt-3 px-3 space-y-3">
-				<div class="input-section">
-					<label class="block text-sm font-medium text-gray-700 mb-2"
-						>输入文本</label
-					>
-					<textarea
-						id="text-input"
-						rows="3"
-						placeholder="粘贴或输入文本..."
-						class="w-full p-3 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-sm"
-					></textarea>
-				</div>
-
-				<div class="action-section">
-					<button
-						id="parse-btn"
-						data-i18n="parseBtn"
-						class="w-full bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500"
-					>
-						解析
-					</button>
-				</div>
-
-				<!-- 动态字段容器 - 完全动态渲染 -->
-				<div id="fields-container" class="result-section space-y-3">
-					<!-- 字段将在JavaScript中动态渲染 -->
-				</div>
-
-				<div class="write-section sticky bottom-0 bg-white py-3">
-					<button
-						id="write-btn"
-						data-i18n="writeBtn"
-						disabled
-						class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-					>
-						写入 Anki
-					</button>
-				</div>
-			</main>
-		</div>
-		<script type="module" src="popup.js"></script>
+					<div class="w-96 bg-white flex flex-col h-[580px]">
+						<header class="bg-slate-800 text-white p-4">
+							<div class="flex items-center justify-between">
+								<h1 class="text-lg font-semibold" data-i18n="appName">
+									Anki 单词助手
+								</h1>
+								<p
+									id="status-message"
+									class="status-message text-xs text-white opacity-80"
+								></p>
+							</div>
+						</header>
+		
+						<main class="flex-grow overflow-y-auto pt-3 px-3 space-y-3">
+							<div class="input-section">
+								<label class="block text-sm font-medium text-gray-700 mb-2"
+									>输入文本</label
+								>
+								<textarea
+									id="text-input"
+									rows="3"
+									placeholder="粘贴或输入文本..."
+									class="w-full p-3 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-sm"
+								></textarea>
+							</div>
+		
+							<div class="action-section">
+								<button
+									id="parse-btn"
+									data-i18n="parseBtn"
+									class="w-full bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500"
+								>
+									解析
+								</button>
+							</div>
+		
+							<!-- 动态字段容器 - 完全动态渲染 -->
+							<div id="fields-container" class="result-section space-y-3">
+								<!-- 字段将在JavaScript中动态渲染 -->
+							</div>
+						</main>
+		
+						<div class="write-section bg-white p-3 border-t">
+							<button
+								id="write-btn"
+								data-i18n="writeBtn"
+								disabled
+								class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+							>
+								写入 Anki
+							</button>
+						</div>
+					</div>		<script type="module" src="popup.js"></script>
 	</body>
 </html>
