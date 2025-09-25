@@ -545,13 +545,13 @@ async function handleWriteToAnki() {
 			throw new Error(result.error);
 		}
 
-		updateStatus(`写入成功！已添加 ${filledFieldCount} 个字段 (ID: ${result.result})`, "success");
+		updateStatus("写入成功", "success");
 
 		// 触发写入成功事件
 		const event = new CustomEvent('ankiWriteSuccess', {
 			detail: {
 				noteId: result.result,
-				fieldsCount: finalFieldCount,
+				fieldsCount: filledFieldCount,
 				mode: isLegacy ? 'legacy' : 'dynamic'
 			}
 		});
@@ -846,8 +846,12 @@ function fillDynamicFields(aiResult, fieldNames) {
 function setUiLoading(isLoading, message = "") {
 	document.getElementById("parse-btn").disabled = isLoading;
 	document.getElementById("write-btn").disabled = isLoading;
-	// TODO: スピナー表示を追加予定
-	updateStatus(message, "loading");
+
+	// 只有在有消息内容时才更新状态，避免覆盖现有的成功/错误消息
+	if (message || isLoading) {
+		updateStatus(message, "loading");
+	}
+	// 如果是结束loading且没有消息，不更新状态，保留现有消息
 }
 
 /**
