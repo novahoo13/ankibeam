@@ -20,7 +20,8 @@
       "Bash(tasklist)",
       "Bash(findstr:*)",
       "Bash(dir \"C:\\Users\\何振声\\.claude\" /b)",
-      "mcp__*"
+      "mcp__*",
+      "Bash(xargs:*)"
     ],
     "deny": [],
     "ask": []
