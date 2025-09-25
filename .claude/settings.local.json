@@ -8,7 +8,19 @@
       "WebFetch(domain:llmjs.themaximalist.com)",
       "WebFetch(domain:ai-sdk.dev)",
       "WebFetch(domain:github.com)",
-      "Read(//c/Users/何振声/.claude/**)"
+      "Read(//c/Users/何振声/.claude/**)",
+      "Bash(claude doctor)",
+      "Read(//c/Users/何振声/**)",
+      "Bash(claude mcp:*)",
+      "Bash(cat:*)",
+      "Bash(npx:*)",
+      "Bash(Get-Process powershell)",
+      "Bash(Select-Object Id, ProcessName, StartTime)",
+      "Bash(Sort-Object StartTime)",
+      "Bash(tasklist)",
+      "Bash(findstr:*)",
+      "Bash(dir \"C:\\Users\\何振声\\.claude\" /b)",
+      "mcp__*"
     ],
     "deny": [],
     "ask": []
