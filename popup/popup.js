@@ -1,45 +1,63 @@
-// popup.js - ポップアップ画面
-// 目的: 入力テキストの解析と結果表示のUI更新
+// popup.js - Chrome扩展弹出窗口主文件
+// 功能: 处理用户输入文本的AI解析和Anki卡片创建的完整UI流程
 
-import { parseText, parseTextWithFallback, parseTextWithDynamicFieldsFallback } from "../utils/ai-service.js";
+import {
+  parseText,
+  parseTextWithFallback,
+  parseTextWithDynamicFieldsFallback,
+} from "../utils/ai-service.js";
 import { addNote, getModelFieldNames } from "../utils/ankiconnect.js";
 import { loadConfig } from "../utils/storage.js";
 import {
   isLegacyMode,
   collectFieldsForWrite,
-  validateFields
+  validateFields,
 } from "../utils/field-handler.js";
 import { getPromptConfigForModel } from "../utils/prompt-engine.js";
-// import { i18n } from '../utils/i18n.js'; // 国際化（未使用）
+// import { i18n } from '../utils/i18n.js'; // 国际化功能（暂未使用）
 
-// 現在の設定（ロード後に格納）
+// 全局配置对象（初始化后保存用户配置）
 let config = {};
 
-// ステータスメッセージのタイマー
+// 状态消息定时器（用于自动清除状态提示）
 let statusTimer = null;
 
-
-
+/**
+ * 获取当前激活的提示设置和字段配置
+ * 根据用户配置确定要使用的AI模型、字段列表和提示模板
+ * @returns {object} 包含模型名、全部字段、选中字段和提示配置的对象
+ */
 function getActivePromptSetup() {
+  // 获取当前模板的所有可用字段
   const allFields = Array.isArray(config?.ankiConfig?.modelFields)
     ? [...config.ankiConfig.modelFields]
     : [];
-  let modelName = config?.ankiConfig?.defaultModel || '';
 
+  // 获取默认的Anki模板名称
+  let modelName = config?.ankiConfig?.defaultModel || "";
+
+  // 获取提示模板配置，如果没有指定模型则使用第一个可用的
   const promptTemplates = config?.promptTemplates?.promptTemplatesByModel || {};
   if (!modelName && Object.keys(promptTemplates).length > 0) {
     modelName = Object.keys(promptTemplates)[0];
   }
 
+  // 获取特定模型的提示配置和选中的字段
   const promptConfig = getPromptConfigForModel(modelName, config);
   let selectedFields = Array.isArray(promptConfig.selectedFields)
-    ? promptConfig.selectedFields.filter((field) => typeof field === 'string' && field.trim())
+    ? promptConfig.selectedFields.filter(
+        (field) => typeof field === "string" && field.trim()
+      )
     : [];
 
+  // 确保选中的字段存在于全部字段列表中
   if (selectedFields.length > 0 && allFields.length > 0) {
-    selectedFields = selectedFields.filter((field) => allFields.includes(field));
+    selectedFields = selectedFields.filter((field) =>
+      allFields.includes(field)
+    );
   }
 
+  // 如果没有选中的字段，则使用全部字段作为默认
   if (selectedFields.length === 0) {
     selectedFields = allFields.slice();
   }
@@ -51,570 +69,657 @@ function getActivePromptSetup() {
     promptConfig,
   };
 }
-// 错误边界管理器
+/**
+ * 错误边界管理器
+ * 负责全局错误处理、用户友好提示和错误恢复机制
+ * 提供频繁错误检测、自动重试和UI状态恢复功能
+ */
 class ErrorBoundary {
-	constructor() {
-		this.errorCount = 0;
-		this.lastErrorTime = 0;
-		this.errorHistory = [];
-		this.maxErrors = 5;
-		this.resetInterval = 30000; // 30秒
-	}
+  constructor() {
+    this.errorCount = 0; // 错误总计数
+    this.lastErrorTime = 0; // 最后一次错误时间戳
+    this.errorHistory = []; // 错误历史记录
+    this.maxErrors = 5; // 最大错误阈值
+    this.resetInterval = 30000; // 错误计数重置间隔（30秒）
+  }
 
-	/**
-	 * 处理错误并提供用户友好的反馈
-	 * @param {Error} error - 错误对象
-	 * @param {string} context - 错误上下文
-	 * @param {object} options - 可选配置
-	 */
-	async handleError(error, context = 'unknown', options = {}) {
-		this.errorCount++;
-		this.lastErrorTime = Date.now();
+  /**
+   * 统一错误处理入口
+   * 记录错误、生成用户友好提示、提供重试机制
+   * @param {Error} error - 捕获的错误对象
+   * @param {string} context - 错误发生的业务上下文（如'parse'、'anki'、'config'等）
+   * @param {object} options - 处理选项（是否允许重试、重试回调等）
+   */
+  async handleError(error, context = "unknown", options = {}) {
+    this.errorCount++;
+    this.lastErrorTime = Date.now();
 
-		// 添加到错误历史
-		this.errorHistory.push({
-			error: error.message,
-			context,
-			timestamp: new Date().toISOString(),
-			stack: error.stack
-		});
+    // 记录错误到历史列表中，包含完整的上下文信息
+    this.errorHistory.push({
+      error: error.message,
+      context,
+      timestamp: new Date().toISOString(),
+      stack: error.stack,
+    });
 
-		// 保持错误历史不超过10条
-		if (this.errorHistory.length > 10) {
-			this.errorHistory = this.errorHistory.slice(-10);
-		}
+    // 限制错误历史数量，避免内存泄漏
+    if (this.errorHistory.length > 10) {
+      this.errorHistory = this.errorHistory.slice(-10);
+    }
 
-		console.error(`[${context}] 错误:`, error);
+    console.error(`[${context}] 错误:`, error);
 
-		// 检查是否为频繁错误
-		if (this.isFrequentError()) {
-			this.showCriticalError('检测到频繁错误，建议刷新页面或检查网络连接');
-			return;
-		}
+    // 频繁错误保护：如果短时间内错误过多，显示严重错误提示
+    if (this.isFrequentError()) {
+      this.showCriticalError("检测到频繁错误，建议刷新页面或检查网络连接");
+      return;
+    }
 
-		// 根据错误类型和上下文生成用户友好的提示
-		const userMessage = this.getUserFriendlyMessage(error, context);
-		const errorType = this.getErrorType(error, context);
+    // 将技术性错误转换为用户可理解的提示信息
+    const userMessage = this.getUserFriendlyMessage(error, context);
+    const errorType = this.getErrorType(error, context);
 
-		// 显示错误信息
-		updateStatus(userMessage, errorType);
+    // 在UI中显示错误消息
+    updateStatus(userMessage, errorType);
 
-		// 自动恢复UI状态
-		this.resetUIState();
+    // 重置UI到可用状态，确保用户可以继续操作
+    this.resetUIState();
 
-		// 如果是非关键错误，提供重试选项
-		if (options.allowRetry && this.isRetryableError(error, context)) {
-			setTimeout(() => {
-				this.showRetryOption(context, options.retryCallback);
-			}, 2000);
-		}
-	}
+    // 对于可恢复的错误，延迟提供重试选项
+    if (options.allowRetry && this.isRetryableError(error, context)) {
+      setTimeout(() => {
+        this.showRetryOption(context, options.retryCallback);
+      }, 2000);
+    }
+  }
 
-	/**
-	 * 检查是否为频繁错误
-	 */
-	isFrequentError() {
-		const recentErrors = this.errorHistory.filter(e =>
-			Date.now() - new Date(e.timestamp).getTime() < this.resetInterval
-		);
-		return recentErrors.length >= this.maxErrors;
-	}
+  /**
+   * 频繁错误检测
+   * 统计指定时间窗口内的错误数量，判断是否超过阈值
+   * @returns {boolean} 是否为频繁错误
+   */
+  isFrequentError() {
+    const recentErrors = this.errorHistory.filter(
+      (e) => Date.now() - new Date(e.timestamp).getTime() < this.resetInterval
+    );
+    return recentErrors.length >= this.maxErrors;
+  }
 
-	/**
-	 * 生成用户友好的错误消息
-	 */
-	getUserFriendlyMessage(error, context) {
-		const message = error.message || error.toString();
+  /**
+   * 错误消息本地化处理
+   * 将技术错误转换为用户友好的中文提示
+   * @param {Error} error - 原始错误对象
+   * @param {string} context - 错误业务上下文
+   * @returns {string} 用户友好的错误消息
+   */
+  getUserFriendlyMessage(error, context) {
+    const message = error.message || error.toString();
 
-		// 网络相关错误
-		if (this.isNetworkError(error)) {
-			return '网络连接失败，请检查网络后重试';
-		}
+    // 识别并处理网络连接问题
+    if (this.isNetworkError(error)) {
+      return "网络连接失败，请检查网络后重试";
+    }
 
-		// AI服务错误
-		if (context === 'parse' || context === 'ai') {
-			if (message.includes('API Key')) {
-				return 'AI服务配置错误，请检查设置页面的API Key';
-			}
-			if (message.includes('quota') || message.includes('limit')) {
-				return 'AI服务额度不足，请检查账户状态或更换服务商';
-			}
-			if (message.includes('JSON解析失败')) {
-				return 'AI解析格式错误，正在自动重试...';
-			}
-			if (message.includes('输出包含无效字段')) {
-				return 'AI输出字段不匹配，请检查模板配置';
-			}
-			return `AI解析失败: ${this.simplifyErrorMessage(message)}`;
-		}
+    // AI解析服务相关错误的详细分类处理
+    if (context === "parse" || context === "ai") {
+      if (message.includes("API Key")) {
+        return "AI服务配置错误，请检查设置页面的API Key";
+      }
+      if (message.includes("quota") || message.includes("limit")) {
+        return "AI服务额度不足，请检查账户状态或更换服务商";
+      }
+      if (message.includes("JSON解析失败")) {
+        return "AI解析格式错误，正在自动重试...";
+      }
+      if (message.includes("输出包含无效字段")) {
+        return "AI输出字段不匹配，请检查模板配置";
+      }
+      return `AI解析失败: ${this.simplifyErrorMessage(message)}`;
+    }
 
-		// Anki相关错误
-		if (context === 'anki') {
-			if (message.includes('Failed to fetch') || message.includes('未启动')) {
-				return '请启动Anki并确保AnkiConnect插件已安装';
-			}
-			if (message.includes('duplicate') || message.includes('重复')) {
-				return '卡片内容重复，请修改后重试';
-			}
-			if (message.includes('deck') && message.includes('not found')) {
-				return '指定的牌组不存在，请检查配置';
-			}
-			if (message.includes('model') && message.includes('not found')) {
-				return '指定的模板不存在，请检查配置';
-			}
-			return `Anki操作失败: ${this.simplifyErrorMessage(message)}`;
-		}
+    // AnkiConnect连接和操作相关错误处理
+    if (context === "anki") {
+      if (message.includes("Failed to fetch") || message.includes("未启动")) {
+        return "请启动Anki并确保AnkiConnect插件已安装";
+      }
+      if (message.includes("duplicate") || message.includes("重复")) {
+        return "卡片内容重复，请修改后重试";
+      }
+      if (message.includes("deck") && message.includes("not found")) {
+        return "指定的牌组不存在，请检查配置";
+      }
+      if (message.includes("model") && message.includes("not found")) {
+        return "指定的模板不存在，请检查配置";
+      }
+      return `Anki操作失败: ${this.simplifyErrorMessage(message)}`;
+    }
 
-		// 配置相关错误
-		if (context === 'config') {
-			return '配置加载异常，已使用默认配置';
-		}
+    // 用户配置加载失败的处理
+    if (context === "config") {
+      return "配置加载异常，已使用默认配置";
+    }
 
-		// 字段相关错误
-		if (context === 'fields') {
-			if (message.includes('找不到')) {
-				return '页面元素缺失，请刷新页面重试';
-			}
-			if (message.includes('字段为空')) {
-				return '请至少填写一个字段内容';
-			}
-			return `字段处理错误: ${this.simplifyErrorMessage(message)}`;
-		}
+    // UI字段操作和验证相关错误
+    if (context === "fields") {
+      if (message.includes("找不到")) {
+        return "页面元素缺失，请刷新页面重试";
+      }
+      if (message.includes("字段为空")) {
+        return "请至少填写一个字段内容";
+      }
+      return `字段处理错误: ${this.simplifyErrorMessage(message)}`;
+    }
 
-		// 默认错误
-		return `操作失败: ${this.simplifyErrorMessage(message)}`;
-	}
+    // 未分类错误的通用处理
+    return `操作失败: ${this.simplifyErrorMessage(message)}`;
+  }
 
-	/**
-	 * 简化错误消息
-	 */
-	simplifyErrorMessage(message) {
-		// 移除技术性的错误前缀
-		message = message.replace(/^(Error:|TypeError:|ReferenceError:)\s*/i, '');
+  /**
+   * 错误消息简化处理
+   * 移除技术性前缀，截断过长内容，提高可读性
+   * @param {string} message - 原始错误消息
+   * @returns {string} 简化后的错误消息
+   */
+  simplifyErrorMessage(message) {
+    // 移除JavaScript错误类型前缀，提高用户可读性
+    message = message.replace(/^(Error:|TypeError:|ReferenceError:)\s*/i, "");
 
-		// 截断过长的消息
-		if (message.length > 100) {
-			message = message.substring(0, 100) + '...';
-		}
+    // 限制错误消息长度，避免UI显示问题
+    if (message.length > 100) {
+      message = message.substring(0, 100) + "...";
+    }
 
-		return message;
-	}
+    return message;
+  }
 
-	/**
-	 * 确定错误类型
-	 */
-	getErrorType(error, context) {
-		if (this.isNetworkError(error)) {
-			return 'warning';
-		}
+  /**
+   * 错误严重程度分类
+   * 根据错误类型和上下文确定UI显示样式
+   * @param {Error} error - 错误对象
+   * @param {string} context - 错误上下文
+   * @returns {string} 错误类型（'error', 'warning'）
+   */
+  getErrorType(error, context) {
+    if (this.isNetworkError(error)) {
+      return "warning";
+    }
 
-		if (context === 'parse' && error.message.includes('JSON解析失败')) {
-			return 'warning'; // JSON错误通常可以重试
-		}
+    if (context === "parse" && error.message.includes("JSON解析失败")) {
+      return "warning"; // JSON错误通常可以重试
+    }
 
-		if (context === 'anki' && error.message.includes('重复')) {
-			return 'warning'; // 重复内容不是严重错误
-		}
+    if (context === "anki" && error.message.includes("重复")) {
+      return "warning"; // 重复内容不是严重错误
+    }
 
-		return 'error';
-	}
+    return "error";
+  }
 
-	/**
-	 * 检查是否为网络错误
-	 */
-	isNetworkError(error) {
-		const message = error.message.toLowerCase();
-		return message.includes('fetch') ||
-			   message.includes('network') ||
-			   message.includes('timeout') ||
-			   message.includes('connection');
-	}
+  /**
+   * 网络错误识别
+   * 通过关键词匹配识别网络相关问题
+   * @param {Error} error - 错误对象
+   * @returns {boolean} 是否为网络错误
+   */
+  isNetworkError(error) {
+    const message = error.message.toLowerCase();
+    return (
+      message.includes("fetch") ||
+      message.includes("network") ||
+      message.includes("timeout") ||
+      message.includes("connection")
+    );
+  }
 
-	/**
-	 * 检查是否为可重试的错误
-	 */
-	isRetryableError(error, context) {
-		if (this.isNetworkError(error)) return true;
+  /**
+   * 可重试错误判断
+   * 确定哪些错误类型适合提供重试选项
+   * @param {Error} error - 错误对象
+   * @param {string} context - 错误上下文
+   * @returns {boolean} 是否可以重试
+   */
+  isRetryableError(error, context) {
+    if (this.isNetworkError(error)) return true;
 
-		if (context === 'parse' && error.message.includes('JSON解析失败')) {
-			return true;
-		}
+    if (context === "parse" && error.message.includes("JSON解析失败")) {
+      return true;
+    }
 
-		if (context === 'anki' && error.message.includes('timeout')) {
-			return true;
-		}
+    if (context === "anki" && error.message.includes("timeout")) {
+      return true;
+    }
 
-		return false;
-	}
+    return false;
+  }
 
-	/**
-	 * 重置UI状态
-	 */
-	resetUIState() {
-		// 确保按钮状态正确
-		const parseBtn = document.getElementById('parse-btn');
-		const writeBtn = document.getElementById('write-btn');
+  /**
+   * UI状态恢复
+   * 确保按钮状态和加载提示回到正常状态
+   */
+  resetUIState() {
+    // 重新启用操作按钮，确保用户可以继续使用
+    const parseBtn = document.getElementById("parse-btn");
+    const writeBtn = document.getElementById("write-btn");
 
-		if (parseBtn) parseBtn.disabled = false;
-		if (writeBtn) writeBtn.disabled = false;
+    if (parseBtn) parseBtn.disabled = false;
+    if (writeBtn) writeBtn.disabled = false;
 
-		// 清除加载状态
-		setUiLoading(false);
-	}
+    // 清除加载动画和禁用状态
+    setUiLoading(false);
+  }
 
-	/**
-	 * 显示重试选项
-	 */
-	showRetryOption(context, retryCallback) {
-		if (!retryCallback) return;
+  /**
+   * 重试选项提示
+   * 通过确认对话框询问用户是否重试操作
+   * @param {string} context - 错误上下文
+   * @param {Function} retryCallback - 重试时执行的回调函数
+   */
+  showRetryOption(context, retryCallback) {
+    if (!retryCallback) return;
 
-		const retryMessage = this.getRetryMessage(context);
-		if (confirm(`${retryMessage}\n\n是否立即重试？`)) {
-			retryCallback();
-		}
-	}
+    const retryMessage = this.getRetryMessage(context);
+    if (confirm(`${retryMessage}\n\n是否立即重试？`)) {
+      retryCallback();
+    }
+  }
 
-	/**
-	 * 获取重试消息
-	 */
-	getRetryMessage(context) {
-		switch (context) {
-			case 'parse':
-			case 'ai':
-				return '解析失败可能是临时网络问题';
-			case 'anki':
-				return 'Anki操作失败可能是连接问题';
-			default:
-				return '操作失败可能是临时问题';
-		}
-	}
+  /**
+   * 重试消息生成
+   * 根据不同的业务上下文生成适当的重试提示
+   * @param {string} context - 错误上下文
+   * @returns {string} 重试提示消息
+   */
+  getRetryMessage(context) {
+    switch (context) {
+      case "parse":
+      case "ai":
+        return "解析失败可能是临时网络问题";
+      case "anki":
+        return "Anki操作失败可能是连接问题";
+      default:
+        return "操作失败可能是临时问题";
+    }
+  }
 
-	/**
-	 * 显示关键错误
-	 */
-	showCriticalError(message) {
-		updateStatus(message, 'error');
+  /**
+   * 严重错误处理
+   * 显示严重错误提示并询问是否刷新页面
+   * @param {string} message - 错误消息
+   */
+  showCriticalError(message) {
+    updateStatus(message, "error");
 
-		// 显示重启建议
-		setTimeout(() => {
-			if (confirm(`${message}\n\n点击确定刷新页面，取消继续使用`)) {
-				window.location.reload();
-			}
-		}, 1000);
-	}
+    // 延迟显示页面刷新建议，给用户思考时间
+    setTimeout(() => {
+      if (confirm(`${message}\n\n点击确定刷新页面，取消继续使用`)) {
+        window.location.reload();
+      }
+    }, 1000);
+  }
 
-	/**
-	 * 获取错误统计信息
-	 */
-	getErrorStats() {
-		const recentErrors = this.errorHistory.filter(e =>
-			Date.now() - new Date(e.timestamp).getTime() < this.resetInterval
-		);
+  /**
+   * 错误统计数据
+   * 用于调试和监控错误发生频率
+   * @returns {object} 包含各种错误统计的对象
+   */
+  getErrorStats() {
+    const recentErrors = this.errorHistory.filter(
+      (e) => Date.now() - new Date(e.timestamp).getTime() < this.resetInterval
+    );
 
-		return {
-			totalErrors: this.errorHistory.length,
-			recentErrors: recentErrors.length,
-			lastErrorTime: this.lastErrorTime,
-			errorRate: recentErrors.length / (this.resetInterval / 1000)
-		};
-	}
+    return {
+      totalErrors: this.errorHistory.length,
+      recentErrors: recentErrors.length,
+      lastErrorTime: this.lastErrorTime,
+      errorRate: recentErrors.length / (this.resetInterval / 1000),
+    };
+  }
 
-	/**
-	 * 清除错误历史
-	 */
-	clearErrorHistory() {
-		this.errorHistory = [];
-		this.errorCount = 0;
-		this.lastErrorTime = 0;
-	}
+  /**
+   * 错误历史清理
+   * 重置所有错误统计数据
+   */
+  clearErrorHistory() {
+    this.errorHistory = [];
+    this.errorCount = 0;
+    this.lastErrorTime = 0;
+  }
 }
 
-// 全局错误边界实例
+// 全局错误边界实例，处理整个弹出窗口的错误
 const errorBoundary = new ErrorBoundary();
 
+// DOM加载完成后启动应用初始化
 document.addEventListener("DOMContentLoaded", () => {
-	// 初期化: 設定ロードとイベント登録
-	initialize();
+  // 执行应用程序初始化：加载配置、注册事件监听器
+  initialize();
 });
 
 /**
- * 初期化処理
+ * 应用程序初始化
+ * 加载用户配置、注册事件处理器、初始化动态字段显示
  */
 async function initialize() {
-	try {
-		// 設定をロードし、後続処理で使用する
-		config = (await loadConfig()) || {};
-		console.log("設定をロードしました:", config);
+  try {
+    // 从chrome.storage加载用户配置，供全局使用
+    config = (await loadConfig()) || {};
+    console.log("用户配置加载完成:", config);
 
-		// イベント登録
-		document.getElementById("parse-btn").addEventListener("click", handleParse);
-		document
-			.getElementById("write-btn")
-			.addEventListener("click", handleWriteToAnki);
+    // 注册主要功能按钮的点击事件处理器
+    document.getElementById("parse-btn").addEventListener("click", handleParse);
+    document
+      .getElementById("write-btn")
+      .addEventListener("click", handleWriteToAnki);
 
-		// 初始化动态字段显示
-		await initializeDynamicFields();
+    // 根据配置渲染字段输入框（Legacy模式或Dynamic模式）
+    await initializeDynamicFields();
 
-		// 显示初始化成功状态
-		updateStatus("准备就绪", "success");
-
-	} catch (error) {
-		await errorBoundary.handleError(error, 'config', {
-			allowRetry: true,
-			retryCallback: () => initialize()
-		});
-	}
+    // 向用户显示应用已准备就绪
+    updateStatus("准备就绪", "success");
+  } catch (error) {
+    await errorBoundary.handleError(error, "config", {
+      allowRetry: true,
+      retryCallback: () => initialize(),
+    });
+  }
 }
 
 /**
- * 解析ボタン ハンドラ
+ * AI解析按钮事件处理器
+ * 处理用户输入的文本，调用AI服务进行解析，并填充到对应字段中
  */
 async function handleParse() {
-	const textInput = document.getElementById("text-input").value;
-	if (!textInput.trim()) {
-		updateStatus("请输入要解析的文本", "error");
-		return;
-	}
+  // 获取用户输入的待解析文本
+  const textInput = document.getElementById("text-input").value;
+  if (!textInput.trim()) {
+    updateStatus("请输入要解析的文本", "error");
+    return;
+  }
 
-	// UI: ローディング表示
-	setUiLoading(true, "正在进行AI解析...");
+  // 显示加载状态，禁用按钮防止重复提交
+  setUiLoading(true, "正在进行AI解析...");
 
-	try {
-		const modelFields = config?.ankiConfig?.modelFields;
-		let result;
+  try {
+    // 获取当前配置的模型字段
+    const modelFields = config?.ankiConfig?.modelFields;
+    let result;
 
-		if (isLegacyMode(config)) {
-			// Legacy模式：使用现有的解析逻辑
-			result = await parseTextWithFallback(textInput);
-			fillLegacyFields(result);
-		} else {
-			// Dynamic模式：使用动态字段解析
-			const { modelName, selectedFields, allFields } = getActivePromptSetup();
-			const dynamicFields = (selectedFields && selectedFields.length > 0)
-				? selectedFields
-				: (Array.isArray(modelFields) && modelFields.length > 0 ? modelFields : allFields);
-			if (!dynamicFields || dynamicFields.length === 0) {
-				throw new Error('当前模板未配置可解析的字段，请在选项页完成设置。');
-			}
+    // 根据配置选择解析模式
+    if (isLegacyMode(config)) {
+      // Legacy模式：使用固定的Front/Back字段结构
+      result = await parseTextWithFallback(textInput);
+      fillLegacyFields(result);
+    } else {
+      // Dynamic模式：根据用户配置的字段进行动态解析
+      const { modelName, selectedFields, allFields } = getActivePromptSetup();
+      const dynamicFields =
+        selectedFields && selectedFields.length > 0
+          ? selectedFields
+          : Array.isArray(modelFields) && modelFields.length > 0
+          ? modelFields
+          : allFields;
+      // 验证字段配置，确保有可用的解析目标
+      if (!dynamicFields || dynamicFields.length === 0) {
+        throw new Error("当前模板未配置可解析的字段，请在选项页完成设置。");
+      }
 
-			const customTemplate = getPromptConfigForModel(modelName, config).customPrompt;
-			result = await parseTextWithDynamicFieldsFallback(textInput, dynamicFields, customTemplate);
-			fillDynamicFields(result, dynamicFields);
-		}
+      // 获取自定义提示模板并执行AI解析
+      const customTemplate = getPromptConfigForModel(
+        modelName,
+        config
+      ).customPrompt;
+      result = await parseTextWithDynamicFieldsFallback(
+        textInput,
+        dynamicFields,
+        customTemplate
+      );
+      // 将解析结果填充到动态字段中
+      fillDynamicFields(result, dynamicFields);
+    }
 
-		// UI: 書き込みボタン有効化
-		document.getElementById("write-btn").disabled = false;
-		updateStatus("解析完成", "success");
-	} catch (error) {
-		await errorBoundary.handleError(error, 'parse', {
-			allowRetry: true,
-			retryCallback: () => handleParse()
-		});
-	} finally {
-		// UI: ローディング解除
-		setUiLoading(false);
-	}
+    // 解析成功后启用写入按钮，允许用户将内容保存到Anki
+    document.getElementById("write-btn").disabled = false;
+    updateStatus("解析完成", "success");
+  } catch (error) {
+    await errorBoundary.handleError(error, "parse", {
+      allowRetry: true,
+      retryCallback: () => handleParse(),
+    });
+  } finally {
+    // 无论成功失败都要清除加载状态
+    setUiLoading(false);
+  }
 }
 
 /**
- * 写入到 Anki 按钮 ハンドラ
+ * Anki写入按钮事件处理器
+ * 收集字段内容、验证数据完整性、调用AnkiConnect API创建新卡片
+ * 支持Legacy模式和Dynamic模式的不同字段处理逻辑
  */
 async function handleWriteToAnki() {
-	// UI: ローディング表示
-	setUiLoading(true, "正在写入 Anki...");
-	document.getElementById("write-btn").disabled = true;
+  // 显示写入中状态，禁用按钮防止重复提交
+  setUiLoading(true, "正在写入 Anki...");
+  document.getElementById("write-btn").disabled = true;
 
-	try {
-		const modelFields = config?.ankiConfig?.modelFields;
-		const isLegacy = isLegacyMode(config);
-		const { selectedFields, allFields } = getActivePromptSetup();
-		const dynamicFields = (selectedFields && selectedFields.length > 0)
-			? selectedFields
-			: (Array.isArray(modelFields) && !isLegacy ? modelFields : allFields);
+  try {
+    // 准备字段配置：根据模式确定要写入的字段列表
+    const modelFields = config?.ankiConfig?.modelFields;
+    const isLegacy = isLegacyMode(config);
+    const { selectedFields, allFields } = getActivePromptSetup();
+    const dynamicFields =
+      selectedFields && selectedFields.length > 0
+        ? selectedFields
+        : Array.isArray(modelFields) && !isLegacy
+        ? modelFields
+        : allFields;
 
-		if (!isLegacy && (!dynamicFields || dynamicFields.length === 0)) {
-			throw new Error('当前模板未配置可写入的字段，请在选项页完成设置。');
-		}
+    // Dynamic模式必须有字段配置，否则无法写入
+    if (!isLegacy && (!dynamicFields || dynamicFields.length === 0)) {
+      throw new Error("当前模板未配置可写入的字段，请在选项页完成设置。");
+    }
 
-		const targetFields = isLegacy ? modelFields : dynamicFields;
+    // 确定最终要处理的字段列表
+    const targetFields = isLegacy ? modelFields : dynamicFields;
 
-		// 第一步：收集原始字段内容（不包装样式）
-		const rawCollectResult = collectFieldsForWrite(targetFields);
+    // 第一步：收集字段原始内容用于验证（不带HTML样式）
+    const rawCollectResult = collectFieldsForWrite(targetFields);
 
-		// 检查收集过程是否有错误
-		if (rawCollectResult.error) {
-			throw new Error(`字段收集失败: ${rawCollectResult.errors.join(', ')}`);
-		}
+    // 字段收集过程的错误检查
+    if (rawCollectResult.error) {
+      throw new Error(`字段收集失败: ${rawCollectResult.errors.join(", ")}`);
+    }
 
-		// 第二步：验证字段内容
-		const validation = validateFields(rawCollectResult.fields, isLegacy, rawCollectResult);
+    // 第二步：验证字段内容的完整性和有效性
+    const validation = validateFields(
+      rawCollectResult.fields,
+      isLegacy,
+      rawCollectResult
+    );
 
-		if (!validation.isValid) {
-			// 显示详细的验证错误信息
-			let errorMessage = validation.message;
-			if (validation.warnings.length > 0) {
-				errorMessage += `\n警告: ${validation.warnings.join(', ')}`;
-			}
-			throw new Error(errorMessage);
-		}
+    // 验证失败时显示详细错误信息并终止写入
+    if (!validation.isValid) {
+      let errorMessage = validation.message;
+      if (validation.warnings.length > 0) {
+        errorMessage += `\n警告: ${validation.warnings.join(", ")}`;
+      }
+      throw new Error(errorMessage);
+    }
 
-		// 显示验证警告（如果有的话）
-		if (validation.warnings.length > 0) {
-			console.warn('字段验证警告:', validation.warnings);
-			// 在UI中短暂显示警告，但不阻止写入
-			updateStatus(`${validation.message}，继续写入...`, 'warning');
-			await new Promise(resolve => setTimeout(resolve, 1000));
-		}
+    // 处理验证警告：显示提示但不阻止写入操作
+    if (validation.warnings.length > 0) {
+      console.warn("字段验证警告:", validation.warnings);
+      updateStatus(`${validation.message}，继续写入...`, "warning");
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
 
-		// 第三步：收集包装样式的字段内容
-		const styledCollectResult = collectFieldsForWrite(targetFields, wrapContentWithStyle);
+    // 第三步：收集带HTML样式包装的字段内容用于实际写入
+    const styledCollectResult = collectFieldsForWrite(
+      targetFields,
+      wrapContentWithStyle
+    );
 
-		if (styledCollectResult.error) {
-			throw new Error(`样式包装失败: ${styledCollectResult.errors.join(', ')}`);
-		}
+    // 样式包装过程的错误检查
+    if (styledCollectResult.error) {
+      throw new Error(`样式包装失败: ${styledCollectResult.errors.join(", ")}`);
+    }
 
-		// 第四步：构建最终的字段映射
-		const fields = {};
+    // 第四步：构建Anki API所需的字段数据结构
+    const fields = {};
 
-		if (isLegacy) {
-			// Legacy模式：使用配置的字段名或默认Front/Back
-			const fieldNames = modelFields && modelFields.length >= 2 ? modelFields : ['Front', 'Back'];
-			const styledFields = styledCollectResult.fields;
+    if (isLegacy) {
+      // Legacy模式：处理传统的双字段结构（正面/背面）
+      const fieldNames =
+        modelFields && modelFields.length >= 2
+          ? modelFields
+          : ["Front", "Back"];
+      const styledFields = styledCollectResult.fields;
 
-			// 确保字段存在且不为空
-			if (styledFields[fieldNames[0]] && styledFields[fieldNames[0]].trim()) {
-				fields[fieldNames[0]] = styledFields[fieldNames[0]];
-			}
-			if (styledFields[fieldNames[1]] && styledFields[fieldNames[1]].trim()) {
-				fields[fieldNames[1]] = styledFields[fieldNames[1]];
-			}
-		} else {
-			// Dynamic模式：只包含非空字段
-			Object.keys(styledCollectResult.fields).forEach(fieldName => {
-				const rawValue = rawCollectResult.fields[fieldName];
-				const styledValue = styledCollectResult.fields[fieldName];
+      // 只包含非空字段到最终数据中
+      if (styledFields[fieldNames[0]] && styledFields[fieldNames[0]].trim()) {
+        fields[fieldNames[0]] = styledFields[fieldNames[0]];
+      }
+      if (styledFields[fieldNames[1]] && styledFields[fieldNames[1]].trim()) {
+        fields[fieldNames[1]] = styledFields[fieldNames[1]];
+      }
+    } else {
+      // Dynamic模式：处理用户自定义的多字段结构
+      Object.keys(styledCollectResult.fields).forEach((fieldName) => {
+        const rawValue = rawCollectResult.fields[fieldName];
+        const styledValue = styledCollectResult.fields[fieldName];
 
-				if (rawValue && rawValue.trim()) {
-					fields[fieldName] = styledValue;
-				}
-			});
+        // 基于原始值判断是否有内容，避免HTML标签干扰
+        if (rawValue && rawValue.trim()) {
+          fields[fieldName] = styledValue;
+        }
+      });
 
-			// 确保所有模型字段至少写入空字符串，避免Anki报错
-			(allFields || []).forEach((fieldName) => {
-				if (!(fieldName in fields)) {
-					fields[fieldName] = '';
-				}
-			});
-		}
+      // 为Anki模型的所有字段提供空值，防止缺失字段错误
+      (allFields || []).forEach((fieldName) => {
+        if (!(fieldName in fields)) {
+          fields[fieldName] = "";
+        }
+      });
+    }
 
-		// 最终检查：确保至少有一个字段有内容
-		const filledFieldCount = Object.values(fields).filter((value) =>
-			typeof value === 'string' && value.trim()
-		).length;
-		const payloadFieldCount = Object.keys(fields).length;
-		if (filledFieldCount === 0) {
-			throw new Error('没有可写入的字段内容');
-		}
+    // 最终验证：确保有实际内容可以写入Anki
+    const filledFieldCount = Object.values(fields).filter(
+      (value) => typeof value === "string" && value.trim()
+    ).length;
+    const payloadFieldCount = Object.keys(fields).length;
+    if (filledFieldCount === 0) {
+      throw new Error("没有可写入的字段内容");
+    }
 
-		// 設定からデフォルト値を取得
-		const deckName = config?.ankiConfig?.defaultDeck || "Default";
-		const modelName = config?.ankiConfig?.defaultModel || "Basic";
-		const tags = config?.ankiConfig?.defaultTags || [];
+    // 从配置中获取Anki卡片的基本属性
+    const deckName = config?.ankiConfig?.defaultDeck || "Default";
+    const modelName = config?.ankiConfig?.defaultModel || "Basic";
+    const tags = config?.ankiConfig?.defaultTags || [];
 
-		const noteData = {
-			deckName: deckName,
-			modelName: modelName,
-			fields: fields,
-			tags: tags,
-		};
+    // 构建AnkiConnect API所需的完整笔记数据
+    const noteData = {
+      deckName: deckName,
+      modelName: modelName,
+      fields: fields,
+      tags: tags,
+    };
 
-		// 详细日志记录
-		console.log('准备写入Anki:', {
-			mode: isLegacy ? 'legacy' : 'dynamic',
-			totalFields: rawCollectResult.totalFields,
-			collectedFields: rawCollectResult.collectedFields,
-			finalFields: filledFieldCount,
-			payloadFields: payloadFieldCount,
-			validation: validation.isValid,
-			warnings: validation.warnings.length,
-			noteData
-		});
+    // 记录写入操作的详细信息用于调试
+    console.log("准备写入Anki:", {
+      mode: isLegacy ? "legacy" : "dynamic",
+      totalFields: rawCollectResult.totalFields,
+      collectedFields: rawCollectResult.collectedFields,
+      finalFields: filledFieldCount,
+      payloadFields: payloadFieldCount,
+      validation: validation.isValid,
+      warnings: validation.warnings.length,
+      noteData,
+    });
 
-		const result = await addNote(noteData);
-		if (result.error) {
-			throw new Error(result.error);
-		}
+    // 调用AnkiConnect API执行实际写入操作
+    const result = await addNote(noteData);
+    if (result.error) {
+      throw new Error(result.error);
+    }
 
-		updateStatus("写入成功", "success");
+    // 显示成功消息并触发自定义事件
+    updateStatus("写入成功", "success");
 
-		// 触发写入成功事件
-		const event = new CustomEvent('ankiWriteSuccess', {
-			detail: {
-				noteId: result.result,
-				fieldsCount: filledFieldCount,
-				mode: isLegacy ? 'legacy' : 'dynamic'
-			}
-		});
-		document.dispatchEvent(event);
+    // 发布写入成功事件，供其他模块监听
+    const event = new CustomEvent("ankiWriteSuccess", {
+      detail: {
+        noteId: result.result,
+        fieldsCount: filledFieldCount,
+        mode: isLegacy ? "legacy" : "dynamic",
+      },
+    });
+    document.dispatchEvent(event);
+  } catch (error) {
+    await errorBoundary.handleError(error, "anki", {
+      allowRetry: true,
+      retryCallback: () => handleWriteToAnki(),
+    });
 
-	} catch (error) {
-		await errorBoundary.handleError(error, 'anki', {
-			allowRetry: true,
-			retryCallback: () => handleWriteToAnki()
-		});
-
-		// 触发写入失败事件
-		const event = new CustomEvent('ankiWriteError', {
-			detail: {
-				error: error.message,
-				timestamp: new Date().toISOString()
-			}
-		});
-		document.dispatchEvent(event);
-
-	} finally {
-		setUiLoading(false);
-		document.getElementById("write-btn").disabled = false;
-	}
+    // 发布写入失败事件，供错误监控使用
+    const event = new CustomEvent("ankiWriteError", {
+      detail: {
+        error: error.message,
+        timestamp: new Date().toISOString(),
+      },
+    });
+    document.dispatchEvent(event);
+  } finally {
+    // 无论成功失败都要恢复UI状态
+    setUiLoading(false);
+    document.getElementById("write-btn").disabled = false;
+  }
 }
 
 /**
- * 初始化动态字段显示
+ * 字段界面初始化
+ * 根据用户配置决定渲染Legacy模式还是Dynamic模式的字段输入界面
+ * 包含错误处理和回退机制
  */
 async function initializeDynamicFields() {
-	try {
-		const { selectedFields, allFields } = getActivePromptSetup();
-		const modelFields = config?.ankiConfig?.modelFields;
+  try {
+    // 获取当前激活的字段配置
+    const { selectedFields, allFields } = getActivePromptSetup();
+    const modelFields = config?.ankiConfig?.modelFields;
 
-		if (isLegacyMode(config)) {
-			// Legacy模式：使用现有的front/back字段
-			renderLegacyFields();
-		} else {
-			const fieldsToRender = (selectedFields && selectedFields.length > 0)
-				? selectedFields
-				: (Array.isArray(modelFields) ? modelFields : allFields);
-			if (!fieldsToRender || fieldsToRender.length === 0) {
-				throw new Error('当前模板未配置字段，请在选项页完成配置。');
-			}
-			renderDynamicFields(fieldsToRender);
-		}
-	} catch (error) {
-		await errorBoundary.handleError(error, 'fields');
-		// 回退到legacy模式
-		try {
-			renderLegacyFields();
-		} catch (fallbackError) {
-			console.error('回退到legacy模式也失败:', fallbackError);
-		}
-	}
+    // 根据配置模式渲染不同的字段界面
+    if (isLegacyMode(config)) {
+      // Legacy模式：渲染传统的双字段界面
+      renderLegacyFields();
+    } else {
+      // Dynamic模式：渲染用户配置的多字段界面
+      const fieldsToRender =
+        selectedFields && selectedFields.length > 0
+          ? selectedFields
+          : Array.isArray(modelFields)
+          ? modelFields
+          : allFields;
+      if (!fieldsToRender || fieldsToRender.length === 0) {
+        throw new Error("当前模板未配置字段，请在选项页完成配置。");
+      }
+      renderDynamicFields(fieldsToRender);
+    }
+  } catch (error) {
+    await errorBoundary.handleError(error, "fields");
+    // 出错时回退到Legacy模式作为最后手段
+    try {
+      renderLegacyFields();
+    } catch (fallbackError) {
+      console.error("回退到legacy模式也失败:", fallbackError);
+    }
+  }
 }
 
 /**
- * 渲染传统模式字段
+ * Legacy模式字段渲染
+ * 创建固定的Front/Back双字段输入界面
  */
 function renderLegacyFields() {
-	const container = document.getElementById('fields-container');
-	container.innerHTML = `
+  const container = document.getElementById("fields-container");
+  container.innerHTML = `
 		<div class="form-group">
 			<label for="front-input" class="block text-sm font-medium text-gray-700 mb-1" data-i18n="cardFront">正面:</label>
 			<input type="text" id="front-input" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-sm" />
@@ -627,26 +732,31 @@ function renderLegacyFields() {
 }
 
 /**
- * 渲染动态字段
- * @param {string[]} fieldNames - 字段名数组
+ * Dynamic模式字段渲染
+ * 根据提供的字段名数组创建对应的输入控件
+ * @param {string[]} fieldNames - 要渲染的字段名数组
  */
 
 function renderDynamicFields(fieldNames) {
-	const container = document.getElementById('fields-container');
+  // 获取字段容器元素
+  const container = document.getElementById("fields-container");
+  if (!container) {
+    return;
+  }
 
-	if (!container) {
-		return;
-	}
+  // 字段名验证：如果没有有效字段则显示提示信息
+  if (!Array.isArray(fieldNames) || fieldNames.length === 0) {
+    container.innerHTML =
+      '<div class="text-xs text-gray-500 border border-dashed border-slate-300 rounded-md p-3 bg-slate-50">当前未配置可填充的字段，请先在选项页完成字段配置。</div>';
+    return;
+  }
 
-	if (!Array.isArray(fieldNames) || fieldNames.length === 0) {
-		container.innerHTML = '<div class="text-xs text-gray-500 border border-dashed border-slate-300 rounded-md p-3 bg-slate-50">当前未配置可填充的字段，请先在选项页完成字段配置。</div>';
-		return;
-	}
+  // 为每个字段生成对应的HTML输入元素
+  const fieldsHtml = fieldNames
+    .map((fieldName, index) => {
+      const inputId = `field-${index}`;
 
-	const fieldsHtml = fieldNames.map((fieldName, index) => {
-		const inputId = `field-${index}`;
-
-		return `
+      return `
 			<div class="form-group">
 				<label for="${inputId}" class="block text-sm font-medium text-gray-700 mb-1">${fieldName}:</label>
 				<textarea
@@ -657,317 +767,333 @@ function renderDynamicFields(fieldNames) {
 				></textarea>
 			</div>
 		`;
-	}).join('');
+    })
+    .join("");
 
-	container.innerHTML = fieldsHtml;
+  // 将生成的HTML注入到容器中
+  container.innerHTML = fieldsHtml;
 
-	// 为所有多行文本框添加动态高度功能
-	setupAutoResizeTextareas();
+  // 为新创建的文本框添加自适应高度功能
+  setupAutoResizeTextareas();
 }
 
 /**
- * 填充传统模式字段
- * @param {object} result - AI解析结果 {front, back}
+ * Legacy模式字段填充
+ * 将AI解析的结果填入Front和Back字段，并应用状态样式
+ * @param {object} result - AI解析结果对象，包含front和back字段
  */
 function fillLegacyFields(result) {
-	const frontInput = document.getElementById('front-input');
-	const backInput = document.getElementById('back-input');
+  // 获取Legacy模式的两个固定字段元素
+  const frontInput = document.getElementById("front-input");
+  const backInput = document.getElementById("back-input");
 
-	// 设置字段值
-	frontInput.value = result.front || '';
-	backInput.value = result.back || '';
+  // 填入AI解析的内容，空值则使用空字符串
+  frontInput.value = result.front || "";
+  backInput.value = result.back || "";
 
-	// 应用状态样式，保持与动态字段一致
-	applyFieldStatusStyle(frontInput, result.front || '');
-	applyFieldStatusStyle(backInput, result.back || '');
+  // 根据内容状态添加视觉样式反馈
+  applyFieldStatusStyle(frontInput, result.front || "");
+  applyFieldStatusStyle(backInput, result.back || "");
 }
 
 /**
- * 为字段元素应用状态样式
- * @param {HTMLElement} element - 字段元素
- * @param {string} value - 字段值
+ * 字段状态样式应用
+ * 根据字段内容添加相应的CSS类名，提供视觉反馈
+ * @param {HTMLElement} element - 要设置样式的字段元素
+ * @param {string} value - 字段的文本内容
  */
 function applyFieldStatusStyle(element, value) {
-	// 移除现有状态样式
-	element.classList.remove('filled', 'partially-filled', 'empty');
+  // 清除之前的状态样式类
+  element.classList.remove("filled", "partially-filled", "empty");
 
-	const trimmedValue = value.trim();
+  const trimmedValue = value.trim();
 
-	if (trimmedValue) {
-		element.classList.add('filled');
-		// 检查内容长度，如果很短可能是部分填充
-		if (trimmedValue.length <= 1) {
-			element.classList.add('partially-filled');
-		}
-		element.title = `已填充: ${trimmedValue.substring(0, 20)}${trimmedValue.length > 20 ? '...' : ''}`;
-	} else {
-		element.classList.add('empty');
-		element.title = '待填充';
-	}
+  // 根据内容状态添加不同的样式类和提示信息
+  if (trimmedValue) {
+    element.classList.add("filled");
+    // 内容很短可能表示填充不完整
+    if (trimmedValue.length <= 1) {
+      element.classList.add("partially-filled");
+    }
+    element.title = `已填充: ${trimmedValue.substring(0, 20)}${
+      trimmedValue.length > 20 ? "..." : ""
+    }`;
+  } else {
+    element.classList.add("empty");
+    element.title = "待填充";
+  }
 }
 
 /**
- * 填充动态字段 (增强版本，包含错误处理和状态反馈)
- * @param {object} aiResult - AI解析结果对象
- * @param {string[]} fieldNames - 字段名数组
- * @returns {object} - 填充结果统计
+ * Dynamic模式字段填充器
+ * 将AI解析结果填入对应的动态字段，包含完整的错误处理和统计反馈
+ * 支持自动高度调整、状态样式和填充结果统计
+ * @param {object} aiResult - AI返回的字段解析结果对象
+ * @param {string[]} fieldNames - 需要填充的字段名数组
+ * @returns {object} 包含填充统计信息的结果对象
  */
 function fillDynamicFields(aiResult, fieldNames) {
-	try {
-		// 验证输入参数
-		if (!aiResult || typeof aiResult !== 'object') {
-			throw new Error('AI解析结果为空或格式无效');
-		}
+  try {
+    // 验证输入参数
+    if (!aiResult || typeof aiResult !== "object") {
+      throw new Error("AI解析结果为空或格式无效");
+    }
 
-		if (!Array.isArray(fieldNames) || fieldNames.length === 0) {
-			throw new Error('字段名数组为空或无效');
-		}
+    if (!Array.isArray(fieldNames) || fieldNames.length === 0) {
+      throw new Error("字段名数组为空或无效");
+    }
 
-		let filledCount = 0;
-		let partiallyFilledCount = 0;
-		const filledFields = [];
-		const emptyFields = [];
-		const missingElements = [];
+    let filledCount = 0;
+    let partiallyFilledCount = 0;
+    const filledFields = [];
+    const emptyFields = [];
+    const missingElements = [];
 
-		fieldNames.forEach((fieldName, index) => {
-			const inputId = `field-${index}`;
-			const element = document.getElementById(inputId);
+    fieldNames.forEach((fieldName, index) => {
+      const inputId = `field-${index}`;
+      const element = document.getElementById(inputId);
 
-			if (!element) {
-				console.warn(`找不到字段元素: ${inputId} (${fieldName})`);
-				missingElements.push(fieldName);
-				return;
-			}
+      if (!element) {
+        console.warn(`找不到字段元素: ${inputId} (${fieldName})`);
+        missingElements.push(fieldName);
+        return;
+      }
 
-			const value = aiResult[fieldName] || '';
-			const trimmedValue = value.trim();
+      const value = aiResult[fieldName] || "";
+      const trimmedValue = value.trim();
 
-			// 设置字段值
-			element.value = value;
+      // 设置字段值
+      element.value = value;
 
-			// 调整文本框高度（如果是自动调整的文本框）
-			if (element.classList.contains('auto-resize-textarea')) {
-				adjustTextareaHeight(element);
-			}
+      // 调整文本框高度（如果是自动调整的文本框）
+      if (element.classList.contains("auto-resize-textarea")) {
+        adjustTextareaHeight(element);
+      }
 
-			// 添加填充状态样式
-			element.classList.remove('filled', 'partially-filled', 'empty');
+      // 添加填充状态样式
+      element.classList.remove("filled", "partially-filled", "empty");
 
-			if (trimmedValue) {
-				filledCount++;
-				filledFields.push(fieldName);
-				element.classList.add('filled');
+      if (trimmedValue) {
+        filledCount++;
+        filledFields.push(fieldName);
+        element.classList.add("filled");
 
-				// 检查内容长度，如果很短可能是部分填充
-				if (trimmedValue.length <= 1) {
-					partiallyFilledCount++;
-					element.classList.add('partially-filled');
-				}
-			} else {
-				emptyFields.push(fieldName);
-				element.classList.add('empty');
-			}
+        // 检查内容长度，如果很短可能是部分填充
+        if (trimmedValue.length <= 1) {
+          partiallyFilledCount++;
+          element.classList.add("partially-filled");
+        }
+      } else {
+        emptyFields.push(fieldName);
+        element.classList.add("empty");
+      }
 
-			// 添加工具提示
-			element.title = trimmedValue ? `已填充: ${fieldName}` : `待填充: ${fieldName}`;
-		});
+      // 添加工具提示
+      element.title = trimmedValue
+        ? `已填充: ${fieldName}`
+        : `待填充: ${fieldName}`;
+    });
 
-		// 生成状态反馈
-		const fillResult = {
-			totalFields: fieldNames.length,
-			filledCount,
-			emptyCount: emptyFields.length,
-			partiallyFilledCount,
-			missingElements: missingElements.length,
-			filledFields,
-			emptyFields,
-			fillRate: Math.round((filledCount / fieldNames.length) * 100)
-		};
+    // 生成状态反馈
+    const fillResult = {
+      totalFields: fieldNames.length,
+      filledCount,
+      emptyCount: emptyFields.length,
+      partiallyFilledCount,
+      missingElements: missingElements.length,
+      filledFields,
+      emptyFields,
+      fillRate: Math.round((filledCount / fieldNames.length) * 100),
+    };
 
-		// 显示详细状态信息
-		let statusMessage = `已填充 ${filledCount}/${fieldNames.length} 个字段`;
-		let statusType = 'success';
+    // 显示详细状态信息
+    let statusMessage = `已填充 ${filledCount}/${fieldNames.length} 个字段`;
+    let statusType = "success";
 
-		if (filledCount === 0) {
-			statusMessage = '警告：所有字段都为空，请检查AI解析结果';
-			statusType = 'error';
-		} else if (filledCount < fieldNames.length) {
-			statusMessage += ` (${emptyFields.length} 个字段为空)`;
-			statusType = 'warning';
-		}
+    if (filledCount === 0) {
+      statusMessage = "警告：所有字段都为空，请检查AI解析结果";
+      statusType = "error";
+    } else if (filledCount < fieldNames.length) {
+      statusMessage += ` (${emptyFields.length} 个字段为空)`;
+      statusType = "warning";
+    }
 
-		// 添加特殊情况提示
-		if (missingElements.length > 0) {
-			console.error('缺失DOM元素:', missingElements);
-			statusMessage += ` [${missingElements.length} 个元素缺失]`;
-			statusType = 'error';
-		}
+    // 添加特殊情况提示
+    if (missingElements.length > 0) {
+      console.error("缺失DOM元素:", missingElements);
+      statusMessage += ` [${missingElements.length} 个元素缺失]`;
+      statusType = "error";
+    }
 
-		if (partiallyFilledCount > 0 && partiallyFilledCount === filledCount) {
-			statusMessage += ' (内容可能不完整)';
-		}
+    if (partiallyFilledCount > 0 && partiallyFilledCount === filledCount) {
+      statusMessage += " (内容可能不完整)";
+    }
 
-		updateStatus(statusMessage, statusType);
+    updateStatus(statusMessage, statusType);
 
-		// 打印详细日志
-		console.log('动态字段填充完成:', {
-			fillResult,
-			aiResult,
-			fieldNames
-		});
+    // 打印详细日志
+    console.log("动态字段填充完成:", {
+      fillResult,
+      aiResult,
+      fieldNames,
+    });
 
-		// 触发字段变化事件，供其他模块监听
-		const event = new CustomEvent('dynamicFieldsFilled', {
-			detail: fillResult
-		});
-		document.dispatchEvent(event);
+    // 触发字段变化事件，供其他模块监听
+    const event = new CustomEvent("dynamicFieldsFilled", {
+      detail: fillResult,
+    });
+    document.dispatchEvent(event);
 
-		return fillResult;
+    return fillResult;
+  } catch (error) {
+    console.error("填充动态字段时发生错误:", error);
+    updateStatus(`字段填充失败: ${error.message}`, "error");
 
-	} catch (error) {
-		console.error('填充动态字段时发生错误:', error);
-		updateStatus(`字段填充失败: ${error.message}`, 'error');
-
-		// 返回错误状态
-		return {
-			error: true,
-			message: error.message,
-			totalFields: fieldNames ? fieldNames.length : 0,
-			filledCount: 0
-		};
-	}
+    // 返回错误状态
+    return {
+      error: true,
+      message: error.message,
+      totalFields: fieldNames ? fieldNames.length : 0,
+      filledCount: 0,
+    };
+  }
 }
 
 /**
- * UI ローディング表示
- * @param {boolean} isLoading ローディング中か
- * @param {string} [message=''] ステータスメッセージ
+ * UI加载状态管理
+ * 控制按钮的禁用状态和加载提示消息的显示
+ * @param {boolean} isLoading 是否处于加载状态
+ * @param {string} [message=''] 要显示的加载消息
  */
 function setUiLoading(isLoading, message = "") {
-	document.getElementById("parse-btn").disabled = isLoading;
-	document.getElementById("write-btn").disabled = isLoading;
+  document.getElementById("parse-btn").disabled = isLoading;
+  document.getElementById("write-btn").disabled = isLoading;
 
-	// 只有在有消息内容时才更新状态，避免覆盖现有的成功/错误消息
-	if (message || isLoading) {
-		updateStatus(message, "loading");
-	}
-	// 如果是结束loading且没有消息，不更新状态，保留现有消息
+  // 只有在有消息内容时才更新状态，避免覆盖现有的成功/错误消息
+  if (message || isLoading) {
+    updateStatus(message, "loading");
+  }
+  // 如果是结束loading且没有消息，不更新状态，保留现有消息
 }
 
 /**
- * コンテンツを装飾して HTML に変換
- * @param {string} content - 元テキスト
- * @returns {string} - 装飾後の HTML
+ * 内容样式包装器
+ * 将纯文本内容转换为带样式的HTML，用于在Anki中显示
+ * @param {string} content - 原始文本内容
+ * @returns {string} 包装后的HTML字符串
  */
 function wrapContentWithStyle(content) {
-	// 設定からスタイル取得
-	const styleConfig = config?.styleConfig || {};
-	const fontSize = styleConfig.fontSize || "14px";
-	const textAlign = styleConfig.textAlign || "left";
-	const lineHeight = styleConfig.lineHeight || "1.4";
+  // 設定からスタイル取得
+  const styleConfig = config?.styleConfig || {};
+  const fontSize = styleConfig.fontSize || "14px";
+  const textAlign = styleConfig.textAlign || "left";
+  const lineHeight = styleConfig.lineHeight || "1.4";
 
-	// 改行を <br> に変換
-	const contentWithBreaks = content.replace(/\n/g, "<br>");
+  // 改行を <br> に変換
+  const contentWithBreaks = content.replace(/\n/g, "<br>");
 
-	// ラップして返す
-	return `<div style="font-size: ${fontSize}; text-align: ${textAlign}; line-height: ${lineHeight};">${contentWithBreaks}</div>`;
+  // ラップして返す
+  return `<div style="font-size: ${fontSize}; text-align: ${textAlign}; line-height: ${lineHeight};">${contentWithBreaks}</div>`;
 }
 
 /**
- * ステータス更新
- * @param {string} message - メッセージ
- * @param {'success'|'error'|'loading'|'warning'|''} type - 種別
+ * 状态消息更新器
+ * 在UI中显示状态信息，并根据类型自动设置清除定时器
+ * @param {string} message - 要显示的消息文本
+ * @param {'success'|'error'|'loading'|'warning'|''} type - 消息类型，影响样式和显示时长
  */
 function updateStatus(message, type = "") {
-	const statusElement = document.getElementById("status-message");
-	statusElement.textContent = message;
-	statusElement.className = `status-${type}`;
+  const statusElement = document.getElementById("status-message");
+  statusElement.textContent = message;
+  statusElement.className = `status-${type}`;
 
-	// 既存タイマーをクリア
-	if (statusTimer) {
-		clearTimeout(statusTimer);
-		statusTimer = null;
-	}
+  // 既存タイマーをクリア
+  if (statusTimer) {
+    clearTimeout(statusTimer);
+    statusTimer = null;
+  }
 
-	// 根据类型设置不同的显示时长
-	let timeout = 0;
-	switch (type) {
-		case "success":
-			timeout = 3000; // 成功消息显示3秒
-			break;
-		case "error":
-			timeout = 5000; // 错误消息显示5秒
-			break;
-		case "warning":
-			timeout = 4000; // 警告消息显示4秒
-			break;
-		default:
-			timeout = 0; // loading等状态不自动消失
-	}
+  // 根据类型设置不同的显示时长
+  let timeout = 0;
+  switch (type) {
+    case "success":
+      timeout = 3000; // 成功消息显示3秒
+      break;
+    case "error":
+      timeout = 5000; // 错误消息显示5秒
+      break;
+    case "warning":
+      timeout = 4000; // 警告消息显示4秒
+      break;
+    default:
+      timeout = 0; // loading等状态不自动消失
+  }
 
-	if (timeout > 0) {
-		statusTimer = setTimeout(() => {
-			statusElement.textContent = "";
-			statusElement.className = "";
-			statusTimer = null;
-		}, timeout);
-	}
+  if (timeout > 0) {
+    statusTimer = setTimeout(() => {
+      statusElement.textContent = "";
+      statusElement.className = "";
+      statusTimer = null;
+    }, timeout);
+  }
 }
 
 /**
- * 设置自动调整高度的多行文本框
+ * 自适应文本框初始化
+ * 为所有具有自适应类名的文本框添加高度自动调整功能
  */
 function setupAutoResizeTextareas() {
-	const textareas = document.querySelectorAll('.auto-resize-textarea');
+  const textareas = document.querySelectorAll(".auto-resize-textarea");
 
-	textareas.forEach(textarea => {
-		// 初始化高度
-		adjustTextareaHeight(textarea);
+  textareas.forEach((textarea) => {
+    // 初始化高度
+    adjustTextareaHeight(textarea);
 
-		// 监听输入事件
-		textarea.addEventListener('input', () => {
-			adjustTextareaHeight(textarea);
-		});
+    // 监听输入事件
+    textarea.addEventListener("input", () => {
+      adjustTextareaHeight(textarea);
+    });
 
-		// 监听粘贴事件
-		textarea.addEventListener('paste', () => {
-			setTimeout(() => {
-				adjustTextareaHeight(textarea);
-			}, 0);
-		});
-	});
+    // 监听粘贴事件
+    textarea.addEventListener("paste", () => {
+      setTimeout(() => {
+        adjustTextareaHeight(textarea);
+      }, 0);
+    });
+  });
 }
 
 /**
- * 调整单个文本框的高度
- * @param {HTMLTextAreaElement} textarea - 文本框元素
+ * 文本框高度调整算法
+ * 根据内容自动计算并设置合适的文本框高度，带最大高度限制
+ * @param {HTMLTextAreaElement} textarea - 需要调整高度的文本框元素
  */
 function adjustTextareaHeight(textarea) {
-	// 重置高度以获取准确的scrollHeight
-	textarea.style.height = 'auto';
+  // 重置高度以获取准确的scrollHeight
+  textarea.style.height = "auto";
 
-	// 计算所需高度
-	const scrollHeight = textarea.scrollHeight;
-	const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 20;
-	const padding = parseInt(getComputedStyle(textarea).paddingTop) + parseInt(getComputedStyle(textarea).paddingBottom);
+  // 计算所需高度
+  const scrollHeight = textarea.scrollHeight;
+  const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 20;
+  const padding =
+    parseInt(getComputedStyle(textarea).paddingTop) +
+    parseInt(getComputedStyle(textarea).paddingBottom);
 
-	// 计算行数
-	const lines = Math.ceil((scrollHeight - padding) / lineHeight);
+  // 计算行数
+  const lines = Math.ceil((scrollHeight - padding) / lineHeight);
 
-	// 限制最大5行
-	const maxLines = 5;
-	const actualLines = Math.min(lines, maxLines);
+  // 限制最大5行
+  const maxLines = 5;
+  const actualLines = Math.min(lines, maxLines);
 
-	// 设置新高度
-	const newHeight = Math.max(actualLines * lineHeight + padding, 40); // 最小高度40px
-	textarea.style.height = newHeight + 'px';
+  // 设置新高度
+  const newHeight = Math.max(actualLines * lineHeight + padding, 40); // 最小高度40px
+  textarea.style.height = newHeight + "px";
 
-	// 如果内容超过5行，显示滚动条
-	if (lines > maxLines) {
-		textarea.style.overflowY = 'auto';
-	} else {
-		textarea.style.overflowY = 'hidden';
-	}
+  // 如果内容超过5行，显示滚动条
+  if (lines > maxLines) {
+    textarea.style.overflowY = "auto";
+  } else {
+    textarea.style.overflowY = "hidden";
+  }
 }
-
-
