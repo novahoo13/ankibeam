@@ -1,5 +1,5 @@
-// options.js - オプション画面
-// 目的: 設定の表示・保存、各種接続のテスト
+// options.js - 选项配置页面
+// 功能：设置的显示与保存、各种连接测试
 
 import { saveConfig, loadConfig, getDefaultConfig } from "../utils/storage.js";
 import {
@@ -20,17 +20,17 @@ import {
   updatePromptConfigForModel,
 } from "../utils/prompt-engine.js";
 
-// APIキーの実値（DOMには伏せ字を表示）
+// API密钥的实际值（DOM中显示星号掩码）
 let actualApiKeys = {
   google: "",
   openai: "",
   anthropic: "",
 };
 
-// 現在のモデルフィールド一覧
+// 当前模型字段列表
 let currentModelFields = [];
 
-// 現在の設定オブジェクト
+// 当前配置对象
 let currentConfig = {};
 
 const promptEditorState = {
@@ -48,10 +48,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Tab导航初始化
   initTabNavigation();
 
-  // 設定のロードと表示
+  // 加载并显示配置
   loadAndDisplayConfig();
 
-  // イベント登録
+  // 事件监听器注册
   document.getElementById("save-btn").addEventListener("click", handleSave);
   document
     .getElementById("test-anki-btn")
@@ -60,18 +60,18 @@ document.addEventListener("DOMContentLoaded", () => {
     .getElementById("default-model")
     .addEventListener("change", handleModelChange);
 
-  // AIプロバイダ関連
+  // AI提供商相关
   document
     .getElementById("ai-provider")
     .addEventListener("change", handleProviderChange);
 
-  // APIキーの表示切替
+  // API密钥显示切换
   setupApiKeyInputs();
 
-  // 各プロバイダ接続テストボタン
+  // 各提供商连接测试按钮
   setupTestProviderButtons();
 
-  // Promptエディタの初期化
+  // Prompt编辑器初始化
   setupPromptEditor();
 
   // 配置管理按钮
@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
     .getElementById("reset-config-btn")
     .addEventListener("click", handleResetConfiguration);
 
-  // スタイルプレビュー
+  // 样式预览
   document
     .getElementById("font-size-select")
     .addEventListener("change", updateStylePreview);
@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /**
- * 各プロバイダ接続テストボタン
+ * 设置各提供商连接测试按钮
  */
 function setupTestProviderButtons() {
   document.querySelectorAll(".test-provider-btn").forEach((btn) => {
@@ -115,7 +115,7 @@ function setupTestProviderButtons() {
 }
 
 /**
- * Promptエディタ関連の初期化
+ * Prompt编辑器相关初始化
  */
 function setupPromptEditor() {
   const promptTextarea = document.getElementById("custom-prompt-textarea");
@@ -140,16 +140,14 @@ function setupPromptEditor() {
     resetButton.addEventListener("click", handleResetPromptTemplate);
   }
 
-
   hidePromptConfig();
   markPromptDirtyFlag(false);
 }
 
 /**
- * フィールドタグのクリックでプレースホルダを挿入
- * @param {MouseEvent} event - クリックイベント
+ * 点击字段标签插入占位符
+ * @param {MouseEvent} event - 点击事件
  */
-
 
 function handleFieldSelectionClick(event) {
   const button = event.target.closest("[data-field-option]");
@@ -180,13 +178,17 @@ function toggleFieldSelection(fieldName) {
   const isSelected = selected.includes(fieldName);
 
   if (isSelected) {
-    promptEditorState.selectedFields = selected.filter((field) => field !== fieldName);
+    promptEditorState.selectedFields = selected.filter(
+      (field) => field !== fieldName
+    );
   } else {
-    promptEditorState.selectedFields = Array.from(new Set([...selected, fieldName]));
+    promptEditorState.selectedFields = Array.from(
+      new Set([...selected, fieldName])
+    );
   }
 
-  const normalizedSelection = (promptEditorState.selectedFields || []).filter((field) =>
-    availableFields.includes(field)
+  const normalizedSelection = (promptEditorState.selectedFields || []).filter(
+    (field) => availableFields.includes(field)
   );
 
   promptEditorState.selectedFields = availableFields.filter((field) =>
@@ -242,8 +244,8 @@ function renderFieldSelection(fields) {
 
   const availableFields = promptEditorState.availableFields || [];
 
-  const normalizedSelection = (promptEditorState.selectedFields || []).filter((field) =>
-    availableFields.includes(field)
+  const normalizedSelection = (promptEditorState.selectedFields || []).filter(
+    (field) => availableFields.includes(field)
   );
   promptEditorState.selectedFields = availableFields.filter((field) =>
     normalizedSelection.includes(field)
@@ -335,7 +337,9 @@ function renderFieldConfigForm() {
       return;
     }
 
-    const contentArea = card.querySelector('textarea[data-field-role="content"]');
+    const contentArea = card.querySelector(
+      'textarea[data-field-role="content"]'
+    );
 
     if (contentArea) {
       contentArea.value = config.content || "";
@@ -364,7 +368,6 @@ function cloneSelectedFieldConfigs(selectedFields) {
   });
   return result;
 }
-
 
 function generateDefaultPrompt() {
   const selectedFields = promptEditorState.selectedFields || [];
@@ -398,9 +401,13 @@ function generateDefaultPrompt() {
   lines.push("- 仅返回 JSON，不要包含额外解释。");
   lines.push("- 确保各字段内容满足上文要求。");
 
-  return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
+  return (
+    lines
+      .join("\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim() + "\n"
+  );
 }
-
 
 function synchronizeGeneratedPrompt(options = {}) {
   const { forceUpdate = false } = options;
@@ -414,9 +421,12 @@ function synchronizeGeneratedPrompt(options = {}) {
   const generatedPrompt = generateDefaultPrompt();
   const trimmedGenerated = (generatedPrompt || "").trim();
   const trimmedCurrent = (promptTextarea.value || "").trim();
-  const trimmedLastGenerated = (promptEditorState.lastGeneratedPrompt || "").trim();
+  const trimmedLastGenerated = (
+    promptEditorState.lastGeneratedPrompt || ""
+  ).trim();
 
-  const wasAutoGenerated = !trimmedCurrent || trimmedCurrent === trimmedLastGenerated;
+  const wasAutoGenerated =
+    !trimmedCurrent || trimmedCurrent === trimmedLastGenerated;
 
   promptEditorState.lastGeneratedPrompt = generatedPrompt;
 
@@ -439,7 +449,6 @@ function synchronizeGeneratedPrompt(options = {}) {
 
   return false;
 }
-
 
 function setPromptConfigStatus(message = "", level = "") {
   const statusElement = document.getElementById("prompt-config-status");
@@ -530,7 +539,7 @@ function escapeCssSelector(value) {
   if (window.CSS && typeof window.CSS.escape === "function") {
     return window.CSS.escape(value);
   }
-  return value.replace(/([\s!"#$%&'()*+,./:;<=>?@[\]^`{|}~])/g, "\$1");
+  return value.replace(/([\s!"#$%&'()*+,./:;<=>?@[\]^`{|}~])/g, "$1");
 }
 
 function escapeHtml(value) {
@@ -545,10 +554,8 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
-
-
 /**
- * モデル専用Promptをデフォルトに戻す
+ * 将模型专用Prompt重置为默认值
  */
 
 function handleResetPromptTemplate() {
@@ -565,16 +572,17 @@ function handleResetPromptTemplate() {
   if (generatedPrompt) {
     setPromptConfigStatus("已根据当前字段配置生成默认 Prompt。", "info");
   } else {
-    setPromptConfigStatus("请先选择并配置字段，然后再生成默认 Prompt。", "info");
+    setPromptConfigStatus(
+      "请先选择并配置字段，然后再生成默认 Prompt。",
+      "info"
+    );
   }
 }
 
-
-
 /**
- * Prompt設定UIを表示
- * @param {string} modelName - モデル名
- * @param {string[]} fields - フィールド一覧
+ * 显示Prompt设置UI
+ * @param {string} modelName - 模型名称
+ * @param {string[]} fields - 字段列表
  */
 
 function showPromptConfig(modelName, fields) {
@@ -587,7 +595,7 @@ function showPromptConfig(modelName, fields) {
   const modelHint = document.getElementById("prompt-model-hint");
 
   if (!editorContainer || !selectionList || !configList || !promptTextarea) {
-    console.warn("Prompt設定要素が見つかりません");
+    console.warn("未找到Prompt设置元素");
     return;
   }
 
@@ -599,18 +607,22 @@ function showPromptConfig(modelName, fields) {
     ? [...promptConfig.selectedFields]
     : [];
   promptEditorState.fieldConfigs = {};
-  if (promptConfig.fieldConfigs && typeof promptConfig.fieldConfigs === "object") {
+  if (
+    promptConfig.fieldConfigs &&
+    typeof promptConfig.fieldConfigs === "object"
+  ) {
     Object.keys(promptConfig.fieldConfigs).forEach((fieldName) => {
       const fieldConfig = promptConfig.fieldConfigs[fieldName] || {};
       promptEditorState.fieldConfigs[fieldName] = {
-        content: typeof fieldConfig.content === "string" ? fieldConfig.content : "",
+        content:
+          typeof fieldConfig.content === "string" ? fieldConfig.content : "",
       };
     });
   }
 
   const availableFields = promptEditorState.availableFields;
-  promptEditorState.selectedFields = promptEditorState.selectedFields.filter((field) =>
-    availableFields.includes(field)
+  promptEditorState.selectedFields = promptEditorState.selectedFields.filter(
+    (field) => availableFields.includes(field)
   );
   Object.keys(promptEditorState.fieldConfigs).forEach((field) => {
     if (!availableFields.includes(field)) {
@@ -634,7 +646,10 @@ function showPromptConfig(modelName, fields) {
     resetButton.disabled = false;
   }
 
-  const storedPrompt = typeof promptConfig.customPrompt === "string" ? promptConfig.customPrompt : "";
+  const storedPrompt =
+    typeof promptConfig.customPrompt === "string"
+      ? promptConfig.customPrompt
+      : "";
   promptTextarea.value = storedPrompt;
   promptEditorState.lastSavedPrompt = storedPrompt;
 
@@ -643,10 +658,8 @@ function showPromptConfig(modelName, fields) {
   markPromptDirtyFlag();
 }
 
-
-
 /**
- * Prompt設定UIをリセット
+ * 重置Prompt设置UI
  */
 function hidePromptConfig() {
   const editorContainer = document.getElementById("prompt-field-editor");
@@ -658,7 +671,7 @@ function hidePromptConfig() {
   const modelHint = document.getElementById("prompt-model-hint");
 
   if (!editorContainer || !selectionList || !configList || !promptTextarea) {
-    console.warn("Prompt設定要素が見つかりません");
+    console.warn("未找到Prompt设置元素");
     return;
   }
 
@@ -693,10 +706,9 @@ function hidePromptConfig() {
   markPromptDirtyFlag(false);
 }
 
-
 /**
- * Promptの編集状態を表示
- * @param {boolean} [forced] - 強制表示/非表示
+ * 显示Prompt编辑状态
+ * @param {boolean} [forced] - 强制显示/隐藏
  */
 function markPromptDirtyFlag(forced) {
   const flag = document.getElementById("prompt-dirty-flag");
@@ -714,16 +726,8 @@ function markPromptDirtyFlag(forced) {
   flag.style.display = isDirty ? "inline" : "none";
 }
 
-
-
-
 /**
- * 正規表現用に文字列をエスケープ
- * @param {string} value - 対象文字列
- * @returns {string}
- */
-/**
- * 設定ファイルをエクスポート
+ * 导出配置文件
  */
 async function handleExportConfiguration() {
   try {
@@ -763,13 +767,13 @@ async function handleExportConfiguration() {
 
     updateStatus("save-status", "配置导出成功", "success");
   } catch (error) {
-    console.error("設定エクスポートに失敗しました:", error);
+    console.error("导出配置失败:", error);
     updateStatus("save-status", `配置导出失败: ${error.message}`, "error");
   }
 }
 
 /**
- * インポートダイアログを開く
+ * 打开导入对话框
  */
 function triggerImportDialog() {
   const fileInput = document.getElementById("import-config-input");
@@ -780,8 +784,8 @@ function triggerImportDialog() {
 }
 
 /**
- * 設定ファイルをインポート
- * @param {Event} event - changeイベント
+ * 导入配置文件
+ * @param {Event} event - change事件
  */
 async function handleImportConfiguration(event) {
   const fileInput = event?.target;
@@ -873,7 +877,7 @@ async function handleImportConfiguration(event) {
     updateStatus("save-status", "配置导入成功，请重新配置 API 密钥", "success");
     setTimeout(() => window.location.reload(), 1000);
   } catch (error) {
-    console.error("設定インポートに失敗しました:", error);
+    console.error("导入配置失败:", error);
     updateStatus("save-status", `配置导入失败: ${error.message}`, "error");
   } finally {
     if (event?.target) {
@@ -883,7 +887,7 @@ async function handleImportConfiguration(event) {
 }
 
 /**
- * 設定をデフォルト状態にリセット
+ * 将配置重置为默认状态
  */
 async function handleResetConfiguration() {
   if (!confirm("确定要重置所有配置吗？此操作不可撤销。")) {
@@ -898,14 +902,13 @@ async function handleResetConfiguration() {
     updateStatus("save-status", "配置已重置为默认值", "success");
     setTimeout(() => window.location.reload(), 800);
   } catch (error) {
-    console.error("設定リセットに失敗しました:", error);
+    console.error("重置配置失败:", error);
     updateStatus("save-status", `重置配置失败: ${error.message}`, "error");
   }
 }
 
 /**
- * APIキーの表示/非表示 切替
- * @param {Event} e - イベント
+ * 设置API密钥输入框
  */
 function setupApiKeyInputs() {
   document.querySelectorAll(".toggle-visibility-btn").forEach((btn) => {
@@ -916,7 +919,7 @@ function setupApiKeyInputs() {
     const input = document.getElementById(`${provider}-api-key`);
     if (input) {
       input.addEventListener("input", (e) => {
-        // プレースホルダー以外が入力されたら実値を更新
+        // 输入非占位符内容时更新实际值
         if (e.target.value !== API_KEY_PLACEHOLDER) {
           actualApiKeys[provider] = e.target.value;
         }
@@ -926,8 +929,8 @@ function setupApiKeyInputs() {
 }
 
 /**
- * APIキーの表示/非表示 切替
- * @param {Event} e - イベント
+ * 切换API密钥显示/隐藏
+ * @param {Event} e - 事件对象
  */
 function handleToggleVisibility(e) {
   const targetId = e.target.getAttribute("data-target");
@@ -948,22 +951,22 @@ function handleToggleVisibility(e) {
 }
 
 /**
- * 設定のロードと表示
+ * 加载并显示配置
  */
 async function loadAndDisplayConfig() {
   const config = await loadConfig();
   currentConfig = config;
 
-  // AI設定
+  // AI设置
   const aiConfig = config?.aiConfig || {};
 
-  // デフォルトプロバイダ
+  // 默认提供商
   document.getElementById("ai-provider").value = aiConfig.provider || "google";
 
-  // 各プロバイダ設定
+  // 各提供商设置
   const models = aiConfig.models || {};
 
-  // 供給者ごとの入力反映
+  // 按提供商加载配置
   const loadProviderConfig = (provider) => {
     const providerConfig = models[provider] || {};
     const input = document.getElementById(`${provider}-api-key`);
@@ -979,16 +982,18 @@ async function loadAndDisplayConfig() {
 
   ["google", "openai", "anthropic"].forEach(loadProviderConfig);
 
-
   // AnkiConfig
   currentModelFields = config?.ankiConfig?.modelFields || [];
 
   // 基于已保存配置填充Anki选项
   populateSavedAnkiOptions(config);
 
-  // 如果已经有默认模型和字段，直接显示模板信息
+  // 如果已有默认模型和字段，直接显示模板信息
   if (config?.ankiConfig?.defaultModel && config?.ankiConfig?.modelFields) {
-    displaySavedModelInfo(config.ankiConfig.defaultModel, config.ankiConfig.modelFields);
+    displaySavedModelInfo(
+      config.ankiConfig.defaultModel,
+      config.ankiConfig.modelFields
+    );
   }
 
   // StyleConfig
@@ -999,18 +1004,18 @@ async function loadAndDisplayConfig() {
   document.getElementById("line-height-select").value =
     config?.styleConfig?.lineHeight || "1.4";
 
-  console.log("設定を読み込みました。");
+  console.log("已加载配置。");
 }
 
 /**
- * 保存ボタン ハンドラ
+ * 保存按钮处理器
  */
 
 async function handleSave() {
-  // 選択中のAIプロバイダ
+  // 当前选择的AI提供商
   const provider = document.getElementById("ai-provider").value;
 
-  // DOM から情報を取得（APIキーは actualApiKeys から）
+  // 从DOM获取信息（API密钥从actualApiKeys获取）
   const googleConfig = {
     apiKey: actualApiKeys.google,
     modelName: document.getElementById("google-model-name").value,
@@ -1038,13 +1043,15 @@ async function handleSave() {
   const defaultDeck = document.getElementById("default-deck").value;
   const defaultModel = document.getElementById("default-model").value;
 
-  // スタイル
+  // 样式配置
   const fontSize = document.getElementById("font-size-select").value;
   const textAlign = document.getElementById("text-align-select").value;
   const lineHeight = document.getElementById("line-height-select").value;
 
   const isPromptEditorActive =
-    promptEditorState.currentModel && promptTextarea && !promptTextarea.disabled;
+    promptEditorState.currentModel &&
+    promptTextarea &&
+    !promptTextarea.disabled;
 
   if (isPromptEditorActive) {
     const validation = validateFieldConfigurations(true);
@@ -1053,11 +1060,12 @@ async function handleSave() {
     }
   }
 
-  // 新しい設定
+  // 构建新配置
   const existingPromptTemplatesByModel = {};
   const storedPromptConfigs =
     currentConfig?.promptTemplates?.promptTemplatesByModel || {};
-  const legacyPromptConfigs = currentConfig?.ankiConfig?.promptTemplatesByModel || {};
+  const legacyPromptConfigs =
+    currentConfig?.ankiConfig?.promptTemplatesByModel || {};
 
   new Set([
     ...Object.keys(storedPromptConfigs),
@@ -1071,12 +1079,13 @@ async function handleSave() {
 
   if (promptEditorState.currentModel) {
     const selectedSnapshot = [...(promptEditorState.selectedFields || [])];
-    const existingConfig =
-      existingPromptTemplatesByModel[promptEditorState.currentModel] || {
-        selectedFields: [],
-        fieldConfigs: {},
-        customPrompt: "",
-      };
+    const existingConfig = existingPromptTemplatesByModel[
+      promptEditorState.currentModel
+    ] || {
+      selectedFields: [],
+      fieldConfigs: {},
+      customPrompt: "",
+    };
 
     existingPromptTemplatesByModel[promptEditorState.currentModel] = {
       ...existingConfig,
@@ -1129,7 +1138,11 @@ async function handleSave() {
       savePromptForModel(selectedModel, normalizedValue, newConfig);
       promptValueForSelectedModel = normalizedValue;
     } else {
-      updatePromptConfigForModel(selectedModel, { customPrompt: "" }, newConfig);
+      updatePromptConfigForModel(
+        selectedModel,
+        { customPrompt: "" },
+        newConfig
+      );
       promptValueForSelectedModel = "";
     }
 
@@ -1137,7 +1150,9 @@ async function handleSave() {
       selectedModel,
       {
         selectedFields: [...(promptEditorState.selectedFields || [])],
-        fieldConfigs: cloneSelectedFieldConfigs(promptEditorState.selectedFields || []),
+        fieldConfigs: cloneSelectedFieldConfigs(
+          promptEditorState.selectedFields || []
+        ),
       },
       newConfig
     );
@@ -1163,15 +1178,14 @@ async function handleSave() {
   }
 }
 
-
 /**
- * モデル選択変更 ハンドラ
+ * 模型选择变更处理器
  */
 async function handleModelChange() {
   const modelName = document.getElementById("default-model").value;
   if (!modelName) {
     document.getElementById("field-mapping").style.display = "none";
-    currentModelFields = []; // クリア
+    currentModelFields = []; // 清空
     return;
   }
 
@@ -1181,7 +1195,7 @@ async function handleModelChange() {
       throw new Error(fieldsResult.error);
     }
 
-    // 取得したフィールド名を保持
+    // 保存获取到的字段名
     currentModelFields = fieldsResult.result;
 
     // 显示字段信息
@@ -1226,7 +1240,7 @@ async function handleModelChange() {
   } catch (error) {
     console.error("获取字段失败:", error);
     document.getElementById("field-mapping").style.display = "none";
-    currentModelFields = []; // クリア
+    currentModelFields = []; // 清空
   }
 }
 
@@ -1256,7 +1270,9 @@ async function handleTestAnki() {
     // 尝试恢复用户之前的选择（如果仍然有效）
     if (currentDeck) {
       const deckSelect = document.getElementById("default-deck");
-      const deckOption = Array.from(deckSelect.options).find(opt => opt.value === currentDeck);
+      const deckOption = Array.from(deckSelect.options).find(
+        (opt) => opt.value === currentDeck
+      );
       if (deckOption) {
         deckSelect.value = currentDeck;
       }
@@ -1264,7 +1280,9 @@ async function handleTestAnki() {
 
     if (currentModel) {
       const modelSelect = document.getElementById("default-model");
-      const modelOption = Array.from(modelSelect.options).find(opt => opt.value === currentModel);
+      const modelOption = Array.from(modelSelect.options).find(
+        (opt) => opt.value === currentModel
+      );
       if (modelOption) {
         modelSelect.value = currentModel;
         // 如果模型仍然有效，重新获取字段信息
@@ -1280,7 +1298,7 @@ async function handleTestAnki() {
 }
 
 /**
- * 提供商选择改变
+ * 提供商选择变更
  */
 function handleProviderChange() {
   const selectedProvider = document.getElementById("ai-provider").value;
@@ -1408,7 +1426,7 @@ function displaySavedModelInfo(modelName, modelFields) {
 }
 
 /**
- * 读取 Anki 数据（牌组/模型）
+ * 读取Anki数据（牌组/模型）
  */
 async function loadAnkiData() {
   try {
@@ -1444,7 +1462,7 @@ async function loadAnkiData() {
       modelSelect.appendChild(option);
     });
   } catch (error) {
-    console.error("读取 Anki 数据出错:", error);
+    console.error("读取Anki数据出错:", error);
     updateStatus("anki-status", `出错: ${error.message}`, "error");
   }
 }
@@ -1464,10 +1482,10 @@ function updateStylePreview() {
 }
 
 /**
- * ステータス表示更新
- * @param {string} elementId - 要素ID
- * @param {string} message - メッセージ
- * @param {'success'|'error'|'loading'} type - 種別
+ * 更新状态显示
+ * @param {string} elementId - 元素ID
+ * @param {string} message - 消息
+ * @param {'success'|'error'|'loading'} type - 类型
  */
 function updateStatus(elementId, message, type) {
   const statusElement = document.getElementById(elementId);
@@ -1489,7 +1507,7 @@ function updateStatus(elementId, message, type) {
 }
 
 /**
- * Tab导航初始化函数
+ * Tab导航初始化
  */
 function initTabNavigation() {
   const tabButtons = document.querySelectorAll(".settings-tab-btn");
@@ -1636,8 +1654,3 @@ async function handleImportConfigurationFile(event) {
  * 重置配置 - 使用现有的handleResetConfiguration函数
  */
 // 这个函数已经在文件中存在了，不需要重复定义
-
-
-
-
-
