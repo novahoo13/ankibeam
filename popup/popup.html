@@ -1,18 +1,60 @@
 <!DOCTYPE html>
+<!--
+  Anki单词助手 - Chrome扩展程序弹出窗口界面
+  功能说明：
+  - 提供用户输入文本的界面
+  - 调用AI服务解析文本内容
+  - 动态显示解析后的字段内容
+  - 支持将解析结果写入Anki卡片
+
+  技术特点：
+  - 使用Tailwind CSS框架进行样式设计
+  - 支持国际化（i18n）文本显示
+  - 响应式布局适配不同屏幕尺寸
+  - 模块化JavaScript集成
+-->
 <html lang="zh-CN">
+  <!-- 设置页面语言为简体中文，支持正确的文本渲染和搜索引擎优化 -->
   <head>
     <meta charset="UTF-8" />
+    <!-- UTF-8编码确保中文字符正确显示 -->
     <title>Anki 单词助手</title>
+    <!-- 扩展程序标题，显示在浏览器标签页 -->
+    <!-- Tailwind CSS框架 - 提供实用的CSS类用于快速样式开发 -->
     <link rel="stylesheet" href="../styles/tailwind.min.css" />
+    <!-- 自定义CSS样式 - 扩展Tailwind功能，定义项目特定样式 -->
     <link rel="stylesheet" href="../styles/custom-classes.css" />
   </head>
   <body>
+    <!--
+      主容器：Chrome扩展程序弹出窗口的根容器
+      - w-96: 固定宽度384px（24rem），符合Chrome扩展弹窗标准
+      - h-[580px]: 固定高度580px，提供足够的内容显示空间
+      - flex flex-col: 垂直弹性布局，便于内容区域自适应
+    -->
     <div class="w-96 bg-white flex flex-col h-[580px]">
+      <!--
+        头部区域：显示应用标题和状态信息
+        - bg-slate-800: 深色背景，提供良好的视觉层次
+        - p-4: 16px内边距，确保内容不贴边
+      -->
       <header class="bg-slate-800 text-white p-4">
+        <!-- 头部内容容器 - 使用flexbox实现标题和状态信息的两端对齐 -->
         <div class="flex items-center justify-between">
+          <!--
+            应用标题
+            - data-i18n="appName": 国际化标识符，支持多语言切换
+            - text-lg font-semibold: 大号字体和半粗体，突出显示
+          -->
           <h1 class="text-lg font-semibold" data-i18n="appName">
             Anki 单词助手
           </h1>
+          <!--
+            状态消息显示区域
+            - 用于显示当前操作状态（如：解析中、写入中等）
+            - opacity-80: 80%透明度，作为辅助信息不过分抢夺注意力
+            - JavaScript动态更新内容
+          -->
           <p
             id="status-message"
             class="status-message text-xs text-white opacity-80"
@@ -20,11 +62,37 @@
         </div>
       </header>
 
+      <!--
+        主内容区域
+        - flex-grow: 占用剩余空间，实现底部按钮固定效果
+        - overflow-y-auto: 内容超出时显示垂直滚动条
+        - pt-3 px-3: 顶部和左右内边距12px
+        - space-y-3: 子元素间垂直间距12px
+      -->
       <main class="flex-grow overflow-y-auto pt-3 px-3 space-y-3">
+        <!--
+          文本输入区域
+          用户输入待解析的文本内容
+        -->
         <div class="input-section">
+          <!--
+            输入框标签
+            - block: 块级显示，独占一行
+            - text-sm font-medium: 小号字体和中等粗细
+            - text-gray-700: 深灰色文字，符合Material Design规范
+            - mb-2: 底部外边距8px
+          -->
           <label class="block text-sm font-medium text-gray-700 mb-2"
             >输入文本</label
           >
+          <!--
+            多行文本输入框
+            - id="text-input": JavaScript操作的目标元素
+            - rows="3": 默认显示3行高度
+            - resize-none: 禁用用户手动调整大小
+            - focus:ring-2 focus:ring-slate-500: 聚焦时显示蓝色轮廓
+            - JavaScript中实现自动高度调整功能
+          -->
           <textarea
             id="text-input"
             rows="3"
@@ -33,7 +101,21 @@
           ></textarea>
         </div>
 
+        <!--
+          操作按钮区域
+          包含触发AI解析的主要操作按钮
+        -->
         <div class="action-section">
+          <!--
+            解析按钮
+            - id="parse-btn": JavaScript事件绑定目标
+            - data-i18n="parseBtn": 国际化文本标识
+            - w-full: 按钮占满容器宽度
+            - bg-slate-600 hover:bg-slate-700: 背景色和悬停效果
+            - transition duration-200: 200ms过渡动画，提升用户体验
+            - focus:ring-2: 键盘导航时的可访问性支持
+            点击后调用JavaScript的handleParse()函数
+          -->
           <button
             id="parse-btn"
             data-i18n="parseBtn"
@@ -43,13 +125,45 @@
           </button>
         </div>
 
-        <!-- 动态字段容器 - 完全动态渲染 -->
+        <!--
+          动态字段显示容器
+          功能说明：
+          - AI解析完成后，在此区域动态生成字段显示组件
+          - 支持Legacy模式（固定字段）和Dynamic模式（自定义字段）
+          - 字段包括：单词、音标、释义、例句、词根等
+          - 用户可以编辑字段内容，修改后的内容将写入Anki
+
+          技术实现：
+          - JavaScript通过DOM操作动态创建字段元素
+          - 每个字段包含标签、可编辑文本区域、样式预览
+          - 支持HTML格式的富文本内容（加粗、斜体等）
+        -->
         <div id="fields-container" class="result-section space-y-3">
-          <!-- 字段将在JavaScript中动态渲染 -->
+          <!-- 字段内容完全由JavaScript动态渲染，具体实现见popup.js文件 -->
         </div>
       </main>
 
+      <!--
+        底部写入区域
+        - 固定在弹窗底部，不随内容滚动
+        - border-t: 顶部边框，与主内容区域分隔
+        - bg-white: 白色背景，保持与主容器一致
+      -->
       <div class="write-section bg-white p-3 border-t">
+        <!--
+          写入Anki按钮
+          功能说明：
+          - 将解析和编辑后的字段内容写入到Anki桌面版
+          - 通过AnkiConnect插件与Anki通信
+          - 按钮默认禁用，解析完成后才会启用
+
+          样式特点：
+          - id="write-btn": JavaScript操作目标
+          - disabled: 初始状态禁用，防止在没有内容时误操作
+          - bg-emerald-600: 绿色背景，表示确认/提交操作
+          - disabled:opacity-50: 禁用时半透明效果
+          - disabled:cursor-not-allowed: 禁用时显示禁止光标
+        -->
         <button
           id="write-btn"
           data-i18n="writeBtn"
@@ -60,6 +174,20 @@
         </button>
       </div>
     </div>
+
+    <!--
+      JavaScript模块加载
+      - type="module": ES6模块支持，启用import/export语法
+      - src="popup.js": 弹窗的主要业务逻辑文件
+
+      popup.js文件包含的主要功能：
+      1. 事件监听器绑定（解析按钮、写入按钮等）
+      2. AI服务调用（Google Gemini、OpenAI GPT、Anthropic Claude）
+      3. 动态字段渲染和管理
+      4. AnkiConnect通信
+      5. 错误处理和用户反馈
+      6. UI状态管理和Loading效果
+    -->
     <script type="module" src="popup.js"></script>
   </body>
 </html>
