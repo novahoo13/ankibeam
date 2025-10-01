@@ -10,8 +10,6 @@ import {
 } from "../utils/ankiconnect.js";
 import {
   testConnection as testAi,
-  getProvidersHealth,
-  testCurrentProvider,
 } from "../utils/ai-service.js";
 import {
   loadPromptForModel,
@@ -1321,10 +1319,19 @@ function handleProviderChange() {
 async function handleTestProvider(provider) {
   const modelSelect = document.getElementById(`${provider}-model-name`);
 
+  // 从当前页面获取 API Key
+  const apiKey = actualApiKeys[provider];
+
+  // 检查 API Key 是否有效
+  if (!apiKey || apiKey === API_KEY_PLACEHOLDER) {
+    updateStatus(`ai-status-${provider}`, `请先输入 API Key`, "error");
+    return;
+  }
+
   try {
-    const result = await testAi(provider, {
-      modelName: modelSelect ? modelSelect.value : undefined,
-    });
+    // 使用第二种调用方式：直接传递 apiKey 和 modelName
+    const modelName = modelSelect ? modelSelect.value : undefined;
+    const result = await testAi(provider, apiKey, modelName);
 
     if (result.success) {
       updateStatus(`ai-status-${provider}`, result.message, "success");

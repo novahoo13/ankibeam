@@ -453,15 +453,12 @@
                   - 连接测试和状态反馈
                   - 默认隐藏，JavaScript根据用户选择显示
                 -->
+                <!-- OpenAI配置区域 - 默认隐藏，选择OpenAI时显示 -->
                 <div
                   id="config-openai"
                   class="provider-config bg-slate-50 border border-slate-200 rounded-md p-6 mb-6"
                   style="display: none"
-                  <!--
-                  默认隐藏，选择OpenAI时显示
-                  --
                 >
-                  >
                   <div class="mb-4">
                     <label
                       for="openai-api-key"
@@ -539,15 +536,12 @@
                   - 连接测试和状态反馈
                   - 默认隐藏，选择Anthropic时显示
                 -->
+                <!-- Anthropic配置区域 - 默认隐藏，选择Anthropic时显示 -->
                 <div
                   id="config-anthropic"
                   class="provider-config bg-slate-50 border border-slate-200 rounded-md p-6 mb-6"
                   style="display: none"
-                  <!--
-                  默认隐藏，选择Anthropic时显示
-                  --
                 >
-                  >
                   <div class="mb-4">
                     <label
                       for="anthropic-api-key"
@@ -680,15 +674,12 @@
                     3. 状态显示：实时显示配置状态和验证结果
                     - 默认隐藏，选择模板后显示
                   -->
+                  <!-- 字段配置编辑区域 - 初始状态隐藏 -->
                   <div
                     id="prompt-field-editor"
                     class="bg-white border border-slate-200 rounded-md p-4 space-y-4"
                     style="display: none"
-                    <!--
-                    初始状态隐藏
-                    --
                   >
-                    >
                     <!--
                       字段选择区域
                       用户可以选择哪些字段需要AI生成内容
@@ -747,14 +738,10 @@
                       class="block text-sm font-medium text-gray-700 mb-2"
                       >自定义 Prompt 模板</label
                     >
-                    <!-- Prompt模板编辑文本区域 -->
+                    <!-- Prompt模板编辑文本区域 - 12行高度，提供足够的编辑空间 -->
                     <textarea
                       id="custom-prompt-textarea"
                       rows="12"
-                      <!--
-                      12行高度，提供足够的编辑空间
-                      --
-                    >
                       class="w-full p-3 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 font-mono text-sm"
                       placeholder="请选择模型后编写对应的 Prompt。
 建议包含以下占位符：
@@ -777,11 +764,8 @@
                       id="reset-prompt-btn"
                       class="bg-slate-500 hover:bg-slate-600 text-white font-medium py-2 px-4 rounded-md transition disabled:opacity-50"
                       disabled
-                      <!--
-                      初始禁用状态
-                      --
                     >
-                      > 重置为默认模板
+                      重置为默认模板
                     </button>
                     <!-- 修改状态提示 - 默认隐藏 -->
                     <span
@@ -976,16 +960,12 @@
                     <!-- 配置导入区域 -->
                     <div class="flex items-center">
                       <!-- 隐藏的文件选择输入框 -->
+                      <!-- 隐藏的文件输入框 - 仅接受JSON格式文件 -->
                       <input
                         type="file"
                         id="import-config-input"
                         accept=".json"
-                        <!--
-                        仅接受JSON格式文件
-                        --
-                      />
-                      class="hidden"
-                      <!-- 隐藏原生文件输入框 -->
+                        class="hidden"
                       />
                       <!-- 配置导入触发按钮 -->
                       <button

@@ -337,35 +337,15 @@ export async function parseText(inputText, promptTemplate) {
 
 /**
  * 测试 AI 服务连接
- * @param {string} provider - 供应商名称
- * @param {string|object} apiKeyOrOptions - API Key 或选项对象
- * @param {string} modelName - 用于测试的模型名称（仅当第二个参数为 API Key 时使用）
+ * @param {string} provider - 供应商名称 ('google', 'openai', 'anthropic')
+ * @param {string} apiKey - API Key
+ * @param {string} modelName - 用于测试的模型名称（可选）
  * @returns {Promise<{success: boolean, message: string}>} - 测试结果
  */
-export async function testConnection(provider, apiKeyOrOptions, modelName) {
+export async function testConnection(provider, apiKey, modelName) {
   try {
-    let apiKey, testModelName;
-    
-    // 处理不同的调用方式
-    if (typeof apiKeyOrOptions === 'object' && apiKeyOrOptions !== null) {
-      // 单个测试调用方式: testConnection(provider, {modelName: ...})
-      const config = await loadConfig();
-      const providerConfig = config?.aiConfig?.models?.[provider];
-      
-      if (!providerConfig?.apiKey) {
-        throw new Error('API Key不能为空');
-      }
-      
-      apiKey = providerConfig.apiKey;
-      testModelName = apiKeyOrOptions.modelName || providerConfig.modelName;
-    } else {
-      // 批量测试调用方式: testConnection(provider, apiKey, modelName)
-      apiKey = apiKeyOrOptions;
-      testModelName = modelName;
-      
-      if (!apiKey) {
-        throw new Error('API Key不能为空');
-      }
+    if (!apiKey) {
+      throw new Error('API Key不能为空');
     }
 
     const providerConfig = PROVIDERS[provider];
@@ -374,7 +354,7 @@ export async function testConnection(provider, apiKeyOrOptions, modelName) {
     }
 
     // 使用测试模型或指定模型
-    const testModel = testModelName || providerConfig.testModel;
+    const testModel = modelName || providerConfig.testModel;
 
     // 发送简单的测试请求
     const responseText = await callProviderAPI(provider, apiKey, testModel, '测试连接，请回复"连接成功"', {
@@ -490,56 +470,6 @@ export async function parseTextWithFallback(inputText, promptTemplate) {
  */
 export function getProvidersInfo() {
   return PROVIDERS;
-}
-
-/**
- * 获取供应商健康状态
- * @returns {Promise<object>} - 所有供应商的健康状态
- */
-export async function getProvidersHealth() {
-  const config = await loadConfig();
-  const health = {};
-  
-  for (const [provider, providerConfig] of Object.entries(config.aiConfig.models)) {
-    health[provider] = {
-      status: providerConfig.healthStatus || 'unknown',
-      lastCheck: providerConfig.lastCheck || null,
-      lastError: providerConfig.lastError || null,
-      hasApiKey: !!providerConfig.apiKey
-    };
-  }
-  
-  return health;
-}
-
-/**
- * 测试当前选择的供应商
- * @returns {Promise<object>} - 测试结果
- */
-export async function testCurrentProvider() {
-  const config = await loadConfig();
-  const currentProvider = config.aiConfig.provider;
-  const providerConfig = config.aiConfig.models[currentProvider];
-
-  if (!providerConfig?.apiKey) {
-    return {
-      success: false,
-      message: '未配置API Key'
-    };
-  }
-
-  try {
-    return await testConnection(
-      currentProvider,
-      providerConfig.apiKey,
-      providerConfig.modelName
-    );
-  } catch (error) {
-    return {
-      success: false,
-      message: error.message
-    };
-  }
 }
 
 /**
