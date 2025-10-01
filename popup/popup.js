@@ -811,10 +811,6 @@ function applyFieldStatusStyle(element, value) {
   // 根据内容状态添加不同的样式类和提示信息
   if (trimmedValue) {
     element.classList.add("filled");
-    // 内容很短可能表示填充不完整
-    if (trimmedValue.length <= 1) {
-      element.classList.add("partially-filled");
-    }
     element.title = `已填充: ${trimmedValue.substring(0, 20)}${
       trimmedValue.length > 20 ? "..." : ""
     }`;
@@ -844,7 +840,6 @@ function fillDynamicFields(aiResult, fieldNames) {
     }
 
     let filledCount = 0;
-    let partiallyFilledCount = 0;
     const filledFields = [];
     const emptyFields = [];
     const missingElements = [];
@@ -877,12 +872,6 @@ function fillDynamicFields(aiResult, fieldNames) {
         filledCount++;
         filledFields.push(fieldName);
         element.classList.add("filled");
-
-        // 检查内容长度，如果很短可能是部分填充
-        if (trimmedValue.length <= 1) {
-          partiallyFilledCount++;
-          element.classList.add("partially-filled");
-        }
       } else {
         emptyFields.push(fieldName);
         element.classList.add("empty");
@@ -899,7 +888,6 @@ function fillDynamicFields(aiResult, fieldNames) {
       totalFields: fieldNames.length,
       filledCount,
       emptyCount: emptyFields.length,
-      partiallyFilledCount,
       missingElements: missingElements.length,
       filledFields,
       emptyFields,
@@ -923,10 +911,6 @@ function fillDynamicFields(aiResult, fieldNames) {
       console.error("缺失DOM元素:", missingElements);
       statusMessage += ` [${missingElements.length} 个元素缺失]`;
       statusType = "error";
-    }
-
-    if (partiallyFilledCount > 0 && partiallyFilledCount === filledCount) {
-      statusMessage += " (内容可能不完整)";
     }
 
     updateStatus(statusMessage, statusType);

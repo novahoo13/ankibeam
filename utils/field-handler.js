@@ -202,11 +202,6 @@ export function validateFields(fields, isLegacy = false, collectResult = null) {
         validation.fieldStats.filledFields++;
         validation.details.filledFieldNames.push(fieldName);
 
-        // 检查内容质量
-        if (trimmedValue.length < 2) {
-          validation.warnings.push(`字段"${fieldName}"内容过短: "${trimmedValue}"`);
-        }
-
         // 检查是否可能是错误格式（比如包含HTML标签但看起来不正常）
         if (trimmedValue.includes('<') && trimmedValue.includes('>')) {
           const htmlTagCount = (trimmedValue.match(/</g) || []).length;
