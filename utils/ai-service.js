@@ -475,12 +475,6 @@ export async function parseTextWithFallback(
   throw new Error("AI服务请求失败: 未找到可用的供应商");
 }
 
-export function getProvidersInfo() {
-  return getAllProviders().reduce((result, provider) => {
-    result[provider.id] = provider;
-    return result;
-  }, {});
-}
 
 export async function testConnection(providerId, apiKey, modelName) {
   let providerConfig;
@@ -653,6 +647,3 @@ export async function parseTextWithDynamicFieldsFallback(
   return runDynamicParsing(inputText, fieldNames, customTemplate, maxRetries);
 }
 
-export async function parseTextLegacy(inputText, promptTemplate) {
-  return parseTextWithFallback(inputText, promptTemplate);
-}

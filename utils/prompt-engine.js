@@ -303,29 +303,4 @@ export function savePromptForModel(modelName, prompt, config) {
   return updatePromptConfigForModel(modelName, { customPrompt: prompt }, config);
 }
 
-/**
- * 验证prompt模板是否包含必要的占位符
- * @param {string} template - prompt模板
- * @returns {boolean} - 是否有效
- */
-export function validatePromptTemplate(template) {
-  return template && template.includes("{{INPUT_TEXT}}");
-}
 
-/**
- * 修复无效的prompt模板（自动添加缺失的占位符）
- * @param {string} template - 原始模板
- * @returns {string} - 修复后的模板
- */
-export function fixPromptTemplate(template) {
-  if (!template) {
-    return getDefaultIntegratedTemplate();
-  }
-
-  if (!template.includes("{{INPUT_TEXT}}")) {
-    // 自动在末尾添加用户输入
-    template += '\n\n用户输入的文本: "{{INPUT_TEXT}}"';
-  }
-
-  return template;
-}

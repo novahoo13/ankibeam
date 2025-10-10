@@ -1101,7 +1101,6 @@ function handleResetPromptTemplate() {
   }
 
   synchronizeGeneratedPrompt({ forceUpdate: true });
-  updatePromptPreview();
   markPromptDirtyFlag();
 
   const generatedPrompt = (promptEditorState.lastGeneratedPrompt || "").trim();
@@ -1313,16 +1312,6 @@ async function handleExportConfiguration() {
   }
 }
 
-/**
- * 打开导入对话框
- */
-function triggerImportDialog() {
-  const fileInput = document.getElementById("import-config-input");
-  if (fileInput) {
-    fileInput.value = "";
-    fileInput.click();
-  }
-}
 
 /**
  * 导入配置文件
@@ -2200,28 +2189,6 @@ function initTabNavigation() {
   });
 }
 
-/**
- * 可选：URL hash路由支持
- */
-function initTabRouting() {
-  // 监听hash变化
-  window.addEventListener("hashchange", () => {
-    const hash = window.location.hash.slice(1);
-    const targetButton = document.querySelector(`[data-tab="${hash}"]`);
-    if (targetButton) {
-      targetButton.click();
-    }
-  });
-
-  // 页面加载时根据hash设置初始tab
-  if (window.location.hash) {
-    const hash = window.location.hash.slice(1);
-    const targetButton = document.querySelector(`[data-tab="${hash}"]`);
-    if (targetButton) {
-      targetButton.click();
-    }
-  }
-}
 
 // ==================== 配置管理功能 ====================
 

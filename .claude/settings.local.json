@@ -1,31 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:git.sr.ht)",
-      "WebSearch",
-      "Bash(node:*)",
-      "Bash(del \"C:\\Dev\\anki-word-assistant\\test_style.js\")",
-      "WebFetch(domain:llmjs.themaximalist.com)",
-      "WebFetch(domain:ai-sdk.dev)",
-      "WebFetch(domain:github.com)",
-      "Read(//c/Users/何振声/.claude/**)",
-      "Bash(claude doctor)",
-      "Read(//c/Users/何振声/**)",
-      "Bash(claude mcp:*)",
-      "Bash(cat:*)",
-      "Bash(npx:*)",
-      "Bash(Get-Process powershell)",
-      "Bash(Select-Object Id, ProcessName, StartTime)",
-      "Bash(Sort-Object StartTime)",
-      "Bash(tasklist)",
-      "Bash(findstr:*)",
-      "Bash(dir \"C:\\Users\\何振声\\.claude\" /b)",
-      "mcp__*",
-      "Bash(xargs:*)",
-      "mcp__sequential-thinking__sequentialthinking",
-      "Bash(git push:*)",
-      "Bash(git checkout:*)",
-      "Bash(git branch:*)"
+      "Bash(Where-Object { $_ullName -notmatch 'node_modules' })",
+      "Bash(Select-Object -ExpandProperty FullName)"
     ],
     "deny": [],
     "ask": []
