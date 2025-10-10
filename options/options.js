@@ -196,7 +196,7 @@ async function ensureApiOriginsPermission(models) {
         continue;
       }
     } catch (error) {
-      console.warn("[options] 権限確認に失敗しました:", error);
+      console.warn("[options] 权限确认失败：", error);
       throw new PermissionRequestError(origin, error);
     }
 
@@ -209,7 +209,7 @@ async function ensureApiOriginsPermission(models) {
       if (error instanceof PermissionRequestError) {
         throw error;
       }
-      console.warn("[options] 権限要求でエラーが発生しました:", error);
+      console.warn("[options] 请求权限时发生错误：", error);
       throw new PermissionRequestError(origin, error);
     }
   }
@@ -1747,7 +1747,7 @@ async function handleSave() {
     updateStatus("save-status", "设置已保存", "success");
   } catch (error) {
     if (error instanceof PermissionRequestError) {
-      console.warn("[options] 域名権限の要求が拒否されました:", error);
+      console.warn("[options] 域名权限请求被拒绝：", error);
       updateStatus("save-status", error.message, "error");
       return;
     }

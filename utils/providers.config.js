@@ -1,4 +1,4 @@
-// providers.config.js - AIプロバイダ設定の集中管理
+// providers.config.js - AI提供商配置的集中管理
 
 const GOOGLE_SALT = new Uint8Array([
     18, 24, 193, 131, 8, 11, 20, 153, 22, 163, 3, 19, 84, 134, 103, 174,
@@ -12,7 +12,7 @@ const ANTHROPIC_SALT = new Uint8Array([
     98, 76, 54, 32, 10, 87, 65, 43, 21, 99, 77, 55, 33, 11, 89, 67,
   ]);
 
-// マニフェストで常時必要となるホスト許可
+// manifest中始终需要的主机权限
 const BASE_HOST_PERMISSIONS = Object.freeze([
   "http://127.0.0.1:8765/*",
 ]);

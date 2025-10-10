@@ -966,16 +966,16 @@ function setUiLoading(isLoading, message = "") {
  * @returns {string} 包装后的HTML字符串
  */
 function wrapContentWithStyle(content) {
-  // 設定からスタイル取得
+  // 从配置中获取样式
   const styleConfig = config?.styleConfig || {};
   const fontSize = styleConfig.fontSize || "14px";
   const textAlign = styleConfig.textAlign || "left";
   const lineHeight = styleConfig.lineHeight || "1.4";
 
-  // 改行を <br> に変換
+  // 将换行符转换成 <br>
   const contentWithBreaks = content.replace(/\n/g, "<br>");
 
-  // ラップして返す
+  // 包装后返回
   return `<div style="font-size: ${fontSize}; text-align: ${textAlign}; line-height: ${lineHeight};">${contentWithBreaks}</div>`;
 }
 
@@ -990,7 +990,7 @@ function updateStatus(message, type = "") {
   statusElement.textContent = message;
   statusElement.className = `status-${type}`;
 
-  // 既存タイマーをクリア
+  // 清除现有计时器
   if (statusTimer) {
     clearTimeout(statusTimer);
     statusTimer = null;

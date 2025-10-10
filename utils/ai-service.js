@@ -1,4 +1,4 @@
-// ai-service.js - AIサービス呼び出しの統合レイヤー
+// ai-service.js - AI服务调用的统一层
 
 import { loadConfig, saveConfig } from "./storage.js";
 import { buildIntegratedPrompt, validateAIOutput } from "./prompt-engine.js";
@@ -175,7 +175,7 @@ async function executeConfiguredRequest(context) {
           message = parsedMessage;
         }
       } catch {
-        // errorParser に失敗してもデフォルトメッセージを使用する
+        // 即使 errorParser 失败也使用默认消息
       }
     } else if (parsedBody?.error?.message) {
       message = parsedBody.error.message;
@@ -389,7 +389,7 @@ ${inputText}
     }
 
     console.warn(
-      "カスタムPromptに {{INPUT_TEXT}} プレースホルダが存在しないため、入力テキストを末尾に連結しました。",
+      "自定义Prompt中不存在 {{INPUT_TEXT}} 占位符，因此已将输入文本追加到末尾。",
     );
     return `${template}\n\n${inputText}`;
   }
