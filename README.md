@@ -134,6 +134,13 @@ anki-word-assistant/
 4. 根据需要调整内容
 5. 点击"添加到 Anki"创建卡片
 
+### 自定义 OpenAI 兼容供应商
+1. 打开扩展的“设置中心”，在“AI 配置”标签中选中 OpenAI GPT 面板。
+2. 填写 OpenAI 兼容服务提供的 API Key，并将“API 地址”替换为自定义端点（如 `https://proxy.example.com/v1`）。
+3. 点击“保存设置”，浏览器会弹出新的域名访问权限提示；必须确认授权后才能成功保存配置。
+4. 授权完成后使用“测试连接”按钮验证新端点是否可用，并根据需要调整默认模型或 Prompt 模板。
+5. 若需恢复官方端点，清空或还原“API 地址”字段，保存后即可撤销额外域名的访问权限。
+
 ## 常见问题
 
 **Q: 为什么不使用 CDN 版本的 Tailwind CSS？**
@@ -147,6 +154,12 @@ A: 确保 Anki 正在运行且已安装 AnkiConnect 插件，检查端口 8765 �
 
 **Q: AI 解析结果不准确？**
 A: 可以在设置页面自定义 Prompt 模板，调整 AI 的解析规则和输出格式。
+
+## 权限说明
+- 默认请求的 `host_permissions`：`http://127.0.0.1:8765/*`、`https://generativelanguage.googleapis.com/*`、`https://api.openai.com/*`、`https://api.anthropic.com/*`，用于访问 AnkiConnect 与三大官方供应商。
+- 可选的 `optional_host_permissions`：`https://*/*`、`http://localhost/*`、`http://127.0.0.1/*`，仅在保存自定义 OpenAI 兼容端点或本地代理时弹出授权提示。
+- 当检测到新的域名时，扩展会在保存前请求一次性授权；如果拒绝，配置不会被保存，可修改地址后再次尝试。
+- 所有权限判断都在本地浏览器完成，不会上传任何 API Key 或调用数据。
 
 ## 技术栈
 
@@ -177,6 +190,7 @@ A: 可以在设置页面自定义 Prompt 模板，调整 AI 的解析规则和�
 ## 版本历史
 
 - **v1.0**: 基础功能实现，支持基本的AI解析和Anki集成
+- **2025-10-10**: 完成 AI 供应商重构 Stage 5，加入 Manifest 权限校验与自定义 OpenAI 兼容域名授权流程
 - **当前开发版**: 优化字段映射系统，增强用户体验
 
 ## 许可证

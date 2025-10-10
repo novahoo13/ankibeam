@@ -1,7 +1,12 @@
 // options.js - 选项配置页面
 // 功能：设置的显示与保存、各种连接测试
 
-import { saveConfig, loadConfig, getDefaultConfig } from "../utils/storage.js";
+import {
+  CONFIG_VERSION,
+  saveConfig,
+  loadConfig,
+  getDefaultConfig,
+} from "../utils/storage.js";
 import {
   testConnection as testAnki,
   getDeckNames,
@@ -17,12 +22,55 @@ import {
   getPromptConfigForModel,
   updatePromptConfigForModel,
 } from "../utils/prompt-engine.js";
+import {
+  getAllProviders,
+  getDefaultProviderId,
+  getFallbackOrder,
+  getAllManifestHostPermissions,
+} from "../utils/providers.config.js";
 
 // API密钥的实际值（DOM中显示星号掩码）
-let actualApiKeys = {
-  google: "",
-  openai: "",
-  anthropic: "",
+const actualApiKeys = Object.create(null);
+const providerUiRegistry = new Map();
+const manifestHostPermissionSet = new Set(
+  getAllManifestHostPermissions() ?? [],
+);
+
+class PermissionRequestError extends Error {
+  constructor(origin, cause) {
+    super(`未获得 ${origin} 的访问权限，已取消保存。`);
+    this.name = "PermissionRequestError";
+    this.origin = origin;
+    if (cause) {
+      this.cause = cause;
+    }
+  }
+}
+
+const dependencyOverrides = globalThis?.__ankiWordOptionsDeps ?? {};
+
+const storageApi = dependencyOverrides.storage ?? {
+  loadConfig,
+  saveConfig,
+  getDefaultConfig,
+};
+
+const aiServiceApi = dependencyOverrides.aiService ?? {
+  testConnection: testAi,
+};
+
+const ankiApi = dependencyOverrides.anki ?? {
+  testConnection: testAnki,
+  getDeckNames,
+  getModelNames,
+  getModelFieldNames,
+};
+
+const promptApi = dependencyOverrides.prompt ?? {
+  loadPromptForModel,
+  savePromptForModel,
+  getPromptConfigForModel,
+  updatePromptConfigForModel,
 };
 
 // 当前模型字段列表
@@ -41,76 +89,566 @@ const promptEditorState = {
 };
 
 const API_KEY_PLACEHOLDER = "********";
+let providerEventsBound = false;
 
-document.addEventListener("DOMContentLoaded", () => {
-  // Tab导航初始化
-  initTabNavigation();
+function normalizeApiOriginPattern(apiUrl) {
+  if (typeof apiUrl !== "string") {
+    return null;
+  }
+  const trimmed = apiUrl.trim();
+  if (!trimmed) {
+    return null;
+  }
 
-  // 加载并显示配置
-  loadAndDisplayConfig();
+  try {
+    const parsed = new URL(trimmed);
+    const protocol = parsed.protocol;
+    if (protocol !== "https:" && protocol !== "http:") {
+      return null;
+    }
 
-  // 事件监听器注册
-  document.getElementById("save-btn").addEventListener("click", handleSave);
-  document
-    .getElementById("test-anki-btn")
-    .addEventListener("click", handleTestAnki);
-  document
-    .getElementById("default-model")
-    .addEventListener("change", handleModelChange);
+    const hostname = parsed.hostname;
+    if (!hostname) {
+      return null;
+    }
 
-  // AI提供商相关
-  document
-    .getElementById("ai-provider")
-    .addEventListener("change", handleProviderChange);
+    if (hostname === "localhost") {
+      return `${protocol}//localhost/*`;
+    }
 
-  // API密钥显示切换
-  setupApiKeyInputs();
-
-  // 各提供商连接测试按钮
-  setupTestProviderButtons();
-
-  // Prompt编辑器初始化
-  setupPromptEditor();
-
-  // 配置管理按钮
-  document
-    .getElementById("export-config-btn")
-    .addEventListener("click", handleExportConfiguration);
-  document
-    .getElementById("import-config-btn")
-    .addEventListener("click", handleImportConfigurationClick);
-  document
-    .getElementById("import-config-input")
-    .addEventListener("change", handleImportConfigurationFile);
-  document
-    .getElementById("reset-config-btn")
-    .addEventListener("click", handleResetConfiguration);
-
-  // 样式预览
-  document
-    .getElementById("font-size-select")
-    .addEventListener("change", updateStylePreview);
-  document
-    .getElementById("text-align-select")
-    .addEventListener("change", updateStylePreview);
-  document
-    .getElementById("line-height-select")
-    .addEventListener("change", updateStylePreview);
-});
-
-/**
- * 设置各提供商连接测试按钮
- */
-function setupTestProviderButtons() {
-  document.querySelectorAll(".test-provider-btn").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      const provider = e.target.getAttribute("data-provider");
-      if (provider) {
-        handleTestProvider(provider);
+    if (hostname === "127.0.0.1") {
+      if (parsed.port === "8765") {
+        return `${protocol}//127.0.0.1:8765/*`;
       }
-    });
+      return `${protocol}//127.0.0.1/*`;
+    }
+
+    const portSegment = parsed.port ? `:${parsed.port}` : "";
+    return `${protocol}//${hostname}${portSegment}/*`;
+  } catch {
+    return null;
+  }
+}
+
+function containsOriginPermission(origin) {
+  return new Promise((resolve, reject) => {
+    try {
+      chrome.permissions.contains({ origins: [origin] }, (result) => {
+        const lastError = chrome.runtime?.lastError;
+        if (lastError) {
+          reject(new Error(lastError.message));
+          return;
+        }
+        resolve(Boolean(result));
+      });
+    } catch (error) {
+      reject(error);
+    }
   });
 }
+
+function requestOriginPermission(origin) {
+  return new Promise((resolve, reject) => {
+    try {
+      chrome.permissions.request({ origins: [origin] }, (granted) => {
+        const lastError = chrome.runtime?.lastError;
+        if (lastError) {
+          reject(new Error(lastError.message));
+          return;
+        }
+        resolve(Boolean(granted));
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+async function ensureApiOriginsPermission(models) {
+  if (
+    !chrome?.permissions?.contains ||
+    !chrome.permissions.request ||
+    !models ||
+    typeof models !== "object"
+  ) {
+    return;
+  }
+
+  const requiredOrigins = new Set();
+  for (const modelState of Object.values(models)) {
+    if (!modelState) {
+      continue;
+    }
+    const origin = normalizeApiOriginPattern(modelState.apiUrl);
+    if (!origin || manifestHostPermissionSet.has(origin)) {
+      continue;
+    }
+    requiredOrigins.add(origin);
+  }
+
+  if (!requiredOrigins.size) {
+    return;
+  }
+
+  for (const origin of requiredOrigins) {
+    try {
+      if (await containsOriginPermission(origin)) {
+        continue;
+      }
+    } catch (error) {
+      console.warn("[options] 权限确认失败：", error);
+      throw new PermissionRequestError(origin, error);
+    }
+
+    try {
+      const granted = await requestOriginPermission(origin);
+      if (!granted) {
+        throw new PermissionRequestError(origin);
+      }
+    } catch (error) {
+      if (error instanceof PermissionRequestError) {
+        throw error;
+      }
+      console.warn("[options] 请求权限时发生错误：", error);
+      throw new PermissionRequestError(origin, error);
+    }
+  }
+}
+
+function initProviderUI() {
+  const select = document.getElementById("ai-provider");
+  const container = document.getElementById("provider-config-container");
+  if (!select || !container) {
+    return;
+  }
+
+  providerUiRegistry.clear();
+  for (const key of Object.keys(actualApiKeys)) {
+    delete actualApiKeys[key];
+  }
+
+  const providers = getAllProviders();
+  const defaultModels = storageApi.getDefaultConfig()?.aiConfig?.models ?? {};
+
+  select.innerHTML = "";
+  container.innerHTML = "";
+
+  providers.forEach((provider, index) => {
+    actualApiKeys[provider.id] = "";
+    const option = document.createElement("option");
+    option.value = provider.id;
+    option.textContent = provider.label ?? provider.id;
+    select.appendChild(option);
+
+    const baseState = defaultModels[provider.id] ?? {};
+    const section = createProviderSection(provider, baseState);
+    if (index !== 0) {
+      section.root.style.display = "none";
+    }
+    container.appendChild(section.root);
+    providerUiRegistry.set(provider.id, section);
+  });
+
+  if (!providerEventsBound) {
+    container.addEventListener("click", (event) => {
+      const target =
+        event.target instanceof HTMLElement
+          ? event.target.closest("[data-action]")
+          : null;
+      if (!target) {
+        return;
+      }
+      const providerId = target.dataset.provider;
+      if (!providerId) {
+        return;
+      }
+      const action = target.dataset.action;
+      if (action === "toggle-visibility") {
+        toggleApiKeyVisibility(providerId);
+      } else if (action === "test-provider") {
+        handleTestProvider(providerId);
+      }
+    });
+
+    container.addEventListener("input", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLInputElement)) {
+        return;
+      }
+      const providerId = target.dataset.provider;
+      if (!providerId) {
+        return;
+      }
+      if (target.dataset.field === "apiKey") {
+        handleApiKeyInputChange(providerId, target.value);
+      }
+    });
+
+    providerEventsBound = true;
+  }
+}
+
+function createProviderSection(provider, defaultModelState = {}) {
+  const root = document.createElement("div");
+  root.className =
+    "provider-config bg-slate-50 border border-slate-200 rounded-md p-6";
+  root.id = `config-${provider.id}`;
+  root.dataset.provider = provider.id;
+
+  const apiKeyBlock = document.createElement("div");
+  apiKeyBlock.className = "mb-4";
+
+  const apiKeyLabel = document.createElement("label");
+  apiKeyLabel.htmlFor = `${provider.id}-api-key`;
+  apiKeyLabel.className =
+    "block text-sm font-medium text-gray-700 mb-2";
+  apiKeyLabel.textContent =
+    provider.ui?.apiKeyLabel ?? `${provider.label} API Key`;
+  apiKeyBlock.appendChild(apiKeyLabel);
+
+  const keyWrapper = document.createElement("div");
+  keyWrapper.className = "flex gap-2";
+
+  const apiKeyInput = document.createElement("input");
+  apiKeyInput.type = "password";
+  apiKeyInput.id = `${provider.id}-api-key`;
+  apiKeyInput.placeholder =
+    provider.ui?.apiKeyPlaceholder ?? API_KEY_PLACEHOLDER;
+  apiKeyInput.className =
+    "flex-1 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500";
+  apiKeyInput.dataset.provider = provider.id;
+  apiKeyInput.dataset.field = "apiKey";
+  keyWrapper.appendChild(apiKeyInput);
+
+  const toggleButton = document.createElement("button");
+  toggleButton.type = "button";
+  toggleButton.className =
+    "toggle-visibility-btn bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded-md transition";
+  toggleButton.dataset.provider = provider.id;
+  toggleButton.dataset.action = "toggle-visibility";
+  toggleButton.textContent = "显示";
+  keyWrapper.appendChild(toggleButton);
+
+  apiKeyBlock.appendChild(keyWrapper);
+
+  if (provider.ui?.dashboardUrl || provider.ui?.docsUrl) {
+    const helper = document.createElement("small");
+    helper.className = "text-xs text-gray-500 mt-1 block";
+
+    if (provider.ui?.dashboardUrl) {
+      helper.append("获取 API Key：");
+      const dashLink = document.createElement("a");
+      dashLink.href = provider.ui.dashboardUrl;
+      dashLink.target = "_blank";
+      dashLink.rel = "noreferrer";
+      dashLink.className = "text-slate-600 hover:underline";
+      dashLink.textContent = provider.label;
+      helper.appendChild(dashLink);
+      if (provider.ui?.docsUrl) {
+        helper.append(" ｜ 文档：");
+      }
+    }
+
+    if (provider.ui?.docsUrl) {
+      if (!provider.ui?.dashboardUrl) {
+        helper.append("参考文档：");
+      }
+      const docsLink = document.createElement("a");
+      docsLink.href = provider.ui.docsUrl;
+      docsLink.target = "_blank";
+      docsLink.rel = "noreferrer";
+      docsLink.className = "text-slate-600 hover:underline";
+      docsLink.textContent = "API 文档";
+      helper.appendChild(docsLink);
+    }
+
+    apiKeyBlock.appendChild(helper);
+  }
+
+  const modelBlock = document.createElement("div");
+  modelBlock.className = "mb-4";
+
+  const modelLabel = document.createElement("label");
+  modelLabel.htmlFor = `${provider.id}-model-name`;
+  modelLabel.className =
+    "block text-sm font-medium text-gray-700 mb-2";
+  modelLabel.textContent = "模型名称";
+  modelBlock.appendChild(modelLabel);
+
+  const modelInput = document.createElement("input");
+  modelInput.type = "text";
+  modelInput.id = `${provider.id}-model-name`;
+  modelInput.placeholder = provider.defaultModel
+    ? `例如：${provider.defaultModel}`
+    : "输入模型名称";
+  modelInput.className =
+    "w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500";
+  modelInput.dataset.provider = provider.id;
+  modelInput.dataset.field = "modelName";
+  modelInput.value =
+    defaultModelState.modelName ?? provider.defaultModel ?? "";
+  modelBlock.appendChild(modelInput);
+
+  if (Array.isArray(provider.supportedModels) && provider.supportedModels.length > 0) {
+    const modelsHint = document.createElement("small");
+    modelsHint.className = "text-xs text-gray-500 mt-1 block";
+    modelsHint.textContent = `常用模型：${provider.supportedModels.join("、")}`;
+    modelBlock.appendChild(modelsHint);
+  }
+
+  const urlBlock = document.createElement("div");
+  urlBlock.className = "mb-4";
+
+  const urlLabel = document.createElement("label");
+  urlLabel.htmlFor = `${provider.id}-api-url`;
+  urlLabel.className =
+    "block text-sm font-medium text-gray-700 mb-2";
+  urlLabel.textContent = "API 地址";
+  urlBlock.appendChild(urlLabel);
+
+  const apiUrlInput = document.createElement("input");
+  apiUrlInput.type = "text";
+  apiUrlInput.id = `${provider.id}-api-url`;
+  apiUrlInput.placeholder =
+    defaultModelState.apiUrl ??
+    provider.api?.baseUrl ??
+    "https://";
+  apiUrlInput.className =
+    "w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500";
+  apiUrlInput.dataset.provider = provider.id;
+  apiUrlInput.dataset.field = "apiUrl";
+  apiUrlInput.value = defaultModelState.apiUrl ?? "";
+  urlBlock.appendChild(apiUrlInput);
+
+  if (defaultModelState.apiUrl) {
+    const urlHint = document.createElement("small");
+    urlHint.className = "text-xs text-gray-500 mt-1 block";
+    urlHint.textContent = `默认：${defaultModelState.apiUrl}`;
+    urlBlock.appendChild(urlHint);
+  }
+
+  const actionsRow = document.createElement("div");
+  actionsRow.className =
+    "flex flex-col gap-2 md:flex-row md:items-center md:gap-4";
+
+  const testButton = document.createElement("button");
+  testButton.type = "button";
+  testButton.className =
+    "test-provider-btn bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition";
+  testButton.dataset.provider = provider.id;
+  testButton.dataset.action = "test-provider";
+  testButton.textContent = `测试 ${provider.label} 连接`;
+  actionsRow.appendChild(testButton);
+
+  const statusEl = document.createElement("div");
+  statusEl.id = `ai-status-${provider.id}`;
+  statusEl.className = "text-sm text-gray-600 flex-1";
+  statusEl.dataset.provider = provider.id;
+  actionsRow.appendChild(statusEl);
+
+  const healthMeta = document.createElement("div");
+  healthMeta.className = "text-xs text-gray-500 mt-2";
+  healthMeta.dataset.provider = provider.id;
+  healthMeta.dataset.role = "provider-health-meta";
+  healthMeta.textContent = "尚未测试连接";
+
+  root.appendChild(apiKeyBlock);
+  root.appendChild(modelBlock);
+  root.appendChild(urlBlock);
+  root.appendChild(actionsRow);
+  root.appendChild(healthMeta);
+
+  return {
+    root,
+    inputs: {
+      apiKey: apiKeyInput,
+      modelName: modelInput,
+      apiUrl: apiUrlInput,
+    },
+    toggleButton,
+    statusEl,
+    healthMeta,
+  };
+}
+
+function setProviderFormState(providerId, modelState = {}) {
+  const entry = providerUiRegistry.get(providerId);
+  if (!entry) {
+    return;
+  }
+
+  const apiKey =
+    typeof modelState.apiKey === "string" ? modelState.apiKey : "";
+  actualApiKeys[providerId] = apiKey;
+
+  entry.inputs.apiKey.type = "password";
+  entry.inputs.apiKey.value = apiKey ? API_KEY_PLACEHOLDER : "";
+  entry.toggleButton.textContent = "显示";
+
+  entry.inputs.modelName.value =
+    typeof modelState.modelName === "string" ? modelState.modelName : "";
+  entry.inputs.apiUrl.value =
+    typeof modelState.apiUrl === "string" ? modelState.apiUrl : "";
+
+  updateProviderHealthMeta(providerId, modelState);
+}
+
+function handleApiKeyInputChange(providerId, rawValue) {
+  if (rawValue === API_KEY_PLACEHOLDER) {
+    return;
+  }
+  actualApiKeys[providerId] = rawValue.trim();
+}
+
+function toggleApiKeyVisibility(providerId) {
+  const entry = providerUiRegistry.get(providerId);
+  if (!entry) {
+    return;
+  }
+
+  const input = entry.inputs.apiKey;
+  const button = entry.toggleButton;
+  if (input.type === "password") {
+    input.type = "text";
+    input.value = actualApiKeys[providerId] ?? "";
+    button.textContent = "隐藏";
+  } else {
+    input.type = "password";
+    input.value = actualApiKeys[providerId] ? API_KEY_PLACEHOLDER : "";
+    button.textContent = "显示";
+  }
+}
+
+function collectProviderFormState(providerId) {
+  const entry = providerUiRegistry.get(providerId);
+  return {
+    apiKey: (actualApiKeys[providerId] ?? "").trim(),
+    modelName: entry ? entry.inputs.modelName.value.trim() : "",
+    apiUrl: entry ? entry.inputs.apiUrl.value.trim() : "",
+  };
+}
+
+function updateProviderHealthMeta(providerId, modelState = {}) {
+  const entry = providerUiRegistry.get(providerId);
+  if (!entry || !entry.healthMeta) {
+    return;
+  }
+
+  const statusLabel = formatHealthStatusLabel(modelState.healthStatus);
+  const lastCheckText = formatHealthTimestamp(modelState.lastHealthCheck);
+
+  const segments = [`状态：${statusLabel}`];
+  segments.push(`上次检查：${lastCheckText || "未记录"}`);
+
+  if (
+    modelState.healthStatus === "error" &&
+    typeof modelState.lastErrorMessage === "string" &&
+    modelState.lastErrorMessage.trim()
+  ) {
+    segments.push(`原因：${modelState.lastErrorMessage.trim()}`);
+  }
+
+  entry.healthMeta.textContent = segments.join(" ｜ ");
+}
+
+function formatHealthStatusLabel(status) {
+  switch (status) {
+    case "healthy":
+      return "健康";
+    case "error":
+      return "异常";
+    case "unknown":
+    default:
+      return "未知";
+  }
+}
+
+function formatHealthTimestamp(value) {
+  if (!value) {
+    return "";
+  }
+
+  if (typeof value === "number") {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return "";
+    }
+    return date.toLocaleString("zh-CN");
+  }
+
+  if (typeof value === "string") {
+    const parsed = Date.parse(value);
+    if (Number.isNaN(parsed)) {
+      return "";
+    }
+    return new Date(parsed).toLocaleString("zh-CN");
+  }
+
+  return "";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initTabNavigation();
+  initProviderUI();
+  loadAndDisplayConfig();
+
+  const saveButton = document.getElementById("save-btn");
+  if (saveButton) {
+    saveButton.addEventListener("click", handleSave);
+  }
+
+  const testAnkiButton = document.getElementById("test-anki-btn");
+  if (testAnkiButton) {
+    testAnkiButton.addEventListener("click", handleTestAnki);
+  }
+
+  const defaultModelSelect = document.getElementById("default-model");
+  if (defaultModelSelect) {
+    defaultModelSelect.addEventListener("change", handleModelChange);
+  }
+
+  const providerSelect = document.getElementById("ai-provider");
+  if (providerSelect) {
+    providerSelect.addEventListener("change", handleProviderChange);
+  }
+
+  setupPromptEditor();
+
+  const exportButton = document.getElementById("export-config-btn");
+  if (exportButton) {
+    exportButton.addEventListener("click", handleExportConfiguration);
+  }
+
+  const importButton = document.getElementById("import-config-btn");
+  if (importButton) {
+    importButton.addEventListener("click", handleImportConfigurationClick);
+  }
+
+  const importInput = document.getElementById("import-config-input");
+  if (importInput) {
+    importInput.addEventListener("change", handleImportConfigurationFile);
+  }
+
+  const resetButton = document.getElementById("reset-config-btn");
+  if (resetButton) {
+    resetButton.addEventListener("click", handleResetConfiguration);
+  }
+
+  const fontSizeSelect = document.getElementById("font-size-select");
+  if (fontSizeSelect) {
+    fontSizeSelect.addEventListener("change", updateStylePreview);
+  }
+
+  const textAlignSelect = document.getElementById("text-align-select");
+  if (textAlignSelect) {
+    textAlignSelect.addEventListener("change", updateStylePreview);
+  }
+
+  const lineHeightSelect = document.getElementById("line-height-select");
+  if (lineHeightSelect) {
+    lineHeightSelect.addEventListener("change", updateStylePreview);
+  }
+});
 
 /**
  * Prompt编辑器相关初始化
@@ -563,7 +1101,6 @@ function handleResetPromptTemplate() {
   }
 
   synchronizeGeneratedPrompt({ forceUpdate: true });
-  updatePromptPreview();
   markPromptDirtyFlag();
 
   const generatedPrompt = (promptEditorState.lastGeneratedPrompt || "").trim();
@@ -600,7 +1137,10 @@ function showPromptConfig(modelName, fields) {
   promptEditorState.currentModel = modelName;
   promptEditorState.availableFields = Array.isArray(fields) ? [...fields] : [];
 
-  const promptConfig = getPromptConfigForModel(modelName, currentConfig);
+  const promptConfig = promptApi.getPromptConfigForModel(
+    modelName,
+    currentConfig
+  );
   promptEditorState.selectedFields = Array.isArray(promptConfig.selectedFields)
     ? [...promptConfig.selectedFields]
     : [];
@@ -735,7 +1275,7 @@ async function handleExportConfiguration() {
         ? currentConfig
         : getDefaultConfig();
     const exportData = JSON.parse(JSON.stringify(baseConfig));
-    exportData.version = exportData.version || "2.1";
+    exportData.version = exportData.version || CONFIG_VERSION;
     exportData.exportedAt = new Date().toISOString();
 
     if (exportData.aiConfig?.models) {
@@ -745,6 +1285,8 @@ async function handleExportConfiguration() {
         }
         exportData.aiConfig.models[provider].apiKey = "";
         exportData.aiConfig.models[provider].healthStatus = "unknown";
+        exportData.aiConfig.models[provider].lastHealthCheck = null;
+        exportData.aiConfig.models[provider].lastErrorMessage = "";
       });
     }
 
@@ -770,16 +1312,6 @@ async function handleExportConfiguration() {
   }
 }
 
-/**
- * 打开导入对话框
- */
-function triggerImportDialog() {
-  const fileInput = document.getElementById("import-config-input");
-  if (fileInput) {
-    fileInput.value = "";
-    fileInput.click();
-  }
-}
 
 /**
  * 导入配置文件
@@ -810,7 +1342,7 @@ async function handleImportConfiguration(event) {
       throw new Error("配置文件缺少 aiConfig");
     }
 
-    const baseConfig = getDefaultConfig();
+    const baseConfig = storageApi.getDefaultConfig();
     const mergedConfig = {
       ...baseConfig,
       ...importedConfig,
@@ -870,7 +1402,7 @@ async function handleImportConfiguration(event) {
     delete mergedConfig.exportDate;
     delete mergedConfig.exportedAt;
 
-    await saveConfig(mergedConfig);
+    await storageApi.saveConfig(mergedConfig);
     currentConfig = mergedConfig;
     updateStatus("save-status", "配置导入成功，请重新配置 API 密钥", "success");
     setTimeout(() => window.location.reload(), 1000);
@@ -894,8 +1426,8 @@ async function handleResetConfiguration() {
 
   try {
     updateStatus("save-status", "正在重置配置...", "loading");
-    const defaultConfig = getDefaultConfig();
-    await saveConfig(defaultConfig);
+    const defaultConfig = storageApi.getDefaultConfig();
+    await storageApi.saveConfig(defaultConfig);
     currentConfig = defaultConfig;
     updateStatus("save-status", "配置已重置为默认值", "success");
     setTimeout(() => window.location.reload(), 800);
@@ -906,103 +1438,74 @@ async function handleResetConfiguration() {
 }
 
 /**
- * 设置API密钥输入框
- */
-function setupApiKeyInputs() {
-  document.querySelectorAll(".toggle-visibility-btn").forEach((btn) => {
-    btn.addEventListener("click", handleToggleVisibility);
-  });
-
-  Object.keys(actualApiKeys).forEach((provider) => {
-    const input = document.getElementById(`${provider}-api-key`);
-    if (input) {
-      input.addEventListener("input", (e) => {
-        // 输入非占位符内容时更新实际值
-        if (e.target.value !== API_KEY_PLACEHOLDER) {
-          actualApiKeys[provider] = e.target.value;
-        }
-      });
-    }
-  });
-}
-
-/**
- * 切换API密钥显示/隐藏
- * @param {Event} e - 事件对象
- */
-function handleToggleVisibility(e) {
-  const targetId = e.target.getAttribute("data-target");
-  const input = document.getElementById(targetId);
-  const provider = targetId.replace("-api-key", "");
-
-  if (input) {
-    if (input.type === "password") {
-      input.type = "text";
-      input.value = actualApiKeys[provider];
-      e.target.textContent = "隐藏";
-    } else {
-      input.type = "password";
-      input.value = API_KEY_PLACEHOLDER;
-      e.target.textContent = "显示";
-    }
-  }
-}
-
-/**
  * 加载并显示配置
  */
 async function loadAndDisplayConfig() {
-  const config = await loadConfig();
+  const config = await storageApi.loadConfig();
   currentConfig = config;
 
-  // AI设置
+  const providers = getAllProviders();
   const aiConfig = config?.aiConfig || {};
-
-  // 默认提供商
-  document.getElementById("ai-provider").value = aiConfig.provider || "google";
-
-  // 各提供商设置
   const models = aiConfig.models || {};
 
-  // 按提供商加载配置
-  const loadProviderConfig = (provider) => {
-    const providerConfig = models[provider] || {};
-    const input = document.getElementById(`${provider}-api-key`);
-    if (providerConfig.apiKey) {
-      actualApiKeys[provider] = providerConfig.apiKey;
-      input.value = API_KEY_PLACEHOLDER;
+  const providerSelect = document.getElementById("ai-provider");
+  let activeProvider = aiConfig.provider;
+
+  if (!providerUiRegistry.has(activeProvider || "")) {
+    const fallback =
+      providers.find((item) => providerUiRegistry.has(item.id))?.id ??
+      getDefaultProviderId();
+    activeProvider = fallback;
+  }
+
+  if (providerSelect && activeProvider) {
+    providerSelect.value = activeProvider;
+  }
+
+  providers.forEach((provider) => {
+    if (!providerUiRegistry.has(provider.id)) {
+      return;
     }
-    const modelInput = document.getElementById(`${provider}-model-name`);
-    if (modelInput) modelInput.value = providerConfig.modelName || "";
-    const urlInput = document.getElementById(`${provider}-api-url`);
-    if (urlInput) urlInput.value = providerConfig.apiUrl || "";
-  };
+    const modelState = models[provider.id] || {};
+    setProviderFormState(provider.id, modelState);
+  });
 
-  ["google", "openai", "anthropic"].forEach(loadProviderConfig);
+  handleProviderChange();
 
-  // AnkiConfig
   currentModelFields = config?.ankiConfig?.modelFields || [];
-
-  // 基于已保存配置填充Anki选项
   populateSavedAnkiOptions(config);
 
-  // 如果已有默认模型和字段，直接显示模板信息
-  if (config?.ankiConfig?.defaultModel && config?.ankiConfig?.modelFields) {
+  if (
+    config?.ankiConfig?.defaultModel &&
+    Array.isArray(config?.ankiConfig?.modelFields)
+  ) {
     displaySavedModelInfo(
       config.ankiConfig.defaultModel,
       config.ankiConfig.modelFields
     );
   }
 
-  // StyleConfig
-  document.getElementById("font-size-select").value =
-    config?.styleConfig?.fontSize || "14px";
-  document.getElementById("text-align-select").value =
-    config?.styleConfig?.textAlign || "left";
-  document.getElementById("line-height-select").value =
-    config?.styleConfig?.lineHeight || "1.4";
+  const fontSizeSelect = document.getElementById("font-size-select");
+  if (fontSizeSelect) {
+    fontSizeSelect.value = config?.styleConfig?.fontSize || "14px";
+  }
 
-  console.log("已加载配置。");
+  const textAlignSelect = document.getElementById("text-align-select");
+  if (textAlignSelect) {
+    textAlignSelect.value = config?.styleConfig?.textAlign || "left";
+  }
+
+  const lineHeightSelect = document.getElementById("line-height-select");
+  if (lineHeightSelect) {
+    lineHeightSelect.value = config?.styleConfig?.lineHeight || "1.4";
+  }
+
+  const languageSelect = document.getElementById("language-select");
+  if (languageSelect && config?.language) {
+    languageSelect.value = config.language;
+  }
+
+  console.info("配置加载完成。");
 }
 
 /**
@@ -1010,41 +1513,45 @@ async function loadAndDisplayConfig() {
  */
 
 async function handleSave() {
-  // 当前选择的AI提供商
-  const provider = document.getElementById("ai-provider").value;
+  const providerSelect = document.getElementById("ai-provider");
+  const providers = getAllProviders();
+  const defaultConfigSnapshot = storageApi.getDefaultConfig();
 
-  // 从DOM获取信息（API密钥从actualApiKeys获取）
-  const googleConfig = {
-    apiKey: actualApiKeys.google,
-    modelName: document.getElementById("google-model-name").value,
-    apiUrl: document.getElementById("google-api-url").value,
-    healthStatus: "unknown",
-  };
+  let providerId = providerSelect?.value;
+  if (!providerId || !providerUiRegistry.has(providerId)) {
+    providerId =
+      providers.find((item) => providerUiRegistry.has(item.id))?.id ??
+      getDefaultProviderId();
+  }
 
-  const openaiConfig = {
-    apiKey: actualApiKeys.openai,
-    modelName: document.getElementById("openai-model-name").value,
-    apiUrl: document.getElementById("openai-api-url").value,
-    healthStatus: "unknown",
-  };
+  const selectedState = collectProviderFormState(providerId);
+  if (!selectedState.apiKey) {
+    updateStatus("save-status", "请为当前提供商填写 API Key", "error");
+    return;
+  }
 
-  const anthropicConfig = {
-    apiKey: actualApiKeys.anthropic,
-    modelName: document.getElementById("anthropic-model-name").value,
-    apiUrl: document.getElementById("anthropic-api-url").value,
-    healthStatus: "unknown",
-  };
+  if (
+    selectedState.apiUrl &&
+    !/^https?:\/\//i.test(selectedState.apiUrl)
+  ) {
+    updateStatus("save-status", "API 地址格式不正确", "error");
+    return;
+  }
 
-  // Prompt
   const promptTextarea = document.getElementById("custom-prompt-textarea");
-  const language = document.getElementById("language-select").value;
-  const defaultDeck = document.getElementById("default-deck").value;
-  const defaultModel = document.getElementById("default-model").value;
+  const languageSelect = document.getElementById("language-select");
+  const deckSelect = document.getElementById("default-deck");
+  const modelSelect = document.getElementById("default-model");
+  const fontSizeSelect = document.getElementById("font-size-select");
+  const textAlignSelect = document.getElementById("text-align-select");
+  const lineHeightSelect = document.getElementById("line-height-select");
 
-  // 样式配置
-  const fontSize = document.getElementById("font-size-select").value;
-  const textAlign = document.getElementById("text-align-select").value;
-  const lineHeight = document.getElementById("line-height-select").value;
+  const language = languageSelect ? languageSelect.value : "zh-CN";
+  const defaultDeck = deckSelect ? deckSelect.value : "";
+  const defaultModel = modelSelect ? modelSelect.value : "";
+  const fontSize = fontSizeSelect ? fontSizeSelect.value : "14px";
+  const textAlign = textAlignSelect ? textAlignSelect.value : "left";
+  const lineHeight = lineHeightSelect ? lineHeightSelect.value : "1.4";
 
   const isPromptEditorActive =
     promptEditorState.currentModel &&
@@ -1069,10 +1576,8 @@ async function handleSave() {
     ...Object.keys(storedPromptConfigs),
     ...Object.keys(legacyPromptConfigs),
   ]).forEach((modelName) => {
-    existingPromptTemplatesByModel[modelName] = getPromptConfigForModel(
-      modelName,
-      currentConfig
-    );
+    existingPromptTemplatesByModel[modelName] =
+      promptApi.getPromptConfigForModel(modelName, currentConfig);
   });
 
   if (promptEditorState.currentModel) {
@@ -1092,35 +1597,89 @@ async function handleSave() {
     };
   }
 
-  const newConfig = {
-    aiConfig: {
-      provider: provider,
-      models: {
-        google: googleConfig,
-        openai: openaiConfig,
-        anthropic: anthropicConfig,
-      },
-      fallbackOrder: ["google", "openai", "anthropic"],
-    },
-    promptTemplates: {
-      promptTemplatesByModel: existingPromptTemplatesByModel,
-    },
-    ankiConfig: {
-      defaultDeck: defaultDeck,
-      defaultModel: defaultModel,
-      modelFields: currentModelFields,
-      defaultTags: [],
-    },
-    styleConfig: {
-      fontSize: fontSize,
-      textAlign: textAlign,
-      lineHeight: lineHeight,
-    },
-    language: language,
+  const nextConfig = JSON.parse(
+    JSON.stringify(currentConfig ?? storageApi.getDefaultConfig())
+  );
+
+  const fallbackSource = Array.isArray(currentConfig?.aiConfig?.fallbackOrder)
+    ? currentConfig.aiConfig.fallbackOrder
+    : getFallbackOrder();
+  const fallbackSet = new Set();
+  const fallbackOrder = [];
+
+  for (const rawId of fallbackSource) {
+    if (!providerUiRegistry.has(rawId) || fallbackSet.has(rawId)) {
+      continue;
+    }
+    fallbackSet.add(rawId);
+    fallbackOrder.push(rawId);
+  }
+
+  const models = {};
+  providers.forEach((provider) => {
+    if (!providerUiRegistry.has(provider.id)) {
+      return;
+    }
+    const baseState =
+      currentConfig?.aiConfig?.models?.[provider.id] ?? {};
+    const formState = collectProviderFormState(provider.id);
+    const defaultModelState =
+      defaultConfigSnapshot?.aiConfig?.models?.[provider.id] ?? {};
+
+    models[provider.id] = {
+      ...baseState,
+      apiKey: formState.apiKey,
+      modelName:
+        formState.modelName ||
+        baseState.modelName ||
+        provider.defaultModel ||
+        "",
+      apiUrl:
+        formState.apiUrl ||
+        baseState.apiUrl ||
+        defaultModelState.apiUrl ||
+        "",
+    };
+
+    if (!fallbackSet.has(provider.id)) {
+      fallbackSet.add(provider.id);
+      fallbackOrder.push(provider.id);
+    }
+  });
+
+  nextConfig.aiConfig = {
+    ...(nextConfig.aiConfig ?? {}),
+    provider: providerId,
+    models,
+    fallbackOrder,
   };
 
+  nextConfig.promptTemplates = {
+    ...(nextConfig.promptTemplates ?? {}),
+    promptTemplatesByModel: existingPromptTemplatesByModel,
+  };
+
+  nextConfig.ankiConfig = {
+    ...(nextConfig.ankiConfig ?? {}),
+    defaultDeck,
+    defaultModel,
+    modelFields: currentModelFields,
+    defaultTags: Array.isArray(nextConfig.ankiConfig?.defaultTags)
+      ? nextConfig.ankiConfig.defaultTags
+      : [],
+  };
+
+  nextConfig.styleConfig = {
+    ...(nextConfig.styleConfig ?? {}),
+    fontSize,
+    textAlign,
+    lineHeight,
+  };
+
+  nextConfig.language = language;
+
   let promptValueForSelectedModel = null;
-  const selectedModel = document.getElementById("default-model").value;
+  const selectedModel = defaultModel;
 
   if (
     selectedModel &&
@@ -1133,18 +1692,22 @@ async function handleSave() {
       if (promptTextarea.value !== normalizedValue) {
         promptTextarea.value = normalizedValue;
       }
-      savePromptForModel(selectedModel, normalizedValue, newConfig);
+      promptApi.savePromptForModel(
+        selectedModel,
+        normalizedValue,
+        nextConfig
+      );
       promptValueForSelectedModel = normalizedValue;
     } else {
-      updatePromptConfigForModel(
+      promptApi.updatePromptConfigForModel(
         selectedModel,
         { customPrompt: "" },
-        newConfig
+        nextConfig
       );
       promptValueForSelectedModel = "";
     }
 
-    updatePromptConfigForModel(
+    promptApi.updatePromptConfigForModel(
       selectedModel,
       {
         selectedFields: [...(promptEditorState.selectedFields || [])],
@@ -1152,13 +1715,14 @@ async function handleSave() {
           promptEditorState.selectedFields || []
         ),
       },
-      newConfig
+      nextConfig
     );
   }
 
   try {
-    await saveConfig(newConfig);
-    currentConfig = newConfig; // 更新本地配置缓存
+    await ensureApiOriginsPermission(models);
+    await storageApi.saveConfig(nextConfig);
+    currentConfig = nextConfig; // 更新本地配置缓存
 
     if (
       selectedModel &&
@@ -1171,6 +1735,12 @@ async function handleSave() {
 
     updateStatus("save-status", "设置已保存", "success");
   } catch (error) {
+    if (error instanceof PermissionRequestError) {
+      console.warn("[options] 域名权限请求被拒绝：", error);
+      updateStatus("save-status", error.message, "error");
+      return;
+    }
+
     console.error("保存设置出错:", error);
     updateStatus("save-status", `保存出错: ${error.message}`, "error");
   }
@@ -1188,7 +1758,7 @@ async function handleModelChange() {
   }
 
   try {
-    const fieldsResult = await getModelFieldNames(modelName);
+    const fieldsResult = await ankiApi.getModelFieldNames(modelName);
     if (fieldsResult.error) {
       throw new Error(fieldsResult.error);
     }
@@ -1248,7 +1818,7 @@ async function handleModelChange() {
 async function handleTestAnki() {
   updateStatus("anki-status", "正在测试连接并刷新数据...", "loading");
   try {
-    const result = await testAnki();
+    const result = await ankiApi.testConnection();
     if (result.error) {
       throw new Error(result.error);
     }
@@ -1299,52 +1869,94 @@ async function handleTestAnki() {
  * 提供商选择变更
  */
 function handleProviderChange() {
-  const selectedProvider = document.getElementById("ai-provider").value;
+  const select = document.getElementById("ai-provider");
+  let selectedProvider = select?.value ?? null;
 
-  // 先隐藏全部
-  document.querySelectorAll(".provider-config").forEach((config) => {
-    config.style.display = "none";
-  });
-
-  // 显示选中项
-  const activeConfig = document.getElementById(`config-${selectedProvider}`);
-  if (activeConfig) {
-    activeConfig.style.display = "block";
+  if (!selectedProvider || !providerUiRegistry.has(selectedProvider)) {
+    const iterator = providerUiRegistry.keys();
+    const first = iterator.next();
+    selectedProvider = first.done ? null : first.value;
+    if (select && selectedProvider) {
+      select.value = selectedProvider;
+    }
   }
+
+  providerUiRegistry.forEach((entry, providerId) => {
+    entry.root.style.display =
+      providerId === selectedProvider ? "block" : "none";
+  });
 }
 
 /**
  * 单个提供商连接测试
  */
-async function handleTestProvider(provider) {
-  const modelSelect = document.getElementById(`${provider}-model-name`);
-
-  // 从当前页面获取 API Key
-  const apiKey = actualApiKeys[provider];
-
-  // 检查 API Key 是否有效
-  if (!apiKey || apiKey === API_KEY_PLACEHOLDER) {
-    updateStatus(`ai-status-${provider}`, `请先输入 API Key`, "error");
+async function handleTestProvider(providerId) {
+  const entry = providerUiRegistry.get(providerId);
+  if (!entry) {
     return;
   }
 
-  try {
-    // 使用第二种调用方式：直接传递 apiKey 和 modelName
-    const modelName = modelSelect ? modelSelect.value : undefined;
-    const result = await testAi(provider, apiKey, modelName);
+  const apiKey = (actualApiKeys[providerId] ?? "").trim();
+  if (!apiKey) {
+    updateStatus(entry.statusEl.id, "请先输入 API Key", "error");
+    return;
+  }
 
-    if (result.success) {
-      updateStatus(`ai-status-${provider}`, result.message, "success");
-    } else {
-      updateStatus(`ai-status-${provider}`, result.message, "error");
-    }
-  } catch (error) {
-    console.error(`${provider} 测试失败:`, error);
-    updateStatus(
-      `ai-status-${provider}`,
-      `测试失败: ${error.message}`,
-      "error"
+  const modelName = entry.inputs.modelName.value.trim() || undefined;
+
+  try {
+    const result = await aiServiceApi.testConnection(
+      providerId,
+      apiKey,
+      modelName
     );
+    updateStatus(
+      entry.statusEl.id,
+      result.message,
+      result.success ? "success" : "error"
+    );
+
+    const nextState = {
+      ...(currentConfig?.aiConfig?.models?.[providerId] ?? {}),
+      apiKey,
+      modelName:
+        modelName ||
+        currentConfig?.aiConfig?.models?.[providerId]?.modelName ||
+        entry.inputs.modelName.value,
+      healthStatus: result.success ? "healthy" : "error",
+      lastHealthCheck: new Date().toISOString(),
+      lastErrorMessage: result.success ? "" : result.message,
+    };
+
+    if (!currentConfig.aiConfig) {
+      currentConfig.aiConfig = { models: {} };
+    }
+    if (!currentConfig.aiConfig.models) {
+      currentConfig.aiConfig.models = {};
+    }
+    currentConfig.aiConfig.models[providerId] = nextState;
+    updateProviderHealthMeta(providerId, nextState);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : String(error);
+    console.error(`${providerId} 测试失败:`, error);
+    updateStatus(entry.statusEl.id, `测试失败: ${message}`, "error");
+
+    const fallbackState = {
+      ...(currentConfig?.aiConfig?.models?.[providerId] ?? {}),
+      healthStatus: "error",
+      lastHealthCheck: new Date().toISOString(),
+      lastErrorMessage: message,
+    };
+
+    if (!currentConfig.aiConfig) {
+      currentConfig.aiConfig = { models: {} };
+    }
+    if (!currentConfig.aiConfig.models) {
+      currentConfig.aiConfig.models = {};
+    }
+    currentConfig.aiConfig.models[providerId] = fallbackState;
+    updateProviderHealthMeta(providerId, fallbackState);
   }
 }
 
@@ -1438,13 +2050,13 @@ function displaySavedModelInfo(modelName, modelFields) {
 async function loadAnkiData() {
   try {
     // 牌组
-    const decksResult = await getDeckNames();
+    const decksResult = await ankiApi.getDeckNames();
     if (decksResult.error) {
       throw new Error(`读取牌组失败: ${decksResult.error}`);
     }
 
     // 模型
-    const modelsResult = await getModelNames();
+    const modelsResult = await ankiApi.getModelNames();
     if (modelsResult.error) {
       throw new Error(`读取模型失败: ${modelsResult.error}`);
     }
@@ -1577,28 +2189,6 @@ function initTabNavigation() {
   });
 }
 
-/**
- * 可选：URL hash路由支持
- */
-function initTabRouting() {
-  // 监听hash变化
-  window.addEventListener("hashchange", () => {
-    const hash = window.location.hash.slice(1);
-    const targetButton = document.querySelector(`[data-tab="${hash}"]`);
-    if (targetButton) {
-      targetButton.click();
-    }
-  });
-
-  // 页面加载时根据hash设置初始tab
-  if (window.location.hash) {
-    const hash = window.location.hash.slice(1);
-    const targetButton = document.querySelector(`[data-tab="${hash}"]`);
-    if (targetButton) {
-      targetButton.click();
-    }
-  }
-}
 
 // ==================== 配置管理功能 ====================
 
@@ -1643,7 +2233,7 @@ async function handleImportConfigurationFile(event) {
       }
     });
 
-    await saveConfig(mergedConfig);
+    await storageApi.saveConfig(mergedConfig);
     updateStatus("save-status", "配置导入成功，请重新配置API密钥", "success");
 
     // 重新加载页面配置
@@ -1661,3 +2251,4 @@ async function handleImportConfigurationFile(event) {
  * 重置配置 - 使用现有的handleResetConfiguration函数
  */
 // 这个函数已经在文件中存在了，不需要重复定义
+
