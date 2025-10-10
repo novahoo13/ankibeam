@@ -1,73 +1,367 @@
-// storage.js - 配置存储管理
-// 使用 chrome.storage.local API 来存储和读取配置
+// storage.js - 設定ストレージ管理
 
 import { normalizePromptTemplateConfig } from "./prompt-engine.js";
+import {
+  getAllProviders,
+  getDefaultProviderId,
+  getFallbackOrder,
+  getProviderById,
+} from "./providers.config.js";
 
 const CONFIG_KEY = "ankiWordAssistantConfig";
-const CONFIG_VERSION = "2.1"; // 配置版本，用于数据迁移
+export const CONFIG_VERSION = "2.2";
+const ENCRYPTION_KEY_MATERIAL = "anki-word-assistant-secret-key";
+const IV_LENGTH = 12;
 
-// --- 加密参数 ---
-// 警告: 在客户端代码中硬编码密钥和盐值本质上不是完全安全的，
-// 但它提供了一层混淆，可以防止对存储的简单、非侵入式检查。
-// 一个坚定的攻击者仍然可以通过检查扩展的源代码来提取这些。
-const ENCRYPTION_KEY_MATERIAL = "anki-word-assistant-secret-key"; // 用于派生密钥的密码
-const PROVIDER_SALTS = {
-  google: new Uint8Array([
-    18, 24, 193, 131, 8, 11, 20, 153, 22, 163, 3, 19, 84, 134, 103, 174,
-  ]),
-  openai: new Uint8Array([
-    45, 67, 89, 12, 34, 56, 78, 90, 123, 145, 167, 189, 211, 233, 255, 21,
-  ]),
-  anthropic: new Uint8Array([
-    98, 76, 54, 32, 10, 87, 65, 43, 21, 99, 77, 55, 33, 11, 89, 67,
-  ]),
-};
-const IV_LENGTH = 12; // AES-GCM 推荐的 IV 长度
+const LEGACY_PROVIDER_ID_MAP = Object.freeze({
+  gemini: "google",
+  claude: "anthropic",
+  claude3: "anthropic",
+  gpt: "openai",
+});
 
-// 默认配置结构
-const DEFAULT_CONFIG = {
-  version: CONFIG_VERSION,
-  aiConfig: {
-    provider: "google", // 当前启用的供应商
-    models: {
-      google: {
-        apiKey: "",
-        modelName: "gemini-2.5-flash-lite",
-        healthStatus: "unknown", // unknown, healthy, error
-      },
-      openai: {
-        apiKey: "",
-        modelName: "gpt-4o",
-        healthStatus: "unknown",
-      },
-      anthropic: {
-        apiKey: "",
-        modelName: "claude-3-5-sonnet-20241022",
-        healthStatus: "unknown",
-      },
+const VALID_HEALTH_STATUSES = new Set(["unknown", "healthy", "error"]);
+
+function buildDefaultModelState(provider) {
+  return {
+    apiKey: "",
+    modelName: provider.defaultModel ?? "",
+    apiUrl: getDefaultApiUrl(provider),
+    healthStatus: "unknown",
+    lastHealthCheck: null,
+    lastErrorMessage: "",
+  };
+}
+
+function getDefaultApiUrl(provider) {
+  const base = provider.api.baseUrl;
+  switch (provider.id) {
+    case "google":
+      return `${base}/models`;
+    case "anthropic":
+      return `${base}/messages`;
+    default:
+      return base;
+  }
+}
+
+function buildDefaultConfig() {
+  const providers = getAllProviders();
+  const models = {};
+  for (const provider of providers) {
+    models[provider.id] = buildDefaultModelState(provider);
+  }
+
+  return {
+    version: CONFIG_VERSION,
+    aiConfig: {
+      provider: getDefaultProviderId(),
+      models,
+      fallbackOrder: Array.from(getFallbackOrder()),
     },
-    fallbackOrder: ["google", "openai", "anthropic"],
-  },
-  promptTemplates: {
-    custom: "",
-    promptTemplatesByModel: {}, // 新增：按模板存储的prompt配置
-  },
-  ankiConfig: {
-    defaultDeck: "",
-    defaultModel: "",
-    modelFields: [], // 新增：用于存储当前模板的字段列表
-    defaultTags: [],
-  },
-  ui: {
-    fieldDisplayMode: "auto", // auto|legacy|dynamic
-  },
-  styleConfig: {
-    fontSize: "14px",
-    textAlign: "left",
-    lineHeight: "1.4",
-  },
-  language: "zh-CN",
-};
+    promptTemplates: {
+      custom: "",
+      promptTemplatesByModel: {},
+    },
+    ankiConfig: {
+      defaultDeck: "",
+      defaultModel: "",
+      modelFields: [],
+      defaultTags: [],
+    },
+    ui: {
+      fieldDisplayMode: "auto",
+    },
+    styleConfig: {
+      fontSize: "14px",
+      textAlign: "left",
+      lineHeight: "1.4",
+    },
+    language: "zh-CN",
+  };
+}
+
+function normalizeProviderId(providerId) {
+  if (typeof providerId !== "string") {
+    return null;
+  }
+  const trimmed = providerId.trim().toLowerCase();
+  if (!trimmed) {
+    return null;
+  }
+  const provider = getProviderById(trimmed);
+  if (provider) {
+    return provider.id;
+  }
+  const alias = LEGACY_PROVIDER_ID_MAP[trimmed];
+  if (alias) {
+    const aliasedProvider = getProviderById(alias);
+    if (aliasedProvider) {
+      return aliasedProvider.id;
+    }
+  }
+  return null;
+}
+
+function determineActiveProvider(rawProvider, defaultProvider) {
+  const canonical = normalizeProviderId(rawProvider);
+  if (canonical) {
+    return canonical;
+  }
+  return defaultProvider ?? getDefaultProviderId();
+}
+
+function getEncryptionSalt(providerId) {
+  const canonical = normalizeProviderId(providerId) ?? getDefaultProviderId();
+  const provider = getProviderById(canonical);
+  if (provider?.encryptionSalt instanceof Uint8Array) {
+    return provider.encryptionSalt;
+  }
+  console.warn(
+    `[storage] ${providerId ?? "unknown"} の暗号化ソルトが見つからないため、デフォルトプロバイダを使用します。`,
+  );
+  const fallback = getProviderById(getDefaultProviderId());
+  if (fallback?.encryptionSalt instanceof Uint8Array) {
+    return fallback.encryptionSalt;
+  }
+  return new Uint8Array(16);
+}
+
+function normalizeHealthStatus(status) {
+  if (typeof status !== "string") {
+    return "unknown";
+  }
+  const normalized = status.trim().toLowerCase();
+  return VALID_HEALTH_STATUSES.has(normalized) ? normalized : "unknown";
+}
+
+function sanitizeApiUrl(rawUrl) {
+  if (typeof rawUrl !== "string") {
+    return null;
+  }
+  const trimmed = rawUrl.trim();
+  if (!trimmed) {
+    return null;
+  }
+  return trimmed;
+}
+
+function pickLastErrorMessage(modelState) {
+  if (typeof modelState.lastErrorMessage === "string") {
+    return modelState.lastErrorMessage;
+  }
+  if (typeof modelState.healthMessage === "string") {
+    return modelState.healthMessage;
+  }
+  return undefined;
+}
+
+function mergeModelState(baseState, rawState, provider) {
+  if (!rawState || typeof rawState !== "object") {
+    return { ...baseState };
+  }
+
+  const merged = { ...baseState };
+
+  if (typeof rawState.apiKey === "string") {
+    merged.apiKey = rawState.apiKey;
+  }
+
+  if (typeof rawState.modelName === "string" && rawState.modelName.trim()) {
+    merged.modelName = rawState.modelName.trim();
+  }
+
+  const overrideUrl = sanitizeApiUrl(rawState.apiUrl);
+  if (overrideUrl) {
+    merged.apiUrl = overrideUrl;
+  }
+
+  merged.healthStatus = normalizeHealthStatus(rawState.healthStatus);
+
+  if (rawState.lastHealthCheck === null) {
+    merged.lastHealthCheck = null;
+  } else if (
+    typeof rawState.lastHealthCheck === "number" &&
+    Number.isFinite(rawState.lastHealthCheck)
+  ) {
+    merged.lastHealthCheck = rawState.lastHealthCheck;
+  }
+
+  const errorMessage = pickLastErrorMessage(rawState);
+  if (errorMessage !== undefined) {
+    merged.lastErrorMessage = errorMessage;
+  }
+
+  return merged;
+}
+
+function normalizeFallbackOrder(order) {
+  const baseOrder = Array.from(getFallbackOrder());
+  const normalized = [];
+  const seen = new Set();
+
+  if (Array.isArray(order)) {
+    for (const rawId of order) {
+      const canonical = normalizeProviderId(rawId);
+      if (!canonical) {
+        continue;
+      }
+      if (!baseOrder.includes(canonical)) {
+        continue;
+      }
+      if (seen.has(canonical)) {
+        continue;
+      }
+      seen.add(canonical);
+      normalized.push(canonical);
+    }
+  }
+
+  for (const providerId of baseOrder) {
+    if (!seen.has(providerId)) {
+      seen.add(providerId);
+      normalized.push(providerId);
+    }
+  }
+
+  return normalized;
+}
+
+function mergeAiConfig(baseAiConfig, legacyAiConfig = {}) {
+  const merged = {
+    provider: determineActiveProvider(legacyAiConfig.provider, baseAiConfig.provider),
+    fallbackOrder: normalizeFallbackOrder(legacyAiConfig.fallbackOrder),
+    models: { ...baseAiConfig.models },
+  };
+
+  const legacyModels = legacyAiConfig.models;
+  if (legacyModels && typeof legacyModels === "object") {
+    for (const [rawId, rawState] of Object.entries(legacyModels)) {
+      const canonical = normalizeProviderId(rawId);
+      if (!canonical) {
+        continue;
+      }
+      const provider = getProviderById(canonical);
+      if (!provider) {
+        continue;
+      }
+      const baseState = merged.models[canonical] ?? buildDefaultModelState(provider);
+      merged.models[canonical] = mergeModelState(baseState, rawState, provider);
+    }
+  }
+
+  for (const provider of getAllProviders()) {
+    if (!merged.models[provider.id]) {
+      merged.models[provider.id] = buildDefaultModelState(provider);
+    }
+  }
+
+  return merged;
+}
+
+function mergePromptTemplates(baseTemplates, legacyTemplates) {
+  const merged = {
+    ...baseTemplates,
+    ...legacyTemplates,
+    promptTemplatesByModel: {
+      ...(baseTemplates.promptTemplatesByModel || {}),
+      ...(legacyTemplates?.promptTemplatesByModel || {}),
+    },
+  };
+
+  if (typeof merged.custom !== "string") {
+    merged.custom = baseTemplates.custom;
+  }
+
+  if (
+    !merged.promptTemplatesByModel ||
+    typeof merged.promptTemplatesByModel !== "object"
+  ) {
+    merged.promptTemplatesByModel = {};
+  }
+
+  return merged;
+}
+
+function mergeAnkiConfig(baseConfig, legacyConfig) {
+  const merged = {
+    ...baseConfig,
+    ...(legacyConfig && typeof legacyConfig === "object" ? legacyConfig : {}),
+  };
+
+  if (!Array.isArray(merged.modelFields)) {
+    merged.modelFields = Array.isArray(baseConfig.modelFields)
+      ? [...baseConfig.modelFields]
+      : [];
+  }
+
+  if (!Array.isArray(merged.defaultTags)) {
+    merged.defaultTags = Array.isArray(baseConfig.defaultTags)
+      ? [...baseConfig.defaultTags]
+      : [];
+  }
+
+  if (
+    !merged.promptTemplatesByModel ||
+    typeof merged.promptTemplatesByModel !== "object"
+  ) {
+    merged.promptTemplatesByModel = {};
+  }
+
+  return merged;
+}
+
+function mergeStyleConfig(baseStyle, legacyStyle) {
+  if (!legacyStyle || typeof legacyStyle !== "object") {
+    return { ...baseStyle };
+  }
+  return {
+    ...baseStyle,
+    ...legacyStyle,
+  };
+}
+
+function mergeUiConfig(baseUi, legacyUi) {
+  if (!legacyUi || typeof legacyUi !== "object") {
+    return { ...baseUi };
+  }
+  const merged = {
+    ...baseUi,
+    ...legacyUi,
+  };
+  if (typeof merged.fieldDisplayMode !== "string") {
+    merged.fieldDisplayMode = baseUi.fieldDisplayMode;
+  }
+  return merged;
+}
+
+function mergeConfigWithDefaults(legacyConfig = {}) {
+  const baseConfig = buildDefaultConfig();
+  const merged = {
+    ...baseConfig,
+    aiConfig: mergeAiConfig(baseConfig.aiConfig, legacyConfig.aiConfig),
+    promptTemplates: mergePromptTemplates(
+      baseConfig.promptTemplates,
+      legacyConfig.promptTemplates,
+    ),
+    ankiConfig: mergeAnkiConfig(baseConfig.ankiConfig, legacyConfig.ankiConfig),
+    styleConfig: mergeStyleConfig(baseConfig.styleConfig, legacyConfig.styleConfig),
+    ui: mergeUiConfig(baseConfig.ui, legacyConfig.ui),
+    language:
+      typeof legacyConfig.language === "string"
+        ? legacyConfig.language
+        : baseConfig.language,
+  };
+
+  for (const [key, value] of Object.entries(legacyConfig)) {
+    if (key in merged) {
+      continue;
+    }
+    merged[key] = value;
+  }
+
+  return merged;
+}
 
 function normalizePromptTemplatesStore(config) {
   if (!config) {
@@ -95,260 +389,253 @@ function normalizePromptTemplatesStore(config) {
   config.promptTemplates.promptTemplatesByModel = normalized;
 }
 
-/**
- * 从固定密码和供应商特定盐值派生加密密钥
- * @param {string} provider - 供应商名称
- * @returns {Promise<CryptoKey>}
- */
-async function getDerivedKey(provider = "google") {
+async function getDerivedKey(providerId = getDefaultProviderId()) {
   const encoder = new TextEncoder();
   const keyMaterial = await crypto.subtle.importKey(
     "raw",
     encoder.encode(ENCRYPTION_KEY_MATERIAL),
     { name: "PBKDF2" },
     false,
-    ["deriveKey"]
+    ["deriveKey"],
   );
 
-  const salt = PROVIDER_SALTS[provider] || PROVIDER_SALTS.google;
+  const salt = getEncryptionSalt(providerId);
 
   return crypto.subtle.deriveKey(
     {
       name: "PBKDF2",
-      salt: salt,
+      salt,
       iterations: 100000,
       hash: "SHA-256",
     },
     keyMaterial,
     { name: "AES-GCM", length: 256 },
     true,
-    ["encrypt", "decrypt"]
+    ["encrypt", "decrypt"],
   );
 }
 
 /**
- * 加密 API Key
- * @param {string} key - 明文 API Key
- * @param {string} provider - 供应商名称
- * @returns {Promise<string>} - Base64 编码的加密字符串 (IV + Ciphertext)
+ * 固有ソルトを用いて API キーを暗号化する。
+ * @param {string} key
+ * @param {string} providerId
+ * @returns {Promise<string|null>}
  */
-export async function encryptApiKey(key, provider = "google") {
-  if (!key) return null;
-  const derivedKey = await getDerivedKey(provider);
+export async function encryptApiKey(key, providerId = getDefaultProviderId()) {
+  if (!key) {
+    return null;
+  }
+
+  const derivedKey = await getDerivedKey(providerId);
   const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
   const encoder = new TextEncoder();
   const encodedKey = encoder.encode(key);
 
   const ciphertext = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv: iv },
+    { name: "AES-GCM", iv },
     derivedKey,
-    encodedKey
+    encodedKey,
   );
 
   const combined = new Uint8Array(iv.length + ciphertext.byteLength);
   combined.set(iv, 0);
   combined.set(new Uint8Array(ciphertext), iv.length);
 
-  // 转换为 Base64 字符串以便存储
   return btoa(String.fromCharCode.apply(null, combined));
 }
 
 /**
- * 解密 API Key
- * @param {string} encryptedBase64 - Base64 编码的加密字符串
- * @param {string} provider - 供应商名称
- * @returns {Promise<string>} - 解密后的 API Key
+ * 保存済みの API キーを復号する。
+ * @param {string} encryptedBase64
+ * @param {string} providerId
+ * @returns {Promise<string|null>}
  */
-export async function decryptApiKey(encryptedBase64, provider = "google") {
-  if (!encryptedBase64) return null;
+export async function decryptApiKey(encryptedBase64, providerId = getDefaultProviderId()) {
+  if (!encryptedBase64) {
+    return null;
+  }
+
   try {
-    const derivedKey = await getDerivedKey(provider);
+    const derivedKey = await getDerivedKey(providerId);
 
     const combined = new Uint8Array(
       atob(encryptedBase64)
         .split("")
-        .map((c) => c.charCodeAt(0))
+        .map((c) => c.charCodeAt(0)),
     );
     const iv = combined.slice(0, IV_LENGTH);
     const ciphertext = combined.slice(IV_LENGTH);
 
     const decrypted = await crypto.subtle.decrypt(
-      { name: "AES-GCM", iv: iv },
+      { name: "AES-GCM", iv },
       derivedKey,
-      ciphertext
+      ciphertext,
     );
 
     const decoder = new TextDecoder();
     return decoder.decode(decrypted);
   } catch (error) {
-    console.error(`${provider} API Key 解密失败:`, error);
-    // 如果解密失败，可能意味着数据损坏或格式陈旧。
-    // 返回一个空值或原始值，以防止应用崩溃。
+    console.error(`[storage] ${providerId} の API キー復号に失敗しました:`, error);
     return null;
   }
 }
 
-/**
- * 从旧版本配置迁移到新版本
- * @param {object} oldConfig - 旧版本配置
- * @returns {object} - 新版本配置
- */
-function migrateConfig(oldConfig) {
-  if (!oldConfig || oldConfig.version === CONFIG_VERSION) {
-    return oldConfig;
+function migrateConfig(legacyConfig) {
+  if (!legacyConfig) {
+    return buildDefaultConfig();
   }
 
-  console.log("检测到旧版本配置，开始迁移...");
-
-  // 创建基于默认配置的新配置
-  const newConfig = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
-
-  // 迁移现有配置
-  if (oldConfig.aiConfig?.models?.gemini) {
-    newConfig.aiConfig.models.google = {
-      ...newConfig.aiConfig.models.google,
-      apiKey: oldConfig.aiConfig.models.gemini.apiKey || "",
-      modelName:
-        oldConfig.aiConfig.models.gemini.modelName || "gemini-1.5-flash",
-    };
+  const needsMigration = legacyConfig.version !== CONFIG_VERSION;
+  if (needsMigration) {
+    console.info("旧バージョンの設定を検出したため、スキーマを更新します。");
   }
 
-  // 处理v2.0到v2.1的迁移
-  if (oldConfig.version === "2.0") {
-    console.log("从版本2.0迁移到2.1...");
-    // 保持现有配置不变，添加新字段
-    if (!newConfig.ankiConfig.promptTemplatesByModel) {
-      newConfig.ankiConfig.promptTemplatesByModel = {};
-    }
-    if (!newConfig.ui) {
-      newConfig.ui = { fieldDisplayMode: "auto" };
-    }
-    if (!newConfig.promptTemplates.promptTemplatesByModel) {
-      newConfig.promptTemplates.promptTemplatesByModel = {};
+  const merged = mergeConfigWithDefaults(legacyConfig);
+  merged.version = CONFIG_VERSION;
+
+  if (needsMigration) {
+    console.info("設定の移行が完了しました。");
+  }
+
+  return merged;
+}
+
+async function readFromStorage(key) {
+  if (!chrome?.storage?.local?.get) {
+    return {};
+  }
+
+  const getter = chrome.storage.local.get.bind(chrome.storage.local);
+
+  if (chrome.storage.local.get.length <= 1) {
+    const result = getter(key);
+    if (result && typeof result.then === "function") {
+      return result;
     }
   }
 
-  // 迁移其他配置
-  if (oldConfig.promptTemplates) {
-    newConfig.promptTemplates = {
-      ...newConfig.promptTemplates,
-      ...oldConfig.promptTemplates,
-    };
-    // 确保新字段存在
-    if (!newConfig.promptTemplates.promptTemplatesByModel) {
-      newConfig.promptTemplates.promptTemplatesByModel = {};
+  return new Promise((resolve, reject) => {
+    try {
+      getter(key, (value) => {
+        const lastError = chrome.runtime?.lastError;
+        if (lastError) {
+          reject(new Error(lastError.message));
+          return;
+        }
+        resolve(value);
+      });
+    } catch (error) {
+      reject(error);
     }
-  }
-  if (oldConfig.ankiConfig) {
-    newConfig.ankiConfig = {
-      ...newConfig.ankiConfig,
-      ...oldConfig.ankiConfig,
-    };
-    // 确保新字段存在
-    if (!newConfig.ankiConfig.modelFields) {
-      newConfig.ankiConfig.modelFields = [];
-    }
-    if (!newConfig.ankiConfig.promptTemplatesByModel) {
-      newConfig.ankiConfig.promptTemplatesByModel = {};
-    }
-  }
-  if (oldConfig.styleConfig) {
-    newConfig.styleConfig = { ...oldConfig.styleConfig };
-  }
-  if (oldConfig.language) {
-    newConfig.language = oldConfig.language;
-  }
-  if (oldConfig.ui) {
-    newConfig.ui = { ...newConfig.ui, ...oldConfig.ui };
+  });
+}
+
+async function writeToStorage(items) {
+  if (!chrome?.storage?.local?.set) {
+    return;
   }
 
-  console.log("配置迁移完成");
-  return newConfig;
+  const setter = chrome.storage.local.set.bind(chrome.storage.local);
+
+  if (chrome.storage.local.set.length <= 1) {
+    const result = setter(items);
+    if (result && typeof result.then === "function") {
+      await result;
+      return;
+    }
+  }
+
+  await new Promise((resolve, reject) => {
+    try {
+      setter(items, () => {
+        const lastError = chrome.runtime?.lastError;
+        if (lastError) {
+          reject(new Error(lastError.message));
+          return;
+        }
+        resolve();
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
 }
 
 /**
- * 保存配置到 chrome.storage.local
- * @param {object} config - 要保存的配置对象
+ * 設定を永続化する。
+ * @param {object} config
  * @returns {Promise<void>}
  */
 export async function saveConfig(config) {
-  const configToSave = JSON.parse(JSON.stringify(config)); // 深拷贝以避免修改原始对象
+  const clone = JSON.parse(JSON.stringify(config));
+  const canonical = migrateConfig(clone);
 
-  normalizePromptTemplatesStore(configToSave);
+  normalizePromptTemplatesStore(canonical);
+  canonical.version = CONFIG_VERSION;
 
-  // 确保版本信息
-  configToSave.version = CONFIG_VERSION;
-
-  // 遍历所有供应商并加密其API Key
-  if (configToSave.aiConfig && configToSave.aiConfig.models) {
-    for (const provider in configToSave.aiConfig.models) {
-      const apiKey = configToSave.aiConfig.models[provider]?.apiKey;
+  if (canonical.aiConfig?.models) {
+    for (const [providerId, modelState] of Object.entries(canonical.aiConfig.models)) {
+      const apiKey = modelState?.apiKey;
       if (apiKey) {
-        configToSave.aiConfig.models[provider].apiKey = await encryptApiKey(
+        canonical.aiConfig.models[providerId].apiKey = await encryptApiKey(
           apiKey,
-          provider
+          providerId,
         );
       }
     }
   }
 
-  return chrome.storage.local.set({ [CONFIG_KEY]: configToSave });
+  await writeToStorage({ [CONFIG_KEY]: canonical });
 }
 
 /**
- * 从 chrome.storage.local 加载配置
- * @returns {Promise<object>} - 返回配置对象，如果不存在则返回默认配置
+ * ストレージから設定を読み込む。
+ * @returns {Promise<object>}
  */
 export async function loadConfig() {
-  return new Promise((resolve) => {
-    chrome.storage.local.get(CONFIG_KEY, async (result) => {
-      if (chrome.runtime.lastError) {
-        console.error("加载配置时出错:", chrome.runtime.lastError);
-        resolve(DEFAULT_CONFIG);
-        return;
-      }
+  try {
+    const result = await readFromStorage(CONFIG_KEY);
+    let config = result[CONFIG_KEY];
 
-      let config = result[CONFIG_KEY];
+    if (!config) {
+      console.info("保存済みの設定が見つからなかったため、既定値を返します。");
+      return buildDefaultConfig();
+    }
 
-      // 如果没有配置，返回默认配置
-      if (!config) {
-        console.log("未找到配置，使用默认配置");
-        resolve(DEFAULT_CONFIG);
-        return;
-      }
+    const migrated = migrateConfig(config);
+    normalizePromptTemplatesStore(migrated);
 
-      // 检查并处理配置迁移
-      config = migrateConfig(config);
+    if (migrated.aiConfig?.models) {
+      for (const [providerId, modelState] of Object.entries(migrated.aiConfig.models)) {
+        const encryptedKey = modelState?.apiKey;
+        if (!encryptedKey) {
+          continue;
+        }
 
-      normalizePromptTemplatesStore(config);
-
-      // 解密所有供应商的API Key
-      if (config.aiConfig && config.aiConfig.models) {
-        for (const provider in config.aiConfig.models) {
-          const encryptedKey = config.aiConfig.models[provider]?.apiKey;
-          if (encryptedKey) {
-            try {
-              config.aiConfig.models[provider].apiKey = await decryptApiKey(
-                encryptedKey,
-                provider
-              );
-            } catch (error) {
-              console.warn(`解密${provider} API Key失败，将重置为空:`, error);
-              config.aiConfig.models[provider].apiKey = "";
-            }
-          }
+        try {
+          const decrypted = await decryptApiKey(encryptedKey, providerId);
+          migrated.aiConfig.models[providerId].apiKey = decrypted ?? "";
+        } catch (error) {
+          console.warn(
+            `[storage] ${providerId} の API キー復号に失敗したため、空文字に初期化しました。`,
+            error,
+          );
+          migrated.aiConfig.models[providerId].apiKey = "";
         }
       }
+    }
 
-      resolve(config);
-    });
-  });
+    return migrated;
+  } catch (error) {
+    console.error("設定の読み込みでエラーが発生しました:", error);
+    return buildDefaultConfig();
+  }
 }
 
 /**
- * 获取默认配置
- * @returns {object} - 默认配置对象的深拷贝
+ * 既定設定を生成する。
+ * @returns {object}
  */
 export function getDefaultConfig() {
-  return JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+  return buildDefaultConfig();
 }

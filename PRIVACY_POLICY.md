@@ -1,6 +1,6 @@
 # Privacy Policy for Anki Word Assistant
 
-**Last Updated:** 2025-09-02
+**Last Updated:** 2025-10-10
 
 This Privacy Policy describes how Anki Word Assistant (the "Extension") handles your information.
 
@@ -33,3 +33,7 @@ We may update this Privacy Policy from time to time. We will notify you of any c
 ## 6. Contact Us
 
 If you have any questions about this Privacy Policy, please open an issue on our project's GitHub page.
+
+## 7. Permissions and Runtime Requests
+
+The Extension declares a small set of host permissions in `manifest.json` for AnkiConnect, Google Gemini, OpenAI, and Anthropic. When you configure a custom OpenAI-compatible endpoint, the Extension may request additional host permissions at runtime so that Chrome can send requests to the new domain. This permission prompt happens entirely in your browser, and no configuration data or API keys leave your device during the process. If you deny the request, the new configuration is not saved and the Extension continues using the previous endpoint.
