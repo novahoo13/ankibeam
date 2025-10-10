@@ -2,7 +2,6 @@
 // 功能: 处理用户输入文本的AI解析和Anki卡片创建的完整UI流程
 
 import {
-  parseText,
   parseTextWithFallback,
   parseTextWithDynamicFieldsFallback,
 } from "../utils/ai-service.js";
