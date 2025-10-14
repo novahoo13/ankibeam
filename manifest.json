@@ -1,8 +1,8 @@
 {
 	"manifest_version": 3,
-	"name": "Anki Word Assistant",
+	"name": "__MSG_extension_name__",
 	"version": "1.0",
-	"description": "An AI-powered assistant to help create Anki cards from dictionary lookup results.",
+	"description": "__MSG_extension_description__",
 	"permissions": ["storage"],
 	"host_permissions": [
 		"http://127.0.0.1:8765/*",
@@ -24,7 +24,7 @@
 		}
 	},
 	"options_page": "options/options.html",
-	"default_locale": "zh_CN",
+	"default_locale": "en",
 	"icons": {
 		"16": "icons/icon16.png",
 		"48": "icons/icon48.png",

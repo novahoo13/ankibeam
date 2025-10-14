@@ -1,4 +1,12 @@
 {
+  "extension_name": {
+    "description": "Extension name shown in the Chrome Web Store and UI.",
+    "message": "Anki Word Assistant"
+  },
+  "extension_description": {
+    "description": "Extension description for manifest and store listing.",
+    "message": "An AI-powered assistant to help create Anki cards from dictionary lookup results."
+  },
   "ai_service_error_connection_test": {
     "description": "提供商连接测试失败的提示",
     "message": "连接测试失败：$ERROR$",

@@ -6,9 +6,9 @@
 - [x] 为含占位符的键（如字段计数、错误详情）约定插值格式，完善各语言 `description` 并在 `docs` 中记录术语表/翻译注意事项。
 
 ## 阶段 2：基础设施调整
-- [ ] 将 `manifest.json` 的 `default_locale` 调整为 `en`，并把 `name`、`description` 等字段改为 `__MSG_*__`（现状：default_locale 为 `zh_CN`，文案直接写死）。
-- [ ] 扩展 `utils/i18n.js`，支持 `data-i18n`、`data-i18n-placeholder`、`data-i18n-title`、`data-i18n-value`、`data-i18n-aria`，并在 `DOMContentLoaded` 自动执行 `localizePage`（现状：仅处理 textContent/placeholder，且未自动触发）。
-- [ ] 在 `popup.html` 与 `options.html` 中通过 `<script type="module" src="../utils/i18n.js">`（或相对路径）引入本地化脚本，并确保在业务脚本之前加载（现状：页面尚未引用该模块）。
+- [x] 将 `manifest.json` 的 `default_locale` 调整为 `en`，并把 `name`、`description` 等字段改为 `__MSG_*__`（现状：default_locale 为 `zh_CN`，文案直接写死）。
+- [x] 扩展 `utils/i18n.js`，支持 `data-i18n`、`data-i18n-placeholder`、`data-i18n-title`、`data-i18n-value`、`data-i18n-aria`，并在 `DOMContentLoaded` 自动执行 `localizePage`（现状：仅处理 textContent/placeholder，且未自动触发）。
+- [x] 在 `popup.html` 与 `options.html` 中通过 `<script type="module" src="../utils/i18n.js">`（或相对路径）引入本地化脚本，并确保在业务脚本之前加载（现状：页面尚未引用该模块）。
 
 ## 阶段 3：静态页面改造
 - [ ] `popup/popup.html`：移除所有中文文案，使用 `data-i18n*` 属性或 ARIA 文案承载标签、按钮、提示、占位符、空状态等内容（现状：除标题和按钮外仍为中文）。
@@ -32,4 +32,3 @@
 - [ ] 新增或扩展单元测试，至少覆盖 `utils/i18n.js`、Prompt 默认模板生成、`getLocale()` 映射等关键路径，并为典型文案插值编写 smoke/快照测试。
 - [ ] 在 Chrome 开发者模式下模拟 `en`、`ja`、`zh-CN`、`zh-TW` 环境手动回归，验证 popup、options、错误提示、Anki 写入、Prompt 编辑等界面显示正确语言且回退逻辑生效。
 - [ ] 更新 `README.md` 与 `docs/internationalization-plan.md`（或新增附录），记录最终的键名约定、翻译流程和手动验证步骤，确保文档与实现一致。
-

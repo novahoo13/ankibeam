@@ -1,4 +1,12 @@
 {
+  "extension_name": {
+    "description": "扩展显示的名称。",
+    "message": "Anki单词助手"
+  },
+  "extension_description": {
+    "description": "扩展在商店与清单中的简介。",
+    "message": "从词典查询结果生成 Anki 卡片的 AI 助手。"
+  },
   "ai_service_error_connection_test": {
     "description": "提供商连接测试失败的提示",
     "message": "连接测试失败：$ERROR$",

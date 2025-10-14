@@ -8,7 +8,7 @@
 **Goal**: 配置 `manifest.json` 默认语言、补全 `utils/i18n.js`，并在各页面引入自动本地化脚本。
 **Success Criteria**: 扩展在加载时自动执行 `localizePage`，支持多种 `data-i18n*` 属性；`manifest.json` 引用 `__MSG_*__`。
 **Tests**: 手动打开 popup/options 页面确认静态文本按语言切换。
-**Status**: Not Started
+**Status**: Complete
 
 ## Stage 3: Static Layout Refactor
 **Goal**: 将 HTML 模板中的硬编码文本替换为数据属性或动态注入，确保无直接写死的中文。

@@ -1,4 +1,12 @@
 {
+  "extension_name": {
+    "description": "Chrome 拡張の名称。",
+    "message": "Ankiワードアシスタント"
+  },
+  "extension_description": {
+    "description": "Chrome 拡張の説明文。",
+    "message": "辞書検索結果からAnkiカード作成を支援するAI搭載アシスタントです。"
+  },
   "ai_service_error_connection_test": {
     "description": "提供商连接测试失败的提示",
     "message": "连接测试失败：$ERROR$",

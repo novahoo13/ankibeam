@@ -1,34 +1,79 @@
-// i18n.js - 国际化工具
-// 一个简单的 i18n 实现
+// i18n.js - ページ内のローカライズ要素を処理
+
+const runtimeI18n = typeof chrome !== 'undefined' && chrome?.i18n ? chrome.i18n : null;
+
+// メッセージ取得の共通処理
+function resolveMessage(key, substitutions) {
+  if (!key) {
+    return '';
+  }
+  if (!runtimeI18n) {
+    return key;
+  }
+  return runtimeI18n.getMessage(key, substitutions);
+}
 
 /**
- * (待实现) 根据 data-i18n 属性翻译页面上的所有元素
+ * data-i18n* 属性に基づいて文言を設定する。
  */
 export function localizePage() {
-  const elements = document.querySelectorAll('[data-i18n]');
-  elements.forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    const translation = chrome.i18n.getMessage(key);
-    if (translation) {
-      // 根据元素类型，设置 content, value, placeholder 等
-      if (el.placeholder) {
-        el.placeholder = translation;
-      } else {
-        el.textContent = translation;
-      }
+  if (typeof document === 'undefined') {
+    return;
+  }
+
+  document.querySelectorAll('[data-i18n]').forEach(elem => {
+    const key = elem.getAttribute('data-i18n');
+    const message = resolveMessage(key);
+    if (message) {
+      elem.textContent = message;
+    }
+  });
+
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(elem => {
+    const key = elem.getAttribute('data-i18n-placeholder');
+    const message = resolveMessage(key);
+    if (message) {
+      elem.placeholder = message;
+    }
+  });
+
+  document.querySelectorAll('[data-i18n-title]').forEach(elem => {
+    const key = elem.getAttribute('data-i18n-title');
+    const message = resolveMessage(key);
+    if (message) {
+      elem.title = message;
+    }
+  });
+
+  document.querySelectorAll('[data-i18n-value]').forEach(elem => {
+    const key = elem.getAttribute('data-i18n-value');
+    const message = resolveMessage(key);
+    if (message) {
+      elem.value = message;
+    }
+  });
+
+  document.querySelectorAll('[data-i18n-aria]').forEach(elem => {
+    const key = elem.getAttribute('data-i18n-aria');
+    const message = resolveMessage(key);
+    if (message) {
+      elem.setAttribute('aria-label', message);
     }
   });
 }
 
 /**
- * (待实现) 获取翻译字符串
- * @param {string} key - 语言包中的 key
- * @param {string|string[]} [substitutions] - 替换占位符
+ * 任意キーのメッセージを取得する。
+ * @param {string} key - メッセージキー
+ * @param {string|string[]} [substitutions] - 差し込み文字列
  * @returns {string}
  */
 export function getMessage(key, substitutions) {
-  return chrome.i18n.getMessage(key, substitutions);
+  return resolveMessage(key, substitutions);
 }
 
-// 在 popup.js 和 options.js 中，可以在 DOMContentLoaded 时调用 localizePage()
-// document.addEventListener('DOMContentLoaded', localizePage);
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => {
+    localizePage();
+  });
+}
