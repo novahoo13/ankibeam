@@ -1389,3 +1389,10 @@ document.addEventListener('DOMContentLoaded', () => {
 - JavaScript 改造: 3-4天
 - 测试和调试: 2-3天
 - **总计: 约 1-2周**
+## 术语与占位符说明
+
+- **键名命名**：按页面与职责组合，例如 `popup_status_ready`、`options_button_save`、`ai_service_error_request_failed`，保持语义可读。
+- **占位符格式**：源码统一书写为 `{name}`，生成 `messages.json` 时转换成 `$NAME$` 并补充 `placeholders` 的 `description`、`example`。
+- **复用策略**：跨页面复用的提示（如“当前模板未配置…”）保持单一键名，避免重复翻译。
+- **翻译占位**：`en`、`ja`、`zh_TW` 当前暂以中文占位，后续阶段补齐正式译文并校对语体。
+- **模板拆分**：原先内嵌 HTML 的长字符串将在后续阶段拆分成结构化 DOM + 键值，降低翻译难度。

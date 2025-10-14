@@ -1,9 +1,9 @@
 # 国际化任务清单
 
 ## 阶段 1：文案梳理与资源基线
-- [ ] 收集 `popup/popup.html`、`options/options.html`、`popup/popup.js`、`options/options.js`、`utils/*.js` 中所有面向用户的字符串，整理统一键名并补全 `_locales/zh_CN/messages.json`（现状：仅 5 个键且缺少 description）。
-- [ ] 在 `_locales` 下新增 `en`、`ja`、`zh_TW` 目录及对应的 `messages.json`，同步阶段 1 的键表并写入翻译或占位文本，确保四种语言的键集合完全一致。
-- [ ] 为含占位符的键（如字段计数、错误详情）约定插值格式，完善各语言 `description` 并在 `docs` 中记录术语表/翻译注意事项。
+- [x] 收集 `popup/popup.html`、`options/options.html`、`popup/popup.js`、`options/options.js`、`utils/*.js` 中所有面向用户的字符串，整理统一键名并补全 `_locales/zh_CN/messages.json`（现状：仅 5 个键且缺少 description）。
+- [x] 在 `_locales` 下新增 `en`、`ja`、`zh_TW` 目录及对应的 `messages.json`，同步阶段 1 的键表并写入翻译或占位文本，确保四种语言的键集合完全一致。
+- [x] 为含占位符的键（如字段计数、错误详情）约定插值格式，完善各语言 `description` 并在 `docs` 中记录术语表/翻译注意事项。
 
 ## 阶段 2：基础设施调整
 - [ ] 将 `manifest.json` 的 `default_locale` 调整为 `en`，并把 `name`、`description` 等字段改为 `__MSG_*__`（现状：default_locale 为 `zh_CN`，文案直接写死）。
