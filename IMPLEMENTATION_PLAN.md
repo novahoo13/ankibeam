@@ -14,7 +14,7 @@
 **Goal**: 将 HTML 模板中的硬编码文本替换为数据属性或动态注入，确保无直接写死的中文。
 **Success Criteria**: `popup.html`、`options.html` 完全依赖 `data-i18n*`；占位符、ARIA 信息通过脚本填充。
 **Tests**: 手动切换语言后检查页面静态区域文本。
-**Status**: Not Started
+**Status**: Complete
 
 ## Stage 4: Runtime Message Localization
 **Goal**: 用 `chrome.i18n.getMessage` 接管脚本中的提示、状态、错误与 Prompt 模板生成逻辑。
