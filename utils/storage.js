@@ -118,7 +118,7 @@ function getEncryptionSalt(providerId) {
     return provider.encryptionSalt;
   }
   console.warn(
-    `[storage] 未找到 ${providerId ?? "unknown"} 的加密盐，因此使用默认提供商。`,
+    `[storage] プロバイダー ${providerId ?? "unknown"} の暗号化ソルトが見つからないため、既定プロバイダーを使用します。`,
   );
   const fallback = getProviderById(getDefaultProviderId());
   if (fallback?.encryptionSalt instanceof Uint8Array) {
@@ -416,7 +416,7 @@ async function getDerivedKey(providerId = getDefaultProviderId()) {
 }
 
 /**
- * 使用唯一的盐加密 API 密钥。
+ * 固有のソルトで API キーを暗号化します。
  * @param {string} key
  * @param {string} providerId
  * @returns {Promise<string|null>}
@@ -445,7 +445,7 @@ export async function encryptApiKey(key, providerId = getDefaultProviderId()) {
 }
 
 /**
- * 解密已保存的 API 密钥。
+ * 保存済みの API キーを復号します。
  * @param {string} encryptedBase64
  * @param {string} providerId
  * @returns {Promise<string|null>}
@@ -475,7 +475,7 @@ export async function decryptApiKey(encryptedBase64, providerId = getDefaultProv
     const decoder = new TextDecoder();
     return decoder.decode(decrypted);
   } catch (error) {
-    console.error(`[storage] ${providerId} 的 API 密钥解密失败:`, error);
+    console.error(`[storage] ${providerId} の API キー復号に失敗しました:`, error);
     return null;
   }
 }
@@ -487,14 +487,14 @@ function migrateConfig(legacyConfig) {
 
   const needsMigration = legacyConfig.version !== CONFIG_VERSION;
   if (needsMigration) {
-    console.info("检测到旧版设置，正在更新架构。");
+    console.info('[storage] 旧設定を検出、スキーマを更新します。');
   }
 
   const merged = mergeConfigWithDefaults(legacyConfig);
   merged.version = CONFIG_VERSION;
 
   if (needsMigration) {
-    console.info("设置迁移完成。");
+    console.info('[storage] 設定の移行が完了しました。');
   }
 
   return merged;
@@ -562,7 +562,7 @@ async function writeToStorage(items) {
 }
 
 /**
- * 持久化设置。
+ * 設定を永続化します。
  * @param {object} config
  * @returns {Promise<void>}
  */
@@ -589,7 +589,7 @@ export async function saveConfig(config) {
 }
 
 /**
- * 从存储中加载设置。
+ * ストレージから設定を読み込みます。
  * @returns {Promise<object>}
  */
 export async function loadConfig() {
@@ -598,7 +598,7 @@ export async function loadConfig() {
     let config = result[CONFIG_KEY];
 
     if (!config) {
-      console.info("未找到已保存的设置，将返回默认值。");
+      console.info('[storage] 保存済みの設定が見つからないため、デフォルト値を返します。');
       return buildDefaultConfig();
     }
 
@@ -617,7 +617,7 @@ export async function loadConfig() {
           migrated.aiConfig.models[providerId].apiKey = decrypted ?? "";
         } catch (error) {
           console.warn(
-            `[storage] ${providerId} 的 API 密钥解密失败，已初始化为空字符串。`,
+            `[storage] ${providerId} の API キー復号に失敗したため、空文字列として初期化しました。`,
             error,
           );
           migrated.aiConfig.models[providerId].apiKey = "";
@@ -627,13 +627,13 @@ export async function loadConfig() {
 
     return migrated;
   } catch (error) {
-    console.error("加载设置时出错:", error);
+    console.error('[storage] 設定の読み込みでエラーが発生:', error);
     return buildDefaultConfig();
   }
 }
 
 /**
- * 生成默认设置。
+ * 既定設定を生成します。
  * @returns {object}
  */
 export function getDefaultConfig() {

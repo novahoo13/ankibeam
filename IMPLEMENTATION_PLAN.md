@@ -20,7 +20,7 @@
 **Goal**: 用 `chrome.i18n.getMessage` 接管脚本中的提示、状态、错误与 Prompt 模板生成逻辑。
 **Success Criteria**: 运行时生成的 DOM/日志全部引用新键；占位符参数正确传递；移除中文硬编码。
 **Tests**: 自动化/手动调用关键路径（解析、写入、Prompt 配置、API 测试）验证显示文本正确。
-**Status**: Not Started
+**Status**: Complete
 
 ## Stage 5: Validation & Documentation
 **Goal**: 执行多语言烟雾测试，补充 README / docs，整理最终术语与流程。

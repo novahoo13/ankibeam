@@ -28,6 +28,10 @@ import {
   getFallbackOrder,
   getAllManifestHostPermissions,
 } from "../utils/providers.config.js";
+import { translate, createI18nError } from "../utils/i18n.js";
+
+const getText = (key, fallback, substitutions) =>
+  translate(key, { fallback, substitutions });
 
 // API密钥的实际值（DOM中显示星号掩码）
 const actualApiKeys = Object.create(null);
@@ -38,7 +42,13 @@ const manifestHostPermissionSet = new Set(
 
 class PermissionRequestError extends Error {
   constructor(origin, cause) {
-    super(`未获得 ${origin} 的访问权限，已取消保存。`);
+    super(
+      getText(
+        "options_permission_request_error",
+        `Failed to request permission for ${origin}`,
+        [origin],
+      ),
+    );
     this.name = "PermissionRequestError";
     this.origin = origin;
     if (cause) {
@@ -196,7 +206,7 @@ async function ensureApiOriginsPermission(models) {
         continue;
       }
     } catch (error) {
-      console.warn("[options] 权限确认失败：", error);
+      console.warn('[options] 権限の確認に失敗しました:', error);
       throw new PermissionRequestError(origin, error);
     }
 
@@ -209,7 +219,7 @@ async function ensureApiOriginsPermission(models) {
       if (error instanceof PermissionRequestError) {
         throw error;
       }
-      console.warn("[options] 请求权限时发生错误：", error);
+      console.warn('[options] 権限リクエストでエラーが発生しました:', error);
       throw new PermissionRequestError(origin, error);
     }
   }
@@ -326,7 +336,7 @@ function createProviderSection(provider, defaultModelState = {}) {
     "toggle-visibility-btn bg-gray-200 hover:bg-gray-300 px-3 py-2 rounded-md transition";
   toggleButton.dataset.provider = provider.id;
   toggleButton.dataset.action = "toggle-visibility";
-  toggleButton.textContent = "显示";
+  toggleButton.textContent = getText("options_button_toggle_show", "显示");
   keyWrapper.appendChild(toggleButton);
 
   apiKeyBlock.appendChild(keyWrapper);
@@ -336,7 +346,7 @@ function createProviderSection(provider, defaultModelState = {}) {
     helper.className = "text-xs text-gray-500 mt-1 block";
 
     if (provider.ui?.dashboardUrl) {
-      helper.append("获取 API Key：");
+      helper.append(getText("options_helper_get_api_key", "获取 API Key："));
       const dashLink = document.createElement("a");
       dashLink.href = provider.ui.dashboardUrl;
       dashLink.target = "_blank";
@@ -345,20 +355,20 @@ function createProviderSection(provider, defaultModelState = {}) {
       dashLink.textContent = provider.label;
       helper.appendChild(dashLink);
       if (provider.ui?.docsUrl) {
-        helper.append(" ｜ 文档：");
+        helper.append(getText("options_helper_docs_separator", " ｜ 文档："));
       }
     }
 
     if (provider.ui?.docsUrl) {
       if (!provider.ui?.dashboardUrl) {
-        helper.append("参考文档：");
+        helper.append(getText("options_helper_docs_fallback", "参考文档："));
       }
       const docsLink = document.createElement("a");
       docsLink.href = provider.ui.docsUrl;
       docsLink.target = "_blank";
       docsLink.rel = "noreferrer";
       docsLink.className = "text-slate-600 hover:underline";
-      docsLink.textContent = "API 文档";
+      docsLink.textContent = getText("options_helper_api_docs", "API 文档");
       helper.appendChild(docsLink);
     }
 
@@ -372,15 +382,19 @@ function createProviderSection(provider, defaultModelState = {}) {
   modelLabel.htmlFor = `${provider.id}-model-name`;
   modelLabel.className =
     "block text-sm font-medium text-gray-700 mb-2";
-  modelLabel.textContent = "模型名称";
+  modelLabel.textContent = getText("options_label_model_name", "模型名称");
   modelBlock.appendChild(modelLabel);
 
   const modelInput = document.createElement("input");
   modelInput.type = "text";
   modelInput.id = `${provider.id}-model-name`;
   modelInput.placeholder = provider.defaultModel
-    ? `例如：${provider.defaultModel}`
-    : "输入模型名称";
+    ? getText(
+        "options_placeholder_model_example",
+        `例如：${provider.defaultModel}`,
+        [provider.defaultModel]
+      )
+    : getText("options_placeholder_model_input", "输入模型名称");
   modelInput.className =
     "w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500";
   modelInput.dataset.provider = provider.id;
@@ -392,7 +406,7 @@ function createProviderSection(provider, defaultModelState = {}) {
   if (Array.isArray(provider.supportedModels) && provider.supportedModels.length > 0) {
     const modelsHint = document.createElement("small");
     modelsHint.className = "text-xs text-gray-500 mt-1 block";
-    modelsHint.textContent = `常用模型：${provider.supportedModels.join("、")}`;
+    modelsHint.textContent = getText("options_hint_model_common", `常用模型：${provider.supportedModels.join("、")}`, [provider.supportedModels.join("、")]);
     modelBlock.appendChild(modelsHint);
   }
 
@@ -403,7 +417,7 @@ function createProviderSection(provider, defaultModelState = {}) {
   urlLabel.htmlFor = `${provider.id}-api-url`;
   urlLabel.className =
     "block text-sm font-medium text-gray-700 mb-2";
-  urlLabel.textContent = "API 地址";
+  urlLabel.textContent = getText("options_label_api_url", "API 地址");
   urlBlock.appendChild(urlLabel);
 
   const apiUrlInput = document.createElement("input");
@@ -423,7 +437,11 @@ function createProviderSection(provider, defaultModelState = {}) {
   if (defaultModelState.apiUrl) {
     const urlHint = document.createElement("small");
     urlHint.className = "text-xs text-gray-500 mt-1 block";
-    urlHint.textContent = `默认：${defaultModelState.apiUrl}`;
+    urlHint.textContent = getText(
+      "options_provider_custom_url_hint",
+      `Current URL: ${defaultModelState.apiUrl}`,
+      [defaultModelState.apiUrl],
+    );
     urlBlock.appendChild(urlHint);
   }
 
@@ -437,7 +455,11 @@ function createProviderSection(provider, defaultModelState = {}) {
     "test-provider-btn bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition";
   testButton.dataset.provider = provider.id;
   testButton.dataset.action = "test-provider";
-  testButton.textContent = `测试 ${provider.label} 连接`;
+  testButton.textContent = getText(
+    "options_provider_test_button",
+    `Test ${provider.label} connection`,
+    [provider.label],
+  );
   actionsRow.appendChild(testButton);
 
   const statusEl = document.createElement("div");
@@ -450,7 +472,7 @@ function createProviderSection(provider, defaultModelState = {}) {
   healthMeta.className = "text-xs text-gray-500 mt-2";
   healthMeta.dataset.provider = provider.id;
   healthMeta.dataset.role = "provider-health-meta";
-  healthMeta.textContent = "尚未测试连接";
+  healthMeta.textContent = getText("options_status_not_tested", "尚未测试连接");
 
   root.appendChild(apiKeyBlock);
   root.appendChild(modelBlock);
@@ -483,7 +505,7 @@ function setProviderFormState(providerId, modelState = {}) {
 
   entry.inputs.apiKey.type = "password";
   entry.inputs.apiKey.value = apiKey ? API_KEY_PLACEHOLDER : "";
-  entry.toggleButton.textContent = "显示";
+  entry.toggleButton.textContent = getText("options_button_toggle_show", "显示");
 
   entry.inputs.modelName.value =
     typeof modelState.modelName === "string" ? modelState.modelName : "";
@@ -511,11 +533,11 @@ function toggleApiKeyVisibility(providerId) {
   if (input.type === "password") {
     input.type = "text";
     input.value = actualApiKeys[providerId] ?? "";
-    button.textContent = "隐藏";
+    button.textContent = getText("options_button_toggle_hide", "隐藏");
   } else {
     input.type = "password";
     input.value = actualApiKeys[providerId] ? API_KEY_PLACEHOLDER : "";
-    button.textContent = "显示";
+    button.textContent = getText("options_button_toggle_show", "显示");
   }
 }
 
@@ -536,16 +558,30 @@ function updateProviderHealthMeta(providerId, modelState = {}) {
 
   const statusLabel = formatHealthStatusLabel(modelState.healthStatus);
   const lastCheckText = formatHealthTimestamp(modelState.lastHealthCheck);
+  const statusSegment = getText(
+    "options_status_prefix",
+    `状态：${statusLabel}`,
+    [statusLabel]
+  );
+  const lastCheckedValue =
+    lastCheckText || getText("options_status_not_tested", "尚未测试连接");
+  const lastCheckedSegment = getText(
+    "options_status_last_checked",
+    `上次检查：${lastCheckedValue}`,
+    [lastCheckedValue]
+  );
 
-  const segments = [`状态：${statusLabel}`];
-  segments.push(`上次检查：${lastCheckText || "未记录"}`);
+  const segments = [statusSegment, lastCheckedSegment];
 
   if (
     modelState.healthStatus === "error" &&
     typeof modelState.lastErrorMessage === "string" &&
     modelState.lastErrorMessage.trim()
   ) {
-    segments.push(`原因：${modelState.lastErrorMessage.trim()}`);
+    const reason = modelState.lastErrorMessage.trim();
+    segments.push(
+      getText("options_status_reason", `原因：${reason}`, [reason])
+    );
   }
 
   entry.healthMeta.textContent = segments.join(" ｜ ");
@@ -554,12 +590,12 @@ function updateProviderHealthMeta(providerId, modelState = {}) {
 function formatHealthStatusLabel(status) {
   switch (status) {
     case "healthy":
-      return "健康";
+      return getText("options_status_health_ok", "健康");
     case "error":
-      return "异常";
+      return getText("options_status_health_error", "异常");
     case "unknown":
     default:
-      return "未知";
+      return getText("options_status_health_unknown", "未知");
   }
 }
 
@@ -800,7 +836,7 @@ function renderFieldSelection(fields) {
     if (configList) {
       configList.innerHTML = "";
     }
-    setPromptConfigStatus("当前模板未返回任何字段。", "info");
+    setPromptConfigStatus(getText("options_prompt_no_fields", "当前模板未返回任何字段。"), "info");
     return;
   }
 
@@ -822,7 +858,7 @@ function renderFieldSelection(fields) {
     .join("");
 
   if (promptEditorState.selectedFields.length === 0) {
-    setPromptConfigStatus("请选择需要输出的字段，并补全字段内容。", "info");
+    setPromptConfigStatus(getText("options_prompt_select_fields", "请选择需要输出的字段，并补全字段内容。"), "info");
   }
 }
 
@@ -834,10 +870,22 @@ function renderFieldConfigForm() {
 
   const selectedFields = promptEditorState.selectedFields || [];
   if (selectedFields.length === 0) {
-    container.innerHTML =
-      '<div class="text-xs text-gray-500 border border-dashed border-slate-300 rounded-md p-3 bg-slate-50">请选择字段后配置字段内容。</div>';
+    const emptyHint = getText(
+      "options_prompt_field_config_hint",
+      "配置生成 AI 输出该字段所需的信息"
+    );
+    container.innerHTML = `<div class="text-xs text-gray-500 border border-dashed border-slate-300 rounded-md p-3 bg-slate-50">${emptyHint}</div>`;
     return;
   }
+
+  const fieldLabelText = getText(
+    "options_prompt_field_label",
+    "字段内容"
+  );
+  const fieldPlaceholderText = getText(
+    "options_prompt_field_placeholder",
+    "描述该字段应包含的内容，例如输出结构、语气等要求"
+  );
 
   const cardsHtml = selectedFields
     .map((field) => {
@@ -848,13 +896,13 @@ function renderFieldConfigForm() {
             <h5 class="text-sm font-semibold text-slate-700">${safeField}</h5>
           </div>
           <div class="mt-3">
-            <label class="block text-xs font-medium text-gray-600 mb-1">字段内容 <span class="text-red-500">*</span></label>
+            <label class="block text-xs font-medium text-gray-600 mb-1">${fieldLabelText} <span class="text-red-500">*</span></label>
             <textarea
               class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
               rows="3"
               data-field-name="${safeField}"
               data-field-role="content"
-              placeholder="描述该字段应包含的内容，例如输出结构、语气等要求"
+              placeholder="${fieldPlaceholderText}"
             ></textarea>
             <p class="text-xs text-red-600 mt-1" data-field-error></p>
           </div>
@@ -912,30 +960,59 @@ function generateDefaultPrompt() {
   }
 
   const lines = [];
-  lines.push("请严格按照下列要求生成输出。");
+  lines.push(
+    getText("options_prompt_rule_intro", "请严格按照下列要求生成输出。")
+  );
   lines.push("");
-  lines.push("字段返回内容定义：");
+  lines.push(
+    getText("options_prompt_rule_field_definition", "字段返回内容定义：")
+  );
 
   selectedFields.forEach((field) => {
     const config = ensureFieldConfig(field);
     const content = (config.content || "").trim();
-
-    lines.push(`${field}：${content || "请生成与该字段相关的内容。"}`);
+    const fieldDetail =
+      content ||
+      getText("options_prompt_rule_field_fallback", "请生成与该字段相关的内容。");
+    lines.push(`${field}：${fieldDetail}`);
     lines.push("");
   });
 
-  lines.push("输出格式定义：");
-  lines.push("请按照以下 JSON 结构返回结果，仅包含所列字段：");
+  lines.push(
+    getText("options_prompt_rule_output_format", "输出格式定义：")
+  );
+  lines.push(
+    getText(
+      "options_prompt_rule_output_json",
+      "请按照以下 JSON 结构返回结果，仅包含所列字段："
+    )
+  );
   lines.push("{");
   selectedFields.forEach((field, index) => {
     const comma = index === selectedFields.length - 1 ? "" : ",";
-    lines.push(`  "${field}": "请填入${field}的内容"${comma}`);
+    lines.push(
+      getText(
+        "options_prompt_rule_output_line",
+        `  "${field}": "请填入${field}的内容"${comma}`,
+        [field, comma]
+      )
+    );
   });
   lines.push("}");
   lines.push("");
-  lines.push("注意事项：");
-  lines.push("- 仅返回 JSON，不要包含额外解释。");
-  lines.push("- 确保各字段内容满足上文要求。");
+  lines.push(getText("options_prompt_rule_notes", "注意事项："));
+  lines.push(
+    getText(
+      "options_prompt_rule_note_json_only",
+      "- 仅返回 JSON，不要包含额外解释。"
+    )
+  );
+  lines.push(
+    getText(
+      "options_prompt_rule_note_requirements",
+      "- 确保各字段内容满足上文要求。"
+    )
+  );
 
   return (
     lines
@@ -1026,7 +1103,7 @@ function validateFieldConfigurations(showStatus = false) {
         card.classList.add("border-red-300");
       }
       if (errorLabel) {
-        errorLabel.textContent = "字段内容为必填项";
+        errorLabel.textContent = getText("options_prompt_error_field_required", "字段内容为必填项");
       }
     } else {
       if (card) {
@@ -1043,7 +1120,7 @@ function validateFieldConfigurations(showStatus = false) {
 
   if (selectedFields.length === 0) {
     if (showStatus) {
-      setPromptConfigStatus("请选择至少一个要输出的字段。", "error");
+      setPromptConfigStatus(getText("options_prompt_error_select_fields", "请选择至少一个要输出的字段。"), "error");
     }
     return { isValid: false, missingFields };
   }
@@ -1060,7 +1137,7 @@ function validateFieldConfigurations(showStatus = false) {
   }
 
   if (showStatus) {
-    setPromptConfigStatus("字段配置已就绪。", "success");
+    setPromptConfigStatus(getText("options_prompt_status_ready", "字段配置已就绪。"), "success");
     setTimeout(() => {
       setPromptConfigStatus("", "");
     }, 1500);
@@ -1105,10 +1182,10 @@ function handleResetPromptTemplate() {
 
   const generatedPrompt = (promptEditorState.lastGeneratedPrompt || "").trim();
   if (generatedPrompt) {
-    setPromptConfigStatus("已根据当前字段配置生成默认 Prompt。", "info");
+    setPromptConfigStatus(getText("options_prompt_status_generated", "已根据当前字段配置生成默认 Prompt。"), "info");
   } else {
     setPromptConfigStatus(
-      "请先选择并配置字段，然后再生成默认 Prompt。",
+      getText("options_prompt_error_generate_first", "请先选择并配置字段，然后再生成默认 Prompt。"),
       "info"
     );
   }
@@ -1130,7 +1207,7 @@ function showPromptConfig(modelName, fields) {
   const modelHint = document.getElementById("prompt-model-hint");
 
   if (!editorContainer || !selectionList || !configList || !promptTextarea) {
-    console.warn("未找到Prompt设置元素");
+    console.warn('Prompt設定要素が見つかりません');
     return;
   }
 
@@ -1173,7 +1250,7 @@ function showPromptConfig(modelName, fields) {
   }
 
   if (modelHint) {
-    modelHint.textContent = "提示：保存设置后将在 popup 中使用此 Prompt。";
+    modelHint.textContent = getText("options_prompt_hint_save_usage", "提示：保存设置后将在 popup 中使用此 Prompt。");
   }
 
   renderFieldSelection(availableFields);
@@ -1209,7 +1286,7 @@ function hidePromptConfig() {
   const modelHint = document.getElementById("prompt-model-hint");
 
   if (!editorContainer || !selectionList || !configList || !promptTextarea) {
-    console.warn("未找到Prompt设置元素");
+    console.warn('Prompt設定要素が見つかりません');
     return;
   }
 
@@ -1221,7 +1298,7 @@ function hidePromptConfig() {
   promptEditorState.lastGeneratedPrompt = "";
 
   if (currentModelLabel) {
-    currentModelLabel.textContent = "当前模板：未选择";
+    currentModelLabel.textContent = getText("options_prompt_current_model", "当前模板：未选择");
   }
 
   if (modelHint) {
@@ -1269,7 +1346,11 @@ function markPromptDirtyFlag(forced) {
  */
 async function handleExportConfiguration() {
   try {
-    updateStatus("save-status", "正在导出配置...", "loading");
+    updateStatus(
+      "save-status",
+      getText("options_export_status_running", "正在导出配置..."),
+      "loading"
+    );
     const baseConfig =
       currentConfig && Object.keys(currentConfig).length
         ? currentConfig
@@ -1305,10 +1386,18 @@ async function handleExportConfiguration() {
     anchor.click();
     URL.revokeObjectURL(url);
 
-    updateStatus("save-status", "配置导出成功", "success");
+    updateStatus(
+      "save-status",
+      getText("options_export_status_success", "配置导出成功"),
+      "success"
+    );
   } catch (error) {
-    console.error("导出配置失败:", error);
-    updateStatus("save-status", `配置导出失败: ${error.message}`, "error");
+    console.error('設定のエクスポートに失敗しました:', error);
+    updateStatus(
+      "save-status",
+      getText("options_export_status_failed", `配置导出失败: ${error.message}`, [error.message]),
+      "error"
+    );
   }
 }
 
@@ -1325,21 +1414,25 @@ async function handleImportConfiguration(event) {
   }
 
   try {
-    updateStatus("save-status", "正在导入配置...", "loading");
+    updateStatus(
+      "save-status",
+      getText("options_import_status_running", "正在导入配置..."),
+      "loading"
+    );
     const text = await file.text();
     let importedConfig;
     try {
       importedConfig = JSON.parse(text);
     } catch (parseError) {
-      throw new Error("配置文件不是有效的 JSON");
+      throw createI18nError("options_import_error_json_invalid", { fallback: "配置文件不是有效的 JSON" });
     }
 
     if (!importedConfig || typeof importedConfig !== "object") {
-      throw new Error("配置文件格式不正确");
+      throw createI18nError("options_import_error_format_invalid", { fallback: "配置文件格式不正确" });
     }
 
     if (!importedConfig.aiConfig) {
-      throw new Error("配置文件缺少 aiConfig");
+      throw createI18nError("options_import_error_missing_ai_config", { fallback: "配置文件缺少 aiConfig" });
     }
 
     const baseConfig = storageApi.getDefaultConfig();
@@ -1404,11 +1497,19 @@ async function handleImportConfiguration(event) {
 
     await storageApi.saveConfig(mergedConfig);
     currentConfig = mergedConfig;
-    updateStatus("save-status", "配置导入成功，请重新配置 API 密钥", "success");
+    updateStatus(
+      "save-status",
+      getText("options_import_status_success", "配置导入成功，请重新配置 API 密钥"),
+      "success"
+    );
     setTimeout(() => window.location.reload(), 1000);
   } catch (error) {
-    console.error("导入配置失败:", error);
-    updateStatus("save-status", `配置导入失败: ${error.message}`, "error");
+    console.error('設定のインポートに失敗しました:', error);
+    updateStatus(
+      "save-status",
+      getText("options_import_status_failed", `配置导入失败: ${error.message}`, [error.message]),
+      "error"
+    );
   } finally {
     if (event?.target) {
       event.target.value = "";
@@ -1420,20 +1521,39 @@ async function handleImportConfiguration(event) {
  * 将配置重置为默认状态
  */
 async function handleResetConfiguration() {
-  if (!confirm("确定要重置所有配置吗？此操作不可撤销。")) {
+  if (
+    !confirm(
+      getText(
+        "options_reset_confirm",
+        "确定要重置所有配置吗？此操作不可撤销。"
+      )
+    )
+  ) {
     return;
   }
 
   try {
-    updateStatus("save-status", "正在重置配置...", "loading");
+    updateStatus(
+      "save-status",
+      getText("options_reset_status_running", "正在重置配置..."),
+      "loading"
+    );
     const defaultConfig = storageApi.getDefaultConfig();
     await storageApi.saveConfig(defaultConfig);
     currentConfig = defaultConfig;
-    updateStatus("save-status", "配置已重置为默认值", "success");
+    updateStatus(
+      "save-status",
+      getText("options_reset_status_success", "配置已重置为默认值"),
+      "success"
+    );
     setTimeout(() => window.location.reload(), 800);
   } catch (error) {
-    console.error("重置配置失败:", error);
-    updateStatus("save-status", `重置配置失败: ${error.message}`, "error");
+    console.error('設定のリセットに失敗しました:', error);
+    updateStatus(
+      "save-status",
+      getText("options_reset_status_failed", `重置配置失败: ${error.message}`, [error.message]),
+      "error"
+    );
   }
 }
 
@@ -1505,7 +1625,7 @@ async function loadAndDisplayConfig() {
     languageSelect.value = config.language;
   }
 
-  console.info("配置加载完成。");
+  console.info('設定の読み込みが完了しました。');
 }
 
 /**
@@ -1526,7 +1646,11 @@ async function handleSave() {
 
   const selectedState = collectProviderFormState(providerId);
   if (!selectedState.apiKey) {
-    updateStatus("save-status", "请为当前提供商填写 API Key", "error");
+    updateStatus(
+      "save-status",
+      getText("options_error_missing_api_key", "请为当前提供商填写 API Key"),
+      "error"
+    );
     return;
   }
 
@@ -1534,7 +1658,11 @@ async function handleSave() {
     selectedState.apiUrl &&
     !/^https?:\/\//i.test(selectedState.apiUrl)
   ) {
-    updateStatus("save-status", "API 地址格式不正确", "error");
+    updateStatus(
+      "save-status",
+      getText("options_error_invalid_api_url", "API 地址格式不正确"),
+      "error"
+    );
     return;
   }
 
@@ -1733,16 +1861,24 @@ async function handleSave() {
       markPromptDirtyFlag(false);
     }
 
-    updateStatus("save-status", "设置已保存", "success");
+    updateStatus(
+      "save-status",
+      getText("options_save_status_success", "设置已保存"),
+      "success"
+    );
   } catch (error) {
     if (error instanceof PermissionRequestError) {
-      console.warn("[options] 域名权限请求被拒绝：", error);
+      console.warn('[options] ドメイン権限の要求が拒否されました:', error);
       updateStatus("save-status", error.message, "error");
       return;
     }
 
-    console.error("保存设置出错:", error);
-    updateStatus("save-status", `保存出错: ${error.message}`, "error");
+    console.error('設定の保存でエラーが発生しました:', error);
+    updateStatus(
+      "save-status",
+      getText("options_save_status_failed", `保存出错: ${error.message}`, [error.message]),
+      "error"
+    );
   }
 }
 
@@ -1806,7 +1942,7 @@ async function handleModelChange() {
     // 显示Prompt配置区域并加载对应模板的Prompt
     showPromptConfig(modelName, currentModelFields);
   } catch (error) {
-    console.error("获取字段失败:", error);
+    console.error('フィールドの取得に失敗しました:', error);
     document.getElementById("field-mapping").style.display = "none";
     currentModelFields = []; // 清空
   }
@@ -1816,7 +1952,11 @@ async function handleModelChange() {
  * 测试 Anki 连接并刷新数据
  */
 async function handleTestAnki() {
-  updateStatus("anki-status", "正在测试连接并刷新数据...", "loading");
+  updateStatus(
+    "anki-status",
+    getText("options_test_running", "正在测试连接并刷新数据..."),
+    "loading"
+  );
   try {
     const result = await ankiApi.testConnection();
     if (result.error) {
@@ -1858,10 +1998,18 @@ async function handleTestAnki() {
       }
     }
 
-    updateStatus("anki-status", "数据刷新完成", "success");
+    updateStatus(
+      "anki-status",
+      getText("options_status_provider_test_success", "数据刷新完成"),
+      "success"
+    );
   } catch (error) {
-    console.error("测试 Anki 连接错误:", error);
-    updateStatus("anki-status", `连接错误: ${error.message}`, "error");
+    console.error('Anki 接続テストでエラーが発生しました:', error);
+    updateStatus(
+      "anki-status",
+      getText("options_error_fetch_anki_data", `连接错误: ${error.message}`, [error.message]),
+      "error"
+    );
   }
 }
 
@@ -1898,7 +2046,11 @@ async function handleTestProvider(providerId) {
 
   const apiKey = (actualApiKeys[providerId] ?? "").trim();
   if (!apiKey) {
-    updateStatus(entry.statusEl.id, "请先输入 API Key", "error");
+    updateStatus(
+      entry.statusEl.id,
+      getText("options_error_missing_api_key", "请先输入 API Key"),
+      "error"
+    );
     return;
   }
 
@@ -1939,8 +2091,12 @@ async function handleTestProvider(providerId) {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : String(error);
-    console.error(`${providerId} 测试失败:`, error);
-    updateStatus(entry.statusEl.id, `测试失败: ${message}`, "error");
+    console.error(`${providerId} のテストに失敗しました:`, error);
+    updateStatus(
+      entry.statusEl.id,
+      getText("options_provider_test_status_error", `Test failed: ${message}`, [message]),
+      "error",
+    );
 
     const fallbackState = {
       ...(currentConfig?.aiConfig?.models?.[providerId] ?? {}),
@@ -1970,7 +2126,14 @@ function populateSavedAnkiOptions(config) {
   // 处理牌组下拉框
   const deckSelect = document.getElementById("default-deck");
   if (ankiConfig.defaultDeck) {
-    deckSelect.innerHTML = '<option value="">请选择默认牌组</option>';
+    deckSelect.innerHTML = "";
+    const deckPlaceholderOption = document.createElement("option");
+    deckPlaceholderOption.value = "";
+    deckPlaceholderOption.textContent = getText(
+      "options_default_deck_placeholder",
+      "Select a default deck",
+    );
+    deckSelect.appendChild(deckPlaceholderOption);
     const deckOption = document.createElement("option");
     deckOption.value = ankiConfig.defaultDeck;
     deckOption.textContent = ankiConfig.defaultDeck;
@@ -1981,7 +2144,14 @@ function populateSavedAnkiOptions(config) {
   // 处理模板下拉框
   const modelSelect = document.getElementById("default-model");
   if (ankiConfig.defaultModel) {
-    modelSelect.innerHTML = '<option value="">请选择默认模型</option>';
+    modelSelect.innerHTML = "";
+    const modelPlaceholderOption = document.createElement("option");
+    modelPlaceholderOption.value = "";
+    modelPlaceholderOption.textContent = getText(
+      "options_default_model_placeholder",
+      "Select a default model",
+    );
+    modelSelect.appendChild(modelPlaceholderOption);
     const modelOption = document.createElement("option");
     modelOption.value = ankiConfig.defaultModel;
     modelOption.textContent = ankiConfig.defaultModel;
@@ -2052,18 +2222,25 @@ async function loadAnkiData() {
     // 牌组
     const decksResult = await ankiApi.getDeckNames();
     if (decksResult.error) {
-      throw new Error(`读取牌组失败: ${decksResult.error}`);
+      throw createI18nError("options_error_fetch_decks", { fallback: `读取牌组失败: ${decksResult.error}` , substitutions: [decksResult.error] });
     }
 
     // 模型
     const modelsResult = await ankiApi.getModelNames();
     if (modelsResult.error) {
-      throw new Error(`读取模型失败: ${modelsResult.error}`);
+      throw createI18nError("options_error_fetch_models", { fallback: `读取模型失败: ${modelsResult.error}` , substitutions: [modelsResult.error] });
     }
 
     // 牌组下拉
     const deckSelect = document.getElementById("default-deck");
-    deckSelect.innerHTML = '<option value="">请选择默认牌组</option>';
+    deckSelect.innerHTML = "";
+    const deckPlaceholderOption = document.createElement("option");
+    deckPlaceholderOption.value = "";
+    deckPlaceholderOption.textContent = getText(
+      "options_default_deck_placeholder",
+      "Select a default deck",
+    );
+    deckSelect.appendChild(deckPlaceholderOption);
     decksResult.result.forEach((deck) => {
       const option = document.createElement("option");
       option.value = deck;
@@ -2073,7 +2250,14 @@ async function loadAnkiData() {
 
     // 模型下拉
     const modelSelect = document.getElementById("default-model");
-    modelSelect.innerHTML = '<option value="">请选择默认模型</option>';
+    modelSelect.innerHTML = "";
+    const modelPlaceholderOption = document.createElement("option");
+    modelPlaceholderOption.value = "";
+    modelPlaceholderOption.textContent = getText(
+      "options_default_model_placeholder",
+      "Select a default model",
+    );
+    modelSelect.appendChild(modelPlaceholderOption);
     modelsResult.result.forEach((model) => {
       const option = document.createElement("option");
       option.value = model;
@@ -2081,8 +2265,12 @@ async function loadAnkiData() {
       modelSelect.appendChild(option);
     });
   } catch (error) {
-    console.error("读取Anki数据出错:", error);
-    updateStatus("anki-status", `出错: ${error.message}`, "error");
+    console.error('Ankiデータの取得でエラーが発生しました:', error);
+    updateStatus(
+      "anki-status",
+      getText("options_error_fetch_anki_data", `出错: ${error.message}`, [error.message]),
+      "error"
+    );
   }
 }
 
@@ -2212,7 +2400,7 @@ async function handleImportConfigurationFile(event) {
 
     // 简单验证配置格式
     if (!importedConfig.version || !importedConfig.aiConfig) {
-      throw new Error("配置文件格式不正确");
+      throw createI18nError("options_import_error_format_invalid", { fallback: "配置文件格式不正确" });
     }
 
     // 合并配置（保留当前的API密钥，避免明文导入）
@@ -2234,13 +2422,21 @@ async function handleImportConfigurationFile(event) {
     });
 
     await storageApi.saveConfig(mergedConfig);
-    updateStatus("save-status", "配置导入成功，请重新配置API密钥", "success");
+    updateStatus(
+      "save-status",
+      getText("options_import_status_success", "配置导入成功，请重新配置API密钥"),
+      "success"
+    );
 
     // 重新加载页面配置
     setTimeout(() => window.location.reload(), 1500);
   } catch (error) {
-    console.error("导入配置失败:", error);
-    updateStatus("save-status", `导入失败: ${error.message}`, "error");
+    console.error('設定のインポートに失敗しました:', error);
+    updateStatus(
+      "save-status",
+      getText("options_import_status_failed", `导入失败: ${error.message}`, [error.message]),
+      "error"
+    );
   }
 
   // 清空文件输入，允许重复导入相同文件

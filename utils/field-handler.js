@@ -1,6 +1,11 @@
 // field-handler.js - 字段处理逻辑抽取模块
 // 提供动态字段映射和向后兼容性处理
 
+import { translate, createI18nError } from "./i18n.js";
+
+const getText = (key, fallback, substitutions) =>
+  translate(key, { fallback, substitutions });
+
 /**
  * 判断是否使用传统模式（两字段以下）
  * @param {object} config - 配置对象
@@ -42,11 +47,15 @@ export function collectFieldsForWrite(modelFields, wrapWithStyle = null) {
       const backElement = document.getElementById('back-input');
 
       if (!frontElement) {
-        collectResult.errors.push('找不到front-input元素');
+        collectResult.errors.push(
+        getText('field_handler_error_front_not_found', '找不到front-input元素')
+      );
         collectResult.missingElements.push('front-input');
       }
       if (!backElement) {
-        collectResult.errors.push('找不到back-input元素');
+        collectResult.errors.push(
+        getText('field_handler_error_back_not_found', '找不到back-input元素')
+      );
         collectResult.missingElements.push('back-input');
       }
 
@@ -66,7 +75,7 @@ export function collectFieldsForWrite(modelFields, wrapWithStyle = null) {
     } else {
       // Dynamic模式：根据字段数组收集
       if (!Array.isArray(modelFields)) {
-        throw new Error('modelFields必须是数组');
+        throw createI18nError('field_handler_error_model_fields_invalid', { fallback: 'modelFields必须是数组' });
       }
 
       collectResult.totalFields = modelFields.length;
@@ -76,9 +85,13 @@ export function collectFieldsForWrite(modelFields, wrapWithStyle = null) {
         const element = document.getElementById(elementId);
 
         if (!element) {
-          const error = `找不到字段元素: ${elementId} (${fieldName})`;
-          collectResult.errors.push(error);
-          collectResult.missingElements.push(fieldName);
+        const error = getText(
+          "field_handler_error_field_element_missing",
+          `找不到字段元素: ${elementId} (${fieldName})`,
+          [elementId, fieldName]
+        );
+        collectResult.errors.push(error);
+        collectResult.missingElements.push(fieldName);
           console.warn(error);
           fields[fieldName] = ''; // 设置为空值
           return;
@@ -105,7 +118,11 @@ export function collectFieldsForWrite(modelFields, wrapWithStyle = null) {
           }
         });
       } catch (wrapError) {
-        const error = `样式包装失败: ${wrapError.message}`;
+        const error = getText(
+          "field_handler_error_wrap_style",
+          `样式包装失败: ${wrapError.message}`,
+          [wrapError.message]
+        );
         collectResult.errors.push(error);
         console.error(error, wrapError);
       }
@@ -114,7 +131,7 @@ export function collectFieldsForWrite(modelFields, wrapWithStyle = null) {
     collectResult.fields = fields;
 
     // 记录收集日志
-    console.log('字段收集完成:', {
+    console.log('[field-handler] フィールド収集完了:', {
       mode: collectResult.mode,
       totalFields: collectResult.totalFields,
       collectedFields: collectResult.collectedFields,
@@ -126,7 +143,7 @@ export function collectFieldsForWrite(modelFields, wrapWithStyle = null) {
     return collectResult;
 
   } catch (error) {
-    console.error('字段收集失败:', error);
+    console.error('[field-handler] フィールド収集失敗:', error);
     return {
       fields: {},
       mode: 'error',
@@ -168,9 +185,17 @@ export function validateFields(fields, isLegacy = false, collectResult = null) {
 
   try {
     // 基本参数验证
-    if (!fields || typeof fields !== 'object') {
-      validation.errors.push('字段对象为空或无效');
-      validation.message = '字段数据无效';
+    if (!fields || typeof fields !== "object") {
+      validation.errors.push(
+        getText(
+          "field_handler_error_field_object_invalid",
+          "字段对象为空或无效"
+        )
+      );
+      validation.message = getText(
+        "field_handler_error_field_data_invalid",
+        "字段数据无效"
+      );
       return validation;
     }
 
@@ -178,8 +203,13 @@ export function validateFields(fields, isLegacy = false, collectResult = null) {
     validation.fieldStats.totalFields = fieldNames.length;
 
     if (fieldNames.length === 0) {
-      validation.errors.push('没有找到任何字段');
-      validation.message = '字段列表为空';
+      validation.errors.push(
+        getText("field_handler_error_no_fields_found", "没有找到任何字段")
+      );
+      validation.message = getText(
+        "field_handler_error_field_list_empty",
+        "字段列表为空"
+      );
       return validation;
     }
 
@@ -189,7 +219,13 @@ export function validateFields(fields, isLegacy = false, collectResult = null) {
         validation.errors.push(...collectResult.errors);
       }
       if (collectResult.missingElements && collectResult.missingElements.length > 0) {
-        validation.warnings.push(`缺失${collectResult.missingElements.length}个DOM元素`);
+        validation.warnings.push(
+          getText(
+            "field_handler_error_missing_dom_count",
+            `缺失${collectResult.missingElements.length}个DOM元素`,
+            [String(collectResult.missingElements.length)]
+          )
+        );
       }
     }
 
@@ -207,7 +243,13 @@ export function validateFields(fields, isLegacy = false, collectResult = null) {
           const htmlTagCount = (trimmedValue.match(/</g) || []).length;
           const textLength = trimmedValue.replace(/<[^>]*>/g, '').length;
           if (htmlTagCount > textLength / 10) {
-            validation.warnings.push(`字段"${fieldName}"可能包含过多HTML标签`);
+        validation.warnings.push(
+          getText(
+            "field_handler_error_field_contains_html",
+            `字段"${fieldName}"可能包含过多HTML标签`,
+            [fieldName]
+          )
+        );
           }
         }
 
@@ -233,28 +275,47 @@ export function validateFields(fields, isLegacy = false, collectResult = null) {
           const secondField = fields[fieldNames[1]] || '';
 
           if (!firstField.trim() || !secondField.trim()) {
-            validation.errors.push('Legacy模式下前两个字段都必须填写');
+            validation.errors.push(
+      getText('field_handler_error_legacy_required_fields', 'Legacy模式下前两个字段都必须填写')
+    );
           }
         } else {
-          validation.errors.push('Legacy模式需要至少两个字段');
+          validation.errors.push(
+      getText('field_handler_error_legacy_min_fields', 'Legacy模式需要至少两个字段')
+    );
         }
       } else {
         const frontValue = frontKeys.length > 0 ? (fields[frontKeys[0]] || '') : '';
         const backValue = backKeys.length > 0 ? (fields[backKeys[0]] || '') : '';
 
         if (!frontValue.trim()) {
-          validation.errors.push('请填写正面内容');
+          validation.errors.push(
+      getText('field_handler_error_fill_front', '请填写正面内容')
+    );
         }
         if (!backValue.trim()) {
-          validation.errors.push('请填写背面内容');
+          validation.errors.push(
+      getText('field_handler_error_fill_back', '请填写背面内容')
+    );
         }
       }
     } else {
       // Dynamic模式验证
       if (validation.fieldStats.filledFields === 0) {
-        validation.errors.push('至少需要填写一个字段内容');
+        validation.errors.push(
+      getText('field_handler_error_min_field_content', '至少需要填写一个字段内容')
+    );
       } else if (validation.fieldStats.filledFields < validation.fieldStats.totalFields / 2) {
-        validation.warnings.push(`填写字段较少 (${validation.fieldStats.filledFields}/${validation.fieldStats.totalFields})`);
+        validation.warnings.push(
+          getText(
+            "field_handler_warning_few_fields",
+            `填写字段较少 (${validation.fieldStats.filledFields}/${validation.fieldStats.totalFields})`,
+            [
+              String(validation.fieldStats.filledFields),
+              String(validation.fieldStats.totalFields),
+            ]
+          )
+        );
       }
     }
 
@@ -264,9 +325,17 @@ export function validateFields(fields, isLegacy = false, collectResult = null) {
     // 生成消息
     if (validation.isValid) {
       if (validation.warnings.length > 0) {
-        validation.message = `验证通过，但有 ${validation.warnings.length} 个警告`;
+        validation.message = getText(
+          "field_handler_warning_with_count",
+          `验证通过，但有 ${validation.warnings.length} 个警告`,
+          [String(validation.warnings.length)]
+        );
       } else {
-        validation.message = `验证通过，已填写 ${validation.fieldStats.filledFields} 个字段`;
+        validation.message = getText(
+          "field_handler_warning_fields_filled",
+          `验证通过，已填写 ${validation.fieldStats.filledFields} 个字段`,
+          [String(validation.fieldStats.filledFields)]
+        );
       }
     } else {
       validation.message = validation.errors[0]; // 显示第一个错误
@@ -275,9 +344,18 @@ export function validateFields(fields, isLegacy = false, collectResult = null) {
     return validation;
 
   } catch (error) {
-    console.error('字段验证失败:', error);
-    validation.errors.push(`验证过程出错: ${error.message}`);
-    validation.message = '字段验证失败';
+    console.error('[field-handler] フィールド検証失敗:', error);
+    validation.errors.push(
+      getText(
+        "field_handler_error_validation_process",
+        `验证过程出错: ${error.message}`,
+        [error.message]
+      )
+    );
+    validation.message = getText(
+      "field_handler_error_validation_summary",
+      "字段验证失败"
+    );
     return validation;
   }
 }

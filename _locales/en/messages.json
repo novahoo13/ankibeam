@@ -19,39 +19,39 @@
     }
   },
   "ai_service_error_empty_body": {
-    "description": "AI 响应为空时的提示",
-    "message": "$PROVIDER$ 响应内容为空",
+    "description": "Provider response contained no body content.",
+    "message": "$PROVIDER$ response body is empty",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商名称",
-        "example": "OpenAI"
+        "description": "Provider name",
+        "example": "Google"
       }
     }
   },
   "ai_service_error_empty_response": {
-    "description": "AI 返回内容为空时的提示",
-    "message": "AI 响应内容为空"
+    "description": "Triggered when the AI response body is empty.",
+    "message": "AI response body is empty"
   },
   "ai_service_error_missing_api_key": {
-    "description": "处理请求时提供商缺少 API Key 的提示",
-    "message": "提供商 $PROVIDER$ 的 API Key 尚未设置",
+    "description": "Per-provider API key is missing when making a request.",
+    "message": "Provider $PROVIDER$ API key is not configured",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
-        "example": "google"
+        "description": "Provider identifier",
+        "example": "anthropic"
       }
     }
   },
   "ai_service_error_missing_api_key_active": {
-    "description": "当前激活的提供商缺少 API Key 时的提示",
-    "message": "提供商 $PROVIDER$ 的 API Key 尚未设置",
+    "description": "Active provider is missing its configured API key.",
+    "message": "Provider $PROVIDER$ API key is not configured",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
-        "example": "anthropic"
+        "description": "Provider identifier",
+        "example": "openai"
       }
     }
   },
@@ -60,23 +60,23 @@
     "message": "连接测试失败：API Key 尚未设置"
   },
   "ai_service_error_missing_default_model": {
-    "description": "处理请求时提供商缺少默认模型的提示",
-    "message": "提供商 $PROVIDER$ 缺少默认模型配置",
+    "description": "Raised when the provider has no default model set.",
+    "message": "Provider $PROVIDER$ is missing a default model configuration",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
+        "description": "Provider identifier",
         "example": "anthropic"
       }
     }
   },
   "ai_service_error_missing_default_model_active": {
-    "description": "当前激活的提供商缺少默认模型时的提示",
-    "message": "提供商 $PROVIDER$ 缺少默认模型配置",
+    "description": "Active provider has no default model configured.",
+    "message": "Provider $PROVIDER$ is missing a default model configuration",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
+        "description": "Provider identifier",
         "example": "openai"
       }
     }
@@ -93,19 +93,19 @@
     }
   },
   "ai_service_error_missing_provider_config": {
-    "description": "当前提供商缺少配置时的提示",
-    "message": "未找到提供商配置: $PROVIDER$",
+    "description": "Raised when no configuration is found for the selected provider.",
+    "message": "Provider configuration not found: $PROVIDER$",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
+        "description": "Provider identifier",
         "example": "openai"
       }
     }
   },
   "ai_service_error_no_provider_available": {
-    "description": "所有提供商不可用时的提示",
-    "message": "AI 服务请求失败：未找到可用的提供商"
+    "description": "Shown when no provider could complete the request.",
+    "message": "AI request failed: no providers available"
   },
   "ai_service_error_output_all_empty": {
     "description": "AI 输出字段全部为空时的提示",
@@ -138,44 +138,44 @@
     "message": "AI 解析失败：未知错误"
   },
   "ai_service_error_parse_failed": {
-    "description": "AI 响应解析失败时的提示",
-    "message": "$PROVIDER$ 响应解析失败: $ERROR$",
+    "description": "Raised when the provider response parser throws.",
+    "message": "$PROVIDER$ response parsing failed: $ERROR$",
     "placeholders": {
-      "ERROR": {
-        "content": "$2",
-        "description": "错误详情",
-        "example": "Unexpected token <"
-      },
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商名称",
+        "description": "Provider name",
         "example": "Anthropic"
+      },
+      "ERROR": {
+        "content": "$2",
+        "description": "Error message",
+        "example": "Unexpected token"
       }
     }
   },
   "ai_service_error_parse_json": {
-    "description": "AI 返回无法解析为 JSON 时的提示",
-    "message": "无法解析 AI 返回的结果为 JSON 格式"
+    "description": "Raised when JSON parsing of the AI response fails.",
+    "message": "Failed to parse AI response as JSON"
   },
   "ai_service_error_request_failed": {
-    "description": "AI 请求失败时的提示",
-    "message": "$PROVIDER$ 请求失败: $ERROR$",
+    "description": "Network or HTTP error while calling the provider.",
+    "message": "$PROVIDER$ request failed: $ERROR$",
     "placeholders": {
-      "ERROR": {
-        "content": "$2",
-        "description": "错误详情",
-        "example": "Timeout"
-      },
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商名称",
+        "description": "Provider name",
         "example": "OpenAI"
+      },
+      "ERROR": {
+        "content": "$2",
+        "description": "Error message",
+        "example": "Request timed out"
       }
     }
   },
   "ai_service_error_request_generic": {
-    "description": "AI 请求失败的通用提示",
-    "message": "AI 服务请求失败"
+    "description": "Generic AI request failure message.",
+    "message": "AI request failed"
   },
   "ai_service_error_request_message": {
     "description": "AI 请求失败时返回消息字符串的提示",
@@ -194,34 +194,34 @@
     }
   },
   "ai_service_error_request_with_message": {
-    "description": "AI 服务失败并返回最后一个错误消息时的提示",
-    "message": "AI 服务请求失败：$ERROR$",
+    "description": "Aggregated error message when all provider attempts fail.",
+    "message": "AI request failed: $ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "请求超时"
+        "description": "Final error message",
+        "example": "503 Service Unavailable"
       }
     }
   },
   "ai_service_error_unknown_provider": {
-    "description": "处理未知提供商时的错误提示",
-    "message": "未知的 AI 提供商: $PROVIDER$",
+    "description": "Thrown when the provider id is not recognized.",
+    "message": "Unknown AI provider: $PROVIDER$",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
-        "example": "new-provider"
+        "description": "Provider identifier",
+        "example": "openai"
       }
     }
   },
   "ai_service_prompt_classic": {
-    "description": "经典 Prompt 模式的请求文本",
-    "message": "请将以下单词查询结果解析为结构化数据。\n你的输出必须是一个纯粹的 JSON 对象，不要包含任何解释性文字或代码块标记。\nJSON 格式如下:\n{\n  \"front\": \"单词\",\n  \"back\": \"完整的单词查询结果（保留原始换行格式）\"\n}\n\n待解析的文本如下：\n---\n$INPUT$\n---",
+    "description": "Default instructions for classic AI parsing.",
+    "message": "Convert the following dictionary lookup result into structured data for an Anki card.\nReturn a pure JSON object that only includes the \"front\" and \"back\" fields. Do not add extra commentary or code fences.\nJSON example:\n{\n  \"front\": \"Word\",\n  \"back\": \"Complete lookup result with original formatting\"\n}\n\nSource text:\n---\n$INPUT$\n---",
     "placeholders": {
       "INPUT": {
         "content": "$1",
-        "description": "用户输入文本",
+        "description": "Source text that should be parsed",
         "example": "example word"
       }
     }
@@ -238,8 +238,8 @@
     }
   },
   "ai_service_warn_missing_input_placeholder": {
-    "description": "自定义 Prompt 缺少 INPUT_TEXT 占位符时的警告",
-    "message": "自定义 Prompt 中不存在 {{INPUT_TEXT}} 占位符，因此已将输入文本追加到末尾。"
+    "description": "Warns when a custom prompt omits the {{INPUT_TEXT}} placeholder.",
+    "message": "Custom prompt is missing the {{INPUT_TEXT}} placeholder. Appended the input text to the end."
   },
   "field_handler_error_back_not_found": {
     "description": "Legacy 模式背字段元素缺失时的提示",
@@ -1531,6 +1531,18 @@
       }
     }
   },
+  "prompt_engine_schema_word": {
+    "description": "Schema hint: indicates the word itself",
+    "message": "The word itself"
+  },
+  "prompt_engine_schema_reading": {
+    "description": "Schema hint: pronunciation guidance",
+    "message": "Pronunciation / phonetics"
+  },
+  "prompt_engine_schema_meaning": {
+    "description": "Schema hint: meaning guidance",
+    "message": "Definition and explanation"
+  },
   "prompt_engine_requirements_body": {
     "description": "动态 Prompt 要求说明",
     "message": "\n\n要求:\n- 输出有效JSON格式\n- 只能使用字段: $FIELDS$\n- 可部分输出，但字段名必须准确",
@@ -1590,5 +1602,83 @@
         "example": "openai"
       }
     }
+  },
+  "ai_service_connection_test_failed_with_reason": {
+    "description": "Connection test failed with a specific reason.",
+    "message": "Connection test failed: $ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "Failure reason",
+        "example": "Invalid credentials"
+      }
+    }
+  },
+  "ai_service_connection_test_failed_missing_key": {
+    "description": "Connection test failed because the API key was missing.",
+    "message": "Connection test failed: API key is not configured"
+  },
+  "ai_service_connection_test_success": {
+    "description": "Connection test completed successfully.",
+    "message": "$PROVIDER$ connection test succeeded",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "Provider name",
+        "example": "OpenAI"
+      }
+    }
+  },
+  "options_permission_request_error": {
+    "description": "Shown when requesting optional host permissions fails.",
+    "message": "Failed to request permission for $ORIGIN$",
+    "placeholders": {
+      "ORIGIN": {
+        "content": "$1",
+        "description": "Origin URL pattern",
+        "example": "https://api.example.com/*"
+      }
+    }
+  },
+  "options_provider_custom_url_hint": {
+    "description": "Hint displayed under the provider custom URL field.",
+    "message": "Current URL: $URL$",
+    "placeholders": {
+      "URL": {
+        "content": "$1",
+        "description": "Configured URL",
+        "example": "https://custom.api.endpoint"
+      }
+    }
+  },
+  "options_provider_test_button": {
+    "description": "Label for the provider connection test button.",
+    "message": "Test $PROVIDER$ connection",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "Provider label",
+        "example": "Anthropic"
+      }
+    }
+  },
+  "options_provider_test_status_error": {
+    "description": "Status message when a provider test fails.",
+    "message": "Test failed: $ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "Error message",
+        "example": "Timeout"
+      }
+    }
+  },
+  "options_default_deck_placeholder": {
+    "description": "Placeholder for the default deck select box.",
+    "message": "Select a default deck"
+  },
+  "options_default_model_placeholder": {
+    "description": "Placeholder for the default model select box.",
+    "message": "Select a default model"
   }
 }

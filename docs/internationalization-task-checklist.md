@@ -16,11 +16,11 @@
 - [x] 审查页面中的说明注释/展示性示例，确认是否需要迁移到 `messages.json` 或以多语言安全的方式呈现。
 
 ## 阶段 4：脚本国际化
-- [ ] `popup/popup.js`：用 `getMessage` 替换状态提示、按钮文案、错误消息、动态字段标签和日志提示，对运行期生成的 DOM 元素设置 `data-i18n*` 并在插入后触发本地化（现状：字符串全部为中文，且未调用 `localizePage`）。
-- [ ] `options/options.js`：抽取标签页标题、提示文字、API 测试反馈、配置操作状态、对话框文案、按钮文本等，统一走 `getMessage` 并处理插值（现状：中文硬编码遍布各函数）。
-- [ ] `utils/ai-service.js`、`utils/field-handler.js`、`utils/providers.config.js`、`utils/storage.js` 等公共模块：将会反馈给用户的消息改为 i18n，并确保抛出的错误文本可本地化（现状：仍含中文硬编码）。
-- [ ] `utils/prompt-engine.js`：把默认 Prompt 模板、字段智能提示、自动追加的说明改为 i18n，保证用户自定义内容保持原样；为 `generateFieldSchema`/`buildIntegratedPrompt` 引入键值映射（现状：模板和提示写死为中文）。
-- [ ] 清理 console 输出、日志或注释中需要呈现给用户的内容，避免与多语言要求冲突；确需保留的调试信息统一采用英文或本地化方案。
+- [x] `popup/popup.js`：用 `getMessage` 替换状态提示、按钮文案、错误消息、动态字段标签和日志提示，对运行期生成的 DOM 元素设置 `data-i18n*` 并在插入后触发本地化（现状：字符串全部为中文，且未调用 `localizePage`）。
+- [x] `options/options.js`：抽取标签页标题、提示文字、API 测试反馈、配置操作状态、对话框文案、按钮文本等，统一走 `getMessage` 并处理插值（现状：中文硬编码遍布各函数）。
+- [x] `utils/ai-service.js`、`utils/field-handler.js`、`utils/providers.config.js`、`utils/storage.js` 等公共模块：将会反馈给用户的消息改为 i18n，并确保抛出的错误文本可本地化（现状：仍含中文硬编码）。
+- [x] `utils/prompt-engine.js`：把默认 Prompt 模板、字段智能提示、自动追加的说明改为 i18n，保证用户自定义内容保持原样；为 `generateFieldSchema`/`buildIntegratedPrompt` 引入键值映射（现状：模板和提示写死为中文）。
+- [x] 清理 console 输出、日志或注释中需要呈现给用户的内容，避免与多语言要求冲突；确需保留的调试信息统一采用英文或本地化方案。
 
 ## 阶段 5：特性完善与回退策略
 - [ ] 实现 `getLocale()` 工具基于 `chrome.i18n.getUILanguage()` 映射到 `en-US`/`ja-JP`/`zh-CN`/`zh-TW`，并在所有 `toLocaleString`/`toLocaleDateString` 等格式化调用中使用（现状：`options.js` 写死为 `zh-CN`）。

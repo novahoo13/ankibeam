@@ -19,39 +19,39 @@
     }
   },
   "ai_service_error_empty_body": {
-    "description": "AI 响应为空时的提示",
-    "message": "$PROVIDER$ 响应内容为空",
+    "description": "プロバイダーの応答に本文が含まれていなかった場合。",
+    "message": "$PROVIDER$ の応答ボディが空です",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商名称",
-        "example": "OpenAI"
+        "description": "プロバイダー名",
+        "example": "Google"
       }
     }
   },
   "ai_service_error_empty_response": {
-    "description": "AI 返回内容为空时的提示",
-    "message": "AI 响应内容为空"
+    "description": "AI の応答が空だった場合のエラー。",
+    "message": "AI の応答ボディが空です"
   },
   "ai_service_error_missing_api_key": {
-    "description": "处理请求时提供商缺少 API Key 的提示",
-    "message": "提供商 $PROVIDER$ 的 API Key 尚未设置",
+    "description": "リクエスト時に API キーが不足している場合。",
+    "message": "プロバイダー $PROVIDER$ の API キーが設定されていません",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
-        "example": "google"
+        "description": "プロバイダー識別子",
+        "example": "anthropic"
       }
     }
   },
   "ai_service_error_missing_api_key_active": {
-    "description": "当前激活的提供商缺少 API Key 时的提示",
-    "message": "提供商 $PROVIDER$ 的 API Key 尚未设置",
+    "description": "使用中のプロバイダーに API キーが設定されていない場合。",
+    "message": "プロバイダー $PROVIDER$ の API キーが設定されていません",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
-        "example": "anthropic"
+        "description": "プロバイダー識別子",
+        "example": "openai"
       }
     }
   },
@@ -60,23 +60,23 @@
     "message": "连接测试失败：API Key 尚未设置"
   },
   "ai_service_error_missing_default_model": {
-    "description": "处理请求时提供商缺少默认模型的提示",
-    "message": "提供商 $PROVIDER$ 缺少默认模型配置",
+    "description": "プロバイダーに既定モデルが設定されていない場合。",
+    "message": "プロバイダー $PROVIDER$ に既定モデル設定がありません",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
+        "description": "プロバイダー識別子",
         "example": "anthropic"
       }
     }
   },
   "ai_service_error_missing_default_model_active": {
-    "description": "当前激活的提供商缺少默认模型时的提示",
-    "message": "提供商 $PROVIDER$ 缺少默认模型配置",
+    "description": "使用中のプロバイダーに既定モデルが設定されていない場合。",
+    "message": "プロバイダー $PROVIDER$ に既定モデル設定がありません",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
+        "description": "プロバイダー識別子",
         "example": "openai"
       }
     }
@@ -93,19 +93,19 @@
     }
   },
   "ai_service_error_missing_provider_config": {
-    "description": "当前提供商缺少配置时的提示",
-    "message": "未找到提供商配置: $PROVIDER$",
+    "description": "指定したプロバイダー設定が見つからない場合。",
+    "message": "プロバイダー設定が見つかりません: $PROVIDER$",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
+        "description": "プロバイダー識別子",
         "example": "openai"
       }
     }
   },
   "ai_service_error_no_provider_available": {
-    "description": "所有提供商不可用时的提示",
-    "message": "AI 服务请求失败：未找到可用的提供商"
+    "description": "利用可能なプロバイダーがない場合のエラー。",
+    "message": "AI リクエストに失敗しました: 利用可能なプロバイダーがありません"
   },
   "ai_service_error_output_all_empty": {
     "description": "AI 输出字段全部为空时的提示",
@@ -138,44 +138,44 @@
     "message": "AI 解析失败：未知错误"
   },
   "ai_service_error_parse_failed": {
-    "description": "AI 响应解析失败时的提示",
-    "message": "$PROVIDER$ 响应解析失败: $ERROR$",
+    "description": "プロバイダー応答のパース処理が失敗した場合。",
+    "message": "$PROVIDER$ の応答解析に失敗しました: $ERROR$",
     "placeholders": {
-      "ERROR": {
-        "content": "$2",
-        "description": "错误详情",
-        "example": "Unexpected token <"
-      },
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商名称",
+        "description": "プロバイダー名",
         "example": "Anthropic"
+      },
+      "ERROR": {
+        "content": "$2",
+        "description": "エラーメッセージ",
+        "example": "Unexpected token"
       }
     }
   },
   "ai_service_error_parse_json": {
-    "description": "AI 返回无法解析为 JSON 时的提示",
-    "message": "无法解析 AI 返回的结果为 JSON 格式"
+    "description": "AI 応答の JSON 解析に失敗した場合。",
+    "message": "AI の応答を JSON として解析できませんでした"
   },
   "ai_service_error_request_failed": {
-    "description": "AI 请求失败时的提示",
-    "message": "$PROVIDER$ 请求失败: $ERROR$",
+    "description": "プロバイダーへのリクエストが失敗した場合のエラー。",
+    "message": "$PROVIDER$ へのリクエストに失敗しました: $ERROR$",
     "placeholders": {
-      "ERROR": {
-        "content": "$2",
-        "description": "错误详情",
-        "example": "Timeout"
-      },
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商名称",
+        "description": "プロバイダー名",
         "example": "OpenAI"
+      },
+      "ERROR": {
+        "content": "$2",
+        "description": "エラーメッセージ",
+        "example": "Request timed out"
       }
     }
   },
   "ai_service_error_request_generic": {
-    "description": "AI 请求失败的通用提示",
-    "message": "AI 服务请求失败"
+    "description": "一般的な AI リクエスト失敗メッセージ。",
+    "message": "AI リクエストに失敗しました"
   },
   "ai_service_error_request_message": {
     "description": "AI 请求失败时返回消息字符串的提示",
@@ -194,34 +194,34 @@
     }
   },
   "ai_service_error_request_with_message": {
-    "description": "AI 服务失败并返回最后一个错误消息时的提示",
-    "message": "AI 服务请求失败：$ERROR$",
+    "description": "すべてのプロバイダーが失敗した際の最終エラーメッセージ。",
+    "message": "AI リクエストに失敗しました: $ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "请求超时"
+        "description": "最終的なエラーメッセージ",
+        "example": "503 Service Unavailable"
       }
     }
   },
   "ai_service_error_unknown_provider": {
-    "description": "处理未知提供商时的错误提示",
-    "message": "未知的 AI 提供商: $PROVIDER$",
+    "description": "指定されたプロバイダー ID が存在しない場合のエラー。",
+    "message": "不明な AI プロバイダーです: $PROVIDER$",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
-        "example": "new-provider"
+        "description": "プロバイダー識別子",
+        "example": "openai"
       }
     }
   },
   "ai_service_prompt_classic": {
-    "description": "经典 Prompt 模式的请求文本",
-    "message": "请将以下单词查询结果解析为结构化数据。\n你的输出必须是一个纯粹的 JSON 对象，不要包含任何解释性文字或代码块标记。\nJSON 格式如下:\n{\n  \"front\": \"单词\",\n  \"back\": \"完整的单词查询结果（保留原始换行格式）\"\n}\n\n待解析的文本如下：\n---\n$INPUT$\n---",
+    "description": "クラシックパーサー用の既定プロンプト指示。",
+    "message": "次の辞書検索結果を Anki カード向けの構造化データに変換してください。\n\"front\" と \"back\" フィールドのみを含む純粋な JSON オブジェクトを返してください。追加の解説やコードフェンスは含めないでください。\nJSON 例:\n{\n  \"front\": \"単語\",\n  \"back\": \"元の整形を保持した辞書検索結果全文\"\n}\n\n入力テキスト:\n---\n$INPUT$\n---",
     "placeholders": {
       "INPUT": {
         "content": "$1",
-        "description": "用户输入文本",
+        "description": "解析対象のテキスト",
         "example": "example word"
       }
     }
@@ -238,8 +238,8 @@
     }
   },
   "ai_service_warn_missing_input_placeholder": {
-    "description": "自定义 Prompt 缺少 INPUT_TEXT 占位符时的警告",
-    "message": "自定义 Prompt 中不存在 {{INPUT_TEXT}} 占位符，因此已将输入文本追加到末尾。"
+    "description": "カスタムプロンプトに {{INPUT_TEXT}} が欠けている場合の警告。",
+    "message": "カスタムプロンプトに {{INPUT_TEXT}} プレースホルダーがないため、入力テキストを末尾に追加しました。"
   },
   "field_handler_error_back_not_found": {
     "description": "Legacy 模式背字段元素缺失时的提示",
@@ -1531,6 +1531,18 @@
       }
     }
   },
+  "prompt_engine_schema_word": {
+    "description": "フィールドschema: 単語そのものの説明",
+    "message": "単語そのもの"
+  },
+  "prompt_engine_schema_reading": {
+    "description": "フィールドschema: 読みの説明",
+    "message": "読み / 発音記号"
+  },
+  "prompt_engine_schema_meaning": {
+    "description": "フィールドschema: 意味の説明",
+    "message": "意味と解説"
+  },
   "prompt_engine_requirements_body": {
     "description": "动态 Prompt 要求说明",
     "message": "\n\n要求:\n- 输出有效JSON格式\n- 只能使用字段: $FIELDS$\n- 可部分输出，但字段名必须准确",
@@ -1590,5 +1602,83 @@
         "example": "openai"
       }
     }
+  },
+  "ai_service_connection_test_failed_with_reason": {
+    "description": "接続テストが理由付きで失敗した場合。",
+    "message": "接続テストに失敗しました: $ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "失敗理由",
+        "example": "Invalid credentials"
+      }
+    }
+  },
+  "ai_service_connection_test_failed_missing_key": {
+    "description": "API キー未設定のため接続テストが失敗した場合。",
+    "message": "接続テストに失敗しました: API キーが設定されていません"
+  },
+  "ai_service_connection_test_success": {
+    "description": "接続テストが成功したときに表示。",
+    "message": "$PROVIDER$ の接続テストに成功しました",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "プロバイダー名",
+        "example": "OpenAI"
+      }
+    }
+  },
+  "options_permission_request_error": {
+    "description": "権限要求が拒否された際のエラーメッセージ。",
+    "message": "オリジン $ORIGIN$ の権限リクエストに失敗しました。",
+    "placeholders": {
+      "ORIGIN": {
+        "content": "$1",
+        "description": "オリジン URL パターン",
+        "example": "https://api.example.com/*"
+      }
+    }
+  },
+  "options_provider_custom_url_hint": {
+    "description": "プロバイダー設定でのカスタム URL ヒント。",
+    "message": "現在の URL: $URL$",
+    "placeholders": {
+      "URL": {
+        "content": "$1",
+        "description": "設定済み URL",
+        "example": "https://custom.api.endpoint"
+      }
+    }
+  },
+  "options_provider_test_button": {
+    "description": "プロバイダー接続テストボタンのラベル。",
+    "message": "$PROVIDER$ との接続をテスト",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "プロバイダー名",
+        "example": "Anthropic"
+      }
+    }
+  },
+  "options_provider_test_status_error": {
+    "description": "プロバイダー接続テストが失敗した際のステータスメッセージ。",
+    "message": "テストに失敗しました: $ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "エラーメッセージ",
+        "example": "Timeout"
+      }
+    }
+  },
+  "options_default_deck_placeholder": {
+    "description": "既定デッキ選択のプレースホルダー。",
+    "message": "既定のデッキを選択"
+  },
+  "options_default_model_placeholder": {
+    "description": "既定モデル選択のプレースホルダー。",
+    "message": "既定のモデルを選択"
   }
 }

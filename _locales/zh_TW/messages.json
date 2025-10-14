@@ -19,39 +19,39 @@
     }
   },
   "ai_service_error_empty_body": {
-    "description": "AI 响应为空时的提示",
-    "message": "$PROVIDER$ 响应内容为空",
+    "description": "提供者回應沒有任何內容。",
+    "message": "$PROVIDER$ 回應內容為空",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商名称",
-        "example": "OpenAI"
+        "description": "提供者名稱",
+        "example": "Google"
       }
     }
   },
   "ai_service_error_empty_response": {
-    "description": "AI 返回内容为空时的提示",
-    "message": "AI 响应内容为空"
+    "description": "AI 回應內容為空。",
+    "message": "AI 回應內容為空"
   },
   "ai_service_error_missing_api_key": {
-    "description": "处理请求时提供商缺少 API Key 的提示",
-    "message": "提供商 $PROVIDER$ 的 API Key 尚未设置",
+    "description": "發送請求時缺少提供者的 API 金鑰。",
+    "message": "提供者 $PROVIDER$ 的 API 金鑰尚未設定",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
-        "example": "google"
+        "description": "提供者識別碼",
+        "example": "anthropic"
       }
     }
   },
   "ai_service_error_missing_api_key_active": {
-    "description": "当前激活的提供商缺少 API Key 时的提示",
-    "message": "提供商 $PROVIDER$ 的 API Key 尚未设置",
+    "description": "目前使用的提供者尚未設定 API 金鑰。",
+    "message": "提供者 $PROVIDER$ 的 API 金鑰尚未設定",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
-        "example": "anthropic"
+        "description": "提供者識別碼",
+        "example": "openai"
       }
     }
   },
@@ -60,23 +60,23 @@
     "message": "连接测试失败：API Key 尚未设置"
   },
   "ai_service_error_missing_default_model": {
-    "description": "处理请求时提供商缺少默认模型的提示",
-    "message": "提供商 $PROVIDER$ 缺少默认模型配置",
+    "description": "目標提供者缺少預設模型設定。",
+    "message": "提供者 $PROVIDER$ 缺少預設模型設定",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
+        "description": "提供者識別碼",
         "example": "anthropic"
       }
     }
   },
   "ai_service_error_missing_default_model_active": {
-    "description": "当前激活的提供商缺少默认模型时的提示",
-    "message": "提供商 $PROVIDER$ 缺少默认模型配置",
+    "description": "目前提供者缺少預設模型設定。",
+    "message": "提供者 $PROVIDER$ 缺少預設模型設定",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
+        "description": "提供者識別碼",
         "example": "openai"
       }
     }
@@ -93,19 +93,19 @@
     }
   },
   "ai_service_error_missing_provider_config": {
-    "description": "当前提供商缺少配置时的提示",
-    "message": "未找到提供商配置: $PROVIDER$",
+    "description": "找不到對應的提供者設定。",
+    "message": "找不到提供者設定：$PROVIDER$",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
+        "description": "提供者識別碼",
         "example": "openai"
       }
     }
   },
   "ai_service_error_no_provider_available": {
-    "description": "所有提供商不可用时的提示",
-    "message": "AI 服务请求失败：未找到可用的提供商"
+    "description": "沒有可用提供者時的提示。",
+    "message": "AI 請求失敗：沒有可用的提供者"
   },
   "ai_service_error_output_all_empty": {
     "description": "AI 输出字段全部为空时的提示",
@@ -138,44 +138,44 @@
     "message": "AI 解析失败：未知错误"
   },
   "ai_service_error_parse_failed": {
-    "description": "AI 响应解析失败时的提示",
-    "message": "$PROVIDER$ 响应解析失败: $ERROR$",
+    "description": "處理提供者回應時解析失敗。",
+    "message": "$PROVIDER$ 回應解析失敗：$ERROR$",
     "placeholders": {
-      "ERROR": {
-        "content": "$2",
-        "description": "错误详情",
-        "example": "Unexpected token <"
-      },
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商名称",
+        "description": "提供者名稱",
         "example": "Anthropic"
+      },
+      "ERROR": {
+        "content": "$2",
+        "description": "錯誤訊息",
+        "example": "Unexpected token"
       }
     }
   },
   "ai_service_error_parse_json": {
-    "description": "AI 返回无法解析为 JSON 时的提示",
-    "message": "无法解析 AI 返回的结果为 JSON 格式"
+    "description": "解析 AI 回應 JSON 失敗。",
+    "message": "無法將 AI 回應解析為 JSON"
   },
   "ai_service_error_request_failed": {
-    "description": "AI 请求失败时的提示",
-    "message": "$PROVIDER$ 请求失败: $ERROR$",
+    "description": "向提供者發送請求時失敗。",
+    "message": "$PROVIDER$ 請求失敗：$ERROR$",
     "placeholders": {
-      "ERROR": {
-        "content": "$2",
-        "description": "错误详情",
-        "example": "Timeout"
-      },
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商名称",
+        "description": "提供者名稱",
         "example": "OpenAI"
+      },
+      "ERROR": {
+        "content": "$2",
+        "description": "錯誤訊息",
+        "example": "Request timed out"
       }
     }
   },
   "ai_service_error_request_generic": {
-    "description": "AI 请求失败的通用提示",
-    "message": "AI 服务请求失败"
+    "description": "通用的 AI 請求失敗訊息。",
+    "message": "AI 請求失敗"
   },
   "ai_service_error_request_message": {
     "description": "AI 请求失败时返回消息字符串的提示",
@@ -194,34 +194,34 @@
     }
   },
   "ai_service_error_request_with_message": {
-    "description": "AI 服务失败并返回最后一个错误消息时的提示",
-    "message": "AI 服务请求失败：$ERROR$",
+    "description": "所有提供者皆失敗時的最終錯誤訊息。",
+    "message": "AI 請求失敗：$ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "请求超时"
+        "description": "最終錯誤訊息",
+        "example": "503 Service Unavailable"
       }
     }
   },
   "ai_service_error_unknown_provider": {
-    "description": "处理未知提供商时的错误提示",
-    "message": "未知的 AI 提供商: $PROVIDER$",
+    "description": "指定的提供者 ID 不存在時。",
+    "message": "未知的 AI 提供者：$PROVIDER$",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
-        "example": "new-provider"
+        "description": "提供者識別碼",
+        "example": "openai"
       }
     }
   },
   "ai_service_prompt_classic": {
-    "description": "经典 Prompt 模式的请求文本",
-    "message": "请将以下单词查询结果解析为结构化数据。\n你的输出必须是一个纯粹的 JSON 对象，不要包含任何解释性文字或代码块标记。\nJSON 格式如下:\n{\n  \"front\": \"单词\",\n  \"back\": \"完整的单词查询结果（保留原始换行格式）\"\n}\n\n待解析的文本如下：\n---\n$INPUT$\n---",
+    "description": "經典解析模式的預設提示指令。",
+    "message": "請將以下字典查詢結果轉換為適用於 Anki 卡片的結構化資料。\n回傳僅包含 \"front\" 與 \"back\" 欄位的純 JSON 物件，請勿加入額外說明或程式碼區塊。\nJSON 範例:\n{\n  \"front\": \"單字\",\n  \"back\": \"保留原始格式的完整查詢結果\"\n}\n\n待解析文字:\n---\n$INPUT$\n---",
     "placeholders": {
       "INPUT": {
         "content": "$1",
-        "description": "用户输入文本",
+        "description": "需要解析的文字",
         "example": "example word"
       }
     }
@@ -238,8 +238,8 @@
     }
   },
   "ai_service_warn_missing_input_placeholder": {
-    "description": "自定义 Prompt 缺少 INPUT_TEXT 占位符时的警告",
-    "message": "自定义 Prompt 中不存在 {{INPUT_TEXT}} 占位符，因此已将输入文本追加到末尾。"
+    "description": "自訂 Prompt 缺少 {{INPUT_TEXT}} 佔位符時的警告。",
+    "message": "自訂 Prompt 缺少 {{INPUT_TEXT}} 佔位符，已自動將輸入文字附加到結尾。"
   },
   "field_handler_error_back_not_found": {
     "description": "Legacy 模式背字段元素缺失时的提示",
@@ -1531,6 +1531,18 @@
       }
     }
   },
+  "prompt_engine_schema_word": {
+    "description": "欄位schema：單詞本身的提示說明",
+    "message": "單詞本身"
+  },
+  "prompt_engine_schema_reading": {
+    "description": "欄位schema：讀音提示說明",
+    "message": "讀音/音標"
+  },
+  "prompt_engine_schema_meaning": {
+    "description": "欄位schema：釋義提示說明",
+    "message": "釋義和解釋"
+  },
   "prompt_engine_requirements_body": {
     "description": "动态 Prompt 要求说明",
     "message": "\n\n要求:\n- 输出有效JSON格式\n- 只能使用字段: $FIELDS$\n- 可部分输出，但字段名必须准确",
@@ -1590,5 +1602,83 @@
         "example": "openai"
       }
     }
+  },
+  "ai_service_connection_test_failed_with_reason": {
+    "description": "含原因的連線測試失敗訊息。",
+    "message": "連線測試失敗：$ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "失敗原因",
+        "example": "Invalid credentials"
+      }
+    }
+  },
+  "ai_service_connection_test_failed_missing_key": {
+    "description": "因缺少 API 金鑰而連線測試失敗。",
+    "message": "連線測試失敗：API 金鑰尚未設定"
+  },
+  "ai_service_connection_test_success": {
+    "description": "連線測試成功時顯示。",
+    "message": "$PROVIDER$ 連線測試成功",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "提供者名稱",
+        "example": "OpenAI"
+      }
+    }
+  },
+  "options_permission_request_error": {
+    "description": "請求額外權限失敗時的訊息。",
+    "message": "請求 $ORIGIN$ 權限失敗。",
+    "placeholders": {
+      "ORIGIN": {
+        "content": "$1",
+        "description": "網域或 URL 模式",
+        "example": "https://api.example.com/*"
+      }
+    }
+  },
+  "options_provider_custom_url_hint": {
+    "description": "提供者自訂 URL 的提示。",
+    "message": "目前的 URL：$URL$",
+    "placeholders": {
+      "URL": {
+        "content": "$1",
+        "description": "目前設定的 URL",
+        "example": "https://custom.api.endpoint"
+      }
+    }
+  },
+  "options_provider_test_button": {
+    "description": "提供者連線測試按鈕文字。",
+    "message": "測試 $PROVIDER$ 連線",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "提供者名稱",
+        "example": "Anthropic"
+      }
+    }
+  },
+  "options_provider_test_status_error": {
+    "description": "提供者連線測試失敗時的狀態訊息。",
+    "message": "測試失敗：$ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "錯誤原因",
+        "example": "Timeout"
+      }
+    }
+  },
+  "options_default_deck_placeholder": {
+    "description": "預設牌組下拉選單的提示。",
+    "message": "請選擇預設牌組"
+  },
+  "options_default_model_placeholder": {
+    "description": "預設模型下拉選單的提示。",
+    "message": "請選擇預設模型"
   }
 }
