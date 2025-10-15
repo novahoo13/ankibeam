@@ -13,7 +13,12 @@ import {
   validateFields,
 } from "../utils/field-handler.js";
 import { getPromptConfigForModel } from "../utils/prompt-engine.js";
-import { translate, createI18nError, localizePage } from "../utils/i18n.js";
+import {
+  translate,
+  createI18nError,
+  localizePage,
+  whenI18nReady,
+} from "../utils/i18n.js";
 
 const getText = (key, fallback, substitutions) =>
   translate(key, { fallback, substitutions });
@@ -415,8 +420,9 @@ class ErrorBoundary {
 const errorBoundary = new ErrorBoundary();
 
 // DOM加载完成后启动应用初始化
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   // 执行应用程序初始化：加载配置、注册事件监听器
+  await whenI18nReady();
   initialize();
 });
 

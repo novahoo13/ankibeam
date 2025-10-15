@@ -657,6 +657,17 @@
     "description": "行の高さオプション：標準",
     "message": "標準 (1.4)"
   },
+  "options_model_fields_heading": {
+    "description": "フィールドマッピング領域のモデルフィールド数タイトル",
+    "message": "モデルフィールド ($COUNT$件):",
+    "placeholders": {
+      "COUNT": {
+        "content": "$1",
+        "description": "モデルに含まれるフィールド数",
+        "example": "4"
+      }
+    }
+  },
   "options_mode_dynamic_description": {
     "description": "動的フィールドモードの説明本文",
     "message": "このテンプレートは複数のフィールドをサポートしており、AIが自動的にすべてのフィールドを埋めます。ポップアップページはフィールド名に基づいて対応する入力エリアをインテリジェントに生成します。"
@@ -1364,6 +1375,10 @@
   "popup_status_parse_result_empty": {
     "description": "AIが返す結果が空または形式が無効な場合のヒント",
     "message": "AIの解析結果が空か、形式が無効です"
+  },
+  "popup_status_input_required": {
+    "description": "popup ステータスバー: 入力未指定時のエラーメッセージ",
+    "message": "解析するテキストを入力してください"
   },
   "popup_status_parsed": {
     "description": "ポップアップステータスバー：解析完了",

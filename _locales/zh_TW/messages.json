@@ -657,6 +657,17 @@
     "description": "行高選項：適中",
     "message": "適中 (1.4)"
   },
+  "options_model_fields_heading": {
+    "description": "欄位對應區的模型欄位數量標題",
+    "message": "模型欄位 ($COUNT$個):",
+    "placeholders": {
+      "COUNT": {
+        "content": "$1",
+        "description": "目前模型的欄位數量",
+        "example": "4"
+      }
+    }
+  },
   "options_mode_dynamic_description": {
     "description": "動態欄位模式說明正文",
     "message": "該範本支援多欄位，AI 將自動填入所有欄位。popup 頁面將根據欄位名智慧生成對應的輸入區域。"
@@ -1364,6 +1375,10 @@
   "popup_status_parse_result_empty": {
     "description": "AI 返回結果為空或格式錯誤的提示",
     "message": "AI 解析結果為空或格式無效"
+  },
+  "popup_status_input_required": {
+    "description": "popup 狀態列：缺少輸入時的錯誤提示",
+    "message": "請輸入要解析的文字"
   },
   "popup_status_parsed": {
     "description": "popup 狀態列：解析完成",

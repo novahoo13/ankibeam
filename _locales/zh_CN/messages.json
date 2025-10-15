@@ -697,6 +697,17 @@
     "description": "行高选项：适中",
     "message": "适中 (1.4)"
   },
+  "options_model_fields_heading": {
+    "description": "字段映射区域的模型字段数量标题",
+    "message": "模型字段 ($COUNT$个):",
+    "placeholders": {
+      "COUNT": {
+        "content": "$1",
+        "description": "当前模型的字段数量",
+        "example": "4"
+      }
+    }
+  },
   "options_mode_dynamic_description": {
     "description": "动态字段模式说明正文",
     "message": "该模板支持多字段，AI 将自动填充所有字段。popup 页面将根据字段名智能生成对应的输入区域。"
@@ -1435,6 +1446,10 @@
   "popup_status_parse_result_empty": {
     "description": "AI 返回结果为空或格式错误的提示",
     "message": "AI 解析结果为空或格式无效"
+  },
+  "popup_status_input_required": {
+    "description": "popup 状态栏：缺少输入时的错误提示",
+    "message": "请输入要解析的文本"
   },
   "popup_status_parsed": {
     "description": "popup 状态栏：解析完成",

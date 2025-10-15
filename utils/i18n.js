@@ -28,6 +28,17 @@ const LOCALE_ALIAS_MAP = new Map([
 let cachedLocale = null;
 let userConfiguredLocale = null;
 
+let resolveI18nReady = () => {};
+let i18nReadyResolved = false;
+const i18nReadyPromise = new Promise((resolve) => {
+  resolveI18nReady = () => {
+    if (!i18nReadyResolved) {
+      i18nReadyResolved = true;
+      resolve();
+    }
+  };
+});
+
 function mapLocaleToFolderName(locale) {
   const normalized = locale.toLowerCase();
 
@@ -324,9 +335,33 @@ export function createI18nError(key, options = {}) {
   return error;
 }
 
+function resolveI18nInitialization() {
+  resolveI18nReady();
+}
+
 if (typeof document !== "undefined") {
-  document.addEventListener("DOMContentLoaded", async () => {
-    await setPageLanguage();
-    localizePage();
-  });
+  const runLocalizationLifecycle = async () => {
+    try {
+      await setPageLanguage();
+      localizePage();
+    } catch (error) {
+      console.warn("Failed to initialize i18n:", error);
+    } finally {
+      resolveI18nInitialization();
+    }
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", runLocalizationLifecycle, {
+      once: true,
+    });
+  } else {
+    Promise.resolve().then(runLocalizationLifecycle);
+  }
+} else {
+  resolveI18nInitialization();
+}
+
+export function whenI18nReady() {
+  return i18nReadyPromise;
 }

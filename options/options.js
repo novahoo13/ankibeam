@@ -28,7 +28,13 @@ import {
   getFallbackOrder,
   getAllManifestHostPermissions,
 } from "../utils/providers.config.js";
-import { translate, createI18nError, getLocale, resetLocaleCache } from "../utils/i18n.js";
+import {
+  translate,
+  createI18nError,
+  getLocale,
+  resetLocaleCache,
+  whenI18nReady,
+} from "../utils/i18n.js";
 
 const getText = (key, fallback, substitutions) =>
   translate(key, { fallback, substitutions });
@@ -669,7 +675,8 @@ function formatHealthTimestamp(value) {
   return "";
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  await whenI18nReady();
   initTabNavigation();
   initProviderUI();
   loadAndDisplayConfig();
@@ -1292,7 +1299,11 @@ function showPromptConfig(modelName, fields) {
   });
 
   if (currentModelLabel) {
-    currentModelLabel.textContent = `当前模板：${modelName}`;
+    currentModelLabel.textContent = getText(
+      "options_prompt_current_model_label",
+      `当前模板：${modelName}`,
+      [modelName],
+    );
   }
 
   if (modelHint) {
@@ -1979,8 +1990,15 @@ async function handleModelChange() {
     const fieldMappingDiv = document.getElementById("field-mapping");
     const container = fieldMappingDiv.querySelector(".field-mapping-container");
 
+    const fieldCount = fieldsResult.result.length;
+    const fieldHeading = getText(
+      "options_model_fields_heading",
+      `模型字段 (${fieldCount}个):`,
+      [String(fieldCount)],
+    );
+
     container.innerHTML = `
-      <strong>模型字段 (${fieldsResult.result.length}个):</strong>
+      <strong>${fieldHeading}</strong>
       <div class="field-tags">
         ${fieldsResult.result
           .map((field) => `<span class="field-tag">${field}</span>`)
@@ -1993,18 +2011,32 @@ async function handleModelChange() {
     modeDiv.className = "mode-info";
     modeDiv.style.marginTop = "15px";
 
-    if (fieldsResult.result.length <= 2) {
+    const legacyHeading = getText("options_mode_legacy_heading", "🔄 兼容模式");
+    const legacyDescription = getText(
+      "options_mode_legacy_description",
+      "该模型字段数 ≤ 2，将使用传统的正面/背面模式。",
+    );
+    const dynamicHeading = getText(
+      "options_mode_dynamic_heading",
+      "✨ 动态字段模式",
+    );
+    const dynamicDescription = getText(
+      "options_mode_dynamic_description",
+      "该模型支持多字段，AI将自动填充所有字段。popup页面将根据字段名智能生成相应的输入区域。",
+    );
+
+    if (fieldCount <= 2) {
       modeDiv.innerHTML = `
         <div class="legacy-mode-info">
-          <p><strong>🔄 兼容模式</strong></p>
-          <p>该模型字段数 ≤ 2，将使用传统的正面/背面模式。</p>
+          <p><strong>${legacyHeading}</strong></p>
+          <p>${legacyDescription}</p>
         </div>
       `;
     } else {
       modeDiv.innerHTML = `
         <div class="dynamic-mode-info">
-          <p><strong>✨ 动态字段模式</strong></p>
-          <p>该模型支持多字段，AI将自动填充所有字段。popup页面将根据字段名智能生成相应的输入区域。</p>
+          <p><strong>${dynamicHeading}</strong></p>
+          <p>${dynamicDescription}</p>
         </div>
       `;
     }
@@ -2250,8 +2282,15 @@ function displaySavedModelInfo(modelName, modelFields) {
   const fieldMappingDiv = document.getElementById("field-mapping");
   const container = fieldMappingDiv.querySelector(".field-mapping-container");
 
+  const fieldCount = modelFields.length;
+  const fieldHeading = getText(
+    "options_model_fields_heading",
+    `模型字段 (${fieldCount}个):`,
+    [String(fieldCount)],
+  );
+
   container.innerHTML = `
-    <strong>模型字段 (${modelFields.length}个):</strong>
+    <strong>${fieldHeading}</strong>
     <div class="field-tags">
       ${modelFields
         .map((field) => `<span class="field-tag">${field}</span>`)
@@ -2264,18 +2303,32 @@ function displaySavedModelInfo(modelName, modelFields) {
   modeDiv.className = "mode-info";
   modeDiv.style.marginTop = "15px";
 
-  if (modelFields.length <= 2) {
+  const legacyHeading = getText("options_mode_legacy_heading", "🔄 兼容模式");
+  const legacyDescription = getText(
+    "options_mode_legacy_description",
+    "该模型字段数 ≤ 2，将使用传统的正面/背面模式。",
+  );
+  const dynamicHeading = getText(
+    "options_mode_dynamic_heading",
+    "✨ 动态字段模式",
+  );
+  const dynamicDescription = getText(
+    "options_mode_dynamic_description",
+    "该模型支持多字段，AI将自动填充所有字段。popup页面将根据字段名智能生成相应的输入区域。",
+  );
+
+  if (fieldCount <= 2) {
     modeDiv.innerHTML = `
       <div class="legacy-mode-info">
-        <p><strong>🔄 兼容模式</strong></p>
-        <p>该模型字段数 ≤ 2，将使用传统的正面/背面模式。</p>
+        <p><strong>${legacyHeading}</strong></p>
+        <p>${legacyDescription}</p>
       </div>
     `;
   } else {
     modeDiv.innerHTML = `
       <div class="dynamic-mode-info">
-        <p><strong>✨ 动态字段模式</strong></p>
-        <p>该模型支持多字段，AI将自动填充所有字段。popup页面将根据字段名智能生成相应的输入区域。</p>
+        <p><strong>${dynamicHeading}</strong></p>
+        <p>${dynamicDescription}</p>
       </div>
     `;
   }

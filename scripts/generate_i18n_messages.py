@@ -249,6 +249,21 @@ def build_entries(builder: MessageBuilder) -> None:
         "popup_status_prompt_input",
         "请输入要解析的文本",
         "popup 状态栏：等待用户输入",
+        translations={
+            "en": "Please enter text to parse",
+            "ja": "解析するテキストを入力してください",
+            "zh_TW": "請輸入要解析的文本",
+        },
+    )
+    builder.add(
+        "popup_status_input_required",
+        "请输入要解析的文本",
+        "popup 状态栏：缺少输入时的错误提示",
+        translations={
+            "en": "Please enter text to parse",
+            "ja": "解析するテキストを入力してください",
+            "zh_TW": "請輸入要解析的文本",
+        },
     )
     builder.add(
         "popup_status_parsing",
@@ -671,6 +686,23 @@ def build_entries(builder: MessageBuilder) -> None:
         "options_label_field_info",
         "字段信息",
         "Anki 连接面板字段信息区域标题",
+    )
+    builder.add(
+        "options_model_fields_heading",
+        "模型字段 ({count}个):",
+        "选项页字段映射区：模型字段数量标题",
+        placeholders=[
+            {
+                "name": "count",
+                "description": "当前模型字段数量",
+                "example": "4",
+            }
+        ],
+        translations={
+            "en": "Model Fields ({count}):",
+            "ja": "モデルフィールド ({count}件):",
+            "zh_TW": "模型欄位 ({count}個):",
+        },
     )
     builder.add(
         "options_label_language",
