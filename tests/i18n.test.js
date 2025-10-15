@@ -197,6 +197,90 @@ test("translate: フォールバックと代入処理を制御する", async () 
   assert.equal(callCount, 5);
 });
 
+test("translate: カスタムメッセージのプレースホルダーを置換する", async () => {
+  const dom = new JSDOM("<html><body></body></html>", { url: "https://example.com" });
+  const originalFetch = globalThis.fetch;
+
+  try {
+    globalThis.window = dom.window;
+    globalThis.document = dom.window.document;
+    globalThis.Node = dom.window.Node;
+
+    const messages = {
+      options_status_template: {
+        message: "状態: $STATUS$ | 最終確認: $TIME$",
+        placeholders: {
+          STATUS: { content: "$1" },
+          TIME: { content: "$2" },
+        },
+      },
+    };
+
+    let requestedUrl = null;
+
+    globalThis.chrome = {
+      runtime: {
+        getURL(path) {
+          return `https://example.com/${path}`;
+        },
+      },
+      storage: {
+        local: {
+          async get(key) {
+            if (key === "ankiWordAssistantConfig") {
+              return {
+                ankiWordAssistantConfig: {
+                  language: "zh-CN",
+                },
+              };
+            }
+            return {};
+          },
+        },
+      },
+    };
+
+    globalThis.fetch = async (url) => {
+      requestedUrl = url;
+      return {
+        ok: true,
+        async json() {
+          return messages;
+        },
+      };
+    };
+
+    const { setPageLanguage, translate, resetLocaleCache } = await importFreshI18n();
+
+    await setPageLanguage();
+
+    assert.equal(
+      requestedUrl,
+      "https://example.com/_locales/zh_CN/messages.json",
+    );
+
+    const result = translate("options_status_template", {
+      substitutions: ["OK", "2025-10-15"],
+    });
+
+    assert.equal(result, "状態: OK | 最終確認: 2025-10-15");
+
+    resetLocaleCache();
+  } finally {
+    if (dom?.window) {
+      dom.window.close();
+    }
+    Reflect.deleteProperty(globalThis, "document");
+    Reflect.deleteProperty(globalThis, "window");
+    Reflect.deleteProperty(globalThis, "Node");
+    if (originalFetch === undefined) {
+      Reflect.deleteProperty(globalThis, "fetch");
+    } else {
+      globalThis.fetch = originalFetch;
+    }
+  }
+});
+
 test("createI18nError: メタデータ付きのエラーを返す", async () => {
   globalThis.chrome = {
     i18n: {

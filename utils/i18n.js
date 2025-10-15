@@ -80,22 +80,91 @@ async function loadMessagesForLocale(locale) {
   }
 }
 
+function normalizeSubstitutions(substitutions) {
+  if (substitutions === undefined || substitutions === null) {
+    return [];
+  }
+  if (Array.isArray(substitutions)) {
+    return substitutions.map((value) => {
+      if (value === undefined || value === null) {
+        return "";
+      }
+      return String(value);
+    });
+  }
+  return [String(substitutions)];
+}
+
+function applyCustomSubstitutions(entry, substitutions) {
+  const messageEntry =
+    entry && typeof entry === "object" && !Array.isArray(entry)
+      ? entry
+      : { message: entry };
+
+  let message = typeof messageEntry.message === "string" ? messageEntry.message : "";
+  if (!message) {
+    return "";
+  }
+
+  const normalizedSubs = normalizeSubstitutions(substitutions);
+
+  if (normalizedSubs.length > 0) {
+    const namedPlaceholderMap = Object.create(null);
+    const placeholders = messageEntry.placeholders;
+
+    if (placeholders && typeof placeholders === "object") {
+      for (const [name, descriptor] of Object.entries(placeholders)) {
+        const content = descriptor?.content;
+        if (typeof content !== "string") {
+          continue;
+        }
+        const match = content.trim().match(/^\$([0-9]+)$/);
+        if (!match) {
+          continue;
+        }
+        const index = Number.parseInt(match[1], 10) - 1;
+        if (Number.isNaN(index) || index < 0) {
+          continue;
+        }
+        namedPlaceholderMap[name] = index;
+      }
+    }
+
+    message = message.replace(/\$([A-Za-z0-9_@]+)\$/g, (fullMatch, placeholderName) => {
+      if (Object.prototype.hasOwnProperty.call(namedPlaceholderMap, placeholderName)) {
+        const index = namedPlaceholderMap[placeholderName];
+        if (index >= 0 && index < normalizedSubs.length) {
+          return normalizedSubs[index];
+        }
+        return "";
+      }
+      return fullMatch;
+    });
+
+    message = message.replace(/\$(\d+)\$/g, (fullMatch, rawIndex) => {
+      const index = Number.parseInt(rawIndex, 10) - 1;
+      if (!Number.isNaN(index) && index >= 0 && index < normalizedSubs.length) {
+        return normalizedSubs[index];
+      }
+      return fullMatch;
+    });
+
+    normalizedSubs.forEach((substitution, index) => {
+      const placeholder = `$${index + 1}`;
+      message = message.replace(new RegExp(`\\${placeholder}`, "g"), substitution);
+    });
+  }
+
+  return message.replace(/\$\$/g, "$");
+}
+
 function resolveMessage(key, substitutions) {
   if (!key) {
     return "";
   }
 
-  if (customMessages && customMessages[key]) {
-    let message = customMessages[key].message || "";
-
-    if (substitutions && Array.isArray(substitutions)) {
-      substitutions.forEach((sub, index) => {
-        const placeholder = `$${index + 1}`;
-        message = message.replace(new RegExp(`\\${placeholder}`, 'g'), sub);
-      });
-    }
-
-    return message;
+  if (customMessages && Object.prototype.hasOwnProperty.call(customMessages, key)) {
+    return applyCustomSubstitutions(customMessages[key], substitutions);
   }
 
   if (!runtimeI18n) {
