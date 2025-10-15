@@ -1497,11 +1497,23 @@
   },
   "storage_error_api_key_decrypt": {
     "description": "解密 API Key 失敗的日誌提示前綴",
-    "message": "[storage] $PROVIDER$ 的 API 金鑰解密失敗:"
+    "message": "[storage] $PROVIDER$ 的 API 金鑰解密失敗:",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "提供者 ID"
+      }
+    }
   },
   "storage_error_api_key_decrypt_reset": {
     "description": "解密 API Key 失敗並回退為空字串時的提示",
-    "message": "[storage] $PROVIDER$ 的 API 金鑰解密失敗，已初始化為空字串。"
+    "message": "[storage] $PROVIDER$ 的 API 金鑰解密失敗，已初始化為空字串。",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "提供者 ID"
+      }
+    }
   },
   "storage_error_loading_config": {
     "description": "讀取設定失敗的日誌前綴",
@@ -1521,11 +1533,23 @@
   },
   "storage_warning_missing_salt": {
     "description": "缺少加密鹽時的日誌提示",
-    "message": "[storage] 未找到 $PROVIDER$ 的加密鹽，因此使用預設供應商。"
+    "message": "[storage] 未找到 $PROVIDER$ 的加密鹽，因此使用預設供應商。",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "提供者 ID"
+      }
+    }
   },
   "ai_service_connection_test_failed_with_reason": {
     "description": "含原因的連線測試失敗訊息。",
-    "message": "連線測試失敗：$ERROR$"
+    "message": "連線測試失敗：$ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "錯誤詳情"
+      }
+    }
   },
   "ai_service_connection_test_failed_missing_key": {
     "description": "因缺少 API 金鑰而連線測試失敗。",
@@ -1533,23 +1557,53 @@
   },
   "ai_service_connection_test_success": {
     "description": "連線測試成功時顯示。",
-    "message": "$PROVIDER$ 連線測試成功"
+    "message": "$PROVIDER$ 連線測試成功",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "提供者名稱"
+      }
+    }
   },
   "options_permission_request_error": {
     "description": "請求額外權限失敗時的訊息。",
-    "message": "請求 $ORIGIN$ 權限失敗。"
+    "message": "請求 $ORIGIN$ 權限失敗。",
+    "placeholders": {
+      "ORIGIN": {
+        "content": "$1",
+        "description": "來源網域"
+      }
+    }
   },
   "options_provider_custom_url_hint": {
     "description": "提供者自訂 URL 的提示。",
-    "message": "目前的 URL：$URL$"
+    "message": "目前的 URL：$URL$",
+    "placeholders": {
+      "URL": {
+        "content": "$1",
+        "description": "自訂 URL"
+      }
+    }
   },
   "options_provider_test_button": {
     "description": "提供者連線測試按鈕文字。",
-    "message": "測試 $PROVIDER$ 連線"
+    "message": "測試 $PROVIDER$ 連線",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "提供者名稱"
+      }
+    }
   },
   "options_provider_test_status_error": {
     "description": "提供者連線測試失敗時的狀態訊息。",
-    "message": "測試失敗：$ERROR$"
+    "message": "測試失敗：$ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "錯誤詳情"
+      }
+    }
   },
   "options_default_deck_placeholder": {
     "description": "預設牌組下拉選單的提示。",
