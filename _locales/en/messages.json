@@ -662,8 +662,28 @@
     "message": "文本对齐"
   },
   "options_language_chinese_simplified": {
-    "description": "语言下拉框中的简体中文选项",
-    "message": "简体中文"
+    "description": "Language dropdown option for Simplified Chinese",
+    "message": "Simplified Chinese"
+  },
+  "options_language_follow_browser": {
+    "description": "Notice that the language follows the browser setting",
+    "message": "The extension language follows your browser settings. To change it, adjust the browser display language."
+  },
+  "options_language_current_label": {
+    "description": "Label for showing the current UI language",
+    "message": "Current language"
+  },
+  "options_language_chinese_traditional": {
+    "description": "Language dropdown option for Traditional Chinese",
+    "message": "Traditional Chinese"
+  },
+  "options_language_japanese": {
+    "description": "Language dropdown option for Japanese",
+    "message": "Japanese"
+  },
+  "options_language_english": {
+    "description": "Language dropdown option for English",
+    "message": "English"
   },
   "options_line_height_compact": {
     "description": "行高选项：紧凑",

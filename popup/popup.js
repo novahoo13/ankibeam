@@ -111,11 +111,17 @@ class ErrorBoundary {
     this.errorCount++;
     this.lastErrorTime = Date.now();
 
+    const timestamp = new Date().toISOString();
+    const userMessage = this.getUserFriendlyMessage(error, context);
+    const errorType = this.getErrorType(error, context);
+
     // 记录错误到历史列表中，包含完整的上下文信息
     this.errorHistory.push({
       error: error.message,
       context,
-      timestamp: new Date().toISOString(),
+      userMessage,
+      detail: typeof error.detail === "string" ? error.detail : null,
+      timestamp,
       stack: error.stack,
     });
 
@@ -131,10 +137,6 @@ class ErrorBoundary {
       this.showCriticalError(getText("popup_error_rate_limit", "检测到频繁错误，建议刷新页面或检查网络连接"));
       return;
     }
-
-    // 将技术性错误转换为用户可理解的提示信息
-    const userMessage = this.getUserFriendlyMessage(error, context);
-    const errorType = this.getErrorType(error, context);
 
     // 在UI中显示错误消息
     updateStatus(userMessage, errorType);

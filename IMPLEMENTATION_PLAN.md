@@ -26,4 +26,4 @@
 **Goal**: 执行多语言烟雾测试，补充 README / docs，整理最终术语与流程。
 **Success Criteria**: README&docs 更新至最终状态；Checklist 完整勾选；无未命名键或缺失翻译。
 **Tests**: 手动在四种语言下巡检；执行可用的单元/集成测试。
-**Status**: Not Started
+**Status**: Complete

@@ -23,8 +23,8 @@
 - [x] 清理 console 输出、日志或注释中需要呈现给用户的内容，避免与多语言要求冲突；确需保留的调试信息统一采用英文或本地化方案。
 
 ## 阶段 5：特性完善与回退策略
-- [ ] 实现 `getLocale()` 工具基于 `chrome.i18n.getUILanguage()` 映射到 `en-US`/`ja-JP`/`zh-CN`/`zh-TW`，并在所有 `toLocaleString`/`toLocaleDateString` 等格式化调用中使用（现状：`options.js` 写死为 `zh-CN`）。
-- [ ] 为系统设置页新增“语言跟随浏览器设置”的说明文本及当前语言展示逻辑，复用阶段 1 的键定义。
+- [x] 实现 `getLocale()` 工具基于 `chrome.i18n.getUILanguage()` 映射到 `en-US`/`ja-JP`/`zh-CN`/`zh-TW`，并在所有 `toLocaleString`/`toLocaleDateString` 等格式化调用中使用（现状：`options.js` 写死为 `zh-CN`）。
+- [x] 为系统设置页新增“语言跟随浏览器设置”的说明文本及当前语言展示逻辑，复用阶段 1 的键定义。
 - [ ] 覆盖带 `{0}` 等占位符的键，确认多语言语序正确；必要时在 `messages.json` 中增加 `placeholders` 描述，以指导翻译。
 - [ ] 审查 ErrorBoundary 等错误包装逻辑，确保在展示本地化提示的同时保留原始错误详情供排查。
 
@@ -32,4 +32,3 @@
 - [ ] 新增或扩展单元测试，至少覆盖 `utils/i18n.js`、Prompt 默认模板生成、`getLocale()` 映射等关键路径，并为典型文案插值编写 smoke/快照测试。
 - [ ] 在 Chrome 开发者模式下模拟 `en`、`ja`、`zh-CN`、`zh-TW` 环境手动回归，验证 popup、options、错误提示、Anki 写入、Prompt 编辑等界面显示正确语言且回退逻辑生效。
 - [ ] 更新 `README.md` 与 `docs/internationalization-plan.md`（或新增附录），记录最终的键名约定、翻译流程和手动验证步骤，确保文档与实现一致。
-

@@ -662,8 +662,28 @@
     "message": "文本对齐"
   },
   "options_language_chinese_simplified": {
-    "description": "语言下拉框中的简体中文选项",
-    "message": "简体中文"
+    "description": "語言下拉框中的簡體中文選項",
+    "message": "簡體中文"
+  },
+  "options_language_follow_browser": {
+    "description": "提示語言跟隨瀏覽器設定的說明文本",
+    "message": "擴充功能語言會跟隨瀏覽器設定。如需變更，請在瀏覽器設定中調整顯示語言。"
+  },
+  "options_language_current_label": {
+    "description": "展示目前介面語言的標籤",
+    "message": "目前語言"
+  },
+  "options_language_chinese_traditional": {
+    "description": "語言下拉框中的繁體中文選項",
+    "message": "繁體中文"
+  },
+  "options_language_japanese": {
+    "description": "語言下拉框中的日語選項",
+    "message": "日語"
+  },
+  "options_language_english": {
+    "description": "語言下拉框中的英語選項",
+    "message": "英語"
   },
   "options_line_height_compact": {
     "description": "行高选项：紧凑",

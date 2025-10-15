@@ -28,10 +28,56 @@ import {
   getFallbackOrder,
   getAllManifestHostPermissions,
 } from "../utils/providers.config.js";
-import { translate, createI18nError } from "../utils/i18n.js";
+import { translate, createI18nError, getLocale } from "../utils/i18n.js";
 
 const getText = (key, fallback, substitutions) =>
   translate(key, { fallback, substitutions });
+
+// サポートする言語とメッセージキーの対応表
+const LANGUAGE_NAME_KEY_BY_LOCALE = Object.freeze({
+  "zh-CN": "options_language_chinese_simplified",
+  "zh-TW": "options_language_chinese_traditional",
+  "ja-JP": "options_language_japanese",
+  "en-US": "options_language_english",
+});
+
+// 現在の言語名を解決するユーティリティ
+function resolveCurrentLanguageName(locale) {
+  if (!locale) {
+    return "";
+  }
+
+  const messageKey = LANGUAGE_NAME_KEY_BY_LOCALE[locale];
+  if (messageKey) {
+    const localizedName = getText(messageKey, "");
+    if (localizedName && localizedName !== messageKey) {
+      return localizedName;
+    }
+  }
+
+  if (typeof Intl !== "undefined" && typeof Intl.DisplayNames === "function") {
+    try {
+      const displayNames = new Intl.DisplayNames([getLocale()], {
+        type: "language",
+      });
+      const directName = displayNames.of(locale);
+      if (directName) {
+        return directName;
+      }
+      const baseLocale = locale.split("-")[0];
+      if (baseLocale) {
+        const baseName = displayNames.of(baseLocale);
+        if (baseName) {
+          return baseName;
+        }
+      }
+    } catch (error) {
+      console.warn("Intl.DisplayNames failed:", error);
+    }
+  }
+
+  return locale;
+}
 
 // API密钥的实际值（DOM中显示星号掩码）
 const actualApiKeys = Object.create(null);
@@ -609,7 +655,7 @@ function formatHealthTimestamp(value) {
     if (Number.isNaN(date.getTime())) {
       return "";
     }
-    return date.toLocaleString("zh-CN");
+    return date.toLocaleString(getLocale());
   }
 
   if (typeof value === "string") {
@@ -617,7 +663,7 @@ function formatHealthTimestamp(value) {
     if (Number.isNaN(parsed)) {
       return "";
     }
-    return new Date(parsed).toLocaleString("zh-CN");
+    return new Date(parsed).toLocaleString(getLocale());
   }
 
   return "";
@@ -1621,8 +1667,27 @@ async function loadAndDisplayConfig() {
   }
 
   const languageSelect = document.getElementById("language-select");
-  if (languageSelect && config?.language) {
-    languageSelect.value = config.language;
+  if (languageSelect) {
+    const resolvedLanguage =
+      typeof config?.language === "string" && config.language.trim()
+        ? config.language
+        : getLocale();
+    const options = Array.from(languageSelect.options ?? []);
+    const hasMatch = options.some((option) => option.value === resolvedLanguage);
+    if (hasMatch) {
+      languageSelect.value = resolvedLanguage;
+    } else if (options.length > 0) {
+      languageSelect.value = options[0].value;
+    }
+  }
+
+  const currentLanguageIndicator = document.getElementById(
+    "current-language-name"
+  );
+  if (currentLanguageIndicator) {
+    currentLanguageIndicator.textContent = resolveCurrentLanguageName(
+      getLocale()
+    );
   }
 
   console.info('設定の読み込みが完了しました。');
@@ -1667,14 +1732,13 @@ async function handleSave() {
   }
 
   const promptTextarea = document.getElementById("custom-prompt-textarea");
-  const languageSelect = document.getElementById("language-select");
   const deckSelect = document.getElementById("default-deck");
   const modelSelect = document.getElementById("default-model");
   const fontSizeSelect = document.getElementById("font-size-select");
   const textAlignSelect = document.getElementById("text-align-select");
   const lineHeightSelect = document.getElementById("line-height-select");
 
-  const language = languageSelect ? languageSelect.value : "zh-CN";
+  const language = getLocale();
   const defaultDeck = deckSelect ? deckSelect.value : "";
   const defaultModel = modelSelect ? modelSelect.value : "";
   const fontSize = fontSizeSelect ? fontSizeSelect.value : "14px";
