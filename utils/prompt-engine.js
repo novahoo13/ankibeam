@@ -1,6 +1,11 @@
 // prompt-engine.js - Prompt引擎与一体化解析流程
 // 实现统一查询+解析的AI调用流程，支持动态字段输出
 
+import { translate } from "./i18n.js";
+
+const getText = (key, fallback, substitutions) =>
+  translate(key, { fallback, substitutions });
+
 /**
  * 构建一体化prompt，整合查询和解析功能
  * @param {string} userInput - 用户输入的文本
@@ -16,7 +21,11 @@ export function buildIntegratedPrompt(userInput, fieldNames, customTemplate) {
       !customTemplate.includes('{{INPUT_TEXT}}') &&
       !customTemplate.includes('{{FIELD_SCHEMA}}')) {
     // 对于完全自定义的prompt，直接在末尾追加用户输入
-    return `${customTemplate}\n-------------------------------\n以下是本次输入的内容：${userInput}`;
+    return getText(
+      "prompt_engine_custom_template_header",
+      "$TEMPLATE$\n-------------------------------\n以下是本次输入的内容：$INPUT$",
+      [customTemplate, userInput]
+    );
   }
 
   // 生成动态字段schema（用于占位符模式）
@@ -29,7 +38,11 @@ export function buildIntegratedPrompt(userInput, fieldNames, customTemplate) {
     .replace(/\{\{AVAILABLE_FIELDS\}\}/g, fieldNames.map((f) => `"${f}"`).join(", "));
 
   // 添加JSON格式强制约束（仅用于默认模板）
-  prompt += `\n\n要求:\n- 输出有效JSON格式\n- 只能使用字段: ${fieldNames.join(", ")}\n- 可部分输出，但字段名必须准确`;
+  prompt += getText(
+    "prompt_engine_requirements_body",
+    "\n\n要求:\n- 输出有效JSON格式\n- 只能使用字段: $FIELDS$\n- 可部分输出，但字段名必须准确",
+    [fieldNames.join(", ")]
+  );
 
   return prompt;
 }
@@ -39,7 +52,9 @@ export function buildIntegratedPrompt(userInput, fieldNames, customTemplate) {
  * @returns {string} - 默认prompt模板
  */
 function getDefaultIntegratedTemplate() {
-  return `# Role: 专业单词查询助手
+  return getText(
+    'prompt_engine_default_header',
+    `# Role: 专业单词查询助手
 
 请完成以下任务：
 1. 查询单词/短语: "{{INPUT_TEXT}}"
@@ -50,7 +65,8 @@ function getDefaultIntegratedTemplate() {
 要求：
 - 输出纯JSON格式，不包含任何解释文字
 - 根据单词/短语的特点，填充相应字段
-- 如果某个字段不适用，可以不输出该字段`;
+- 如果某个字段不适用，可以不输出该字段`
+  );
 }
 
 /**
@@ -63,13 +79,13 @@ function generateFieldSchema(fieldNames) {
   fieldNames.forEach((field) => {
     // 根据字段名提供智能提示
     if (field.toLowerCase().includes("word") || field.toLowerCase().includes("front")) {
-      schema[field] = "单词本身";
+      schema[field] = getText('prompt_engine_schema_word', '单词本身');
     } else if (field.toLowerCase().includes("reading") || field.toLowerCase().includes("pronunciation")) {
-      schema[field] = "读音/音标";
+      schema[field] = getText('prompt_engine_schema_reading', '读音/音标');
     } else if (field.toLowerCase().includes("meaning") || field.toLowerCase().includes("definition")) {
-      schema[field] = "释义和解释";
+      schema[field] = getText('prompt_engine_schema_meaning', '释义和解释');
     } else {
-      schema[field] = `${field}相关内容`;
+      schema[field] = getText('prompt_engine_field_prompt', `${field}相关内容`, [field]);
     }
   });
   return JSON.stringify(schema, null, 2);
@@ -99,7 +115,7 @@ export function validateAIOutput(aiOutput, expectedFields) {
   } catch (error) {
     return {
       isValid: false,
-      error: `JSON解析失败: ${error.message}`,
+      error: getText('prompt_engine_error_json_parse', `JSON解析失败: ${error.message}`, [error.message]),
       parsedData: null,
     };
   }

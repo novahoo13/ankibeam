@@ -141,6 +141,12 @@ anki-word-assistant/
 4. 授权完成后使用“测试连接”按钮验证新端点是否可用，并根据需要调整默认模型或 Prompt 模板。
 5. 若需恢复官方端点，清空或还原“API 地址”字段，保存后即可撤销额外域名的访问权限。
 
+## 国际化维护
+
+- **自动化测试**：执行 `node --test "tests/**/*.test.js"` 验证 i18n API 和 Prompt 模板快照。
+- **手动检查**：按照 `docs/internationalization-stage6.md` 的步骤在四种语言与回退场景下巡检 popup/options 界面。
+- **翻译流程**：新增键值时同步更新四种语言的 `messages.json`、补充 `description`/`placeholders`，并在评审前重跑测试。
+
 ## 常见问题
 
 **Q: 为什么不使用 CDN 版本的 Tailwind CSS？**

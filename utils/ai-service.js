@@ -11,13 +11,17 @@ import {
   getFallbackOrder,
   getProviderById,
 } from "./providers.config.js";
+import { translate, createI18nError } from "./i18n.js";
+
+const getText = (key, fallback, substitutions) =>
+  translate(key, { fallback, substitutions });
 
 const VALID_HEALTH_STATUSES = new Set(["healthy", "error", "unknown"]);
 
 function ensureProvider(providerId) {
   const provider = getProviderById(providerId);
   if (!provider) {
-    throw new Error(`未知的AI提供商: ${providerId}`);
+    throw createI18nError("ai_service_error_unknown_provider", { fallback: `Unknown AI provider: ${providerId}`, substitutions: [providerId] });
   }
   return provider;
 }
@@ -78,7 +82,7 @@ function cleanAIResponse(raw) {
 
 function parseJsonResponse(raw) {
   if (!raw || typeof raw !== "string") {
-    throw new Error("AI响应内容为空");
+    throw createI18nError("ai_service_error_empty_response", { fallback: "AI response body is empty" });
   }
 
   try {
@@ -88,7 +92,7 @@ function parseJsonResponse(raw) {
     if (match) {
       return JSON.parse(match[0]);
     }
-    throw new Error("无法解析AI返回的结果为JSON格式");
+    throw createI18nError("ai_service_error_parse_json", { fallback: "Failed to parse AI response as JSON" });
   }
 }
 
@@ -139,7 +143,7 @@ async function executeConfiguredRequest(context) {
   try {
     response = await fetch(url, init);
   } catch (error) {
-    throw new Error(`${providerConfig.label} 请求失败: ${error.message}`);
+    throw createI18nError("ai_service_error_request_failed", { fallback: `${providerConfig.label} request failed: ${error.message}`, substitutions: [providerConfig.label, error.message] });
   }
 
   let bodyText = "";
@@ -155,7 +159,7 @@ async function executeConfiguredRequest(context) {
       parsedBody = JSON.parse(bodyText);
     } catch (error) {
       if (response.ok) {
-        throw new Error(`${providerConfig.label} 响应解析失败: ${error.message}`);
+        throw createI18nError("ai_service_error_parse_failed", { fallback: `${providerConfig.label} response parsing failed: ${error.message}`, substitutions: [providerConfig.label, error.message] });
       }
     }
   }
@@ -181,7 +185,7 @@ async function executeConfiguredRequest(context) {
       message = parsedBody.error.message;
     }
 
-    throw new Error(`${providerConfig.label} 请求失败: ${message}`);
+    throw createI18nError("ai_service_error_request_failed", { fallback: `${providerConfig.label} request failed: ${message}`, substitutions: [providerConfig.label, message] });
   }
 
   let content = bodyText;
@@ -197,7 +201,7 @@ async function executeConfiguredRequest(context) {
   }
 
   if (!content || typeof content !== "string" || !content.trim()) {
-    throw new Error(`${providerConfig.label} 响应内容为空`);
+    throw createI18nError("ai_service_error_empty_body", { fallback: `${providerConfig.label} response body is empty`, substitutions: [providerConfig.label] });
   }
 
   return cleanAIResponse(content);
@@ -258,11 +262,14 @@ async function loadActiveProviderState(requestedProviderId = null) {
   const modelState = models[activeProviderId];
 
   if (!modelState) {
-    throw new Error(`未找到供应商配置: ${activeProviderId}`);
+    throw createI18nError("ai_service_error_missing_provider_config", { fallback: `Provider configuration not found: ${activeProviderId}`, substitutions: [activeProviderId] });
   }
 
   if (!modelState.apiKey) {
-    throw new Error(`供应商 ${activeProviderId} 的 API Key 尚未设置`);
+    throw createI18nError("ai_service_error_missing_api_key_active", {
+      fallback: `Provider ${activeProviderId} API key is not configured`,
+      substitutions: [activeProviderId],
+    });
   }
 
   const modelName =
@@ -271,7 +278,10 @@ async function loadActiveProviderState(requestedProviderId = null) {
     providerConfig.testModel;
 
   if (!modelName) {
-    throw new Error(`供应商 ${activeProviderId} 缺少默认模型配置`);
+    throw createI18nError("ai_service_error_missing_default_model_active", {
+      fallback: `Provider ${activeProviderId} is missing a default model configuration`,
+      substitutions: [activeProviderId],
+    });
   }
 
   return {
@@ -324,7 +334,12 @@ async function runWithRetry(
     }
   }
 
-  throw lastError ?? new Error("AI服务请求失败");
+  if (lastError) {
+    throw lastError;
+  }
+  throw createI18nError("ai_service_error_request_generic", {
+    fallback: "AI request failed",
+  });
 }
 
 export async function callProviderAPI(
@@ -336,7 +351,10 @@ export async function callProviderAPI(
 ) {
   const providerConfig = ensureProvider(providerId);
   if (!apiKey) {
-    throw new Error(`供应商 ${providerId} 的 API Key 尚未设置`);
+    throw createI18nError("ai_service_error_missing_api_key", {
+      fallback: `Provider ${providerId} API key is not configured`,
+      substitutions: [providerId],
+    });
   }
 
   const config = await loadConfig();
@@ -349,7 +367,10 @@ export async function callProviderAPI(
     providerConfig.testModel;
 
   if (!effectiveModelName) {
-    throw new Error(`供应商 ${providerId} 缺少默认模型配置`);
+    throw createI18nError("ai_service_error_missing_default_model", {
+      fallback: `Provider ${providerId} is missing a default model configuration`,
+      substitutions: [providerId],
+    });
   }
 
   const executionContext = {
@@ -368,20 +389,23 @@ export async function callProviderAPI(
 }
 
 export function buildPrompt(inputText, template) {
-  const defaultPromptTemplate = `
-请将以下单词查询结果解析为结构化数据。
-你的输出必须是一个纯粹的JSON对象，不要包含任何解释性文字或代码块标记。
-JSON格式如下:
+  const defaultPromptTemplate = getText(
+    "ai_service_prompt_classic",
+    `Convert the following dictionary lookup result into structured data for an Anki card.
+Return a pure JSON object that only includes the "front" and "back" fields. Do not add extra commentary or code fences.
+JSON example:
 {
-  "front": "单词",
-  "back": "完整的单词查询结果（保留原始换行格式）"
+  "front": "Word",
+  "back": "Complete lookup result with original formatting"
 }
 
-待解析的文本如下：
+Source text:
 ---
-${inputText}
+$INPUT$
 ---
-`;
+`,
+    [inputText]
+  );
 
   if (template && template.trim().length > 0) {
     if (template.includes("{{INPUT_TEXT}}")) {
@@ -389,7 +413,10 @@ ${inputText}
     }
 
     console.warn(
-      "自定义Prompt中不存在 {{INPUT_TEXT}} 占位符，因此已将输入文本追加到末尾。",
+      getText(
+        "ai_service_warn_missing_input_placeholder",
+        "Custom prompt is missing the {{INPUT_TEXT}} placeholder. Appended the input text to the end."
+      )
     );
     return `${template}\n\n${inputText}`;
   }
@@ -418,7 +445,12 @@ export async function parseTextWithFallback(
 
     const modelState = config?.aiConfig?.models?.[providerId];
     if (!modelState?.apiKey) {
-      errors.push(new Error(`供应商 ${providerId} 的 API Key 尚未设置`));
+      errors.push(
+        createI18nError('ai_service_error_missing_api_key', {
+          fallback: `Provider ${providerId} API key is not configured`,
+          substitutions: [providerId],
+        }),
+      );
       continue;
     }
 
@@ -428,7 +460,12 @@ export async function parseTextWithFallback(
       providerConfig.testModel;
 
     if (!modelName) {
-      errors.push(new Error(`供应商 ${providerId} 缺少默认模型配置`));
+      errors.push(
+        createI18nError('ai_service_error_missing_default_model', {
+          fallback: `Provider ${providerId} is missing a default model configuration`,
+          substitutions: [providerId],
+        }),
+      );
       continue;
     }
 
@@ -469,10 +506,10 @@ export async function parseTextWithFallback(
   }
 
   if (errors.length > 0) {
-    throw new Error(`AI服务请求失败: ${errors[errors.length - 1].message}`);
+    throw createI18nError("ai_service_error_request_with_message", { fallback: `AI request failed: ${errors[errors.length - 1].message}`, substitutions: [errors[errors.length - 1].message] });
   }
 
-  throw new Error("AI服务请求失败: 未找到可用的供应商");
+  throw createI18nError("ai_service_error_no_provider_available", { fallback: "AI request failed: no providers available" });
 }
 
 
@@ -483,14 +520,21 @@ export async function testConnection(providerId, apiKey, modelName) {
   } catch (error) {
     return {
       success: false,
-      message: `连接测试失败: ${error instanceof Error ? error.message : String(error)}`,
+      message: getText(
+        'ai_service_connection_test_failed_with_reason',
+        `Connection test failed: ${error instanceof Error ? error.message : String(error)}`,
+        [error instanceof Error ? error.message : String(error)],
+      ),
     };
   }
 
   if (!apiKey) {
     return {
       success: false,
-      message: "连接测试失败: API Key尚未设置",
+      message: getText(
+        'ai_service_connection_test_failed_missing_key',
+        'Connection test failed: API key is not configured',
+      ),
     };
   }
 
@@ -506,7 +550,10 @@ export async function testConnection(providerId, apiKey, modelName) {
       providerConfig.defaultModel;
 
     if (!targetModel) {
-      throw new Error(`${providerConfig.label} 缺少默认模型配置`);
+      throw createI18nError("ai_service_error_missing_default_model", {
+        fallback: `${providerConfig.label} is missing a default model configuration`,
+        substitutions: [providerConfig.label],
+      });
     }
 
     const executionContext = {
@@ -528,7 +575,11 @@ export async function testConnection(providerId, apiKey, modelName) {
 
     return {
       success: true,
-      message: `${providerConfig.label} 连接测试成功`,
+      message: getText(
+        'ai_service_connection_test_success',
+        `${providerConfig.label} connection test succeeded`,
+        [providerConfig.label],
+      ),
     };
   } catch (error) {
     await updateProviderHealth(
@@ -539,7 +590,11 @@ export async function testConnection(providerId, apiKey, modelName) {
 
     return {
       success: false,
-      message: `连接测试失败: ${error instanceof Error ? error.message : String(error)}`,
+      message: getText(
+        'ai_service_connection_test_failed_with_reason',
+        `Connection test failed: ${error instanceof Error ? error.message : String(error)}`,
+        [error instanceof Error ? error.message : String(error)],
+      ),
     };
   }
 }
@@ -551,7 +606,7 @@ async function runDynamicParsing(
   maxRetries = 2,
 ) {
   if (!Array.isArray(fieldNames) || fieldNames.length === 0) {
-    throw new Error("当前模板未配置可解析的字段，请在选项页完成设置。");
+    throw createI18nError("popup_status_no_fields_parse", { fallback: "No fields configured for parsing. Update the template in Options first." });
   }
 
   const {
@@ -595,14 +650,24 @@ async function runDynamicParsing(
       const validation = validateAIOutput(text, fieldNames);
 
       if (!validation.isValid) {
+        const fallbackDetail = (validation.invalidFields ?? []).join(", ");
         const message =
-          validation.error ??
-          `输出包含无效字段: ${(validation.invalidFields ?? []).join(", ")}`;
-        throw new Error(message);
+          validation.error ||
+          getText(
+            "ai_service_error_output_invalid_fields",
+            `Output contains invalid fields: ${fallbackDetail}`,
+            [fallbackDetail]
+          );
+        throw createI18nError("ai_service_error_output_invalid_fields", {
+          fallback: message,
+          substitutions: [fallbackDetail],
+        });
       }
 
       if (!validation.hasContent) {
-        throw new Error("AI输出的所有字段都为空，请检查输入内容或重试");
+        throw createI18nError("ai_service_error_output_all_empty", {
+          fallback: "AI output contains only empty fields. Check the input text or try again.",
+        });
       }
 
       await updateProviderHealth(providerConfig.id, "healthy");
@@ -622,11 +687,11 @@ async function runDynamicParsing(
         lastError.message,
       );
 
-      throw new Error(`AI解析失败: ${lastError.message}`);
+      throw createI18nError("ai_service_error_parse_fail_message", { fallback: `AI parsing failed: ${lastError.message}`, substitutions: [lastError.message] });
     }
   }
 
-  throw new Error("AI解析失败: 未知错误");
+  throw createI18nError("ai_service_error_parse_fail_unknown", { fallback: "AI parsing failed: Unknown error" });
 }
 
 export async function parseTextWithDynamicFields(

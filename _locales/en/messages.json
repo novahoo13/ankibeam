@@ -1,0 +1,1719 @@
+{
+  "extension_name": {
+    "description": "Extension name shown in the Chrome Web Store and UI.",
+    "message": "Anki Word Assistant"
+  },
+  "extension_description": {
+    "description": "Extension description for manifest and store listing.",
+    "message": "An AI-powered assistant to help create Anki cards from dictionary lookup results."
+  },
+  "ai_service_error_connection_test": {
+    "description": "Error message when a provider connection test fails.",
+    "message": "Connection test failed: $ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "Error details",
+        "example": "Network timeout"
+      }
+    }
+  },
+  "ai_service_error_empty_body": {
+    "description": "Provider response contained no body content.",
+    "message": "$PROVIDER$ response body is empty",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "Provider name",
+        "example": "Google"
+      }
+    }
+  },
+  "ai_service_error_empty_response": {
+    "description": "Triggered when the AI response body is empty.",
+    "message": "AI response body is empty"
+  },
+  "ai_service_error_missing_api_key": {
+    "description": "Per-provider API key is missing when making a request.",
+    "message": "Provider $PROVIDER$ API key is not configured",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "Provider identifier",
+        "example": "anthropic"
+      }
+    }
+  },
+  "ai_service_error_missing_api_key_active": {
+    "description": "Active provider is missing its configured API key.",
+    "message": "Provider $PROVIDER$ API key is not configured",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "Provider identifier",
+        "example": "openai"
+      }
+    }
+  },
+  "ai_service_error_missing_api_key_test": {
+    "description": "Error message for a connection test missing an API Key.",
+    "message": "Connection test failed: API Key is not set"
+  },
+  "ai_service_error_missing_default_model": {
+    "description": "Raised when the provider has no default model set.",
+    "message": "Provider $PROVIDER$ is missing a default model configuration",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "Provider identifier",
+        "example": "anthropic"
+      }
+    }
+  },
+  "ai_service_error_missing_default_model_active": {
+    "description": "Active provider has no default model configured.",
+    "message": "Provider $PROVIDER$ is missing a default model configuration",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "Provider identifier",
+        "example": "openai"
+      }
+    }
+  },
+  "ai_service_error_missing_default_model_test": {
+    "description": "Error message when the default model is missing during a connection test.",
+    "message": "$PROVIDER$ is missing a default model configuration",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "Provider name",
+        "example": "OpenAI"
+      }
+    }
+  },
+  "ai_service_error_missing_provider_config": {
+    "description": "Raised when no configuration is found for the selected provider.",
+    "message": "Provider configuration not found: $PROVIDER$",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "Provider identifier",
+        "example": "openai"
+      }
+    }
+  },
+  "ai_service_error_no_provider_available": {
+    "description": "Shown when no provider could complete the request.",
+    "message": "AI request failed: no providers available"
+  },
+  "ai_service_error_output_all_empty": {
+    "description": "Error message when all AI output fields are empty.",
+    "message": "All AI output fields are empty, please check the input or try again"
+  },
+  "ai_service_error_output_invalid_fields": {
+    "description": "Error message when the AI output contains unexpected fields.",
+    "message": "Output contains invalid fields: $FIELDS$",
+    "placeholders": {
+      "FIELDS": {
+        "content": "$1",
+        "description": "List of invalid fields",
+        "example": "unexpectedField"
+      }
+    }
+  },
+  "ai_service_error_parse_fail_message": {
+    "description": "Error message when AI parsing fails and returns an error object.",
+    "message": "AI parsing failed: $ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "Error message",
+        "example": "Failed to parse JSON"
+      }
+    }
+  },
+  "ai_service_error_parse_fail_unknown": {
+    "description": "Error message when AI parsing fails with no specific error details.",
+    "message": "AI parsing failed: Unknown error"
+  },
+  "ai_service_error_parse_failed": {
+    "description": "Raised when the provider response parser throws.",
+    "message": "$PROVIDER$ response parsing failed: $ERROR$",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "Provider name",
+        "example": "Anthropic"
+      },
+      "ERROR": {
+        "content": "$2",
+        "description": "Error message",
+        "example": "Unexpected token"
+      }
+    }
+  },
+  "ai_service_error_parse_json": {
+    "description": "Raised when JSON parsing of the AI response fails.",
+    "message": "Failed to parse AI response as JSON"
+  },
+  "ai_service_error_request_failed": {
+    "description": "Network or HTTP error while calling the provider.",
+    "message": "$PROVIDER$ request failed: $ERROR$",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "Provider name",
+        "example": "OpenAI"
+      },
+      "ERROR": {
+        "content": "$2",
+        "description": "Error message",
+        "example": "Request timed out"
+      }
+    }
+  },
+  "ai_service_error_request_generic": {
+    "description": "Generic AI request failure message.",
+    "message": "AI request failed"
+  },
+  "ai_service_error_request_message": {
+    "description": "Error message when an AI request fails and returns a message string.",
+    "message": "$PROVIDER$ request failed: $MESSAGE$",
+    "placeholders": {
+      "MESSAGE": {
+        "content": "$2",
+        "description": "Error message",
+        "example": "invalid api key"
+      },
+      "PROVIDER": {
+        "content": "$1",
+        "description": "Provider name",
+        "example": "Google Gemini"
+      }
+    }
+  },
+  "ai_service_error_request_with_message": {
+    "description": "Aggregated error message when all provider attempts fail.",
+    "message": "AI request failed: $ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "Final error message",
+        "example": "503 Service Unavailable"
+      }
+    }
+  },
+  "ai_service_error_unknown_provider": {
+    "description": "Thrown when the provider id is not recognized.",
+    "message": "Unknown AI provider: $PROVIDER$",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "Provider identifier",
+        "example": "openai"
+      }
+    }
+  },
+  "ai_service_prompt_classic": {
+    "description": "Default instructions for classic AI parsing.",
+    "message": "Convert the following dictionary lookup result into structured data for an Anki card.\nReturn a pure JSON object that only includes the \"front\" and \"back\" fields. Do not add extra commentary or code fences.\nJSON example:\n{\n  \"front\": \"Word\",\n  \"back\": \"Complete lookup result with original formatting\"\n}\n\nSource text:\n---\n$INPUT$\n---",
+    "placeholders": {
+      "INPUT": {
+        "content": "$1",
+        "description": "Source text that should be parsed",
+        "example": "example word"
+      }
+    }
+  },
+  "ai_service_status_test_success": {
+    "description": "Message for a successful connection test.",
+    "message": "$PROVIDER$ connection test succeeded",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "Provider name",
+        "example": "Anthropic"
+      }
+    }
+  },
+  "ai_service_warn_missing_input_placeholder": {
+    "description": "Warns when a custom prompt omits the {{INPUT_TEXT}} placeholder.",
+    "message": "Custom prompt is missing the {{INPUT_TEXT}} placeholder. Appended the input text to the end."
+  },
+  "field_handler_error_back_not_found": {
+    "description": "Error message when the back-field element is missing in Legacy mode.",
+    "message": "back-input element not found"
+  },
+  "field_handler_error_field_contains_html": {
+    "description": "Warning when a field's content contains a lot of HTML.",
+    "message": "Field \"$FIELD$\" may contain excessive HTML tags",
+    "placeholders": {
+      "FIELD": {
+        "content": "$1",
+        "description": "Field name",
+        "example": "Sentence"
+      }
+    }
+  },
+  "field_handler_error_field_data_invalid": {
+    "description": "Error message for invalid field data structure.",
+    "message": "Field data is invalid"
+  },
+  "field_handler_error_field_element_missing": {
+    "description": "Error message when a field's corresponding DOM element is missing.",
+    "message": "Field element not found: $ELEMENT$ ($FIELD$)",
+    "placeholders": {
+      "ELEMENT": {
+        "content": "$1",
+        "description": "Field DOM element ID",
+        "example": "dynamic-field-example"
+      },
+      "FIELD": {
+        "content": "$2",
+        "description": "Field name",
+        "example": "Definition"
+      }
+    }
+  },
+  "field_handler_error_field_list_empty": {
+    "description": "Error message when the field list is empty.",
+    "message": "Field list is empty"
+  },
+  "field_handler_error_field_object_invalid": {
+    "description": "Error message for a failed field object validation.",
+    "message": "Field object is null or invalid"
+  },
+  "field_handler_error_fill_back": {
+    "description": "Error message for missing back content in Legacy mode.",
+    "message": "Please fill in the back content"
+  },
+  "field_handler_error_fill_front": {
+    "description": "Error message for missing front content in Legacy mode.",
+    "message": "Please fill in the front content"
+  },
+  "field_handler_error_front_not_found": {
+    "description": "Error message when the front-field element is missing in Legacy mode.",
+    "message": "front-input element not found"
+  },
+  "field_handler_error_legacy_min_fields": {
+    "description": "Error message for an insufficient number of fields in Legacy mode.",
+    "message": "Legacy mode requires at least two fields"
+  },
+  "field_handler_error_legacy_required_fields": {
+    "description": "Validation message for fields in Legacy mode.",
+    "message": "Both first two fields must be filled in Legacy mode"
+  },
+  "field_handler_error_min_field_content": {
+    "description": "Error message for dynamic mode requiring at least one field.",
+    "message": "At least one field must be filled"
+  },
+  "field_handler_error_missing_dom_count": {
+    "description": "Error message when DOM elements are missing during field rendering.",
+    "message": "$COUNT$ DOM elements are missing",
+    "placeholders": {
+      "COUNT": {
+        "content": "$1",
+        "description": "Number of missing elements",
+        "example": "3"
+      }
+    }
+  },
+  "field_handler_error_model_fields_invalid": {
+    "description": "Error message for an invalid set of model fields.",
+    "message": "modelFields must be an array"
+  },
+  "field_handler_error_no_fields_found": {
+    "description": "Error message when no set of fields is found.",
+    "message": "No fields found"
+  },
+  "field_handler_error_validation_failed": {
+    "description": "Log prefix for a failed field validation.",
+    "message": "Field validation failed:"
+  },
+  "field_handler_error_validation_process": {
+    "description": "Error message when the field validation process throws an exception.",
+    "message": "Error during validation process: $ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "Error details",
+        "example": "TypeError"
+      }
+    }
+  },
+  "field_handler_error_validation_summary": {
+    "description": "Summary message for a failed field validation.",
+    "message": "Field validation failed"
+  },
+  "field_handler_error_wrap_style": {
+    "description": "Error message when field style wrapping fails.",
+    "message": "Style wrapping failed: $ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "Error details",
+        "example": "DOMException"
+      }
+    }
+  },
+  "field_handler_status_collect_complete": {
+    "description": "Log prefix for a completed field collection.",
+    "message": "Field collection complete:"
+  },
+  "field_handler_status_collect_failed": {
+    "description": "Log prefix for a failed field collection.",
+    "message": "Field collection failed:"
+  },
+  "field_handler_warning_few_fields": {
+    "description": "Warning for a small number of filled fields.",
+    "message": "Few fields filled ($FILLED$/$TOTAL$)",
+    "placeholders": {
+      "FILLED": {
+        "content": "$1",
+        "description": "Number of filled fields",
+        "example": "1"
+      },
+      "TOTAL": {
+        "content": "$2",
+        "description": "Total number of fields",
+        "example": "4"
+      }
+    }
+  },
+  "field_handler_warning_fields_filled": {
+    "description": "Message indicating validation passed and the number of filled fields.",
+    "message": "Validation passed, $COUNT$ fields filled",
+    "placeholders": {
+      "COUNT": {
+        "content": "$1",
+        "description": "Number of filled fields",
+        "example": "3"
+      }
+    }
+  },
+  "field_handler_warning_with_count": {
+    "description": "Message for validation passing but with warnings.",
+    "message": "Validation passed, but with $COUNT$ warnings",
+    "placeholders": {
+      "COUNT": {
+        "content": "$1",
+        "description": "Number of warnings",
+        "example": "2"
+      }
+    }
+  },
+  "options_button_export_config": {
+    "description": "Export config button text.",
+    "message": "📤 Export Config"
+  },
+  "options_button_import_config": {
+    "description": "Import config button text.",
+    "message": "📥 Import Config"
+  },
+  "options_button_reset_config": {
+    "description": "Reset config button text.",
+    "message": "🔄 Reset Config"
+  },
+  "options_button_save": {
+    "description": "Save button text.",
+    "message": "Save Settings"
+  },
+  "options_button_test_provider": {
+    "description": "Test provider connection button text.",
+    "message": "Test $PROVIDER$ Connection",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "Provider display name",
+        "example": "OpenAI"
+      }
+    }
+  },
+  "options_button_toggle_hide": {
+    "description": "API Key hide button text.",
+    "message": "Hide"
+  },
+  "options_button_toggle_show": {
+    "description": "API Key show button text.",
+    "message": "Show"
+  },
+  "options_config_loaded": {
+    "description": "Message for options page initialization completion.",
+    "message": "Configuration loaded."
+  },
+  "options_error_deck_select_placeholder": {
+    "description": "Placeholder option for the deck dropdown.",
+    "message": "Please select a default deck"
+  },
+  "options_error_fetch_anki_data": {
+    "description": "Error message for failing to fetch Anki data.",
+    "message": "Error fetching Anki data: $ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "Error details",
+        "example": "Request denied"
+      }
+    }
+  },
+  "options_error_fetch_decks": {
+    "description": "Error message for failing to fetch decks.",
+    "message": "Failed to fetch decks: $ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "Error details",
+        "example": "Connection timed out"
+      }
+    }
+  },
+  "options_error_fetch_models": {
+    "description": "Error message for failing to fetch models.",
+    "message": "Failed to fetch models: $ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "Error details",
+        "example": "Insufficient permissions"
+      }
+    }
+  },
+  "options_error_invalid_api_url": {
+    "description": "Error message for an invalid API URL format.",
+    "message": "Invalid API URL format"
+  },
+  "options_error_missing_api_key": {
+    "description": "Error message for a missing API Key when saving settings.",
+    "message": "Please enter the API Key for the current provider"
+  },
+  "options_error_model_select_placeholder": {
+    "description": "Placeholder option for the model dropdown.",
+    "message": "Please select a default model"
+  },
+  "options_error_permission_denied": {
+    "description": "Error message when an optional permission request fails.",
+    "message": "Permission to access $ORIGIN$ was not granted. Save operation cancelled.",
+    "placeholders": {
+      "ORIGIN": {
+        "content": "$1",
+        "description": "The denied origin pattern",
+        "example": "https://api.example.com/*"
+      }
+    }
+  },
+  "options_error_provider_test_failed": {
+    "description": "Error message for a failed provider connection test.",
+    "message": "Test failed: $MESSAGE$",
+    "placeholders": {
+      "MESSAGE": {
+        "content": "$1",
+        "description": "Reason for failure",
+        "example": "Request timed out"
+      }
+    }
+  },
+  "options_error_provider_test_missing_key": {
+    "description": "Error message for running a connection test without an API Key.",
+    "message": "Please enter the API Key first"
+  },
+  "options_export_status_failed": {
+    "description": "Message for a failed config export.",
+    "message": "Config export failed: $ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "Error message",
+        "example": "Permission denied"
+      }
+    }
+  },
+  "options_export_status_running": {
+    "description": "Message for an in-progress config export.",
+    "message": "Exporting config..."
+  },
+  "options_export_status_success": {
+    "description": "Message for a successful config export.",
+    "message": "Config exported successfully"
+  },
+  "options_font_size_large": {
+    "description": "Font size option: Large",
+    "message": "Large (16px)"
+  },
+  "options_font_size_medium": {
+    "description": "Font size option: Medium",
+    "message": "Medium (14px)"
+  },
+  "options_font_size_small": {
+    "description": "Font size option: Small",
+    "message": "Small (12px)"
+  },
+  "options_font_size_xlarge": {
+    "description": "Font size option: Extra Large",
+    "message": "Extra Large (18px)"
+  },
+  "options_helper_api_docs": {
+    "description": "Text for the API documentation link.",
+    "message": "API Docs"
+  },
+  "options_helper_docs_fallback": {
+    "description": "Text displayed when only a documentation link is available.",
+    "message": "See docs: "
+  },
+  "options_helper_docs_separator": {
+    "description": "Text used to separate documentation links in help tips.",
+    "message": " | Docs: "
+  },
+  "options_helper_get_api_key": {
+    "description": "Help tip: Instructions for getting an API Key.",
+    "message": "Get API Key: "
+  },
+  "options_hint_api_url_default": {
+    "description": "Hint for the default API URL.",
+    "message": "Default: $URL$",
+    "placeholders": {
+      "URL": {
+        "content": "$1",
+        "description": "Default API URL",
+        "example": "https://api.example.com/v1"
+      }
+    }
+  },
+  "options_hint_model_common": {
+    "description": "Hint listing common models.",
+    "message": "Common models: $MODELS$",
+    "placeholders": {
+      "MODELS": {
+        "content": "$1",
+        "description": "List of common models",
+        "example": "gpt-3.5-turbo, gpt-4o-mini"
+      }
+    }
+  },
+  "options_hint_test_anki_first": {
+    "description": "Hint to user to test Anki connection first.",
+    "message": "Please test Anki connection first"
+  },
+  "options_import_error_format_invalid": {
+    "description": "Error message for an invalid config file structure during import.",
+    "message": "Invalid config file format"
+  },
+  "options_import_error_json_invalid": {
+    "description": "Error message for invalid JSON during config import.",
+    "message": "Config file is not valid JSON"
+  },
+  "options_import_error_missing_ai_config": {
+    "description": "Error message for a missing aiConfig during config import.",
+    "message": "Config file is missing aiConfig"
+  },
+  "options_import_status_failed": {
+    "description": "Message for a failed config import.",
+    "message": "Config import failed: $ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "Error message",
+        "example": "File parsing failed"
+      }
+    }
+  },
+  "options_import_status_running": {
+    "description": "Message for an in-progress config import.",
+    "message": "Importing config..."
+  },
+  "options_import_status_success": {
+    "description": "Message after a successful config import.",
+    "message": "Config imported successfully, please re-configure API keys"
+  },
+  "options_label_api_url": {
+    "description": "API URL input label.",
+    "message": "API URL"
+  },
+  "options_label_deck": {
+    "description": "Deck label for the Anki Connect panel.",
+    "message": "Deck"
+  },
+  "options_label_field_info": {
+    "description": "Title for the field info area in the Anki Connect panel.",
+    "message": "Field Info"
+  },
+  "options_label_font_size": {
+    "description": "Font size label in the style settings panel.",
+    "message": "Font Size"
+  },
+  "options_label_language": {
+    "description": "Language label in the system settings panel.",
+    "message": "Language"
+  },
+  "options_label_line_height": {
+    "description": "Line height label in the style settings panel.",
+    "message": "Line Height"
+  },
+  "options_label_model": {
+    "description": "Model label for the Anki Connect panel.",
+    "message": "Model"
+  },
+  "options_label_model_name": {
+    "description": "Model name input label.",
+    "message": "Model Name"
+  },
+  "options_label_text_align": {
+    "description": "Text align label in the style settings panel.",
+    "message": "Text Align"
+  },
+  "options_language_chinese_simplified": {
+    "description": "Language dropdown option for Simplified Chinese",
+    "message": "Simplified Chinese"
+  },
+  "options_language_follow_browser": {
+    "description": "Notice that the language follows the browser setting",
+    "message": "The extension language follows your browser settings. To change it, adjust the browser display language."
+  },
+  "options_language_current_label": {
+    "description": "Label for showing the current UI language",
+    "message": "Current language"
+  },
+  "options_language_chinese_traditional": {
+    "description": "Language dropdown option for Traditional Chinese",
+    "message": "Traditional Chinese"
+  },
+  "options_language_japanese": {
+    "description": "Language dropdown option for Japanese",
+    "message": "Japanese"
+  },
+  "options_language_english": {
+    "description": "Language dropdown option for English",
+    "message": "English"
+  },
+  "options_line_height_compact": {
+    "description": "Line height option: Compact",
+    "message": "Compact (1.2)"
+  },
+  "options_line_height_loose": {
+    "description": "Line height option: Loose",
+    "message": "Loose (1.6)"
+  },
+  "options_line_height_normal": {
+    "description": "Line height option: Normal",
+    "message": "Normal (1.4)"
+  },
+  "options_model_fields_heading": {
+    "description": "Heading showing the list of fields for the selected model.",
+    "message": "Model Fields ($COUNT$):",
+    "placeholders": {
+      "COUNT": {
+        "content": "$1",
+        "description": "Number of fields detected for the model.",
+        "example": "4"
+      }
+    }
+  },
+  "options_mode_dynamic_description": {
+    "description": "Description for Dynamic Field mode.",
+    "message": "This model supports multiple fields. The AI will automatically populate all fields. The popup page will intelligently generate corresponding input areas based on field names."
+  },
+  "options_mode_dynamic_heading": {
+    "description": "Heading for Dynamic Field mode.",
+    "message": "Dynamic Field Mode"
+  },
+  "options_mode_legacy_description": {
+    "description": "Description for Legacy mode.",
+    "message": "This model has ≤ 2 fields and will use the traditional Front/Back mode."
+  },
+  "options_mode_legacy_heading": {
+    "description": "Heading for Legacy mode.",
+    "message": "Compatibility Mode"
+  },
+  "options_page_heading": {
+    "description": "Main heading for the Options page.",
+    "message": "Settings Center"
+  },
+  "options_page_title": {
+    "description": "<title> text for the Options page.",
+    "message": "Settings"
+  },
+  "options_placeholder_api_url": {
+    "description": "Placeholder for the API URL input.",
+    "message": "https://"
+  },
+  "options_placeholder_model_example": {
+    "description": "Example hint for the model name input.",
+    "message": "e.g.: $MODEL$",
+    "placeholders": {
+      "MODEL": {
+        "content": "$1",
+        "description": "Provider's default model name",
+        "example": "gpt-4o-mini"
+      }
+    }
+  },
+  "options_placeholder_model_input": {
+    "description": "Placeholder for the model name input.",
+    "message": "Enter model name"
+  },
+  "options_prompt_config_placeholder": {
+    "description": "Placeholder for the Prompt editor config area.",
+    "message": "Please select fields to configure their content."
+  },
+  "options_prompt_current_model": {
+    "description": "Default display for the current model in the Prompt panel.",
+    "message": "Current Model: Not Selected"
+  },
+  "options_prompt_current_model_label": {
+    "description": "Display for the currently selected model in the Prompt panel.",
+    "message": "Current Model: $MODEL$",
+    "placeholders": {
+      "MODEL": {
+        "content": "$1",
+        "description": "Current model name",
+        "example": "Default Word Model"
+      }
+    }
+  },
+  "options_prompt_custom_template": {
+    "description": "Title for the custom Prompt editing area.",
+    "message": "Custom Prompt Template"
+  },
+  "options_prompt_dirty_hint": {
+    "description": "Hint that the Prompt template has been modified.",
+    "message": "Modified, will take effect after saving"
+  },
+  "options_prompt_error_field_empty": {
+    "description": "Error message when a single field's content is empty.",
+    "message": "Content for field \"$FIELD$\" cannot be empty.",
+    "placeholders": {
+      "FIELD": {
+        "content": "$1",
+        "description": "Field name",
+        "example": "Sentence"
+      }
+    }
+  },
+  "options_prompt_error_field_required": {
+    "description": "Error message when Prompt field content is not filled.",
+    "message": "Field content is required"
+  },
+  "options_prompt_error_fields_empty": {
+    "description": "Error message when multiple fields' content is empty.",
+    "message": "The following fields cannot be empty: $FIELDS$",
+    "placeholders": {
+      "FIELDS": {
+        "content": "$1",
+        "description": "Comma-separated list of field names",
+        "example": "Definition, Sentence"
+      }
+    }
+  },
+  "options_prompt_error_generate_first": {
+    "description": "Error for not configuring fields before generating a default Prompt.",
+    "message": "Please select and configure fields before generating the default prompt."
+  },
+  "options_prompt_error_select_fields": {
+    "description": "Error message when no fields are selected.",
+    "message": "Please select at least one field to output."
+  },
+  "options_prompt_field_config": {
+    "description": "Title for the field configuration area in the Prompt panel.",
+    "message": "Field Configuration"
+  },
+  "options_prompt_field_config_hint": {
+    "description": "Instructions for field configuration in the Prompt panel.",
+    "message": "Configure the information needed for the AI to generate output for this field"
+  },
+  "options_prompt_field_label": {
+    "description": "Field content label in the Prompt editor.",
+    "message": "Field Content"
+  },
+  "options_prompt_field_placeholder": {
+    "description": "Placeholder for the field content input in the Prompt editor.",
+    "message": "Describe what this field should contain, e.g., output structure, tone, etc."
+  },
+  "options_prompt_field_select": {
+    "description": "Title for the field selection area in the Prompt panel.",
+    "message": "Field Selection"
+  },
+  "options_prompt_field_select_hint": {
+    "description": "Hint for field selection in the Prompt panel.",
+    "message": "Click a field to toggle its selection status"
+  },
+  "options_prompt_generate_default": {
+    "description": "Test button text in the Prompt panel.",
+    "message": "Test Connection and Refresh Models"
+  },
+  "options_prompt_hint_save_usage": {
+    "description": "Hint in the Prompt panel: takes effect after saving.",
+    "message": "Hint: This prompt will be used in the popup after saving the settings."
+  },
+  "options_prompt_no_fields": {
+    "description": "Prompt editor hint: no fields returned.",
+    "message": "The current model does not return any fields."
+  },
+  "options_prompt_not_found": {
+    "description": "Warning when Prompt-related DOM elements are missing.",
+    "message": "Prompt settings elements not found"
+  },
+  "options_prompt_reset_default": {
+    "description": "Reset button text in the Prompt area.",
+    "message": "Reset to Default Template"
+  },
+  "options_prompt_rule_field_definition": {
+    "description": "Prompt rule: Field definition title.",
+    "message": "Field Content Definition:"
+  },
+  "options_prompt_rule_field_fallback": {
+    "description": "Prompt rule: Default description for field placeholders.",
+    "message": "Please generate content related to this field."
+  },
+  "options_prompt_rule_intro": {
+    "description": "Rule instructions when generating a default Prompt.",
+    "message": "Please strictly follow the requirements below to generate the output."
+  },
+  "options_prompt_rule_note_json_only": {
+    "description": "Prompt rule: Return only JSON hint.",
+    "message": "- Return only JSON, do not include extra explanations."
+  },
+  "options_prompt_rule_note_requirements": {
+    "description": "Prompt rule: Meet requirements hint.",
+    "message": "- Ensure the content of each field meets the requirements above."
+  },
+  "options_prompt_rule_notes": {
+    "description": "Prompt rule: Notes title.",
+    "message": "Notes:"
+  },
+  "options_prompt_rule_output_format": {
+    "description": "Prompt rule: Output format title.",
+    "message": "Output Format Definition:"
+  },
+  "options_prompt_rule_output_json": {
+    "description": "Prompt rule: JSON output requirement.",
+    "message": "Please return the result in the following JSON structure, including only the listed fields:"
+  },
+  "options_prompt_rule_output_line": {
+    "description": "Prompt rule: JSON field definition.",
+    "message": "  \"$FIELD$\": \"Please fill in the content for $FIELD$\"$SUFFIX$",
+    "placeholders": {
+      "FIELD": {
+        "content": "$1",
+        "description": "Field name",
+        "example": "Definition"
+      },
+      "SUFFIX": {
+        "content": "$2",
+        "description": "Comma or empty string",
+        "example": ","
+      }
+    }
+  },
+  "options_prompt_select_fields": {
+    "description": "Prompt editor hint: prompt to select fields.",
+    "message": "Please select the fields to output and complete their content."
+  },
+  "options_prompt_status_generated": {
+    "description": "Message after generating a default Prompt.",
+    "message": "Default prompt has been generated based on the current field configuration."
+  },
+  "options_prompt_status_ready": {
+    "description": "Message for completed Prompt field configuration.",
+    "message": "Field configuration is ready."
+  },
+  "options_prompt_template_placeholder": {
+    "description": "Placeholder for the custom Prompt editor.",
+    "message": "Please select a model and then write the corresponding prompt.\nIt is recommended to include the following placeholders:\n- {{INPUT_TEXT}} for user input\n- {{FIELD_SCHEMA}} for field structure"
+  },
+  "options_reset_confirm": {
+    "description": "Confirmation prompt before resetting config.",
+    "message": "Are you sure you want to reset all configurations? This action cannot be undone."
+  },
+  "options_reset_status_failed": {
+    "description": "Message for a failed config reset.",
+    "message": "Failed to reset config: $ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "Error message",
+        "example": "Write failed"
+      }
+    }
+  },
+  "options_reset_status_running": {
+    "description": "Message for an in-progress config reset.",
+    "message": "Resetting config..."
+  },
+  "options_reset_status_success": {
+    "description": "Message for a successful config reset.",
+    "message": "Config has been reset to default values"
+  },
+  "options_save_status_failed": {
+    "description": "Error message when saving settings fails.",
+    "message": "Error saving settings: $ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "Error details",
+        "example": "Permission denied"
+      }
+    }
+  },
+  "options_save_status_success": {
+    "description": "Message after successfully saving settings.",
+    "message": "Settings saved"
+  },
+  "options_section_choose_provider": {
+    "description": "Title for the AI provider selection section.",
+    "message": "Choose AI Provider"
+  },
+  "options_section_config_management": {
+    "description": "Title for the config management area.",
+    "message": "Configuration Management"
+  },
+  "options_section_config_management_hint": {
+    "description": "Description for the config management area.",
+    "message": "Export, import, or reset your configuration settings. Note: Exported config files do not include API keys for security."
+  },
+  "options_section_prompt_by_model": {
+    "description": "Title for the Prompt configuration section.",
+    "message": "Configure Prompt by Model"
+  },
+  "options_section_prompt_instruction": {
+    "description": "Instructions for the Prompt configuration area.",
+    "message": "Please select the model to edit in the 'Anki Connect' panel, then customize the prompt here."
+  },
+  "options_section_style_preview": {
+    "description": "Title for the style preview area.",
+    "message": "Style Preview"
+  },
+  "options_status_health_error": {
+    "description": "Provider status: Error",
+    "message": "Error"
+  },
+  "options_status_health_ok": {
+    "description": "Provider status: Healthy",
+    "message": "Healthy"
+  },
+  "options_status_health_unknown": {
+    "description": "Provider status: Unknown",
+    "message": "Unknown"
+  },
+  "options_status_last_checked": {
+    "description": "Hint for the provider's last check time.",
+    "message": "Last checked: $TIME$",
+    "placeholders": {
+      "TIME": {
+        "content": "$1",
+        "description": "Last check time text",
+        "example": "2025-01-10 12:00"
+      }
+    }
+  },
+  "options_status_not_tested": {
+    "description": "Default message for connection status.",
+    "message": "Connection not tested yet"
+  },
+  "options_status_prefix": {
+    "description": "Prefix for provider health status.",
+    "message": "Status: $STATUS$",
+    "placeholders": {
+      "STATUS": {
+        "content": "$1",
+        "description": "Provider health status text",
+        "example": "Healthy"
+      }
+    }
+  },
+  "options_status_provider_test_success": {
+    "description": "Message for a successful provider connection test.",
+    "message": "Connection test successful"
+  },
+  "options_status_reason": {
+    "description": "Hint for the reason of a provider error.",
+    "message": "Reason: $REASON$",
+    "placeholders": {
+      "REASON": {
+        "content": "$1",
+        "description": "Reason for the error",
+        "example": "Request timed out"
+      }
+    }
+  },
+  "options_status_saving": {
+    "description": "Status message when saving settings.",
+    "message": "Saving settings..."
+  },
+  "options_style_preview_description": {
+    "description": "Second line of sample text in the style preview area.",
+    "message": "Used to preview font, alignment, and line height effects."
+  },
+  "options_style_preview_sample": {
+    "description": "First line of sample text in the style preview area.",
+    "message": "This is a sample text."
+  },
+  "options_tab_ai": {
+    "description": "Label for the AI settings panel.",
+    "message": "AI Settings"
+  },
+  "options_tab_anki": {
+    "description": "Label for the Anki settings panel.",
+    "message": "Anki Connect"
+  },
+  "options_tab_prompt": {
+    "description": "Label for the Prompt settings panel.",
+    "message": "Prompt Settings"
+  },
+  "options_tab_style": {
+    "description": "Label for the UI style settings panel.",
+    "message": "Style Settings"
+  },
+  "options_tab_system": {
+    "description": "Label for the system settings panel.",
+    "message": "System Settings"
+  },
+  "options_test_running": {
+    "description": "Message when testing Anki or AI connection.",
+    "message": "Testing connection and refreshing data..."
+  },
+  "options_test_success_with_version": {
+    "description": "Version information displayed after a successful Anki test.",
+    "message": "Connection successful, AnkiConnect version: $VERSION$",
+    "placeholders": {
+      "VERSION": {
+        "content": "$1",
+        "description": "Version number returned by AnkiConnect",
+        "example": "2.5.0"
+      }
+    }
+  },
+  "options_text_align_center": {
+    "description": "Text align option: Center",
+    "message": "Center"
+  },
+  "options_text_align_left": {
+    "description": "Text align option: Left",
+    "message": "Left"
+  },
+  "options_text_align_right": {
+    "description": "Text align option: Right",
+    "message": "Right"
+  },
+  "options_warning_permission_declined": {
+    "description": "Log message for a declined permission request.",
+    "message": "Domain permission request declined: $ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "Error details",
+        "example": "User cancelled"
+      }
+    }
+  },
+  "popup_app_title": {
+    "description": "Popup page title, used for <title> and header.",
+    "message": "Anki Word Assistant"
+  },
+  "popup_confirm_reload": {
+    "description": "Refresh prompt after a critical error.",
+    "message": "$MESSAGE$\n\nClick OK to refresh the page, or Cancel to continue.",
+    "placeholders": {
+      "MESSAGE": {
+        "content": "$1",
+        "description": "Previous error message",
+        "example": "Frequent errors detected, it is recommended to refresh the page or check the network connection"
+      }
+    }
+  },
+  "popup_confirm_retry": {
+    "description": "Confirmation dialog to retry after an error.",
+    "message": "$MESSAGE$\n\nRetry now?",
+    "placeholders": {
+      "MESSAGE": {
+        "content": "$1",
+        "description": "Previous error message",
+        "example": "AI parsing failed: Request timed out"
+      }
+    }
+  },
+  "popup_dynamic_field_placeholder": {
+    "description": "Placeholder for the dynamic field textarea.",
+    "message": "AI will auto-fill this field..."
+  },
+  "popup_dynamic_fields_missing": {
+    "description": "Message displayed in the container when dynamic fields are empty.",
+    "message": "No fillable fields are currently configured. Please complete the field configuration in the options page."
+  },
+  "popup_dynamic_fill_complete": {
+    "description": "Prefix for the message when dynamic field filling is complete.",
+    "message": "Dynamic field filling complete:"
+  },
+  "popup_dynamic_fill_error": {
+    "description": "Prefix for the error message when filling dynamic fields.",
+    "message": "Error filling dynamic fields:"
+  },
+  "popup_error_ai_config": {
+    "description": "Error message for missing or incorrect AI service credentials.",
+    "message": "AI service configuration error, please check the API Key in the settings page"
+  },
+  "popup_error_ai_field_mismatch": {
+    "description": "Error message when AI returned fields do not match expectations.",
+    "message": "AI output fields do not match, please check the model configuration"
+  },
+  "popup_error_ai_format_retry": {
+    "description": "Retry message for an abnormal AI return format.",
+    "message": "AI parsing format error, auto-retrying..."
+  },
+  "popup_error_ai_generic": {
+    "description": "Generic error message for AI parsing failure, including a concise error message.",
+    "message": "AI parsing failed: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1",
+        "description": "Concise error description",
+        "example": "Request timed out"
+      }
+    }
+  },
+  "popup_error_ai_quota": {
+    "description": "Error message when AI service quota is exhausted.",
+    "message": "AI service quota exceeded, please check your account status or switch providers"
+  },
+  "popup_error_anki_deck_missing": {
+    "description": "Error message when the deck does not exist.",
+    "message": "The specified deck does not exist, please check the configuration"
+  },
+  "popup_error_anki_duplicate": {
+    "description": "Error message for duplicate content on write.",
+    "message": "Card content is a duplicate, please modify and try again"
+  },
+  "popup_error_anki_generic": {
+    "description": "Generic error message for a failed Anki operation, including a concise error message.",
+    "message": "Anki operation failed: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1",
+        "description": "Concise error description",
+        "example": "Connection timed out"
+      }
+    }
+  },
+  "popup_error_anki_launch": {
+    "description": "Error message when Anki is not running or the addon is missing.",
+    "message": "Please start Anki and ensure the AnkiConnect addon is installed"
+  },
+  "popup_error_anki_model_missing": {
+    "description": "Error message when the model does not exist.",
+    "message": "The specified model does not exist, please check the configuration"
+  },
+  "popup_error_config_load": {
+    "description": "Message for using default config when loading user config fails.",
+    "message": "Configuration loading failed, using default configuration"
+  },
+  "popup_error_dom_missing": {
+    "description": "Error message for missing critical DOM elements.",
+    "message": "Page elements are missing, please refresh the page and try again"
+  },
+  "popup_error_field_empty": {
+    "description": "Error message for not filling any fields before writing.",
+    "message": "Please fill in at least one field"
+  },
+  "popup_error_field_generic": {
+    "description": "Generic error message for field processing related errors.",
+    "message": "Field processing error: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1",
+        "description": "Concise error description",
+        "example": "Invalid field format"
+      }
+    }
+  },
+  "popup_error_generic": {
+    "description": "Generic error message for uncategorized errors.",
+    "message": "Operation failed: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1",
+        "description": "Concise error description",
+        "example": "Unknown error"
+      }
+    }
+  },
+  "popup_error_network": {
+    "description": "Error message for a network error.",
+    "message": "Network connection failed, please check your network and try again"
+  },
+  "popup_error_rate_limit": {
+    "description": "Message prompting user to refresh or check network due to frequent errors.",
+    "message": "Frequent errors detected, it is recommended to refresh the page or check the network connection"
+  },
+  "popup_field_all_empty_warning": {
+    "description": "Warning when all fields are empty.",
+    "message": "Warning: All fields are empty, please check the AI parsing result"
+  },
+  "popup_field_empty_count": {
+    "description": "Message showing the number of empty fields.",
+    "message": "($COUNT$ fields are empty)",
+    "placeholders": {
+      "COUNT": {
+        "content": "$1",
+        "description": "Number of empty fields",
+        "example": "3"
+      }
+    }
+  },
+  "popup_field_fill_failed": {
+    "description": "Detailed message for a failed field fill.",
+    "message": "Field filling failed: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1",
+        "description": "Error details",
+        "example": "Field example not found"
+      }
+    }
+  },
+  "popup_field_missing_dom_prefix": {
+    "description": "Prefix for the list of missing DOM elements.",
+    "message": "Missing DOM elements:"
+  },
+  "popup_field_missing_dom_summary": {
+    "description": "Summary of the number of missing DOM elements.",
+    "message": "[$COUNT$ elements missing]",
+    "placeholders": {
+      "COUNT": {
+        "content": "$1",
+        "description": "Number of missing elements",
+        "example": "2"
+      }
+    }
+  },
+  "popup_field_not_found": {
+    "description": "Error message when a dynamic field's corresponding DOM element is missing.",
+    "message": "Field element not found: $ID$ ($LABEL$)",
+    "placeholders": {
+      "ID": {
+        "content": "$1",
+        "description": "Field element ID",
+        "example": "dynamic-field-1"
+      },
+      "LABEL": {
+        "content": "$2",
+        "description": "Field label name",
+        "example": "Definition"
+      }
+    }
+  },
+  "popup_field_preview": {
+    "description": "Prefix for the field preview content.",
+    "message": "Filled: $VALUE$",
+    "placeholders": {
+      "VALUE": {
+        "content": "$1",
+        "description": "Truncated field content",
+        "example": "example text..."
+      }
+    }
+  },
+  "popup_field_progress": {
+    "description": "Field filling progress information.",
+    "message": "$FILLED$/$TOTAL$ fields filled",
+    "placeholders": {
+      "FILLED": {
+        "content": "$1",
+        "description": "Number of filled fields",
+        "example": "2"
+      },
+      "TOTAL": {
+        "content": "$2",
+        "description": "Total number of fields",
+        "example": "5"
+      }
+    }
+  },
+  "popup_field_tag_filled": {
+    "description": "Filled status text for a field chip.",
+    "message": "Filled: $FIELD$",
+    "placeholders": {
+      "FIELD": {
+        "content": "$1",
+        "description": "Field name",
+        "example": "Definition"
+      }
+    }
+  },
+  "popup_field_tag_pending": {
+    "description": "Pending status text for a field chip.",
+    "message": "Pending: $FIELD$",
+    "placeholders": {
+      "FIELD": {
+        "content": "$1",
+        "description": "Field name",
+        "example": "Sentence"
+      }
+    }
+  },
+  "popup_field_tag_pending_label": {
+    "description": "Pending status label for a field chip.",
+    "message": "Pending"
+  },
+  "popup_hint_anki_connection": {
+    "description": "Hint for connection as a reason for Anki write failure.",
+    "message": "Anki operation failure might be a connection issue"
+  },
+  "popup_hint_parse_network": {
+    "description": "Hint for network as a reason for parsing failure.",
+    "message": "Parsing failure might be a temporary network issue"
+  },
+  "popup_hint_retry_general": {
+    "description": "Hint to retry for a generic failure.",
+    "message": "Operation failure might be a temporary issue"
+  },
+  "popup_input_label": {
+    "description": "Label for the Popup text input area.",
+    "message": "Input Text"
+  },
+  "popup_input_placeholder": {
+    "description": "Placeholder for the Popup text input.",
+    "message": "Paste or type text..."
+  },
+  "popup_parse_button": {
+    "description": "Button text to trigger AI parsing.",
+    "message": "Parse"
+  },
+  "popup_retry_hint_anki": {
+    "description": "Additional hint for an Anki failure.",
+    "message": "Anki operation failure might be a connection issue"
+  },
+  "popup_retry_hint_generic": {
+    "description": "Additional hint for a generic failure.",
+    "message": "Operation failure might be a temporary issue"
+  },
+  "popup_retry_hint_parse": {
+    "description": "Additional hint for a parsing failure.",
+    "message": "Parsing failure might be a temporary network issue"
+  },
+  "popup_status_collect_complete": {
+    "description": "Prefix for the message on successful field collection.",
+    "message": "Field collection complete:"
+  },
+  "popup_status_collect_error": {
+    "description": "Error message for the field collection stage.",
+    "message": "Field collection failed: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1",
+        "description": "List of error details",
+        "example": "text-input not found"
+      }
+    }
+  },
+  "popup_status_collect_failed": {
+    "description": "Prefix for the message on failed field collection.",
+    "message": "Field collection failed:"
+  },
+  "popup_status_config_loaded": {
+    "description": "Prefix for the message when user config is loaded.",
+    "message": "User config loaded:"
+  },
+  "popup_status_field_names_invalid": {
+    "description": "Error message for invalid dynamic field names.",
+    "message": "Field name array is empty or invalid"
+  },
+  "popup_status_legacy_fallback_failed": {
+    "description": "Error message for a failed legacy fallback.",
+    "message": "Fallback to legacy mode also failed: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1",
+        "description": "Error details",
+        "example": "DOM element missing"
+      }
+    }
+  },
+  "popup_status_no_configured_fields": {
+    "description": "Message for no field configuration detected at any stage.",
+    "message": "No fields configured for the current model. Please complete the configuration on the options page."
+  },
+  "popup_status_no_fields_parse": {
+    "description": "No field configuration detected during parsing.",
+    "message": "No parsable fields configured for the current model. Please complete the setup on the options page."
+  },
+  "popup_status_no_fields_write": {
+    "description": "No field configuration detected during writing.",
+    "message": "No writable fields configured for the current model. Please complete the setup on the options page."
+  },
+  "popup_status_no_fillable_fields": {
+    "description": "Error message for no fields collected before writing.",
+    "message": "No fillable field content"
+  },
+  "popup_status_parse_result_empty": {
+    "description": "Error message for an empty or invalid AI result.",
+    "message": "AI parsing result is empty or in an invalid format"
+  },
+  "popup_status_input_required": {
+    "description": "popup status bar: error hint when no text is provided",
+    "message": "Please enter text to parse"
+  },
+  "popup_status_parsed": {
+    "description": "popup status bar: parsing complete",
+    "message": "Parsing complete"
+  },
+  "popup_status_parsing": {
+    "description": "popup status bar: parsing in progress",
+    "message": "AI parsing in progress..."
+  },
+  "popup_status_prompt_input": {
+    "description": "popup status bar: waiting for user input",
+    "message": "Please enter text to parse"
+  },
+  "popup_status_ready": {
+    "description": "popup status bar: initialization complete",
+    "message": "Ready"
+  },
+  "popup_status_ready_to_write": {
+    "description": "Prefix for the message before writing.",
+    "message": "Ready to write to Anki:"
+  },
+  "popup_status_style_error": {
+    "description": "Error message for the style wrapping stage.",
+    "message": "Style wrapping failed: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1",
+        "description": "Error details",
+        "example": "DOM element does not exist"
+      }
+    }
+  },
+  "popup_status_validation_continue": {
+    "description": "Message for continuing to write with validation warnings.",
+    "message": "$MESSAGE$, continuing to write...",
+    "placeholders": {
+      "MESSAGE": {
+        "content": "$1",
+        "description": "Validation warning message",
+        "example": "Card content has unfilled fields"
+      }
+    }
+  },
+  "popup_status_validation_failed": {
+    "description": "Prefix for the message on failed field validation.",
+    "message": "Field validation failed:"
+  },
+  "popup_status_validation_warning_header": {
+    "description": "Header for field validation warnings.",
+    "message": "Field Validation Warnings:"
+  },
+  "popup_status_write_success": {
+    "description": "Message after a successful write.",
+    "message": "Write successful"
+  },
+  "popup_status_writing": {
+    "description": "popup status bar: writing in progress",
+    "message": "Writing to Anki..."
+  },
+  "popup_warning_prefix": {
+    "description": "Prefix for concatenating warning details.",
+    "message": "Warning: $DETAIL$",
+    "placeholders": {
+      "DETAIL": {
+        "content": "$1",
+        "description": "Warning text",
+        "example": "Parsing result is empty"
+      }
+    }
+  },
+  "popup_write_button": {
+    "description": "Button text to trigger writing to Anki.",
+    "message": "Write to Anki"
+  },
+  "prompt_engine_custom_template_header": {
+    "description": "Header for dynamic Prompt template generation.",
+    "message": "$TEMPLATE$\n-------------------------------\nHere is the input for this session: $INPUT$",
+    "placeholders": {
+      "INPUT": {
+        "content": "$2",
+        "description": "User input text",
+        "example": "test word"
+      },
+      "TEMPLATE": {
+        "content": "$1",
+        "description": "Custom Prompt template",
+        "example": "You are an English teacher."
+      }
+    }
+  },
+  "prompt_engine_default_header": {
+    "description": "Default comprehensive Prompt header description.",
+    "message": "# Role: Professional Word Lookup Assistant\n\nPlease complete the following tasks:\n1. Look up the word/phrase: \"{{INPUT_TEXT}}\"\n2. Generate detailed analysis information\n3. Output in the following JSON format:\n{{FIELD_SCHEMA}}\n\nRequirements:\n- Output in pure JSON format, without any explanatory text\n- Fill in the corresponding fields based on the characteristics of the word/phrase\n- If a field is not applicable, you can omit it"
+  },
+  "prompt_engine_error_json_parse": {
+    "description": "Error message for failing to parse the Prompt generation result JSON.",
+    "message": "JSON parsing failed: $ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "Error details",
+        "example": "Unexpected token"
+      }
+    }
+  },
+  "prompt_engine_field_prompt": {
+    "description": "Template for generating field descriptions.",
+    "message": "Content related to $FIELD$",
+    "placeholders": {
+      "FIELD": {
+        "content": "$1",
+        "description": "Field name",
+        "example": "Definition"
+      }
+    }
+  },
+  "prompt_engine_schema_word": {
+    "description": "Schema hint: indicates the word itself",
+    "message": "The word itself"
+  },
+  "prompt_engine_schema_reading": {
+    "description": "Schema hint: pronunciation guidance",
+    "message": "Pronunciation / phonetics"
+  },
+  "prompt_engine_schema_meaning": {
+    "description": "Schema hint: meaning guidance",
+    "message": "Definition and explanation"
+  },
+  "prompt_engine_requirements_body": {
+    "description": "Dynamic Prompt requirements description.",
+    "message": "\n\nRequirements:\n- Output in valid JSON format\n- Only use fields: $FIELDS$\n- Partial output is acceptable, but field names must be accurate",
+    "placeholders": {
+      "FIELDS": {
+        "content": "$1",
+        "description": "Allowed fields list",
+        "example": "front, back"
+      }
+    }
+  },
+  "storage_error_api_key_decrypt": {
+    "description": "Log message prefix for a failed API Key decryption.",
+    "message": "[storage] Failed to decrypt API key for $PROVIDER$:",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "Provider ID",
+        "example": "anthropic"
+      }
+    }
+  },
+  "storage_error_api_key_decrypt_reset": {
+    "description": "Message for a failed API Key decryption that falls back to an empty string.",
+    "message": "[storage] Failed to decrypt API key for $PROVIDER$, reset to an empty string.",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "Provider ID",
+        "example": "anthropic"
+      }
+    }
+  },
+  "storage_error_loading_config": {
+    "description": "Log prefix for a failed config load.",
+    "message": "Error loading settings:"
+  },
+  "storage_info_migrating_config": {
+    "description": "Message for detecting legacy settings.",
+    "message": "Legacy settings detected, updating schema."
+  },
+  "storage_info_migration_done": {
+    "description": "Message for a completed config migration.",
+    "message": "Settings migration complete."
+  },
+  "storage_info_missing_config": {
+    "description": "Message for not finding a user config.",
+    "message": "No saved settings found, will return default values."
+  },
+  "storage_warning_missing_salt": {
+    "description": "Log message for a missing encryption salt.",
+    "message": "[storage] Encryption salt for $PROVIDER$ not found, using default provider.",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "Provider ID",
+        "example": "openai"
+      }
+    }
+  },
+  "ai_service_connection_test_failed_with_reason": {
+    "description": "Connection test failed with a specific reason.",
+    "message": "Connection test failed: $ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "Failure reason",
+        "example": "Invalid credentials"
+      }
+    }
+  },
+  "ai_service_connection_test_failed_missing_key": {
+    "description": "Connection test failed because the API key was missing.",
+    "message": "Connection test failed: API key is not configured"
+  },
+  "ai_service_connection_test_success": {
+    "description": "Connection test completed successfully.",
+    "message": "$PROVIDER$ connection test succeeded",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "Provider name",
+        "example": "OpenAI"
+      }
+    }
+  },
+  "options_permission_request_error": {
+    "description": "Shown when requesting optional host permissions fails.",
+    "message": "Failed to request permission for $ORIGIN$",
+    "placeholders": {
+      "ORIGIN": {
+        "content": "$1",
+        "description": "Origin URL pattern",
+        "example": "https://api.example.com/*"
+      }
+    }
+  },
+  "options_provider_custom_url_hint": {
+    "description": "Hint displayed under the provider custom URL field.",
+    "message": "Current URL: $URL$",
+    "placeholders": {
+      "URL": {
+        "content": "$1",
+        "description": "Configured URL",
+        "example": "https://custom.api.endpoint"
+      }
+    }
+  },
+  "options_provider_test_button": {
+    "description": "Label for the provider connection test button.",
+    "message": "Test $PROVIDER$ connection",
+    "placeholders": {
+      "PROVIDER": {
+        "content": "$1",
+        "description": "Provider label",
+        "example": "Anthropic"
+      }
+    }
+  },
+  "options_provider_test_status_error": {
+    "description": "Status message when a provider test fails.",
+    "message": "Test failed: $ERROR$",
+    "placeholders": {
+      "ERROR": {
+        "content": "$1",
+        "description": "Error message",
+        "example": "Timeout"
+      }
+    }
+  },
+  "options_default_deck_placeholder": {
+    "description": "Placeholder for the default deck select box.",
+    "message": "Select a default deck"
+  },
+  "options_default_model_placeholder": {
+    "description": "Placeholder for the default model select box.",
+    "message": "Select a default model"
+  }
+}

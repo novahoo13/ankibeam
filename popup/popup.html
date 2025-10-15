@@ -13,17 +13,18 @@
   - 响应式布局适配不同屏幕尺寸
   - 模块化JavaScript集成
 -->
-<html lang="zh-CN">
+<html>
   <!-- 设置页面语言为简体中文，支持正确的文本渲染和搜索引擎优化 -->
   <head>
     <meta charset="UTF-8" />
     <!-- UTF-8编码确保中文字符正确显示 -->
-    <title>Anki 单词助手</title>
+    <title data-i18n="popup_app_title"></title>
     <!-- 扩展程序标题，显示在浏览器标签页 -->
     <!-- Tailwind CSS框架 - 提供实用的CSS类用于快速样式开发 -->
     <link rel="stylesheet" href="../styles/tailwind.min.css" />
     <!-- 自定义CSS样式 - 扩展Tailwind功能，定义项目特定样式 -->
     <link rel="stylesheet" href="../styles/custom-classes.css" />
+    <script type="module" src="../utils/i18n.js"></script>
   </head>
   <body>
     <!--
@@ -46,9 +47,8 @@
             - data-i18n="appName": 国际化标识符，支持多语言切换
             - text-lg font-semibold: 大号字体和半粗体，突出显示
           -->
-          <h1 class="text-lg font-semibold" data-i18n="appName">
-            Anki 单词助手
-          </h1>
+          <h1 class="text-lg font-semibold" data-i18n="popup_app_title"></h1>
+
           <!--
             状态消息显示区域
             - 用于显示当前操作状态（如：解析中、写入中等）
@@ -82,9 +82,8 @@
             - text-gray-700: 深灰色文字，符合Material Design规范
             - mb-2: 底部外边距8px
           -->
-          <label class="block text-sm font-medium text-gray-700 mb-2"
-            >输入文本</label
-          >
+          <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="popup_input_label"></label>
+
           <!--
             多行文本输入框
             - id="text-input": JavaScript操作的目标元素
@@ -96,7 +95,9 @@
           <textarea
             id="text-input"
             rows="2"
-            placeholder="粘贴或输入文本..."
+            placeholder=""
+            data-i18n-placeholder="popup_input_placeholder"
+            data-i18n-aria="popup_input_label"
             class="w-full p-3 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-sm"
           ></textarea>
         </div>
@@ -109,7 +110,7 @@
           <!--
             解析按钮
             - id="parse-btn": JavaScript事件绑定目标
-            - data-i18n="parseBtn": 国际化文本标识
+            - data-i18n="popup_parse_button": 国际化文本标识
             - w-full: 按钮占满容器宽度
             - bg-slate-600 hover:bg-slate-700: 背景色和悬停效果
             - transition duration-200: 200ms过渡动画，提升用户体验
@@ -118,10 +119,10 @@
           -->
           <button
             id="parse-btn"
-            data-i18n="parseBtn"
+            data-i18n="popup_parse_button"
+            data-i18n-aria="popup_parse_button"
             class="w-full bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500"
           >
-            解析
           </button>
         </div>
 
@@ -159,6 +160,7 @@
 
           样式特点：
           - id="write-btn": JavaScript操作目标
+          - data-i18n="popup_write_button": 国际化文本标识
           - disabled: 初始状态禁用，防止在没有内容时误操作
           - bg-emerald-600: 绿色背景，表示确认/提交操作
           - disabled:opacity-50: 禁用时半透明效果
@@ -166,11 +168,11 @@
         -->
         <button
           id="write-btn"
-          data-i18n="writeBtn"
+            data-i18n="popup_write_button"
+            data-i18n-aria="popup_write_button"
           disabled
           class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
         >
-          写入 Anki
         </button>
       </div>
     </div>

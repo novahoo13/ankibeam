@@ -15,12 +15,12 @@
   - 表单验证和实时反馈
   - 配置数据持久化存储
 -->
-<html lang="zh-CN">
+<html>
   <!-- 设置页面语言为简体中文 -->
   <head>
     <meta charset="UTF-8" />
     <!-- UTF-8编码支持中文显示 -->
-    <title>设置</title>
+    <title data-i18n="options_page_title"></title>
     <!-- Chrome扩展设置页面标题 -->
     <!-- Tailwind CSS框架 - 提供丰富的实用CSS类 -->
     <link rel="stylesheet" href="../styles/tailwind.min.css" />
@@ -73,6 +73,7 @@
         border-bottom-color: rgb(71, 85, 105); /* 底部边框高亮 */
       }
     </style>
+    <script type="module" src="../utils/i18n.js"></script>
   </head>
   <body>
     <!--
@@ -102,9 +103,7 @@
             - text-gray-900: 深灰色文字，高对比度
             - mb-8 text-center: 底部外边距和居中对齐
           -->
-          <h1 class="text-3xl font-bold text-gray-900 mb-8 text-center">
-            设置中心
-          </h1>
+          <h1 class="text-3xl font-bold text-gray-900 mb-8 text-center" data-i18n="options_page_heading"></h1>
 
           <!--
             标签页导航栏
@@ -132,6 +131,7 @@
               aria-controls="ai-config-panel"
               class="settings-tab-btn flex items-center px-3 py-2 text-xs font-medium text-slate-600 bg-slate-50 border-b-2 border-slate-500 hover:bg-slate-100 transition-colors duration-200 active"
               data-tab="ai-config"
+              data-i18n-aria="options_tab_ai"
             >
               <!-- AI电灯SVG图标 - 表示AI智能功能 -->
               <svg
@@ -147,7 +147,7 @@
                   d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
                 ></path>
               </svg>
-              AI 配置
+              <span data-i18n="options_tab_ai"></span>
             </button>
 
             <!--
@@ -163,6 +163,7 @@
               aria-controls="anki-config-panel"
               class="settings-tab-btn flex items-center px-3 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent hover:border-gray-300 transition-colors duration-200"
               data-tab="anki-config"
+              data-i18n-aria="options_tab_anki"
             >
               <!-- 书本SVG图标 - 表示Anki学习卡片功能 -->
               <svg
@@ -178,7 +179,7 @@
                   d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
                 ></path>
               </svg>
-              Anki 连接
+              <span data-i18n="options_tab_anki"></span>
             </button>
             <!--
               Prompt配置标签按钮
@@ -192,6 +193,7 @@
               aria-controls="prompt-config-panel"
               class="settings-tab-btn flex items-center px-3 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent hover:border-gray-300 transition-colors duration-200"
               data-tab="prompt-config"
+              data-i18n-aria="options_tab_prompt"
             >
               <!-- 编辑SVG图标 - 表示Prompt编辑功能 -->
               <svg
@@ -207,7 +209,7 @@
                   d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                 ></path>
               </svg>
-              Prompt 配置
+              <span data-i18n="options_tab_prompt"></span>
             </button>
 
             <!--
@@ -224,6 +226,7 @@
               aria-controls="style-config-panel"
               class="settings-tab-btn flex items-center px-3 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent hover:border-gray-300 transition-colors duration-200"
               data-tab="style-config"
+              data-i18n-aria="options_tab_style"
             >
               <!-- 板式SVG图标 - 表示样式设计功能 -->
               <svg
@@ -239,7 +242,7 @@
                   d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z"
                 ></path>
               </svg>
-              样式设置
+              <span data-i18n="options_tab_style"></span>
             </button>
 
             <!--
@@ -255,6 +258,7 @@
               aria-controls="system-config-panel"
               class="settings-tab-btn flex items-center px-3 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent hover:border-gray-300 transition-colors duration-200"
               data-tab="system-config"
+              data-i18n-aria="options_tab_system"
             >
               <!-- 齿轮SVG图标 - 表示系统配置功能 -->
               <svg
@@ -276,7 +280,7 @@
                   d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                 ></path>
               </svg>
-              系统设置
+              <span data-i18n="options_tab_system"></span>
             </button>
           </nav>
 
@@ -313,7 +317,7 @@
                   <label
                     for="ai-provider"
                     class="block text-sm font-medium text-gray-700 mb-2"
-                    >选择 AI 提供商</label
+                    data-i18n="options_section_choose_provider"></label
                   >
                   <select
                     id="ai-provider"
@@ -366,20 +370,17 @@
                     class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4"
                   >
                     <div>
-                      <h3 class="text-lg font-semibold text-gray-800">
-                        按模板配置 Prompt
+                      <h3 class="text-lg font-semibold text-gray-800" data-i18n="options_section_prompt_by_model">
+                        
                       </h3>
                       <!-- 操作提示信息 -->
-                      <p id="prompt-model-hint" class="text-sm text-gray-600">
-                        请在「Anki 连接」面板选择要编辑的模型，随后在这里自定义
-                        Prompt。
-                      </p>
+                      <p id="prompt-model-hint" class="text-sm text-gray-600" data-i18n="options_section_prompt_instruction"></p>
                     </div>
                     <!-- 当前模板状态显示 -->
                     <span
                       id="prompt-current-model"
                       class="text-sm text-slate-600 bg-white border border-slate-200 rounded-md px-3 py-1"
-                      >当前模板：未选择</span
+                      data-i18n="options_prompt_current_model"></span
                     >
                   </div>
 
@@ -403,12 +404,12 @@
                     -->
                     <div>
                       <div class="flex items-center justify-between">
-                        <h4 class="text-sm font-medium text-gray-700">
-                          字段选择
+                        <h4 class="text-sm font-medium text-gray-700" data-i18n="options_prompt_field_select">
+                          
                         </h4>
                         <!-- 操作提示 -->
                         <span class="text-xs text-gray-500"
-                          >点击字段切换选中状态</span
+                        data-i18n="options_prompt_field_select_hint"></span
                         >
                       </div>
                       <!-- 字段选择按钮列表 - JavaScript动态生成 -->
@@ -423,12 +424,12 @@
                     -->
                     <div>
                       <div class="flex items-center justify-between">
-                        <h4 class="text-sm font-medium text-gray-700">
-                          字段配置
+                        <h4 class="text-sm font-medium text-gray-700" data-i18n="options_prompt_field_config">
+                          
                         </h4>
                         <!-- 功能说明 -->
                         <span class="text-xs text-gray-500"
-                          >配置生成 AI 输出该字段所需的信息</span
+                        data-i18n="options_prompt_field_config_hint"></span
                         >
                       </div>
                       <!-- 字段配置表单列表 - JavaScript动态生成 -->
@@ -453,24 +454,17 @@
                     <label
                       for="custom-prompt-textarea"
                       class="block text-sm font-medium text-gray-700 mb-2"
-                      >自定义 Prompt 模板</label
+                      data-i18n="options_prompt_custom_template"></label
                     >
                     <!-- Prompt模板编辑文本区域 - 12行高度，提供足够的编辑空间 -->
                     <textarea
                       id="custom-prompt-textarea"
                       rows="12"
                       class="w-full p-3 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 font-mono text-sm"
-                      placeholder="请选择模型后编写对应的 Prompt。
-建议包含以下占位符：
-- {{INPUT_TEXT}} 表示用户输入
-- {{FIELD_SCHEMA}} 表示字段结构"
+                      placeholder=""
+                      data-i18n-placeholder="options_prompt_template_placeholder"
                       disabled
-                      <!--
-                      初始禁用状态
-                      --
-                    >
-                    ></textarea
-                    >
+                    ></textarea>
                   </div>
 
                   <!--
@@ -485,15 +479,15 @@
                       id="reset-prompt-btn"
                       class="bg-slate-500 hover:bg-slate-600 text-white font-medium py-2 px-4 rounded-md transition disabled:opacity-50"
                       disabled
-                    >
-                      重置为默认模板
+                      data-i18n="options_prompt_reset_default">
+                      
                     </button>
                     <!-- 修改状态提示 - 默认隐藏 -->
                     <span
                       id="prompt-dirty-flag"
                       class="text-xs text-slate-500"
                       style="display: none"
-                      >已修改，保存后生效</span
+                      data-i18n="options_prompt_dirty_hint"></span
                     >
                   </div>
                 </section>
@@ -529,8 +523,8 @@
                     <button
                       id="test-anki-btn"
                       class="bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition"
-                    >
-                      测试连接并刷新模型
+                      data-i18n="options_prompt_generate_default">
+                      
                     </button>
                     <!-- Anki连接状态显示区域 -->
                     <p
@@ -552,14 +546,14 @@
                     <label
                       for="default-deck"
                       class="block text-sm font-medium text-gray-700 mb-2"
-                      >牌组</label
+                      data-i18n="options_label_deck"></label
                     >
                     <!-- 牌组下拉选择框 - JavaScript动态填充 -->
                     <select
                       id="default-deck"
                       class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
                     >
-                      <option value="">请先测试 Anki 连接</option>
+                      <option value="" data-i18n="options_hint_test_anki_first"></option>
                     </select>
                   </div>
 
@@ -568,14 +562,14 @@
                     <label
                       for="default-model"
                       class="block text-sm font-medium text-gray-700 mb-2"
-                      >模型</label
+                      data-i18n="options_label_model"></label
                     >
                     <!-- 模板下拉选择框 - JavaScript动态填充 -->
                     <select
                       id="default-model"
                       class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
                     >
-                      <option value="">请先测试 Anki 连接</option>
+                      <option value="" data-i18n="options_hint_test_anki_first"></option>
                     </select>
                   </div>
                 </div>
@@ -589,8 +583,8 @@
                   - 默认隐藏，选择模板后显示
                 -->
                 <div id="field-mapping" class="mb-4" style="display: none">
-                  <h3 class="text-lg font-semibold text-gray-700 mb-3">
-                    字段信息
+                  <h3 class="text-lg font-semibold text-gray-700 mb-3" data-i18n="options_label_field_info">
+                    
                   </h3>
                   <!--
                     字段列表容器
@@ -633,14 +627,26 @@
                   <label
                     for="language-select"
                     class="block text-sm font-medium text-gray-700 mb-2"
-                    >语言</label
+                    data-i18n="options_label_language"></label
                   >
                   <!-- 语言选择下拉框 -->
+                  <p
+                    id="language-browser-notice"
+                    class="text-sm text-gray-600"
+                    data-i18n="options_language_follow_browser"
+                  ></p>
+                  <p class="mt-2 text-sm text-gray-600">
+                    <span data-i18n="options_language_current_label"></span>
+                    <span id="current-language-name" class="font-semibold"></span>
+                  </p>
                   <select
                     id="language-select"
                     class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
                   >
-                    <option value="zh-CN">简体中文</option>
+                    <option value="zh-CN" data-i18n="options_language_chinese_simplified"></option>
+                    <option value="zh-TW" data-i18n="options_language_chinese_traditional"></option>
+                    <option value="ja-JP" data-i18n="options_language_japanese"></option>
+                    <option value="en-US" data-i18n="options_language_english"></option>
                   </select>
                 </div>
 
@@ -655,13 +661,11 @@
                 <section
                   class="p-6 bg-gray-50 border border-gray-200 rounded-md"
                 >
-                  <h3 class="text-lg font-semibold text-gray-800 mb-4">
-                    配置管理
+                  <h3 class="text-lg font-semibold text-gray-800 mb-4" data-i18n="options_section_config_management">
+                    
                   </h3>
                   <!-- 功能说明和安全提示 -->
-                  <p class="text-sm text-gray-600 mb-4">
-                    导出、导入或重置您的配置设置。注意：导出的配置文件不包含API密钥以确保安全。
-                  </p>
+                  <p class="text-sm text-gray-600 mb-4" data-i18n="options_section_config_management_hint"></p>
 
                   <!--
                     配置管理操作按钮组
@@ -674,8 +678,8 @@
                       type="button"
                       id="export-config-btn"
                       class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-200"
-                    >
-                      📤 导出配置
+                      data-i18n="options_button_export_config">
+                      
                     </button>
 
                     <!-- 配置导入区域 -->
@@ -693,8 +697,8 @@
                         type="button"
                         id="import-config-btn"
                         class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition duration-200"
-                      >
-                        📥 导入配置
+                        data-i18n="options_button_import_config">
+                        
                       </button>
                     </div>
 
@@ -703,8 +707,8 @@
                       type="button"
                       id="reset-config-btn"
                       class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition duration-200"
-                    >
-                      🔄 重置配置
+                      data-i18n="options_button_reset_config">
+                      
                     </button>
                   </div>
 
@@ -748,16 +752,16 @@
                     <label
                       for="font-size-select"
                       class="block text-sm font-medium text-gray-700 mb-2"
-                      >字体大小</label
+                      data-i18n="options_label_font_size"></label
                     >
                     <select
                       id="font-size-select"
                       class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
                     >
-                      <option value="12px">小 (12px)</option>
-                      <option value="14px">中 (14px)</option>
-                      <option value="16px">大 (16px)</option>
-                      <option value="18px">更大 (18px)</option>
+                      <option value="12px" data-i18n="options_font_size_small"></option>
+                      <option value="14px" data-i18n="options_font_size_medium"></option>
+                      <option value="16px" data-i18n="options_font_size_large"></option>
+                      <option value="18px" data-i18n="options_font_size_xlarge"></option>
                     </select>
                   </div>
                   <!-- 文本对齐设置 -->
@@ -765,15 +769,15 @@
                     <label
                       for="text-align-select"
                       class="block text-sm font-medium text-gray-700 mb-2"
-                      >文本对齐</label
+                      data-i18n="options_label_text_align"></label
                     >
                     <select
                       id="text-align-select"
                       class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
                     >
-                      <option value="left">左对齐</option>
-                      <option value="center">居中</option>
-                      <option value="right">右对齐</option>
+                      <option value="left" data-i18n="options_text_align_left"></option>
+                      <option value="center" data-i18n="options_text_align_center"></option>
+                      <option value="right" data-i18n="options_text_align_right"></option>
                     </select>
                   </div>
                   <!-- 行高设置 -->
@@ -781,15 +785,15 @@
                     <label
                       for="line-height-select"
                       class="block text-sm font-medium text-gray-700 mb-2"
-                      >行高</label
+                      data-i18n="options_label_line_height"></label
                     >
                     <select
                       id="line-height-select"
                       class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
                     >
-                      <option value="1.2">紧凑 (1.2)</option>
-                      <option value="1.4">适中 (1.4)</option>
-                      <option value="1.6">宽松 (1.6)</option>
+                      <option value="1.2" data-i18n="options_line_height_compact"></option>
+                      <option value="1.4" data-i18n="options_line_height_normal"></option>
+                      <option value="1.6" data-i18n="options_line_height_loose"></option>
                     </select>
                   </div>
                 </div>
@@ -802,7 +806,7 @@
                 -->
                 <div class="mb-4">
                   <label class="block text-sm font-medium text-gray-700 mb-2"
-                    >样式预览</label
+                  data-i18n="options_section_style_preview"></label
                   >
                   <!-- 预览效果显示区域 -->
                   <div
@@ -811,7 +815,8 @@
                   >
                     <!-- 示例文本内容 - JavaScript实时应用样式 -->
                     <div id="preview-content">
-                      这是一个示例文本。<br />用于预览字体、对齐与行高效果。
+                      <p data-i18n="options_style_preview_sample"></p>
+                      <p data-i18n="options_style_preview_description"></p>
                     </div>
                   </div>
                 </div>
@@ -837,8 +842,8 @@
               <button
                 id="save-btn"
                 class="bg-slate-700 hover:bg-slate-800 text-white font-semibold py-3 px-8 rounded-md transition duration-200 w-full md:w-auto"
-              >
-                保存设置
+                data-i18n="options_button_save">
+                
               </button>
               <!-- 保存状态信息显示 - JavaScript动态更新 -->
               <p id="save-status" class="text-sm text-gray-600"></p>
