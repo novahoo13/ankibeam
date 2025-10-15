@@ -27,3 +27,8 @@
 **Success Criteria**: README&docs 更新至最终状态；Checklist 完整勾选；无未命名键或缺失翻译。
 **Tests**: 手动在四种语言下巡检；执行可用的单元/集成测试。
 **Status**: Complete
+## Stage 6: Verification & Knowledge Base
+**Goal**: 补齐阶段 6 的自动化回归与手动验证流程，形成易于复用的验收基线。
+**Success Criteria**: 新增单元测试覆盖 `utils/i18n.js` 与 Prompt 模板快照；完成 README 与国际化方案文档的更新；Checklist 阶段 6 全部勾选。
+**Tests**: `node --test "tests/**/*.test.js"`；按 `docs/internationalization-stage6.md` 巡检四种语言与 fallback 场景。
+**Status**: Complete

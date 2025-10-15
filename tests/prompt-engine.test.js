@@ -6,7 +6,7 @@ const messageFixtures = {
     "# 統合プロンプト\n入力: {{INPUT_TEXT}}\nスキーマ:\n{{FIELD_SCHEMA}}\nフィールド一覧: {{AVAILABLE_FIELDS}}",
   prompt_engine_requirements_body:
     "\n\n- 出力フィールド: $1\n- JSON 形式で返してください",
-  prompt_engine_schema_word: "単語",
+  prompt_engine_schema_word: "単語そのもの",
   prompt_engine_schema_reading: "読み",
   prompt_engine_schema_meaning: "意味",
   prompt_engine_field_prompt: "$1 を入力してください",
@@ -52,14 +52,45 @@ test("buildIntegratedPrompt: デフォルトテンプレートをローカライ
 
   assert.match(prompt, /^# 統合プロンプト/m);
   assert.match(prompt, /入力: example input/);
-  assert.match(prompt, /"Front": "単語"/);
+  assert.match(prompt, /"Front": "単語そのもの"/);
   assert.match(prompt, /"Reading": "読み"/);
   assert.match(prompt, /"Definition": "意味"/);
   assert.match(prompt, /"Extra": "Extra を入力してください"/);
   assert.match(prompt, /出力フィールド: Front, Reading, Definition, Extra/);
 });
 
-test("buildIntegratedPrompt: カスタムテンプレートでも補助文言を付加する", () => {
+test("buildIntegratedPrompt: デフォルトテンプレートをスナップショット検証する", () => {
+  const input = "snapshot input";
+  const prompt = buildIntegratedPrompt(input, sampleFields);
+
+  const expectedSchema = JSON.stringify(
+    {
+      Front: messageFixtures.prompt_engine_schema_word,
+      Reading: messageFixtures.prompt_engine_schema_reading,
+      Definition: messageFixtures.prompt_engine_schema_meaning,
+      Extra: messageFixtures.prompt_engine_field_prompt.replace("$1", "Extra"),
+    },
+    null,
+    2,
+  );
+
+  const expected =
+    messageFixtures.prompt_engine_default_header
+      .replace(/{{INPUT_TEXT}}/g, input)
+      .replace(/{{FIELD_SCHEMA}}/g, expectedSchema)
+      .replace(
+        /{{AVAILABLE_FIELDS}}/g,
+        sampleFields.map((field) => `"${field}"`).join(", "),
+      ) +
+    messageFixtures.prompt_engine_requirements_body.replace(
+      "$1",
+      sampleFields.join(", "),
+    );
+
+  assert.equal(prompt, expected);
+});
+
+test("buildIntegratedPrompt: カスタムテンプレートでも補助文面を付加する", () => {
   const customTemplate = "## Custom Prompt Block";
   const prompt = buildIntegratedPrompt("user provided", sampleFields, customTemplate);
 

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, test } from "node:test";
+import { JSDOM } from "jsdom";
 
 const importFreshI18n = async () => {
   const moduleUrl = new URL("../utils/i18n.js", import.meta.url);
@@ -9,13 +10,22 @@ const importFreshI18n = async () => {
 
 let originalChrome;
 let originalNavigator;
+let originalDocument;
+let originalWindow;
+let originalNode;
 
 beforeEach(() => {
   originalChrome = globalThis.chrome;
   originalNavigator = globalThis.navigator;
-  // 各テストで初期状態を明示するため一旦削除
+  originalDocument = globalThis.document;
+  originalWindow = globalThis.window;
+  originalNode = globalThis.Node;
+
   Reflect.deleteProperty(globalThis, "chrome");
   Reflect.deleteProperty(globalThis, "navigator");
+  Reflect.deleteProperty(globalThis, "document");
+  Reflect.deleteProperty(globalThis, "window");
+  Reflect.deleteProperty(globalThis, "Node");
 });
 
 afterEach(() => {
@@ -24,14 +34,33 @@ afterEach(() => {
   } else {
     globalThis.chrome = originalChrome;
   }
+
   if (originalNavigator === undefined) {
     Reflect.deleteProperty(globalThis, "navigator");
   } else {
     globalThis.navigator = originalNavigator;
   }
+
+  if (originalDocument === undefined) {
+    Reflect.deleteProperty(globalThis, "document");
+  } else {
+    globalThis.document = originalDocument;
+  }
+
+  if (originalWindow === undefined) {
+    Reflect.deleteProperty(globalThis, "window");
+  } else {
+    globalThis.window = originalWindow;
+  }
+
+  if (originalNode === undefined) {
+    Reflect.deleteProperty(globalThis, "Node");
+  } else {
+    globalThis.Node = originalNode;
+  }
 });
 
-test("getLocale 正常化: Chrome UI 言語をロケールに変換する", async () => {
+test("getLocale 正常系: Chrome UI 言語をロケールに変換する", async () => {
   globalThis.chrome = {
     i18n: {
       getUILanguage: () => "ja",
@@ -47,7 +76,7 @@ test("getLocale 正常化: Chrome UI 言語をロケールに変換する", asyn
   assert.equal(getLocale(), "en-US");
 });
 
-test("getLocale 正常化: 繁体字バリアントを zh-TW に揃える", async () => {
+test("getLocale 正常系: 繁体字バリアントを zh-TW に揃える", async () => {
   globalThis.chrome = {
     i18n: {
       getUILanguage: () => "zh-HK",
@@ -78,4 +107,110 @@ test("getLocale フォールバック: 候補が無い場合は en-US を返す"
   const { getLocale } = await importFreshI18n();
 
   assert.equal(getLocale(), "en-US");
+});
+
+test("localizePage: data-i18n 属性を一括適用する", async () => {
+  const messages = {
+    sample_heading: "見出しテキスト",
+    sample_placeholder: "入力してください",
+    sample_title: "タイトル情報",
+    sample_value: "初期値テキスト",
+    sample_aria: "ARIAラベル",
+  };
+
+  globalThis.chrome = {
+    i18n: {
+      getMessage(key) {
+        return messages[key] ?? "";
+      },
+    },
+  };
+
+  const dom = new JSDOM(
+    `<body>
+      <h1 data-i18n="sample_heading"></h1>
+      <input
+        data-i18n-placeholder="sample_placeholder"
+        data-i18n-title="sample_title"
+        data-i18n-value="sample_value"
+        data-i18n-aria="sample_aria"
+      />
+    </body>`,
+    { url: "http://localhost" },
+  );
+
+  try {
+    globalThis.window = dom.window;
+    globalThis.document = dom.window.document;
+    globalThis.Node = dom.window.Node;
+
+    const { localizePage } = await importFreshI18n();
+
+    localizePage();
+
+    const heading = document.querySelector("[data-i18n]");
+    const input = document.querySelector("input");
+
+    assert.equal(heading.textContent, messages.sample_heading);
+    assert.equal(input.placeholder, messages.sample_placeholder);
+    assert.equal(input.title, messages.sample_title);
+    assert.equal(input.value, messages.sample_value);
+    assert.equal(input.getAttribute("aria-label"), messages.sample_aria);
+  } finally {
+    dom.window.close();
+    Reflect.deleteProperty(globalThis, "document");
+    Reflect.deleteProperty(globalThis, "window");
+    Reflect.deleteProperty(globalThis, "Node");
+  }
+});
+
+test("translate: フォールバックと代入処理を制御する", async () => {
+  let callCount = 0;
+  globalThis.chrome = {
+    i18n: {
+      getMessage(key, substitutions) {
+        callCount += 1;
+        if (key === "with_value") {
+          return "取得済みメッセージ";
+        }
+        if (key === "with_substitution") {
+          if (Array.isArray(substitutions)) {
+            return substitutions.join("/");
+          }
+          return substitutions ?? "";
+        }
+        return "";
+      },
+    },
+  };
+
+  const { translate } = await importFreshI18n();
+
+  assert.equal(translate("missing_key", { fallback: "代替テキスト" }), "代替テキスト");
+  assert.equal(translate("missing_empty", { fallback: "" }), "");
+  assert.equal(translate("no_fallback"), "no_fallback");
+  assert.equal(translate("with_value"), "取得済みメッセージ");
+  assert.equal(
+    translate("with_substitution", { substitutions: ["A", "B", "C"] }),
+    "A/B/C",
+  );
+  assert.equal(callCount, 5);
+});
+
+test("createI18nError: メタデータ付きのエラーを返す", async () => {
+  globalThis.chrome = {
+    i18n: {
+      getMessage() {
+        return "";
+      },
+    },
+  };
+
+  const { createI18nError } = await importFreshI18n();
+  const error = createI18nError("error_key", { fallback: "エラー説明", substitutions: ["X"] });
+
+  assert.equal(error.message, "エラー説明");
+  assert.equal(error.i18nKey, "error_key");
+  assert.deepEqual(error.i18nSubstitutions, ["X"]);
+  assert(error instanceof Error);
 });

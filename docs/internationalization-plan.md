@@ -1396,3 +1396,6 @@ document.addEventListener('DOMContentLoaded', () => {
 - **复用策略**：跨页面复用的提示（如“当前模板未配置…”）保持单一键名，避免重复翻译。
 - **翻译占位**：`en`、`ja`、`zh_TW` 当前暂以中文占位，后续阶段补齐正式译文并校对语体。
 - **模板拆分**：原先内嵌 HTML 的长字符串将在后续阶段拆分成结构化 DOM + 键值，降低翻译难度。
+Stage 6 validation checklist: docs/internationalization-stage6.md
+
+

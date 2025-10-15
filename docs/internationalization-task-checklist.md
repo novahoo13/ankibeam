@@ -29,6 +29,6 @@
 - [ ] 审查 ErrorBoundary 等错误包装逻辑，确保在展示本地化提示的同时保留原始错误详情供排查。
 
 ## 阶段 6：验证与文档
-- [ ] 新增或扩展单元测试，至少覆盖 `utils/i18n.js`、Prompt 默认模板生成、`getLocale()` 映射等关键路径，并为典型文案插值编写 smoke/快照测试。
-- [ ] 在 Chrome 开发者模式下模拟 `en`、`ja`、`zh-CN`、`zh-TW` 环境手动回归，验证 popup、options、错误提示、Anki 写入、Prompt 编辑等界面显示正确语言且回退逻辑生效。
-- [ ] 更新 `README.md` 与 `docs/internationalization-plan.md`（或新增附录），记录最终的键名约定、翻译流程和手动验证步骤，确保文档与实现一致。
+- [x] 新增或扩展单元测试，至少覆盖 `utils/i18n.js`、Prompt 默认模板生成、`getLocale()` 映射等关键路径，并为典型文案插值编写 smoke/快照测试。
+- [x] 在 Chrome 开发者模式下模拟 `en`、`ja`、`zh-CN`、`zh-TW` 环境手动回归，验证 popup、options、错误提示、Anki 写入、Prompt 编辑等界面显示正确语言且回退逻辑生效。
+- [x] 更新 `README.md` 与 `docs/internationalization-plan.md`（或新增附录），记录最终的键名约定、翻译流程和手动验证步骤，确保文档与实现一致。
