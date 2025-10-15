@@ -85,6 +85,23 @@ function isSupportedLocale(locale) {
   }
 }
 
+export function setPageLanguage() {
+  if (typeof document === "undefined" || !document.documentElement) {
+    return;
+  }
+
+  if (runtimeI18n?.getUILanguage) {
+    try {
+      const uiLang = runtimeI18n.getUILanguage();
+      if (uiLang) {
+        document.documentElement.lang = uiLang;
+      }
+    } catch (error) {
+      console.warn("Failed to set page language:", error);
+    }
+  }
+}
+
 export function localizePage() {
   if (typeof document === "undefined") {
     return;
@@ -209,6 +226,7 @@ export function createI18nError(key, options = {}) {
 
 if (typeof document !== "undefined") {
   document.addEventListener("DOMContentLoaded", () => {
+    setPageLanguage();
     localizePage();
   });
 }
