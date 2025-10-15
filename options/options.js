@@ -28,7 +28,7 @@ import {
   getFallbackOrder,
   getAllManifestHostPermissions,
 } from "../utils/providers.config.js";
-import { translate, createI18nError, getLocale } from "../utils/i18n.js";
+import { translate, createI18nError, getLocale, resetLocaleCache } from "../utils/i18n.js";
 
 const getText = (key, fallback, substitutions) =>
   translate(key, { fallback, substitutions });
@@ -1668,9 +1668,10 @@ async function loadAndDisplayConfig() {
 
   const languageSelect = document.getElementById("language-select");
   if (languageSelect) {
+    const savedLanguage = config?.language;
     const resolvedLanguage =
-      typeof config?.language === "string" && config.language.trim()
-        ? config.language
+      typeof savedLanguage === "string" && savedLanguage.trim()
+        ? savedLanguage
         : getLocale();
     const options = Array.from(languageSelect.options ?? []);
     const hasMatch = options.some((option) => option.value === resolvedLanguage);
@@ -1737,8 +1738,9 @@ async function handleSave() {
   const fontSizeSelect = document.getElementById("font-size-select");
   const textAlignSelect = document.getElementById("text-align-select");
   const lineHeightSelect = document.getElementById("line-height-select");
+  const languageSelect = document.getElementById("language-select");
 
-  const language = getLocale();
+  const language = languageSelect ? languageSelect.value : getLocale();
   const defaultDeck = deckSelect ? deckSelect.value : "";
   const defaultModel = modelSelect ? modelSelect.value : "";
   const fontSize = fontSizeSelect ? fontSizeSelect.value : "14px";
@@ -1911,6 +1913,8 @@ async function handleSave() {
     );
   }
 
+  const languageChanged = currentConfig?.language !== language;
+
   try {
     await ensureApiOriginsPermission(models);
     await storageApi.saveConfig(nextConfig);
@@ -1930,6 +1934,11 @@ async function handleSave() {
       getText("options_save_status_success", "设置已保存"),
       "success"
     );
+
+    if (languageChanged) {
+      resetLocaleCache();
+      setTimeout(() => window.location.reload(), 800);
+    }
   } catch (error) {
     if (error instanceof PermissionRequestError) {
       console.warn('[options] ドメイン権限の要求が拒否されました:', error);

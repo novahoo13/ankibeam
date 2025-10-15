@@ -8,13 +8,12 @@
     "message": "辞書検索結果からAnkiカード作成を支援するAI搭載アシスタントです。"
   },
   "ai_service_error_connection_test": {
-    "description": "提供商连接测试失败的提示",
-    "message": "连接测试失败：$ERROR$",
+    "description": "プロバイダー接続テスト失敗のヒント",
+    "message": "接続テストに失敗しました：$ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "网络超时"
+        "description": "エラー詳細"
       }
     }
   },
@@ -24,8 +23,7 @@
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "プロバイダー名",
-        "example": "Google"
+        "description": "プロバイダー名"
       }
     }
   },
@@ -39,8 +37,7 @@
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "プロバイダー識別子",
-        "example": "anthropic"
+        "description": "プロバイダー識別子"
       }
     }
   },
@@ -50,14 +47,13 @@
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "プロバイダー識別子",
-        "example": "openai"
+        "description": "プロバイダー識別子"
       }
     }
   },
   "ai_service_error_missing_api_key_test": {
-    "description": "连接测试缺少 API Key 的提示",
-    "message": "连接测试失败：API Key 尚未设置"
+    "description": "接続テストでAPIキーが欠落している場合のヒント",
+    "message": "接続テストに失敗しました：APIキーが設定されていません"
   },
   "ai_service_error_missing_default_model": {
     "description": "プロバイダーに既定モデルが設定されていない場合。",
@@ -65,8 +61,7 @@
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "プロバイダー識別子",
-        "example": "anthropic"
+        "description": "プロバイダー識別子"
       }
     }
   },
@@ -76,19 +71,17 @@
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "プロバイダー識別子",
-        "example": "openai"
+        "description": "プロバイダー識別子"
       }
     }
   },
   "ai_service_error_missing_default_model_test": {
-    "description": "连接测试缺少默认模型时的提示",
-    "message": "$PROVIDER$ 缺少默认模型配置",
+    "description": "接続テストでデフォルトモデルが欠落している場合のヒント",
+    "message": "$PROVIDER$ にはデフォルトのモデル設定がありません",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商名称",
-        "example": "OpenAI"
+        "description": "プロバイダー名"
       }
     }
   },
@@ -98,8 +91,7 @@
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "プロバイダー識別子",
-        "example": "openai"
+        "description": "プロバイダー識別子"
       }
     }
   },
@@ -108,34 +100,32 @@
     "message": "AI リクエストに失敗しました: 利用可能なプロバイダーがありません"
   },
   "ai_service_error_output_all_empty": {
-    "description": "AI 输出字段全部为空时的提示",
-    "message": "AI 输出的所有字段都为空，请检查输入内容或重试"
+    "description": "AIの出力フィールドがすべて空の場合のヒント",
+    "message": "AIの出力フィールドはすべて空です。入力内容を確認するか、再試行してください"
   },
   "ai_service_error_output_invalid_fields": {
-    "description": "AI 输出包含未预期字段时的提示",
-    "message": "输出包含无效字段: $FIELDS$",
+    "description": "AIの出力に予期しないフィールドが含まれている場合のヒント",
+    "message": "出力に無効なフィールドが含まれています: $FIELDS$",
     "placeholders": {
       "FIELDS": {
         "content": "$1",
-        "description": "无效字段列表",
-        "example": "unexpectedField"
+        "description": "無効なフィールドのリスト"
       }
     }
   },
   "ai_service_error_parse_fail_message": {
-    "description": "AI 解析失败并返回错误对象的提示",
-    "message": "AI 解析失败：$ERROR$",
+    "description": "AIの解析が失敗し、エラーオブジェクトが返された場合のヒント",
+    "message": "AIの解析に失敗しました：$ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误信息",
-        "example": "无法解析 JSON"
+        "description": "エラーメッセージ"
       }
     }
   },
   "ai_service_error_parse_fail_unknown": {
-    "description": "AI 解析失败且无错误详情时的提示",
-    "message": "AI 解析失败：未知错误"
+    "description": "AIの解析が失敗し、エラー詳細がない場合のヒント",
+    "message": "AIの解析に失敗しました：不明なエラー"
   },
   "ai_service_error_parse_failed": {
     "description": "プロバイダー応答のパース処理が失敗した場合。",
@@ -143,13 +133,11 @@
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "プロバイダー名",
-        "example": "Anthropic"
+        "description": "プロバイダー名"
       },
       "ERROR": {
         "content": "$2",
-        "description": "エラーメッセージ",
-        "example": "Unexpected token"
+        "description": "エラーメッセージ"
       }
     }
   },
@@ -163,13 +151,11 @@
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "プロバイダー名",
-        "example": "OpenAI"
+        "description": "プロバイダー名"
       },
       "ERROR": {
         "content": "$2",
-        "description": "エラーメッセージ",
-        "example": "Request timed out"
+        "description": "エラーメッセージ"
       }
     }
   },
@@ -178,18 +164,16 @@
     "message": "AI リクエストに失敗しました"
   },
   "ai_service_error_request_message": {
-    "description": "AI 请求失败时返回消息字符串的提示",
-    "message": "$PROVIDER$ 请求失败: $MESSAGE$",
+    "description": "AIリクエストが失敗し、メッセージ文字列が返された場合のヒント",
+    "message": "$PROVIDER$ のリクエストに失敗しました: $MESSAGE$",
     "placeholders": {
       "MESSAGE": {
         "content": "$2",
-        "description": "错误消息",
-        "example": "invalid api key"
+        "description": "エラーメッセージ"
       },
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商名称",
-        "example": "Google Gemini"
+        "description": "プロバイダー名"
       }
     }
   },
@@ -199,8 +183,7 @@
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "最終的なエラーメッセージ",
-        "example": "503 Service Unavailable"
+        "description": "最終的なエラーメッセージ"
       }
     }
   },
@@ -210,8 +193,7 @@
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "プロバイダー識別子",
-        "example": "openai"
+        "description": "プロバイダー識別子"
       }
     }
   },
@@ -221,19 +203,17 @@
     "placeholders": {
       "INPUT": {
         "content": "$1",
-        "description": "解析対象のテキスト",
-        "example": "example word"
+        "description": "解析対象のテキスト"
       }
     }
   },
   "ai_service_status_test_success": {
-    "description": "连接测试成功的信息",
-    "message": "$PROVIDER$ 连接测试成功",
+    "description": "接続テスト成功の情報",
+    "message": "$PROVIDER$ の接続テストに成功しました",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商名称",
-        "example": "Anthropic"
+        "description": "プロバイダー名"
       }
     }
   },
@@ -242,424 +222,404 @@
     "message": "カスタムプロンプトに {{INPUT_TEXT}} プレースホルダーがないため、入力テキストを末尾に追加しました。"
   },
   "field_handler_error_back_not_found": {
-    "description": "Legacy 模式背字段元素缺失时的提示",
-    "message": "找不到 back-input 元素"
+    "description": "レガシーモードで背面フィールド要素が見つからない場合のヒント",
+    "message": "back-input 要素が見つかりません"
   },
   "field_handler_error_field_contains_html": {
-    "description": "字段内容包含大量 HTML 时的提示",
-    "message": "字段“$FIELD$”可能包含过多 HTML 标签",
+    "description": "フィールドの内容に多くのHTMLが含まれている場合のヒント",
+    "message": "フィールド「$FIELD$」にはHTMLタグが多すぎる可能性があります",
     "placeholders": {
       "FIELD": {
         "content": "$1",
-        "description": "字段名称",
-        "example": "例句"
+        "description": "フィールド名"
       }
     }
   },
   "field_handler_error_field_data_invalid": {
-    "description": "字段数据结构无效的提示",
-    "message": "字段数据无效"
+    "description": "フィールドデータ構造が無効な場合のヒント",
+    "message": "フィールドデータが無効です"
   },
   "field_handler_error_field_element_missing": {
-    "description": "字段对应的 DOM 元素缺失时的提示",
-    "message": "找不到字段元素：$ELEMENT$ ($FIELD$)",
+    "description": "フィールドに対応するDOM要素が見つからない場合のヒント",
+    "message": "フィールド要素が見つかりません：$ELEMENT$ ($FIELD$)",
     "placeholders": {
       "ELEMENT": {
         "content": "$1",
-        "description": "字段 DOM 元素 ID",
-        "example": "dynamic-field-example"
+        "description": "フィールドDOM要素ID"
       },
       "FIELD": {
         "content": "$2",
-        "description": "字段名称",
-        "example": "释义"
+        "description": "フィールド名"
       }
     }
   },
   "field_handler_error_field_list_empty": {
-    "description": "字段列表为空时的提示",
-    "message": "字段列表为空"
+    "description": "フィールドリストが空の場合のヒント",
+    "message": "フィールドリストが空です"
   },
   "field_handler_error_field_object_invalid": {
-    "description": "字段对象校验失败提示",
-    "message": "字段对象为空或无效"
+    "description": "フィールドオブジェクトの検証失敗のヒント",
+    "message": "フィールドオブジェクトが空または無効です"
   },
   "field_handler_error_fill_back": {
-    "description": "Legacy 模式缺少背面内容提示",
-    "message": "请填写背面内容"
+    "description": "レガシーモードで背面の内容が欠落している場合のヒント",
+    "message": "背面のコンテンツを記入してください"
   },
   "field_handler_error_fill_front": {
-    "description": "Legacy 模式缺少正面内容提示",
-    "message": "请填写正面内容"
+    "description": "レガシーモードで前面の内容が欠落している場合のヒント",
+    "message": "前面のコンテンツを記入してください"
   },
   "field_handler_error_front_not_found": {
-    "description": "Legacy 模式前字段元素缺失时的提示",
-    "message": "找不到 front-input 元素"
+    "description": "レガシーモードで前面フィールド要素が見つからない場合のヒント",
+    "message": "front-input 要素が見つかりません"
   },
   "field_handler_error_legacy_min_fields": {
-    "description": "Legacy 模式字段数量不足提示",
-    "message": "Legacy 模式需要至少两个字段"
+    "description": "レガシーモードでフィールド数が不足している場合のヒント",
+    "message": "レガシーモードには少なくとも2つのフィールドが必要です"
   },
   "field_handler_error_legacy_required_fields": {
-    "description": "Legacy 模式字段校验提示",
-    "message": "Legacy 模式下前两个字段都必须填写"
+    "description": "レガシーモードのフィールド検証のヒント",
+    "message": "レガシーモードでは、最初の2つのフィールドは両方とも入力必須です"
   },
   "field_handler_error_min_field_content": {
-    "description": "动态模式至少填一项的提示",
-    "message": "至少需要填写一个字段内容"
+    "description": "動的モードで少なくとも1つの項目を入力する必要がある場合のヒント",
+    "message": "少なくとも1つのフィールドコンテンツを入力する必要があります"
   },
   "field_handler_error_missing_dom_count": {
-    "description": "字段渲染时缺失 DOM 元素的提示",
-    "message": "缺失$COUNT$个 DOM 元素",
+    "description": "フィールドレンダリング時にDOM要素が欠落している場合のヒント",
+    "message": "$COUNT$個のDOM要素がありません",
     "placeholders": {
       "COUNT": {
         "content": "$1",
-        "description": "缺失的元素数量",
-        "example": "3"
+        "description": "欠落している要素の数"
       }
     }
   },
   "field_handler_error_model_fields_invalid": {
-    "description": "模型字段集合无效时的提示",
-    "message": "modelFields 必须是数组"
+    "description": "モデルフィールドセットが無効な場合のヒント",
+    "message": "modelFields は配列でなければなりません"
   },
   "field_handler_error_no_fields_found": {
-    "description": "未找到字段集合时的提示",
-    "message": "没有找到任何字段"
+    "description": "フィールドセットが見つからない場合のヒント",
+    "message": "フィールドが見つかりませんでした"
   },
   "field_handler_error_validation_failed": {
-    "description": "字段验证失败日志前缀",
-    "message": "字段验证失败:"
+    "description": "フィールド検証失敗のログプレフィックス",
+    "message": "フィールドの検証に失敗しました:"
   },
   "field_handler_error_validation_process": {
-    "description": "字段验证过程抛出异常时的提示",
-    "message": "验证过程出错: $ERROR$",
+    "description": "フィールド検証プロセスで例外がスローされた場合のヒント",
+    "message": "検証プロセスでエラーが発生しました: $ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "TypeError"
+        "description": "エラー詳細"
       }
     }
   },
   "field_handler_error_validation_summary": {
-    "description": "字段验证失败摘要提示",
-    "message": "字段验证失败"
+    "description": "フィールド検証失敗の要約ヒント",
+    "message": "フィールドの検証に失敗しました"
   },
   "field_handler_error_wrap_style": {
-    "description": "字段样式包装失败时的提示",
-    "message": "样式包装失败：$ERROR$",
+    "description": "フィールドのスタイルラッピングが失敗した場合のヒント",
+    "message": "スタイルのラップに失敗しました：$ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "DOMException"
+        "description": "エラー詳細"
       }
     }
   },
   "field_handler_status_collect_complete": {
-    "description": "字段收集完成日志前缀",
-    "message": "字段收集完成:"
+    "description": "フィールド収集完了のログプレフィックス",
+    "message": "フィールドの収集が完了しました:"
   },
   "field_handler_status_collect_failed": {
-    "description": "字段收集失败日志前缀",
-    "message": "字段收集失败:"
+    "description": "フィールド収集失敗のログプレフィックス",
+    "message": "フィールドの収集に失敗しました:"
   },
   "field_handler_warning_few_fields": {
-    "description": "字段填写数量较少时的提示",
-    "message": "填写字段较少 ($FILLED$/$TOTAL$)",
+    "description": "入力されたフィールド数が少ない場合のヒント",
+    "message": "入力フィールドが少ない ($FILLED$/$TOTAL$)",
     "placeholders": {
       "FILLED": {
         "content": "$1",
-        "description": "已填写数量",
-        "example": "1"
+        "description": "入力済み数"
       },
       "TOTAL": {
         "content": "$2",
-        "description": "总字段数量",
-        "example": "4"
+        "description": "総フィールド数"
       }
     }
   },
   "field_handler_warning_fields_filled": {
-    "description": "验证通过并提示已填写数量",
-    "message": "验证通过，已填写 $COUNT$ 个字段",
+    "description": "検証に合格し、入力されたフィールド数を表示するヒント",
+    "message": "検証に合格しました。$COUNT$個のフィールドが入力されました",
     "placeholders": {
       "COUNT": {
         "content": "$1",
-        "description": "已填写字段数量",
-        "example": "3"
+        "description": "入力済みフィールド数"
       }
     }
   },
   "field_handler_warning_with_count": {
-    "description": "验证通过但存在警告时的提示",
-    "message": "验证通过，但有 $COUNT$ 个警告",
+    "description": "検証に合格したが、警告がある場合のヒント",
+    "message": "検証に合格しましたが、$COUNT$個の警告があります",
     "placeholders": {
       "COUNT": {
         "content": "$1",
-        "description": "警告数量",
-        "example": "2"
+        "description": "警告数"
       }
     }
   },
   "options_button_export_config": {
-    "description": "导出配置按钮文本",
-    "message": "📤 导出配置"
+    "description": "設定エクスポートボタンのテキスト",
+    "message": "📤 設定をエクスポート"
   },
   "options_button_import_config": {
-    "description": "导入配置按钮文本",
-    "message": "📥 导入配置"
+    "description": "設定インポートボタンのテキスト",
+    "message": "📥 設定をインポート"
   },
   "options_button_reset_config": {
-    "description": "重置配置按钮文本",
-    "message": "🔄 重置配置"
+    "description": "設定リセットボタンのテキスト",
+    "message": "🔄 設定をリセット"
   },
   "options_button_save": {
-    "description": "保存按钮文本",
-    "message": "保存设置"
+    "description": "保存ボタンのテキスト",
+    "message": "設定を保存"
   },
   "options_button_test_provider": {
-    "description": "测试提供商连接按钮文本",
-    "message": "测试 $PROVIDER$ 连接",
+    "description": "プロバイダー接続テストボタンのテキスト",
+    "message": "$PROVIDER$ 接続をテスト",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商显示名称",
-        "example": "OpenAI"
+        "description": "プロバイダー表示名"
       }
     }
   },
   "options_button_toggle_hide": {
-    "description": "API Key 隐藏按钮文本",
-    "message": "隐藏"
+    "description": "APIキー非表示ボタンのテキスト",
+    "message": "非表示"
   },
   "options_button_toggle_show": {
-    "description": "API Key 显示按钮文本",
-    "message": "显示"
+    "description": "APIキー表示ボタンのテキスト",
+    "message": "表示"
   },
   "options_config_loaded": {
-    "description": "选项页面初始化完成提示",
-    "message": "配置加载完成。"
+    "description": "オプションページ初期化完了のヒント",
+    "message": "設定が読み込まれました。"
   },
   "options_error_deck_select_placeholder": {
-    "description": "牌组下拉框的占位选项",
-    "message": "请选择默认牌组"
+    "description": "デッキドロップダウンのプレースホルダーオプション",
+    "message": "デフォルトのデッキを選択してください"
   },
   "options_error_fetch_anki_data": {
-    "description": "读取 Anki 数据失败提示",
-    "message": "读取 Anki 数据出错: $ERROR$",
+    "description": "Ankiデータ読み取り失敗のヒント",
+    "message": "Ankiデータの読み取り中にエラーが発生しました: $ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "请求被拒绝"
+        "description": "エラー詳細"
       }
     }
   },
   "options_error_fetch_decks": {
-    "description": "读取牌组失败提示",
-    "message": "读取牌组失败: $ERROR$",
+    "description": "デッキ読み取り失敗のヒント",
+    "message": "デッキの読み取りに失敗しました: $ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "连接超时"
+        "description": "エラー詳細"
       }
     }
   },
   "options_error_fetch_models": {
-    "description": "读取模型失败提示",
-    "message": "读取模型失败: $ERROR$",
+    "description": "モデル読み取り失敗のヒント",
+    "message": "モデルの読み取りに失敗しました: $ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "权限不足"
+        "description": "エラー詳細"
       }
     }
   },
   "options_error_invalid_api_url": {
-    "description": "API 地址格式错误时的提示",
-    "message": "API 地址格式不正确"
+    "description": "APIアドレス形式が間違っている場合のヒント",
+    "message": "APIアドレスの形式が正しくありません"
   },
   "options_error_missing_api_key": {
-    "description": "保存设置时缺少 API Key 的提示",
-    "message": "请为当前提供商填写 API Key"
+    "description": "設定保存時にAPIキーが欠落している場合のヒント",
+    "message": "現在のプロバイダーのAPIキーを入力してください"
   },
   "options_error_model_select_placeholder": {
-    "description": "模型下拉框的占位选项",
-    "message": "请选择默认模型"
+    "description": "モデルドロップダウンのプレースホルダーオプション",
+    "message": "デフォルトのモデルを選択してください"
   },
   "options_error_permission_denied": {
-    "description": "请求可选权限失败时的提示",
-    "message": "未获得 $ORIGIN$ 的访问权限，已取消保存。",
+    "description": "オプションの権限要求が失敗した場合のヒント",
+    "message": "$ORIGIN$ へのアクセス許可が得られなかったため、保存はキャンセルされました。",
     "placeholders": {
       "ORIGIN": {
         "content": "$1",
-        "description": "被拒绝的域名模式",
-        "example": "https://api.example.com/*"
+        "description": "拒否されたドメインパターン"
       }
     }
   },
   "options_error_provider_test_failed": {
-    "description": "提供商连接测试失败提示",
-    "message": "测试失败: $MESSAGE$",
+    "description": "プロバイダー接続テスト失敗のヒント",
+    "message": "テストに失敗しました: $MESSAGE$",
     "placeholders": {
       "MESSAGE": {
         "content": "$1",
-        "description": "失败原因",
-        "example": "请求超时"
+        "description": "失敗理由"
       }
     }
   },
   "options_error_provider_test_missing_key": {
-    "description": "在未输入 API Key 时执行连接测试的提示",
-    "message": "请先输入 API Key"
+    "description": "APIキー未入力で接続テストを実行した場合のヒント",
+    "message": "まずAPIキーを入力してください"
   },
   "options_export_status_failed": {
-    "description": "导出配置失败的提示",
-    "message": "配置导出失败：$ERROR$",
+    "description": "設定エクスポート失敗のヒント",
+    "message": "設定のエクスポートに失敗しました：$ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误信息",
-        "example": "权限被拒绝"
+        "description": "エラーメッセージ"
       }
     }
   },
   "options_export_status_running": {
-    "description": "导出配置进行中的提示",
-    "message": "正在导出配置..."
+    "description": "設定エクスポート中のヒント",
+    "message": "設定をエクスポートしています..."
   },
   "options_export_status_success": {
-    "description": "导出配置成功的提示",
-    "message": "配置导出成功"
+    "description": "設定エクスポート成功のヒント",
+    "message": "設定が正常にエクスポートされました"
   },
   "options_font_size_large": {
-    "description": "字体大小选项：大",
+    "description": "フォントサイズオプション：大",
     "message": "大 (16px)"
   },
   "options_font_size_medium": {
-    "description": "字体大小选项：中",
+    "description": "フォントサイズオプション：中",
     "message": "中 (14px)"
   },
   "options_font_size_small": {
-    "description": "字体大小选项：小",
+    "description": "フォントサイズオプション：小",
     "message": "小 (12px)"
   },
   "options_font_size_xlarge": {
-    "description": "字体大小选项：更大",
-    "message": "更大 (18px)"
+    "description": "フォントサイズオプション：特大",
+    "message": "特大 (18px)"
   },
   "options_helper_api_docs": {
-    "description": "API 文档链接的文本",
-    "message": "API 文档"
+    "description": "APIドキュメントリンクのテキスト",
+    "message": "APIドキュメント"
   },
   "options_helper_docs_fallback": {
-    "description": "仅提供文档链接时显示的文字",
-    "message": "参考文档："
+    "description": "ドキュメントリンクのみ提供する場合に表示されるテキスト",
+    "message": "参考ドキュメント："
   },
   "options_helper_docs_separator": {
-    "description": "帮助提示中用于分隔文档链接的文字",
-    "message": " ｜ 文档："
+    "description": "ヘルプヒントでドキュメントリンクを区切るためのテキスト",
+    "message": " ｜ ドキュメント："
   },
   "options_helper_get_api_key": {
-    "description": "帮助提示：获取 API Key 的说明",
-    "message": "获取 API Key："
+    "description": "ヘルプヒント：APIキーの取得方法の説明",
+    "message": "APIキーを取得："
   },
   "options_hint_api_url_default": {
-    "description": "API 地址默认值提示",
-    "message": "默认：$URL$",
+    "description": "APIアドレスのデフォルト値のヒント",
+    "message": "デフォルト：$URL$",
     "placeholders": {
       "URL": {
         "content": "$1",
-        "description": "默认 API 地址",
-        "example": "https://api.example.com/v1"
+        "description": "デフォルトAPIアドレス"
       }
     }
   },
   "options_hint_model_common": {
-    "description": "列出常用模型的提示",
-    "message": "常用模型：$MODELS$",
+    "description": "よく使われるモデルをリストアップするヒント",
+    "message": "一般的なモデル：$MODELS$",
     "placeholders": {
       "MODELS": {
         "content": "$1",
-        "description": "常用模型列表",
-        "example": "gpt-3.5-turbo、gpt-4o-mini"
+        "description": "一般的なモデルのリスト"
       }
     }
   },
   "options_hint_test_anki_first": {
-    "description": "提示用户先测试 Anki 连接",
-    "message": "请先测试 Anki 连接"
+    "description": "ユーザーにまずAnki接続をテストするよう促すヒント",
+    "message": "まずAnki接続をテストしてください"
   },
   "options_import_error_format_invalid": {
-    "description": "导入配置时结构无效的提示",
-    "message": "配置文件格式不正确"
+    "description": "設定インポート時に構造が無効な場合のヒント",
+    "message": "設定ファイルの形式が正しくありません"
   },
   "options_import_error_json_invalid": {
-    "description": "导入配置时 JSON 无效的提示",
-    "message": "配置文件不是有效的 JSON"
+    "description": "設定インポート時にJSONが無効な場合のヒント",
+    "message": "設定ファイルは有効なJSONではありません"
   },
   "options_import_error_missing_ai_config": {
-    "description": "导入配置时缺少 aiConfig 的提示",
-    "message": "配置文件缺少 aiConfig"
+    "description": "設定インポート時にaiConfigが欠落している場合のヒント",
+    "message": "設定ファイルにaiConfigがありません"
   },
   "options_import_status_failed": {
-    "description": "导入配置失败的提示",
-    "message": "配置导入失败：$ERROR$",
+    "description": "設定インポート失敗のヒント",
+    "message": "設定のインポートに失敗しました：$ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误信息",
-        "example": "文件解析失败"
+        "description": "エラーメッセージ"
       }
     }
   },
   "options_import_status_running": {
-    "description": "导入配置进行中的提示",
-    "message": "正在导入配置..."
+    "description": "設定インポート中のヒント",
+    "message": "設定をインポートしています..."
   },
   "options_import_status_success": {
-    "description": "导入配置成功后的提示",
-    "message": "配置导入成功，请重新配置 API 密钥"
+    "description": "設定インポート成功後のヒント",
+    "message": "設定が正常にインポートされました。APIキーを再設定してください"
   },
   "options_label_api_url": {
-    "description": "API 地址输入框标签",
-    "message": "API 地址"
+    "description": "APIアドレス入力ボックスのラベル",
+    "message": "APIアドレス"
   },
   "options_label_deck": {
-    "description": "Anki 连接面板的牌组标签",
-    "message": "牌组"
+    "description": "Anki接続パネルのデッキのラベル",
+    "message": "デッキ"
   },
   "options_label_field_info": {
-    "description": "Anki 连接面板字段信息区域标题",
-    "message": "字段信息"
+    "description": "Anki接続パネルのフィールド情報エリアのタイトル",
+    "message": "フィールド情報"
   },
   "options_label_font_size": {
-    "description": "样式设置面板字体大小标签",
-    "message": "字体大小"
+    "description": "スタイル設定パネルのフォントサイズのラベル",
+    "message": "フォントサイズ"
   },
   "options_label_language": {
-    "description": "系统设置面板语言标签",
-    "message": "语言"
+    "description": "システム設定パネルの言語のラベル",
+    "message": "言語"
   },
   "options_label_line_height": {
-    "description": "样式设置面板行高标签",
-    "message": "行高"
+    "description": "スタイル設定パネルの行の高さのラベル",
+    "message": "行の高さ"
   },
   "options_label_model": {
-    "description": "Anki 连接面板的模型标签",
-    "message": "模型"
+    "description": "Anki接続パネルのモデルのラベル",
+    "message": "モデル"
   },
   "options_label_model_name": {
-    "description": "模型名称输入框标签",
-    "message": "模型名称"
+    "description": "モデル名入力ボックスのラベル",
+    "message": "モデル名"
   },
   "options_label_text_align": {
-    "description": "样式设置面板文本对齐标签",
-    "message": "文本对齐"
+    "description": "スタイル設定パネルのテキスト揃えのラベル",
+    "message": "テキストの配置"
   },
   "options_language_chinese_simplified": {
     "description": "言語ドロップダウンの簡体字中国語オプション",
@@ -686,868 +646,830 @@
     "message": "英語"
   },
   "options_line_height_compact": {
-    "description": "行高选项：紧凑",
-    "message": "紧凑 (1.2)"
+    "description": "行の高さオプション：コンパクト",
+    "message": "コンパクト (1.2)"
   },
   "options_line_height_loose": {
-    "description": "行高选项：宽松",
-    "message": "宽松 (1.6)"
+    "description": "行の高さオプション：ゆったり",
+    "message": "ゆったり (1.6)"
   },
   "options_line_height_normal": {
-    "description": "行高选项：适中",
-    "message": "适中 (1.4)"
+    "description": "行の高さオプション：標準",
+    "message": "標準 (1.4)"
   },
   "options_mode_dynamic_description": {
-    "description": "动态字段模式说明正文",
-    "message": "该模板支持多字段，AI 将自动填充所有字段。popup 页面将根据字段名智能生成对应的输入区域。"
+    "description": "動的フィールドモードの説明本文",
+    "message": "このテンプレートは複数のフィールドをサポートしており、AIが自動的にすべてのフィールドを埋めます。ポップアップページはフィールド名に基づいて対応する入力エリアをインテリジェントに生成します。"
   },
   "options_mode_dynamic_heading": {
-    "description": "动态字段模式说明标题",
-    "message": "动态字段模式"
+    "description": "動的フィールドモードの説明タイトル",
+    "message": "動的フィールドモード"
   },
   "options_mode_legacy_description": {
-    "description": "Legacy 模式说明正文",
-    "message": "该模板字段数 ≤ 2，将使用传统的正面/背面模式。"
+    "description": "レガシーモードの説明本文",
+    "message": "このテンプレートのフィールド数が2以下の場合は、従来の前面/背面モードが使用されます。"
   },
   "options_mode_legacy_heading": {
-    "description": "Legacy 模式说明标题",
-    "message": "兼容模式"
+    "description": "レガシーモードの説明タイトル",
+    "message": "互換モード"
   },
   "options_page_heading": {
-    "description": "Options 页面主标题",
-    "message": "设置中心"
+    "description": "オプションページのメインタイトル",
+    "message": "設定センター"
   },
   "options_page_title": {
-    "description": "Options 页面 <title> 文本",
-    "message": "设置"
+    "description": "オプションページの<title>テキスト",
+    "message": "設定"
   },
   "options_placeholder_api_url": {
-    "description": "API 地址输入框占位提示",
+    "description": "APIアドレス入力ボックスのプレースホルダーヒント",
     "message": "https://"
   },
   "options_placeholder_model_example": {
-    "description": "模型名称输入框示例提示",
-    "message": "例如：$MODEL$",
+    "description": "モデル名入力ボックスのサンプルヒント",
+    "message": "例：$MODEL$",
     "placeholders": {
       "MODEL": {
         "content": "$1",
-        "description": "提供商默认模型名称",
-        "example": "gpt-4o-mini"
+        "description": "プロバイダーのデフォルトモデル名"
       }
     }
   },
   "options_placeholder_model_input": {
-    "description": "模型名称输入框占位提示",
-    "message": "输入模型名称"
+    "description": "モデル名入力ボックスのプレースホルダーヒント",
+    "message": "モデル名を入力"
   },
   "options_prompt_config_placeholder": {
-    "description": "Prompt 编辑器配置区域的占位提示",
-    "message": "请选择字段后配置字段内容。"
+    "description": "プロンプトエディタ設定エリアのプレースホルダーヒント",
+    "message": "フィールドを選択してからフィールドの内容を設定してください。"
   },
   "options_prompt_current_model": {
-    "description": "Prompt 面板默认显示的当前模板提示",
-    "message": "当前模板：未选择"
+    "description": "プロンプトパネルでデフォルトで表示される現在のテンプレートのヒント",
+    "message": "現在のテンプレート：未選択"
   },
   "options_prompt_current_model_label": {
-    "description": "Prompt 面板当前选择模板显示",
-    "message": "当前模板：$MODEL$",
+    "description": "プロンプトパネルで現在選択されているテンプレートの表示",
+    "message": "現在のテンプレート：$MODEL$",
     "placeholders": {
       "MODEL": {
         "content": "$1",
-        "description": "当前模板名称",
-        "example": "默认单词模板"
+        "description": "現在のテンプレート名"
       }
     }
   },
   "options_prompt_custom_template": {
-    "description": "Prompt 自定义编辑区域标题",
-    "message": "自定义 Prompt 模板"
+    "description": "プロンプトカスタム編集エリアのタイトル",
+    "message": "カスタムプロンプトテンプレート"
   },
   "options_prompt_dirty_hint": {
-    "description": "Prompt 模板被修改后的提示",
-    "message": "已修改，保存后生效"
+    "description": "プロンプトテンプレートが変更された後のヒント",
+    "message": "変更済み、保存後に有効になります"
   },
   "options_prompt_error_field_empty": {
-    "description": "单个字段内容为空时的提示",
-    "message": "字段“$FIELD$”的内容不能为空。",
+    "description": "単一フィールドの内容が空の場合のヒント",
+    "message": "フィールド「$FIELD$」の内容は空にできません。",
     "placeholders": {
       "FIELD": {
         "content": "$1",
-        "description": "字段名称",
-        "example": "例句"
+        "description": "フィールド名"
       }
     }
   },
   "options_prompt_error_field_required": {
-    "description": "Prompt 字段内容未填写时的错误提示",
-    "message": "字段内容为必填项"
+    "description": "プロンプトフィールドの内容が未入力の場合のエラーヒント",
+    "message": "フィールドの内容は必須です"
   },
   "options_prompt_error_fields_empty": {
-    "description": "多个字段内容为空时的提示",
-    "message": "以下字段内容不能为空：$FIELDS$",
+    "description": "複数のフィールドの内容が空の場合のヒント",
+    "message": "以下のフィールドの内容は空にできません：$FIELDS$",
     "placeholders": {
       "FIELDS": {
         "content": "$1",
-        "description": "以顿号连接的字段名称列表",
-        "example": "释义、例句"
+        "description": "セミコロンで区切られたフィールド名のリスト"
       }
     }
   },
   "options_prompt_error_generate_first": {
-    "description": "生成默认 Prompt 前未配置字段的提示",
-    "message": "请先选择并配置字段，然后再生成默认 Prompt。"
+    "description": "デフォルトプロンプト生成前にフィールドが未設定の場合のヒント",
+    "message": "まずフィールドを選択して設定し、その後でデフォルトプロンプトを生成してください。"
   },
   "options_prompt_error_select_fields": {
-    "description": "未选择任何字段时的提示",
-    "message": "请选择至少一个要输出的字段。"
+    "description": "どのフィールドも選択されていない場合のヒント",
+    "message": "出力するフィールドを少なくとも1つ選択してください。"
   },
   "options_prompt_field_config": {
-    "description": "Prompt 面板字段配置区域标题",
-    "message": "字段配置"
+    "description": "プロンプトパネルのフィールド設定エリアのタイトル",
+    "message": "フィールド設定"
   },
   "options_prompt_field_config_hint": {
-    "description": "Prompt 面板字段配置说明",
-    "message": "配置生成 AI 输出该字段所需的信息"
+    "description": "プロンプトパネルのフィールド設定の説明",
+    "message": "AIがこのフィールドを出力するために必要な情報を設定します"
   },
   "options_prompt_field_label": {
-    "description": "Prompt 编辑器中字段内容标签",
-    "message": "字段内容"
+    "description": "プロンプトエディタのフィールド内容のラベル",
+    "message": "フィールドの内容"
   },
   "options_prompt_field_placeholder": {
-    "description": "Prompt 编辑器字段内容输入框占位提示",
-    "message": "描述该字段应包含的内容，例如输出结构、语气等要求"
+    "description": "プロンプトエディタのフィールド内容入力ボックスのプレースホルダーヒント",
+    "message": "このフィールドに含めるべき内容（出力構造、トーンなど）を記述してください"
   },
   "options_prompt_field_select": {
-    "description": "Prompt 面板字段选择区域标题",
-    "message": "字段选择"
+    "description": "プロンプトパネルのフィールド選択エリアのタイトル",
+    "message": "フィールド選択"
   },
   "options_prompt_field_select_hint": {
-    "description": "Prompt 面板字段选择提示",
-    "message": "点击字段切换选中状态"
+    "description": "プロンプトパネルのフィールド選択のヒント",
+    "message": "フィールドをクリックして選択状態を切り替えます"
   },
   "options_prompt_generate_default": {
-    "description": "Prompt 面板测试按钮文本",
-    "message": "测试连接并刷新模型"
+    "description": "プロンプトパネルのテストボタンのテキスト",
+    "message": "接続をテストしてモデルを更新"
   },
   "options_prompt_hint_save_usage": {
-    "description": "Prompt 面板提示：保存后生效",
-    "message": "提示：保存设置后将在 popup 中使用此 Prompt。"
+    "description": "プロンプトパネルのヒント：保存後に有効",
+    "message": "ヒント：設定を保存すると、ポップアップでこのプロンプトが使用されます。"
   },
   "options_prompt_no_fields": {
-    "description": "Prompt 编辑器提示：无字段返回",
-    "message": "当前模板未返回任何字段。"
+    "description": "プロンプトエディタのヒント：フィールドが返されません",
+    "message": "現在のテンプレートはどのフィールドも返しません。"
   },
   "options_prompt_not_found": {
-    "description": "Prompt 相关 DOM 元素缺失时的警告",
-    "message": "未找到 Prompt 设置元素"
+    "description": "プロンプト関連のDOM要素が見つからない場合の警告",
+    "message": "プロンプト設定要素が見つかりません"
   },
   "options_prompt_reset_default": {
-    "description": "Prompt 区域重置按钮文本",
-    "message": "重置为默认模板"
+    "description": "プロンプトエリアのリセットボタンのテキスト",
+    "message": "デフォルトテンプレートにリセット"
   },
   "options_prompt_rule_field_definition": {
-    "description": "Prompt 规则：字段定义标题",
-    "message": "字段返回内容定义："
+    "description": "プロンプトルール：フィールド定義のタイトル",
+    "message": "フィールド返却内容の定義："
   },
   "options_prompt_rule_field_fallback": {
-    "description": "Prompt 规则：字段占位符默认说明",
-    "message": "请生成与该字段相关的内容。"
+    "description": "プロンプトルール：フィールドプレースホルダーのデフォルト説明",
+    "message": "このフィールドに関連する内容を生成してください。"
   },
   "options_prompt_rule_intro": {
-    "description": "生成默认 Prompt 时的规则说明",
-    "message": "请严格按照下列要求生成输出。"
+    "description": "デフォルトプロンプト生成時のルール説明",
+    "message": "以下の要件に厳密に従って出力を生成してください。"
   },
   "options_prompt_rule_note_json_only": {
-    "description": "Prompt 规则：仅返回 JSON 提示",
-    "message": "- 仅返回 JSON，不要包含额外解释。"
+    "description": "プロンプトルール：JSONのみを返すヒント",
+    "message": "- JSONのみを返し、追加の説明は含めないでください。"
   },
   "options_prompt_rule_note_requirements": {
-    "description": "Prompt 规则：满足要求提示",
-    "message": "- 确保各字段内容满足上文要求。"
+    "description": "プロンプトルール：要件を満たすヒント",
+    "message": "- 各フィールドの内容が上記の要件を満たしていることを確認してください。"
   },
   "options_prompt_rule_notes": {
-    "description": "Prompt 规则：注意事项标题",
-    "message": "注意事项："
+    "description": "プロンプトルール：注意事項のタイトル",
+    "message": "注意事項："
   },
   "options_prompt_rule_output_format": {
-    "description": "Prompt 规则：输出格式标题",
-    "message": "输出格式定义："
+    "description": "プロンプトルール：出力形式の定義のタイトル",
+    "message": "出力形式の定義："
   },
   "options_prompt_rule_output_json": {
-    "description": "Prompt 规则：JSON 输出要求",
-    "message": "请按照以下 JSON 结构返回结果，仅包含所列字段："
+    "description": "プロンプトルール：JSON出力要件",
+    "message": "以下のJSON構造に従って結果を返し、リストされたフィールドのみを含めてください："
   },
   "options_prompt_rule_output_line": {
-    "description": "Prompt 规则：JSON 字段定义",
-    "message": "  \"$FIELD$\": \"请填入$FIELD$的内容\"$SUFFIX$",
+    "description": "プロンプトルール：JSONフィールド定義",
+    "message": "  \"$FIELD$\": \"$FIELD$の内容を記入してください\"$SUFFIX$",
     "placeholders": {
       "FIELD": {
         "content": "$1",
-        "description": "字段名称",
-        "example": "释义"
+        "description": "フィールド名"
       },
       "SUFFIX": {
         "content": "$2",
-        "description": "逗号或空字符串",
-        "example": ","
+        "description": "カンマまたは空文字列"
       }
     }
   },
   "options_prompt_select_fields": {
-    "description": "Prompt 编辑器提示：提示选择字段",
-    "message": "请选择需要输出的字段，并补全字段内容。"
+    "description": "プロンプトエディタのヒント：フィールドを選択するよう促す",
+    "message": "出力が必要なフィールドを選択し、フィールドの内容を補完してください。"
   },
   "options_prompt_status_generated": {
-    "description": "生成默认 Prompt 后的提示",
-    "message": "已根据当前字段配置生成默认 Prompt。"
+    "description": "デフォルトプロンプト生成後のヒント",
+    "message": "現在のフィールド設定に基づいてデフォルトプロンプトが生成されました。"
   },
   "options_prompt_status_ready": {
-    "description": "Prompt 字段配置完成提示",
-    "message": "字段配置已就绪。"
+    "description": "プロンプトフィールド設定完了のヒント",
+    "message": "フィールド設定が完了しました。"
   },
   "options_prompt_template_placeholder": {
-    "description": "自定义 Prompt 编辑框占位提示",
-    "message": "请选择模型后编写对应的 Prompt。\n建议包含以下占位符：\n- {{INPUT_TEXT}} 表示用户输入\n- {{FIELD_SCHEMA}} 表示字段结构"
+    "description": "カスタムプロンプト編集ボックスのプレースホルダーヒント",
+    "message": "モデルを選択してから対応するプロンプトを作成してください。\n以下のプレースホルダーを含めることをお勧めします：\n- {{INPUT_TEXT}} はユーザー入力を表します\n- {{FIELD_SCHEMA}} はフィールド構造を表します"
   },
   "options_reset_confirm": {
-    "description": "重置配置前的确认提示",
-    "message": "确定要重置所有配置吗？此操作不可撤销。"
+    "description": "設定リセット前の確認ヒント",
+    "message": "すべての設定をリセットしてもよろしいですか？この操作は元に戻せません。"
   },
   "options_reset_status_failed": {
-    "description": "重置配置失败的提示",
-    "message": "重置配置失败：$ERROR$",
+    "description": "設定リセット失敗のヒント",
+    "message": "設定のリセットに失敗しました：$ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误信息",
-        "example": "写入失败"
+        "description": "エラーメッセージ"
       }
     }
   },
   "options_reset_status_running": {
-    "description": "重置配置进行中的提示",
-    "message": "正在重置配置..."
+    "description": "設定リセット中のヒント",
+    "message": "設定をリセットしています..."
   },
   "options_reset_status_success": {
-    "description": "重置配置成功的提示",
-    "message": "配置已重置为默认值"
+    "description": "設定リセット成功のヒント",
+    "message": "設定がデフォルト値にリセットされました"
   },
   "options_save_status_failed": {
-    "description": "保存设置失败时的提示",
-    "message": "保存出错：$ERROR$",
+    "description": "設定保存失敗時のヒント",
+    "message": "保存中にエラーが発生しました：$ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "权限被拒绝"
+        "description": "エラー詳細"
       }
     }
   },
   "options_save_status_success": {
-    "description": "保存设置成功后的提示",
-    "message": "设置已保存"
+    "description": "設定保存成功後のヒント",
+    "message": "設定が保存されました"
   },
   "options_section_choose_provider": {
-    "description": "AI 提供商选择段落标题",
-    "message": "选择 AI 提供商"
+    "description": "AIプロバイダー選択セクションのタイトル",
+    "message": "AIプロバイダーを選択"
   },
   "options_section_config_management": {
-    "description": "配置管理区域标题",
-    "message": "配置管理"
+    "description": "設定管理エリアのタイトル",
+    "message": "設定管理"
   },
   "options_section_config_management_hint": {
-    "description": "配置管理区域的说明文字",
-    "message": "导出、导入或重置您的配置设置。注意：导出的配置文件不包含 API 密钥以确保安全。"
+    "description": "設定管理エリアの説明文",
+    "message": "設定をエクスポート、インポート、またはリセットします。注意：エクスポートされた設定ファイルには、セキュリティ確保のためAPIキーは含まれません。"
   },
   "options_section_prompt_by_model": {
-    "description": "Prompt 配置段落标题",
-    "message": "按模板配置 Prompt"
+    "description": "プロンプト設定セクションのタイトル",
+    "message": "テンプレートごとにプロンプトを設定"
   },
   "options_section_prompt_instruction": {
-    "description": "Prompt 配置区域的使用说明",
-    "message": "请在「Anki 连接」面板选择要编辑的模型，随后在这里自定义 Prompt。"
+    "description": "プロンプト設定エリアの使用説明",
+    "message": "「Anki接続」パネルで編集したいモデルを選択し、その後ここでプロンプトをカスタマイズしてください。"
   },
   "options_section_style_preview": {
-    "description": "样式预览区域标题",
-    "message": "样式预览"
+    "description": "スタイルプレビューエリアのタイトル",
+    "message": "スタイルプレビュー"
   },
   "options_status_health_error": {
-    "description": "提供商状态：异常",
-    "message": "异常"
+    "description": "プロバイダーの状態：異常",
+    "message": "異常"
   },
   "options_status_health_ok": {
-    "description": "提供商状态：健康",
-    "message": "健康"
+    "description": "プロバイダーの状態：正常",
+    "message": "正常"
   },
   "options_status_health_unknown": {
-    "description": "提供商状态：未知",
-    "message": "未知"
+    "description": "プロバイダーの状態：不明",
+    "message": "不明"
   },
   "options_status_last_checked": {
-    "description": "提供商最近检查时间提示",
-    "message": "上次检查：$TIME$",
+    "description": "プロバイダーの最終チェック時間のヒント",
+    "message": "最終チェック：$TIME$",
     "placeholders": {
       "TIME": {
         "content": "$1",
-        "description": "最近检查时间文本",
-        "example": "2025-01-10 12:00"
+        "description": "最終チェック時間テキスト"
       }
     }
   },
   "options_status_not_tested": {
-    "description": "连接状态默认提示",
-    "message": "尚未测试连接"
+    "description": "接続状態のデフォルトヒント",
+    "message": "接続はまだテストされていません"
   },
   "options_status_prefix": {
-    "description": "提供商健康状态前缀",
-    "message": "状态：$STATUS$",
+    "description": "プロバイダーの健康状態プレフィックス",
+    "message": "状態：$STATUS$",
     "placeholders": {
       "STATUS": {
         "content": "$1",
-        "description": "提供商健康状态文本",
-        "example": "健康"
+        "description": "プロバイダーの健康状態テキスト"
       }
     }
   },
   "options_status_provider_test_success": {
-    "description": "提供商连接测试成功提示",
-    "message": "连接测试成功"
+    "description": "プロバイダー接続テスト成功のヒント",
+    "message": "接続テストに成功しました"
   },
   "options_status_reason": {
-    "description": "提供商异常的原因提示",
+    "description": "プロバイダー異常の原因のヒント",
     "message": "原因：$REASON$",
     "placeholders": {
       "REASON": {
         "content": "$1",
-        "description": "异常原因说明",
-        "example": "请求超时"
+        "description": "異常原因の説明"
       }
     }
   },
   "options_status_saving": {
-    "description": "保存设置时的状态提示",
-    "message": "正在保存设置..."
+    "description": "設定保存時のステータスヒント",
+    "message": "設定を保存しています..."
   },
   "options_style_preview_description": {
-    "description": "样式预览区域示例文本第二行",
-    "message": "用于预览字体、对齐与行高效果。"
+    "description": "スタイルプレビューエリアのサンプルテキスト2行目",
+    "message": "フォント、配置、行の高さをプレビューするために使用されます。"
   },
   "options_style_preview_sample": {
-    "description": "样式预览区域示例文本第一行",
-    "message": "这是一个示例文本。"
+    "description": "スタイルプレビューエリアのサンプルテキスト1行目",
+    "message": "これはサンプルテキストです。"
   },
   "options_tab_ai": {
-    "description": "AI 设置面板的标签文本",
-    "message": "AI 配置"
+    "description": "AI設定パネルのタブテキスト",
+    "message": "AI設定"
   },
   "options_tab_anki": {
-    "description": "Anki 设置面板的标签文本",
-    "message": "Anki 连接"
+    "description": "Anki設定パネルのタブテキスト",
+    "message": "Anki接続"
   },
   "options_tab_prompt": {
-    "description": "Prompt 设置面板的标签文本",
-    "message": "Prompt 配置"
+    "description": "プロンプト設定パネルのタブテキスト",
+    "message": "プロンプト設定"
   },
   "options_tab_style": {
-    "description": "界面样式设置面板的标签文本",
-    "message": "样式设置"
+    "description": "UIスタイル設定パネルのタブテキスト",
+    "message": "スタイル設定"
   },
   "options_tab_system": {
-    "description": "系统设置面板的标签文本",
-    "message": "系统设置"
+    "description": "システム設定パネルのタブテキスト",
+    "message": "システム設定"
   },
   "options_test_running": {
-    "description": "测试 Anki 或 AI 连接时的提示",
-    "message": "正在测试连接并刷新数据..."
+    "description": "AnkiまたはAI接続テスト時のヒント",
+    "message": "接続をテストし、データを更新しています..."
   },
   "options_test_success_with_version": {
-    "description": "Anki 测试成功后显示的版本信息",
-    "message": "连接成功，AnkiConnect 版本: $VERSION$",
+    "description": "Ankiテスト成功後に表示されるバージョン情報",
+    "message": "接続成功、AnkiConnectバージョン: $VERSION$",
     "placeholders": {
       "VERSION": {
         "content": "$1",
-        "description": "AnkiConnect 返回的版本号",
-        "example": "2.5.0"
+        "description": "AnkiConnectが返すバージョン番号"
       }
     }
   },
   "options_text_align_center": {
-    "description": "文本对齐选项：居中",
-    "message": "居中"
+    "description": "テキスト配置オプション：中央揃え",
+    "message": "中央揃え"
   },
   "options_text_align_left": {
-    "description": "文本对齐选项：左对齐",
-    "message": "左对齐"
+    "description": "テキスト配置オプション：左揃え",
+    "message": "左揃え"
   },
   "options_text_align_right": {
-    "description": "文本对齐选项：右对齐",
-    "message": "右对齐"
+    "description": "テキスト配置オプション：右揃え",
+    "message": "右揃え"
   },
   "options_warning_permission_declined": {
-    "description": "权限请求被拒绝的日志提示",
-    "message": "域名权限请求被拒绝：$ERROR$",
+    "description": "権限要求が拒否された場合のログヒント",
+    "message": "ドメイン権限要求が拒否されました：$ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "User cancelled"
+        "description": "エラー詳細"
       }
     }
   },
   "popup_app_title": {
-    "description": "Popup 页面标题，用于 <title> 与头部标题",
-    "message": "Anki 单词助手"
+    "description": "ポップアップページのタイトル、<title>とヘッダータイトルに使用",
+    "message": "Anki単語アシスタント"
   },
   "popup_confirm_reload": {
-    "description": "严重错误后的刷新提示",
-    "message": "$MESSAGE$\n\n点击确定刷新页面，取消继续使用",
+    "description": "重大なエラー後のリフレッシュヒント",
+    "message": "$MESSAGE$\n\nOKをクリックしてページをリフレッシュし、キャンセルして使用を続行します",
     "placeholders": {
       "MESSAGE": {
         "content": "$1",
-        "description": "上一条错误提示",
-        "example": "检测到频繁错误，建议刷新页面或检查网络连接"
+        "description": "前のエラーヒント"
       }
     }
   },
   "popup_confirm_retry": {
-    "description": "错误后是否重试的确认弹窗",
-    "message": "$MESSAGE$\n\n是否立即重试？",
+    "description": "エラー後に再試行するかどうかの確認ダイアログ",
+    "message": "$MESSAGE$\n\nすぐに再試行しますか？",
     "placeholders": {
       "MESSAGE": {
         "content": "$1",
-        "description": "上一条错误提示",
-        "example": "AI 解析失败：请求超时"
+        "description": "前のエラーヒント"
       }
     }
   },
   "popup_dynamic_field_placeholder": {
-    "description": "动态字段 textarea 的占位提示",
-    "message": "AI将自动填充此字段..."
+    "description": "動的フィールドtextareaのプレースホルダーヒント",
+    "message": "AIがこのフィールドを自動的に埋めます..."
   },
   "popup_dynamic_fields_missing": {
-    "description": "动态字段为空时在容器内展示的提示",
-    "message": "当前未配置可填充的字段，请先在选项页完成字段配置。"
+    "description": "動的フィールドが空の場合にコンテナ内に表示されるヒント",
+    "message": "現在、入力可能なフィールドが設定されていません。まずオプションページでフィールド設定を完了してください。"
   },
   "popup_dynamic_fill_complete": {
-    "description": "动态字段填充完成时的提示前缀",
-    "message": "动态字段填充完成:"
+    "description": "動的フィールド入力完了時のヒントプレフィックス",
+    "message": "動的フィールドの入力が完了しました:"
   },
   "popup_dynamic_fill_error": {
-    "description": "动态字段填充错误提示前缀",
-    "message": "填充动态字段时发生错误:"
+    "description": "動的フィールド入力エラーのヒントプレフィックス",
+    "message": "動的フィールドの入力中にエラーが発生しました:"
   },
   "popup_error_ai_config": {
-    "description": "AI 服务凭据缺失或错误时的提示",
-    "message": "AI服务配置错误，请检查设置页面的API Key"
+    "description": "AIサービスの認証情報が欠落または間違っている場合のヒント",
+    "message": "AIサービスの設定エラー、設定ページのAPIキーを確認してください"
   },
   "popup_error_ai_field_mismatch": {
-    "description": "AI 返回字段与期望不符时的提示",
-    "message": "AI输出字段不匹配，请检查模板配置"
+    "description": "AIが返すフィールドが期待と異なる場合のヒント",
+    "message": "AIの出力フィールドが一致しません。テンプレート設定を確認してください"
   },
   "popup_error_ai_format_retry": {
-    "description": "AI 返回格式异常时的重试提示",
-    "message": "AI解析格式错误，正在自动重试..."
+    "description": "AIが返す形式が異常な場合の再試行ヒント",
+    "message": "AIの解析形式エラー、自動的に再試行しています..."
   },
   "popup_error_ai_generic": {
-    "description": "AI 解析失败的通用提示，包含精简错误信息",
-    "message": "AI解析失败: $DETAIL$",
+    "description": "AI解析失敗の一般的なヒント、簡潔なエラー情報を含む",
+    "message": "AI解析に失敗しました: $DETAIL$",
     "placeholders": {
       "DETAIL": {
         "content": "$1",
-        "description": "精简后的错误说明",
-        "example": "请求超时"
+        "description": "簡潔なエラー説明"
       }
     }
   },
   "popup_error_ai_quota": {
-    "description": "AI 服务额度耗尽时的提示",
-    "message": "AI服务额度不足，请检查账户状态或更换服务商"
+    "description": "AIサービスのクォータが尽きた場合のヒント",
+    "message": "AIサービスのクォータが不足しています。アカウントの状態を確認するか、サービスプロバイダーを変更してください"
   },
   "popup_error_anki_deck_missing": {
-    "description": "牌组不存在时的提示",
-    "message": "指定的牌组不存在，请检查配置"
+    "description": "デッキが存在しない場合のヒント",
+    "message": "指定されたデッキが存在しません。設定を確認してください"
   },
   "popup_error_anki_duplicate": {
-    "description": "写入时出现重复内容的提示",
-    "message": "卡片内容重复，请修改后重试"
+    "description": "書き込み時に重複した内容がある場合のヒント",
+    "message": "カードの内容が重複しています。修正してから再試行してください"
   },
   "popup_error_anki_generic": {
-    "description": "Anki 操作失败的通用提示，包含精简错误信息",
-    "message": "Anki操作失败: $DETAIL$",
+    "description": "Anki操作失敗の一般的なヒント、簡潔なエラー情報を含む",
+    "message": "Anki操作に失敗しました: $DETAIL$",
     "placeholders": {
       "DETAIL": {
         "content": "$1",
-        "description": "精简后的错误说明",
-        "example": "连接超时"
+        "description": "簡潔なエラー説明"
       }
     }
   },
   "popup_error_anki_launch": {
-    "description": "未启动 Anki 或插件缺失时的提示",
-    "message": "请启动Anki并确保AnkiConnect插件已安装"
+    "description": "Ankiが起動していないか、プラグインがない場合のヒント",
+    "message": "Ankiを起動し、AnkiConnectプラグインがインストールされていることを確認してください"
   },
   "popup_error_anki_model_missing": {
-    "description": "模板不存在时的提示",
-    "message": "指定的模板不存在，请检查配置"
+    "description": "テンプレートが存在しない場合のヒント",
+    "message": "指定されたテンプレートが存在しません。設定を確認してください"
   },
   "popup_error_config_load": {
-    "description": "加载用户配置失败时使用默认配置的提示",
-    "message": "配置加载异常，已使用默认配置"
+    "description": "ユーザー設定の読み込みに失敗した場合にデフォルト設定を使用するヒント",
+    "message": "設定の読み込みに異常があり、デフォルト設定が使用されました"
   },
   "popup_error_dom_missing": {
-    "description": "关键 DOM 元素缺失时的提示",
-    "message": "页面元素缺失，请刷新页面重试"
+    "description": "重要なDOM要素が見つからない場合のヒント",
+    "message": "ページ要素が見つかりません。ページをリフレッシュして再試行してください"
   },
   "popup_error_field_empty": {
-    "description": "写入前未填写任何字段时的提示",
-    "message": "请至少填写一个字段内容"
+    "description": "書き込み前にどのフィールドも入力されていない場合のヒント",
+    "message": "少なくとも1つのフィールドの内容を入力してください"
   },
   "popup_error_field_generic": {
-    "description": "字段处理相关错误的通用提示",
-    "message": "字段处理错误: $DETAIL$",
+    "description": "フィールド処理関連エラーの一般的なヒント",
+    "message": "フィールド処理エラー: $DETAIL$",
     "placeholders": {
       "DETAIL": {
         "content": "$1",
-        "description": "精简后的错误说明",
-        "example": "字段格式不正确"
+        "description": "簡潔なエラー説明"
       }
     }
   },
   "popup_error_generic": {
-    "description": "未分类错误的通用提示",
-    "message": "操作失败: $DETAIL$",
+    "description": "未分類エラーの一般的なヒント",
+    "message": "操作に失敗しました: $DETAIL$",
     "placeholders": {
       "DETAIL": {
         "content": "$1",
-        "description": "精简后的错误说明",
-        "example": "未知错误"
+        "description": "簡潔なエラー説明"
       }
     }
   },
   "popup_error_network": {
-    "description": "网络异常时的提示",
-    "message": "网络连接失败，请检查网络后重试"
+    "description": "ネットワーク異常時のヒント",
+    "message": "ネットワーク接続に失敗しました。ネットワークを確認してから再試行してください"
   },
   "popup_error_rate_limit": {
-    "description": "频繁错误时提示用户刷新或检查网络",
-    "message": "检测到频繁错误，建议刷新页面或检查网络连接"
+    "description": "頻繁なエラー時にユーザーにリフレッシュまたはネットワーク確認を促すヒント",
+    "message": "頻繁なエラーが検出されました。ページをリフレッシュするか、ネットワーク接続を確認することをお勧めします"
   },
   "popup_field_all_empty_warning": {
-    "description": "所有字段为空时的警告",
-    "message": "警告：所有字段都为空，请检查 AI 解析结果"
+    "description": "すべてのフィールドが空の場合の警告",
+    "message": "警告：すべてのフィールドが空です。AIの解析結果を確認してください"
   },
   "popup_field_empty_count": {
-    "description": "显示空字段数量的提示",
-    "message": "($COUNT$ 个字段为空)",
+    "description": "空のフィールド数を表示するヒント",
+    "message": "($COUNT$個のフィールドが空です)",
     "placeholders": {
       "COUNT": {
         "content": "$1",
-        "description": "为空的字段数量",
-        "example": "3"
+        "description": "空のフィールド数"
       }
     }
   },
   "popup_field_fill_failed": {
-    "description": "字段填充失败的详细提示",
-    "message": "字段填充失败: $DETAIL$",
+    "description": "フィールド入力失敗の詳細なヒント",
+    "message": "フィールドの入力に失敗しました: $DETAIL$",
     "placeholders": {
       "DETAIL": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "字段示例未找到"
+        "description": "エラー詳細"
       }
     }
   },
   "popup_field_missing_dom_prefix": {
-    "description": "缺失 DOM 元素列表前缀",
-    "message": "缺失DOM元素:"
+    "description": "欠落しているDOM要素リストのプレフィックス",
+    "message": "欠落しているDOM要素:"
   },
   "popup_field_missing_dom_summary": {
-    "description": "缺失 DOM 元素数量总结",
-    "message": "[$COUNT$ 个元素缺失]",
+    "description": "欠落しているDOM要素数の要約",
+    "message": "[$COUNT$個の要素が欠落しています]",
     "placeholders": {
       "COUNT": {
         "content": "$1",
-        "description": "缺失的元素数量",
-        "example": "2"
+        "description": "欠落している要素の数"
       }
     }
   },
   "popup_field_not_found": {
-    "description": "动态字段对应的 DOM 元素缺失时的提示",
-    "message": "找不到字段元素: $ID$ ($LABEL$)",
+    "description": "動的フィールドに対応するDOM要素が見つからない場合のヒント",
+    "message": "フィールド要素が見つかりません: $ID$ ($LABEL$)",
     "placeholders": {
       "ID": {
         "content": "$1",
-        "description": "字段元素 ID",
-        "example": "dynamic-field-1"
+        "description": "フィールド要素ID"
       },
       "LABEL": {
         "content": "$2",
-        "description": "字段标签名称",
-        "example": "释义"
+        "description": "フィールドラベル名"
       }
     }
   },
   "popup_field_preview": {
-    "description": "字段预览内容前缀",
-    "message": "已填充: $VALUE$",
+    "description": "フィールドプレビュー内容のプレフィックス",
+    "message": "入力済み: $VALUE$",
     "placeholders": {
       "VALUE": {
         "content": "$1",
-        "description": "截断后的字段内容",
-        "example": "example text..."
+        "description": "切り捨てられたフィールド内容"
       }
     }
   },
   "popup_field_progress": {
-    "description": "字段填充进度信息",
-    "message": "已填充 $FILLED$/$TOTAL$ 个字段",
+    "description": "フィールド入力の進捗情報",
+    "message": "$FILLED$/$TOTAL$個のフィールドが入力されました",
     "placeholders": {
       "FILLED": {
         "content": "$1",
-        "description": "已填充字段数量",
-        "example": "2"
+        "description": "入力済みフィールド数"
       },
       "TOTAL": {
         "content": "$2",
-        "description": "字段总数",
-        "example": "5"
+        "description": "フィールド総数"
       }
     }
   },
   "popup_field_tag_filled": {
-    "description": "字段 chip 的已填充状态文本",
-    "message": "已填充: $FIELD$",
+    "description": "フィールドチップの入力済み状態のテキスト",
+    "message": "入力済み: $FIELD$",
     "placeholders": {
       "FIELD": {
         "content": "$1",
-        "description": "字段名称",
-        "example": "释义"
+        "description": "フィールド名"
       }
     }
   },
   "popup_field_tag_pending": {
-    "description": "字段 chip 的未填充状态文本",
-    "message": "待填充: $FIELD$",
+    "description": "フィールドチップの未入力状態のテキスト",
+    "message": "未入力: $FIELD$",
     "placeholders": {
       "FIELD": {
         "content": "$1",
-        "description": "字段名称",
-        "example": "例句"
+        "description": "フィールド名"
       }
     }
   },
   "popup_field_tag_pending_label": {
-    "description": "字段 chip 的待填充状态标签",
-    "message": "待填充"
+    "description": "フィールドチップの未入力状態のラベル",
+    "message": "未入力"
   },
   "popup_hint_anki_connection": {
-    "description": "Anki 写入失败的连接原因提示",
-    "message": "Anki 操作失败可能是连接问题"
+    "description": "Anki書き込み失敗の接続原因のヒント",
+    "message": "Ankiの操作失敗は接続の問題かもしれません"
   },
   "popup_hint_parse_network": {
-    "description": "解析失败的网络原因提示",
-    "message": "解析失败可能是临时网络问题"
+    "description": "解析失敗のネットワーク原因のヒント",
+    "message": "解析の失敗は一時的なネットワークの問題かもしれません"
   },
   "popup_hint_retry_general": {
-    "description": "通用失败时的重试提示",
-    "message": "操作失败可能是临时问题"
+    "description": "一般的な失敗時の再試行ヒント",
+    "message": "操作の失敗は一時的な問題かもしれません"
   },
   "popup_input_label": {
-    "description": "Popup 文本输入区域的标签",
-    "message": "输入文本"
+    "description": "ポップアップテキスト入力エリアのラベル",
+    "message": "テキストを入力"
   },
   "popup_input_placeholder": {
-    "description": "Popup 文本输入框的占位提示",
-    "message": "粘贴或输入文本..."
+    "description": "ポップアップテキスト入力ボックスのプレースホルダーヒント",
+    "message": "テキストを貼り付けるか入力してください..."
   },
   "popup_parse_button": {
-    "description": "触发 AI 解析的按钮文本",
+    "description": "AI解析をトリガーするボタンのテキスト",
     "message": "解析"
   },
   "popup_retry_hint_anki": {
-    "description": "Anki 失败的附加提示",
-    "message": "Anki 操作失败可能是连接问题"
+    "description": "Anki失敗の追加ヒント",
+    "message": "Ankiの操作失敗は接続の問題かもしれません"
   },
   "popup_retry_hint_generic": {
-    "description": "通用失败的附加提示",
-    "message": "操作失败可能是临时问题"
+    "description": "一般的な失敗の追加ヒント",
+    "message": "操作の失敗は一時的な問題かもしれません"
   },
   "popup_retry_hint_parse": {
-    "description": "解析失败的附加提示",
-    "message": "解析失败可能是临时网络问题"
+    "description": "解析失敗の追加ヒント",
+    "message": "解析の失敗は一時的なネットワークの問題かもしれません"
   },
   "popup_status_collect_complete": {
-    "description": "字段收集成功时的提示前缀",
-    "message": "字段收集完成:"
+    "description": "フィールド収集成功時のヒントプレフィックス",
+    "message": "フィールドの収集が完了しました:"
   },
   "popup_status_collect_error": {
-    "description": "字段收集阶段的错误提示",
-    "message": "字段收集失败：$DETAIL$",
+    "description": "フィールド収集段階のエラーヒント",
+    "message": "フィールドの収集に失敗しました：$DETAIL$",
     "placeholders": {
       "DETAIL": {
         "content": "$1",
-        "description": "错误详情列表",
-        "example": "text-input 未找到"
+        "description": "エラー詳細リスト"
       }
     }
   },
   "popup_status_collect_failed": {
-    "description": "字段收集失败时的提示前缀",
-    "message": "字段收集失败:"
+    "description": "フィールド収集失敗時のヒントプレフィックス",
+    "message": "フィールドの収集に失敗しました:"
   },
   "popup_status_config_loaded": {
-    "description": "用户配置加载完成时的提示前缀",
-    "message": "用户配置加载完成:"
+    "description": "ユーザー設定読み込み完了時のヒントプレフィックス",
+    "message": "ユーザー設定が読み込まれました:"
   },
   "popup_status_field_names_invalid": {
-    "description": "动态字段名无效时的提示",
-    "message": "字段名数组为空或无效"
+    "description": "動的フィールド名が無効な場合のヒント",
+    "message": "フィールド名配列が空または無効です"
   },
   "popup_status_legacy_fallback_failed": {
-    "description": "Legacy 回退失败时的提示",
-    "message": "回退到legacy模式也失败: $DETAIL$",
+    "description": "レガシーへのフォールバック失敗時のヒント",
+    "message": "レガシーモードへのフォールバックも失敗しました: $DETAIL$",
     "placeholders": {
       "DETAIL": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "DOM 元素缺失"
+        "description": "エラー詳細"
       }
     }
   },
   "popup_status_no_configured_fields": {
-    "description": "任意阶段检测到无字段配置的提示",
-    "message": "当前模板未配置字段，请在选项页完成配置。"
+    "description": "どの段階でもフィールド設定が検出されない場合のヒント",
+    "message": "現在のテンプレートにはフィールドが設定されていません。オプションページで設定を完了してください。"
   },
   "popup_status_no_fields_parse": {
-    "description": "解析时检测到无字段配置",
-    "message": "当前模板未配置可解析的字段，请在选项页完成设置。"
+    "description": "解析時にフィールド設定が検出されない場合",
+    "message": "現在のテンプレートには解析可能なフィールドが設定されていません。オプションページで設定を完了してください。"
   },
   "popup_status_no_fields_write": {
-    "description": "写入时检测到无字段配置",
-    "message": "当前模板未配置可写入的字段，请在选项页完成设置。"
+    "description": "書き込み時にフィールド設定が検出されない場合",
+    "message": "現在のテンプレートには書き込み可能なフィールドが設定されていません。オプションページで設定を完了してください。"
   },
   "popup_status_no_fillable_fields": {
-    "description": "写入前未收集到任何字段时的提示",
-    "message": "没有可写入的字段内容"
+    "description": "書き込み前にどのフィールドも収集されなかった場合のヒント",
+    "message": "書き込み可能なフィールドの内容がありません"
   },
   "popup_status_parse_result_empty": {
-    "description": "AI 返回结果为空或格式错误的提示",
-    "message": "AI 解析结果为空或格式无效"
+    "description": "AIが返す結果が空または形式が無効な場合のヒント",
+    "message": "AIの解析結果が空か、形式が無効です"
   },
   "popup_status_parsed": {
-    "description": "popup 状态栏：解析完成",
-    "message": "解析完成"
+    "description": "ポップアップステータスバー：解析完了",
+    "message": "解析完了"
   },
   "popup_status_parsing": {
-    "description": "popup 状态栏：解析进行中",
-    "message": "正在进行AI解析..."
+    "description": "ポップアップステータスバー：解析中",
+    "message": "AI解析を実行中..."
   },
   "popup_status_prompt_input": {
-    "description": "popup 状态栏：等待用户输入",
-    "message": "请输入要解析的文本"
+    "description": "ポップアップステータスバー：ユーザー入力待ち",
+    "message": "解析するテキストを入力してください"
   },
   "popup_status_ready": {
-    "description": "popup 状态栏：完成初始化",
-    "message": "准备就绪"
+    "description": "ポップアップステータスバー：初期化完了",
+    "message": "準備完了"
   },
   "popup_status_ready_to_write": {
-    "description": "写入前的提示前缀",
-    "message": "准备写入 Anki:"
+    "description": "書き込み前のヒントプレフィックス",
+    "message": "Ankiに書き込む準備ができました:"
   },
   "popup_status_style_error": {
-    "description": "样式包装阶段的错误提示",
-    "message": "样式包装失败: $DETAIL$",
+    "description": "スタイルラッピング段階のエラーヒント",
+    "message": "スタイルラッピングに失敗しました: $DETAIL$",
     "placeholders": {
       "DETAIL": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "DOM 元素不存在"
+        "description": "エラー詳細"
       }
     }
   },
   "popup_status_validation_continue": {
-    "description": "字段验证通过但带警告时的提示",
-    "message": "$MESSAGE$，继续写入...",
+    "description": "フィールド検証は合格したが警告がある場合のヒント",
+    "message": "$MESSAGE$、書き込みを続行します...",
     "placeholders": {
       "MESSAGE": {
         "content": "$1",
-        "description": "验证警告信息",
-        "example": "卡片内容存在未填字段"
+        "description": "検証警告メッセージ"
       }
     }
   },
   "popup_status_validation_failed": {
-    "description": "字段验证失败时的提示前缀",
-    "message": "字段验证失败:"
+    "description": "フィールド検証失敗時のヒントプレフィックス",
+    "message": "フィールドの検証に失敗しました:"
   },
   "popup_status_validation_warning_header": {
-    "description": "字段验证警告标题",
-    "message": "字段验证警告:"
+    "description": "フィールド検証警告のタイトル",
+    "message": "フィールド検証の警告:"
   },
   "popup_status_write_success": {
-    "description": "写入完成后的提示",
-    "message": "写入成功"
+    "description": "書き込み完了後のヒント",
+    "message": "書き込みに成功しました"
   },
   "popup_status_writing": {
-    "description": "popup 状态栏：写入进行中",
-    "message": "正在写入 Anki..."
+    "description": "ポップアップステータスバー：書き込み中",
+    "message": "Ankiに書き込み中..."
   },
   "popup_warning_prefix": {
-    "description": "用于拼接警告详情的前缀",
+    "description": "警告詳細を連結するためのプレフィックス",
     "message": "警告: $DETAIL$",
     "placeholders": {
       "DETAIL": {
         "content": "$1",
-        "description": "警告文字",
-        "example": "解析结果为空"
+        "description": "警告テキスト"
       }
     }
   },
   "popup_write_button": {
-    "description": "触发写入 Anki 的按钮文本",
-    "message": "写入 Anki"
+    "description": "Ankiへの書き込みをトリガーするボタンのテキスト",
+    "message": "Ankiに書き込む"
   },
   "prompt_engine_custom_template_header": {
-    "description": "动态 Prompt 模板生成时的头部",
-    "message": "$TEMPLATE$\n-------------------------------\n以下是本次输入的内容：$INPUT$",
+    "description": "動的プロンプトテンプレート生成時のヘッダー",
+    "message": "$TEMPLATE$\n-------------------------------\n以下は今回の入力内容です：$INPUT$",
     "placeholders": {
       "INPUT": {
         "content": "$2",
-        "description": "用户输入文本",
-        "example": "test word"
+        "description": "ユーザー入力テキスト"
       },
       "TEMPLATE": {
         "content": "$1",
-        "description": "自定义 Prompt 模板",
-        "example": "你是一名英语老师。"
+        "description": "カスタムプロンプトテンプレート"
       }
     }
   },
   "prompt_engine_default_header": {
-    "description": "默认综合 Prompt 头部说明",
-    "message": "# Role: 专业单词查询助手\n\n请完成以下任务：\n1. 查询单词/短语: \"{{INPUT_TEXT}}\"\n2. 生成详细解析信息\n3. 按以下JSON格式输出：\n{{FIELD_SCHEMA}}\n\n要求：\n- 输出纯JSON格式，不包含任何解释文字\n- 根据单词/短语的特点，填充相应字段\n- 如果某个字段不适用，可以不输出该字段"
+    "description": "デフォルト総合プロンプトのヘッダー説明",
+    "message": "# 役割: 専門単語検索アシスタント\n\n以下のタスクを完了してください：\n1. 単語/フレーズを検索: \"{{INPUT_TEXT}}\"\n2. 詳細な解析情報を生成\n3. 以下のJSON形式で出力：\n{{FIELD_SCHEMA}}\n\n要件：\n- 純粋なJSON形式で出力し、説明文は含めないでください\n- 単語/フレーズの特性に応じて、対応するフィールドを埋めてください\n- 適用できないフィールドは出力しなくてもかまいません"
   },
   "prompt_engine_error_json_parse": {
-    "description": "解析 Prompt 生成结果 JSON 失败时的提示",
-    "message": "JSON 解析失败: $ERROR$",
+    "description": "プロンプト生成結果のJSON解析失敗時のヒント",
+    "message": "JSONの解析に失敗しました: $ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "Unexpected token"
+        "description": "エラー詳細"
       }
     }
   },
   "prompt_engine_field_prompt": {
-    "description": "生成字段说明时的模板",
-    "message": "$FIELD$相关内容",
+    "description": "フィールド説明生成時のテンプレート",
+    "message": "$FIELD$関連の内容",
     "placeholders": {
       "FIELD": {
         "content": "$1",
-        "description": "字段名称",
-        "example": "释义"
+        "description": "フィールド名"
       }
     }
   },
@@ -1564,62 +1486,58 @@
     "message": "意味と解説"
   },
   "prompt_engine_requirements_body": {
-    "description": "动态 Prompt 要求说明",
-    "message": "\n\n要求:\n- 输出有效JSON格式\n- 只能使用字段: $FIELDS$\n- 可部分输出，但字段名必须准确",
+    "description": "動的プロンプト要件の説明",
+    "message": "\n\n要件:\n- 有効なJSON形式で出力\n- フィールドのみ使用可能: $FIELDS$\n- 部分的な出力も可能ですが、フィールド名は正確でなければなりません",
     "placeholders": {
       "FIELDS": {
         "content": "$1",
-        "description": "允许的字段列表",
-        "example": "front, back"
+        "description": "許可されたフィールドのリスト"
       }
     }
   },
   "storage_error_api_key_decrypt": {
-    "description": "解密 API Key 失败的日志提示前缀",
-    "message": "[storage] $PROVIDER$ 的 API 密钥解密失败:",
+    "description": "APIキーの復号失敗のログヒントプレフィックス",
+    "message": "[storage] $PROVIDER$ のAPIキーの復号に失敗しました:",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
-        "example": "anthropic"
+        "description": "プロバイダーID"
       }
     }
   },
   "storage_error_api_key_decrypt_reset": {
-    "description": "解密 API Key 失败并回退为空字符串时的提示",
-    "message": "[storage] $PROVIDER$ 的 API 密钥解密失败，已初始化为空字符串。",
+    "description": "APIキーの復号に失敗し、空文字列にフォールバックした場合のヒント",
+    "message": "[storage] $PROVIDER$ のAPIキーの復号に失敗したため、空文字列に初期化されました。",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
-        "example": "anthropic"
+        "description": "プロバイダーID"
       }
     }
   },
   "storage_error_loading_config": {
-    "description": "读取配置失败的日志前缀",
-    "message": "加载设置时出错:"
+    "description": "設定読み込み失敗のログプレフィックス",
+    "message": "設定の読み込み中にエラーが発生しました:"
   },
   "storage_info_migrating_config": {
-    "description": "检测到旧版配置时的提示",
-    "message": "检测到旧版设置，正在更新架构。"
+    "description": "旧バージョンの設定が検出された場合のヒント",
+    "message": "旧バージョンの設定が検出されました。スキーマを更新しています。"
   },
   "storage_info_migration_done": {
-    "description": "配置迁移完成提示",
-    "message": "设置迁移完成。"
+    "description": "設定移行完了のヒント",
+    "message": "設定の移行が完了しました。"
   },
   "storage_info_missing_config": {
-    "description": "未找到用户配置时的提示",
-    "message": "未找到已保存的设置，将返回默认值。"
+    "description": "保存された設定が見つからない場合のヒント",
+    "message": "保存された設定が見つかりません。デフォルト値を返します。"
   },
   "storage_warning_missing_salt": {
-    "description": "缺少加密盐时的日志提示",
-    "message": "[storage] 未找到 $PROVIDER$ 的加密盐，因此使用默认提供商。",
+    "description": "暗号化ソルトが欠落している場合のログヒント",
+    "message": "[storage] $PROVIDER$ の暗号化ソルトが見つからなかったため、デフォルトのプロバイダーを使用します。",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
-        "example": "openai"
+        "description": "プロバイダーID"
       }
     }
   },
@@ -1629,8 +1547,7 @@
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "失敗理由",
-        "example": "Invalid credentials"
+        "description": "失敗理由"
       }
     }
   },
@@ -1644,8 +1561,7 @@
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "プロバイダー名",
-        "example": "OpenAI"
+        "description": "プロバイダー名"
       }
     }
   },
@@ -1655,8 +1571,7 @@
     "placeholders": {
       "ORIGIN": {
         "content": "$1",
-        "description": "オリジン URL パターン",
-        "example": "https://api.example.com/*"
+        "description": "オリジン URL パターン"
       }
     }
   },
@@ -1666,8 +1581,7 @@
     "placeholders": {
       "URL": {
         "content": "$1",
-        "description": "設定済み URL",
-        "example": "https://custom.api.endpoint"
+        "description": "設定済み URL"
       }
     }
   },
@@ -1677,8 +1591,7 @@
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "プロバイダー名",
-        "example": "Anthropic"
+        "description": "プロバイダー名"
       }
     }
   },
@@ -1688,8 +1601,7 @@
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "エラーメッセージ",
-        "example": "Timeout"
+        "description": "エラーメッセージ"
       }
     }
   },

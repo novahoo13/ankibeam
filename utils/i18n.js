@@ -4,6 +4,9 @@ const runtimeI18n = typeof chrome !== "undefined" && chrome?.i18n ? chrome.i18n 
 
 const FALLBACK_LOCALE = "en-US";
 
+let customMessages = null;
+let customMessagesLocale = null;
+
 const LOCALE_ALIAS_MAP = new Map([
   ["en", "en-US"],
   ["en-us", "en-US"],
@@ -23,15 +26,88 @@ const LOCALE_ALIAS_MAP = new Map([
 ]);
 
 let cachedLocale = null;
+let userConfiguredLocale = null;
+
+function mapLocaleToFolderName(locale) {
+  const normalized = locale.toLowerCase();
+
+  if (normalized === 'en-us' || normalized === 'en') {
+    return 'en';
+  }
+  if (normalized === 'ja-jp' || normalized === 'ja') {
+    return 'ja';
+  }
+  if (normalized === 'zh-cn') {
+    return 'zh_CN';
+  }
+  if (normalized === 'zh-tw') {
+    return 'zh_TW';
+  }
+
+  return locale.replace('-', '_');
+}
+
+async function loadMessagesForLocale(locale) {
+  if (!locale) {
+    return null;
+  }
+
+  const folderName = mapLocaleToFolderName(locale);
+
+  try {
+    const url = chrome.runtime.getURL(`_locales/${folderName}/messages.json`);
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.warn(`Failed to load messages for locale ${locale} (folder: ${folderName})`);
+      return null;
+    }
+    const messages = await response.json();
+    return messages;
+  } catch (error) {
+    console.warn(`Error loading messages for locale ${locale} (folder: ${folderName}):`, error);
+    return null;
+  }
+}
 
 function resolveMessage(key, substitutions) {
   if (!key) {
     return "";
   }
+
+  if (customMessages && customMessages[key]) {
+    let message = customMessages[key].message || "";
+
+    if (substitutions && Array.isArray(substitutions)) {
+      substitutions.forEach((sub, index) => {
+        const placeholder = `$${index + 1}`;
+        message = message.replace(new RegExp(`\\${placeholder}`, 'g'), sub);
+      });
+    }
+
+    return message;
+  }
+
   if (!runtimeI18n) {
     return key;
   }
   return runtimeI18n.getMessage(key, substitutions);
+}
+
+async function loadUserLanguageSetting() {
+  if (!chrome?.storage?.local) {
+    return null;
+  }
+
+  try {
+    const result = await chrome.storage.local.get("ankiWordAssistantConfig");
+    const config = result?.ankiWordAssistantConfig;
+    if (config && typeof config.language === "string" && config.language.trim()) {
+      return config.language.trim();
+    }
+  } catch (error) {
+    console.warn("Failed to load user language setting:", error);
+  }
+  return null;
 }
 
 function normalizeLocaleCandidate(candidate) {
@@ -85,20 +161,37 @@ function isSupportedLocale(locale) {
   }
 }
 
-export function setPageLanguage() {
+export async function setPageLanguage() {
   if (typeof document === "undefined" || !document.documentElement) {
     return;
   }
 
-  if (runtimeI18n?.getUILanguage) {
-    try {
+  try {
+    const userLang = await loadUserLanguageSetting();
+    if (userLang) {
+      const normalized = normalizeLocaleCandidate(userLang);
+      if (normalized) {
+        document.documentElement.lang = normalized;
+        userConfiguredLocale = normalized;
+
+        const messages = await loadMessagesForLocale(normalized);
+        if (messages) {
+          customMessages = messages;
+          customMessagesLocale = normalized;
+          console.log(`Loaded custom messages for locale: ${normalized}`);
+        }
+        return;
+      }
+    }
+
+    if (runtimeI18n?.getUILanguage) {
       const uiLang = runtimeI18n.getUILanguage();
       if (uiLang) {
         document.documentElement.lang = uiLang;
       }
-    } catch (error) {
-      console.warn("Failed to set page language:", error);
     }
+  } catch (error) {
+    console.warn("Failed to set page language:", error);
   }
 }
 
@@ -149,6 +242,10 @@ export function localizePage() {
 }
 
 export function getLocale() {
+  if (userConfiguredLocale) {
+    return userConfiguredLocale;
+  }
+
   if (cachedLocale) {
     return cachedLocale;
   }
@@ -194,6 +291,9 @@ export function getLocale() {
 
 export function resetLocaleCache() {
   cachedLocale = null;
+  userConfiguredLocale = null;
+  customMessages = null;
+  customMessagesLocale = null;
 }
 
 export function getMessage(key, substitutions) {
@@ -225,8 +325,8 @@ export function createI18nError(key, options = {}) {
 }
 
 if (typeof document !== "undefined") {
-  document.addEventListener("DOMContentLoaded", () => {
-    setPageLanguage();
+  document.addEventListener("DOMContentLoaded", async () => {
+    await setPageLanguage();
     localizePage();
   });
 }

@@ -8,13 +8,13 @@
     "message": "An AI-powered assistant to help create Anki cards from dictionary lookup results."
   },
   "ai_service_error_connection_test": {
-    "description": "提供商连接测试失败的提示",
-    "message": "连接测试失败：$ERROR$",
+    "description": "Error message when a provider connection test fails.",
+    "message": "Connection test failed: $ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "网络超时"
+        "description": "Error details",
+        "example": "Network timeout"
       }
     }
   },
@@ -56,8 +56,8 @@
     }
   },
   "ai_service_error_missing_api_key_test": {
-    "description": "连接测试缺少 API Key 的提示",
-    "message": "连接测试失败：API Key 尚未设置"
+    "description": "Error message for a connection test missing an API Key.",
+    "message": "Connection test failed: API Key is not set"
   },
   "ai_service_error_missing_default_model": {
     "description": "Raised when the provider has no default model set.",
@@ -82,12 +82,12 @@
     }
   },
   "ai_service_error_missing_default_model_test": {
-    "description": "连接测试缺少默认模型时的提示",
-    "message": "$PROVIDER$ 缺少默认模型配置",
+    "description": "Error message when the default model is missing during a connection test.",
+    "message": "$PROVIDER$ is missing a default model configuration",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商名称",
+        "description": "Provider name",
         "example": "OpenAI"
       }
     }
@@ -108,34 +108,34 @@
     "message": "AI request failed: no providers available"
   },
   "ai_service_error_output_all_empty": {
-    "description": "AI 输出字段全部为空时的提示",
-    "message": "AI 输出的所有字段都为空，请检查输入内容或重试"
+    "description": "Error message when all AI output fields are empty.",
+    "message": "All AI output fields are empty, please check the input or try again"
   },
   "ai_service_error_output_invalid_fields": {
-    "description": "AI 输出包含未预期字段时的提示",
-    "message": "输出包含无效字段: $FIELDS$",
+    "description": "Error message when the AI output contains unexpected fields.",
+    "message": "Output contains invalid fields: $FIELDS$",
     "placeholders": {
       "FIELDS": {
         "content": "$1",
-        "description": "无效字段列表",
+        "description": "List of invalid fields",
         "example": "unexpectedField"
       }
     }
   },
   "ai_service_error_parse_fail_message": {
-    "description": "AI 解析失败并返回错误对象的提示",
-    "message": "AI 解析失败：$ERROR$",
+    "description": "Error message when AI parsing fails and returns an error object.",
+    "message": "AI parsing failed: $ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误信息",
-        "example": "无法解析 JSON"
+        "description": "Error message",
+        "example": "Failed to parse JSON"
       }
     }
   },
   "ai_service_error_parse_fail_unknown": {
-    "description": "AI 解析失败且无错误详情时的提示",
-    "message": "AI 解析失败：未知错误"
+    "description": "Error message when AI parsing fails with no specific error details.",
+    "message": "AI parsing failed: Unknown error"
   },
   "ai_service_error_parse_failed": {
     "description": "Raised when the provider response parser throws.",
@@ -178,17 +178,17 @@
     "message": "AI request failed"
   },
   "ai_service_error_request_message": {
-    "description": "AI 请求失败时返回消息字符串的提示",
-    "message": "$PROVIDER$ 请求失败: $MESSAGE$",
+    "description": "Error message when an AI request fails and returns a message string.",
+    "message": "$PROVIDER$ request failed: $MESSAGE$",
     "placeholders": {
       "MESSAGE": {
         "content": "$2",
-        "description": "错误消息",
+        "description": "Error message",
         "example": "invalid api key"
       },
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商名称",
+        "description": "Provider name",
         "example": "Google Gemini"
       }
     }
@@ -227,12 +227,12 @@
     }
   },
   "ai_service_status_test_success": {
-    "description": "连接测试成功的信息",
-    "message": "$PROVIDER$ 连接测试成功",
+    "description": "Message for a successful connection test.",
+    "message": "$PROVIDER$ connection test succeeded",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商名称",
+        "description": "Provider name",
         "example": "Anthropic"
       }
     }
@@ -242,424 +242,424 @@
     "message": "Custom prompt is missing the {{INPUT_TEXT}} placeholder. Appended the input text to the end."
   },
   "field_handler_error_back_not_found": {
-    "description": "Legacy 模式背字段元素缺失时的提示",
-    "message": "找不到 back-input 元素"
+    "description": "Error message when the back-field element is missing in Legacy mode.",
+    "message": "back-input element not found"
   },
   "field_handler_error_field_contains_html": {
-    "description": "字段内容包含大量 HTML 时的提示",
-    "message": "字段“$FIELD$”可能包含过多 HTML 标签",
+    "description": "Warning when a field's content contains a lot of HTML.",
+    "message": "Field \"$FIELD$\" may contain excessive HTML tags",
     "placeholders": {
       "FIELD": {
         "content": "$1",
-        "description": "字段名称",
-        "example": "例句"
+        "description": "Field name",
+        "example": "Sentence"
       }
     }
   },
   "field_handler_error_field_data_invalid": {
-    "description": "字段数据结构无效的提示",
-    "message": "字段数据无效"
+    "description": "Error message for invalid field data structure.",
+    "message": "Field data is invalid"
   },
   "field_handler_error_field_element_missing": {
-    "description": "字段对应的 DOM 元素缺失时的提示",
-    "message": "找不到字段元素：$ELEMENT$ ($FIELD$)",
+    "description": "Error message when a field's corresponding DOM element is missing.",
+    "message": "Field element not found: $ELEMENT$ ($FIELD$)",
     "placeholders": {
       "ELEMENT": {
         "content": "$1",
-        "description": "字段 DOM 元素 ID",
+        "description": "Field DOM element ID",
         "example": "dynamic-field-example"
       },
       "FIELD": {
         "content": "$2",
-        "description": "字段名称",
-        "example": "释义"
+        "description": "Field name",
+        "example": "Definition"
       }
     }
   },
   "field_handler_error_field_list_empty": {
-    "description": "字段列表为空时的提示",
-    "message": "字段列表为空"
+    "description": "Error message when the field list is empty.",
+    "message": "Field list is empty"
   },
   "field_handler_error_field_object_invalid": {
-    "description": "字段对象校验失败提示",
-    "message": "字段对象为空或无效"
+    "description": "Error message for a failed field object validation.",
+    "message": "Field object is null or invalid"
   },
   "field_handler_error_fill_back": {
-    "description": "Legacy 模式缺少背面内容提示",
-    "message": "请填写背面内容"
+    "description": "Error message for missing back content in Legacy mode.",
+    "message": "Please fill in the back content"
   },
   "field_handler_error_fill_front": {
-    "description": "Legacy 模式缺少正面内容提示",
-    "message": "请填写正面内容"
+    "description": "Error message for missing front content in Legacy mode.",
+    "message": "Please fill in the front content"
   },
   "field_handler_error_front_not_found": {
-    "description": "Legacy 模式前字段元素缺失时的提示",
-    "message": "找不到 front-input 元素"
+    "description": "Error message when the front-field element is missing in Legacy mode.",
+    "message": "front-input element not found"
   },
   "field_handler_error_legacy_min_fields": {
-    "description": "Legacy 模式字段数量不足提示",
-    "message": "Legacy 模式需要至少两个字段"
+    "description": "Error message for an insufficient number of fields in Legacy mode.",
+    "message": "Legacy mode requires at least two fields"
   },
   "field_handler_error_legacy_required_fields": {
-    "description": "Legacy 模式字段校验提示",
-    "message": "Legacy 模式下前两个字段都必须填写"
+    "description": "Validation message for fields in Legacy mode.",
+    "message": "Both first two fields must be filled in Legacy mode"
   },
   "field_handler_error_min_field_content": {
-    "description": "动态模式至少填一项的提示",
-    "message": "至少需要填写一个字段内容"
+    "description": "Error message for dynamic mode requiring at least one field.",
+    "message": "At least one field must be filled"
   },
   "field_handler_error_missing_dom_count": {
-    "description": "字段渲染时缺失 DOM 元素的提示",
-    "message": "缺失$COUNT$个 DOM 元素",
+    "description": "Error message when DOM elements are missing during field rendering.",
+    "message": "$COUNT$ DOM elements are missing",
     "placeholders": {
       "COUNT": {
         "content": "$1",
-        "description": "缺失的元素数量",
+        "description": "Number of missing elements",
         "example": "3"
       }
     }
   },
   "field_handler_error_model_fields_invalid": {
-    "description": "模型字段集合无效时的提示",
-    "message": "modelFields 必须是数组"
+    "description": "Error message for an invalid set of model fields.",
+    "message": "modelFields must be an array"
   },
   "field_handler_error_no_fields_found": {
-    "description": "未找到字段集合时的提示",
-    "message": "没有找到任何字段"
+    "description": "Error message when no set of fields is found.",
+    "message": "No fields found"
   },
   "field_handler_error_validation_failed": {
-    "description": "字段验证失败日志前缀",
-    "message": "字段验证失败:"
+    "description": "Log prefix for a failed field validation.",
+    "message": "Field validation failed:"
   },
   "field_handler_error_validation_process": {
-    "description": "字段验证过程抛出异常时的提示",
-    "message": "验证过程出错: $ERROR$",
+    "description": "Error message when the field validation process throws an exception.",
+    "message": "Error during validation process: $ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误详情",
+        "description": "Error details",
         "example": "TypeError"
       }
     }
   },
   "field_handler_error_validation_summary": {
-    "description": "字段验证失败摘要提示",
-    "message": "字段验证失败"
+    "description": "Summary message for a failed field validation.",
+    "message": "Field validation failed"
   },
   "field_handler_error_wrap_style": {
-    "description": "字段样式包装失败时的提示",
-    "message": "样式包装失败：$ERROR$",
+    "description": "Error message when field style wrapping fails.",
+    "message": "Style wrapping failed: $ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误详情",
+        "description": "Error details",
         "example": "DOMException"
       }
     }
   },
   "field_handler_status_collect_complete": {
-    "description": "字段收集完成日志前缀",
-    "message": "字段收集完成:"
+    "description": "Log prefix for a completed field collection.",
+    "message": "Field collection complete:"
   },
   "field_handler_status_collect_failed": {
-    "description": "字段收集失败日志前缀",
-    "message": "字段收集失败:"
+    "description": "Log prefix for a failed field collection.",
+    "message": "Field collection failed:"
   },
   "field_handler_warning_few_fields": {
-    "description": "字段填写数量较少时的提示",
-    "message": "填写字段较少 ($FILLED$/$TOTAL$)",
+    "description": "Warning for a small number of filled fields.",
+    "message": "Few fields filled ($FILLED$/$TOTAL$)",
     "placeholders": {
       "FILLED": {
         "content": "$1",
-        "description": "已填写数量",
+        "description": "Number of filled fields",
         "example": "1"
       },
       "TOTAL": {
         "content": "$2",
-        "description": "总字段数量",
+        "description": "Total number of fields",
         "example": "4"
       }
     }
   },
   "field_handler_warning_fields_filled": {
-    "description": "验证通过并提示已填写数量",
-    "message": "验证通过，已填写 $COUNT$ 个字段",
+    "description": "Message indicating validation passed and the number of filled fields.",
+    "message": "Validation passed, $COUNT$ fields filled",
     "placeholders": {
       "COUNT": {
         "content": "$1",
-        "description": "已填写字段数量",
+        "description": "Number of filled fields",
         "example": "3"
       }
     }
   },
   "field_handler_warning_with_count": {
-    "description": "验证通过但存在警告时的提示",
-    "message": "验证通过，但有 $COUNT$ 个警告",
+    "description": "Message for validation passing but with warnings.",
+    "message": "Validation passed, but with $COUNT$ warnings",
     "placeholders": {
       "COUNT": {
         "content": "$1",
-        "description": "警告数量",
+        "description": "Number of warnings",
         "example": "2"
       }
     }
   },
   "options_button_export_config": {
-    "description": "导出配置按钮文本",
-    "message": "📤 导出配置"
+    "description": "Export config button text.",
+    "message": "📤 Export Config"
   },
   "options_button_import_config": {
-    "description": "导入配置按钮文本",
-    "message": "📥 导入配置"
+    "description": "Import config button text.",
+    "message": "📥 Import Config"
   },
   "options_button_reset_config": {
-    "description": "重置配置按钮文本",
-    "message": "🔄 重置配置"
+    "description": "Reset config button text.",
+    "message": "🔄 Reset Config"
   },
   "options_button_save": {
-    "description": "保存按钮文本",
-    "message": "保存设置"
+    "description": "Save button text.",
+    "message": "Save Settings"
   },
   "options_button_test_provider": {
-    "description": "测试提供商连接按钮文本",
-    "message": "测试 $PROVIDER$ 连接",
+    "description": "Test provider connection button text.",
+    "message": "Test $PROVIDER$ Connection",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商显示名称",
+        "description": "Provider display name",
         "example": "OpenAI"
       }
     }
   },
   "options_button_toggle_hide": {
-    "description": "API Key 隐藏按钮文本",
-    "message": "隐藏"
+    "description": "API Key hide button text.",
+    "message": "Hide"
   },
   "options_button_toggle_show": {
-    "description": "API Key 显示按钮文本",
-    "message": "显示"
+    "description": "API Key show button text.",
+    "message": "Show"
   },
   "options_config_loaded": {
-    "description": "选项页面初始化完成提示",
-    "message": "配置加载完成。"
+    "description": "Message for options page initialization completion.",
+    "message": "Configuration loaded."
   },
   "options_error_deck_select_placeholder": {
-    "description": "牌组下拉框的占位选项",
-    "message": "请选择默认牌组"
+    "description": "Placeholder option for the deck dropdown.",
+    "message": "Please select a default deck"
   },
   "options_error_fetch_anki_data": {
-    "description": "读取 Anki 数据失败提示",
-    "message": "读取 Anki 数据出错: $ERROR$",
+    "description": "Error message for failing to fetch Anki data.",
+    "message": "Error fetching Anki data: $ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "请求被拒绝"
+        "description": "Error details",
+        "example": "Request denied"
       }
     }
   },
   "options_error_fetch_decks": {
-    "description": "读取牌组失败提示",
-    "message": "读取牌组失败: $ERROR$",
+    "description": "Error message for failing to fetch decks.",
+    "message": "Failed to fetch decks: $ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "连接超时"
+        "description": "Error details",
+        "example": "Connection timed out"
       }
     }
   },
   "options_error_fetch_models": {
-    "description": "读取模型失败提示",
-    "message": "读取模型失败: $ERROR$",
+    "description": "Error message for failing to fetch models.",
+    "message": "Failed to fetch models: $ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "权限不足"
+        "description": "Error details",
+        "example": "Insufficient permissions"
       }
     }
   },
   "options_error_invalid_api_url": {
-    "description": "API 地址格式错误时的提示",
-    "message": "API 地址格式不正确"
+    "description": "Error message for an invalid API URL format.",
+    "message": "Invalid API URL format"
   },
   "options_error_missing_api_key": {
-    "description": "保存设置时缺少 API Key 的提示",
-    "message": "请为当前提供商填写 API Key"
+    "description": "Error message for a missing API Key when saving settings.",
+    "message": "Please enter the API Key for the current provider"
   },
   "options_error_model_select_placeholder": {
-    "description": "模型下拉框的占位选项",
-    "message": "请选择默认模型"
+    "description": "Placeholder option for the model dropdown.",
+    "message": "Please select a default model"
   },
   "options_error_permission_denied": {
-    "description": "请求可选权限失败时的提示",
-    "message": "未获得 $ORIGIN$ 的访问权限，已取消保存。",
+    "description": "Error message when an optional permission request fails.",
+    "message": "Permission to access $ORIGIN$ was not granted. Save operation cancelled.",
     "placeholders": {
       "ORIGIN": {
         "content": "$1",
-        "description": "被拒绝的域名模式",
+        "description": "The denied origin pattern",
         "example": "https://api.example.com/*"
       }
     }
   },
   "options_error_provider_test_failed": {
-    "description": "提供商连接测试失败提示",
-    "message": "测试失败: $MESSAGE$",
+    "description": "Error message for a failed provider connection test.",
+    "message": "Test failed: $MESSAGE$",
     "placeholders": {
       "MESSAGE": {
         "content": "$1",
-        "description": "失败原因",
-        "example": "请求超时"
+        "description": "Reason for failure",
+        "example": "Request timed out"
       }
     }
   },
   "options_error_provider_test_missing_key": {
-    "description": "在未输入 API Key 时执行连接测试的提示",
-    "message": "请先输入 API Key"
+    "description": "Error message for running a connection test without an API Key.",
+    "message": "Please enter the API Key first"
   },
   "options_export_status_failed": {
-    "description": "导出配置失败的提示",
-    "message": "配置导出失败：$ERROR$",
+    "description": "Message for a failed config export.",
+    "message": "Config export failed: $ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误信息",
-        "example": "权限被拒绝"
+        "description": "Error message",
+        "example": "Permission denied"
       }
     }
   },
   "options_export_status_running": {
-    "description": "导出配置进行中的提示",
-    "message": "正在导出配置..."
+    "description": "Message for an in-progress config export.",
+    "message": "Exporting config..."
   },
   "options_export_status_success": {
-    "description": "导出配置成功的提示",
-    "message": "配置导出成功"
+    "description": "Message for a successful config export.",
+    "message": "Config exported successfully"
   },
   "options_font_size_large": {
-    "description": "字体大小选项：大",
-    "message": "大 (16px)"
+    "description": "Font size option: Large",
+    "message": "Large (16px)"
   },
   "options_font_size_medium": {
-    "description": "字体大小选项：中",
-    "message": "中 (14px)"
+    "description": "Font size option: Medium",
+    "message": "Medium (14px)"
   },
   "options_font_size_small": {
-    "description": "字体大小选项：小",
-    "message": "小 (12px)"
+    "description": "Font size option: Small",
+    "message": "Small (12px)"
   },
   "options_font_size_xlarge": {
-    "description": "字体大小选项：更大",
-    "message": "更大 (18px)"
+    "description": "Font size option: Extra Large",
+    "message": "Extra Large (18px)"
   },
   "options_helper_api_docs": {
-    "description": "API 文档链接的文本",
-    "message": "API 文档"
+    "description": "Text for the API documentation link.",
+    "message": "API Docs"
   },
   "options_helper_docs_fallback": {
-    "description": "仅提供文档链接时显示的文字",
-    "message": "参考文档："
+    "description": "Text displayed when only a documentation link is available.",
+    "message": "See docs: "
   },
   "options_helper_docs_separator": {
-    "description": "帮助提示中用于分隔文档链接的文字",
-    "message": " ｜ 文档："
+    "description": "Text used to separate documentation links in help tips.",
+    "message": " | Docs: "
   },
   "options_helper_get_api_key": {
-    "description": "帮助提示：获取 API Key 的说明",
-    "message": "获取 API Key："
+    "description": "Help tip: Instructions for getting an API Key.",
+    "message": "Get API Key: "
   },
   "options_hint_api_url_default": {
-    "description": "API 地址默认值提示",
-    "message": "默认：$URL$",
+    "description": "Hint for the default API URL.",
+    "message": "Default: $URL$",
     "placeholders": {
       "URL": {
         "content": "$1",
-        "description": "默认 API 地址",
+        "description": "Default API URL",
         "example": "https://api.example.com/v1"
       }
     }
   },
   "options_hint_model_common": {
-    "description": "列出常用模型的提示",
-    "message": "常用模型：$MODELS$",
+    "description": "Hint listing common models.",
+    "message": "Common models: $MODELS$",
     "placeholders": {
       "MODELS": {
         "content": "$1",
-        "description": "常用模型列表",
-        "example": "gpt-3.5-turbo、gpt-4o-mini"
+        "description": "List of common models",
+        "example": "gpt-3.5-turbo, gpt-4o-mini"
       }
     }
   },
   "options_hint_test_anki_first": {
-    "description": "提示用户先测试 Anki 连接",
-    "message": "请先测试 Anki 连接"
+    "description": "Hint to user to test Anki connection first.",
+    "message": "Please test Anki connection first"
   },
   "options_import_error_format_invalid": {
-    "description": "导入配置时结构无效的提示",
-    "message": "配置文件格式不正确"
+    "description": "Error message for an invalid config file structure during import.",
+    "message": "Invalid config file format"
   },
   "options_import_error_json_invalid": {
-    "description": "导入配置时 JSON 无效的提示",
-    "message": "配置文件不是有效的 JSON"
+    "description": "Error message for invalid JSON during config import.",
+    "message": "Config file is not valid JSON"
   },
   "options_import_error_missing_ai_config": {
-    "description": "导入配置时缺少 aiConfig 的提示",
-    "message": "配置文件缺少 aiConfig"
+    "description": "Error message for a missing aiConfig during config import.",
+    "message": "Config file is missing aiConfig"
   },
   "options_import_status_failed": {
-    "description": "导入配置失败的提示",
-    "message": "配置导入失败：$ERROR$",
+    "description": "Message for a failed config import.",
+    "message": "Config import failed: $ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误信息",
-        "example": "文件解析失败"
+        "description": "Error message",
+        "example": "File parsing failed"
       }
     }
   },
   "options_import_status_running": {
-    "description": "导入配置进行中的提示",
-    "message": "正在导入配置..."
+    "description": "Message for an in-progress config import.",
+    "message": "Importing config..."
   },
   "options_import_status_success": {
-    "description": "导入配置成功后的提示",
-    "message": "配置导入成功，请重新配置 API 密钥"
+    "description": "Message after a successful config import.",
+    "message": "Config imported successfully, please re-configure API keys"
   },
   "options_label_api_url": {
-    "description": "API 地址输入框标签",
-    "message": "API 地址"
+    "description": "API URL input label.",
+    "message": "API URL"
   },
   "options_label_deck": {
-    "description": "Anki 连接面板的牌组标签",
-    "message": "牌组"
+    "description": "Deck label for the Anki Connect panel.",
+    "message": "Deck"
   },
   "options_label_field_info": {
-    "description": "Anki 连接面板字段信息区域标题",
-    "message": "字段信息"
+    "description": "Title for the field info area in the Anki Connect panel.",
+    "message": "Field Info"
   },
   "options_label_font_size": {
-    "description": "样式设置面板字体大小标签",
-    "message": "字体大小"
+    "description": "Font size label in the style settings panel.",
+    "message": "Font Size"
   },
   "options_label_language": {
-    "description": "系统设置面板语言标签",
-    "message": "语言"
+    "description": "Language label in the system settings panel.",
+    "message": "Language"
   },
   "options_label_line_height": {
-    "description": "样式设置面板行高标签",
-    "message": "行高"
+    "description": "Line height label in the style settings panel.",
+    "message": "Line Height"
   },
   "options_label_model": {
-    "description": "Anki 连接面板的模型标签",
-    "message": "模型"
+    "description": "Model label for the Anki Connect panel.",
+    "message": "Model"
   },
   "options_label_model_name": {
-    "description": "模型名称输入框标签",
-    "message": "模型名称"
+    "description": "Model name input label.",
+    "message": "Model Name"
   },
   "options_label_text_align": {
-    "description": "样式设置面板文本对齐标签",
-    "message": "文本对齐"
+    "description": "Text align label in the style settings panel.",
+    "message": "Text Align"
   },
   "options_language_chinese_simplified": {
     "description": "Language dropdown option for Simplified Chinese",
@@ -686,868 +686,868 @@
     "message": "English"
   },
   "options_line_height_compact": {
-    "description": "行高选项：紧凑",
-    "message": "紧凑 (1.2)"
+    "description": "Line height option: Compact",
+    "message": "Compact (1.2)"
   },
   "options_line_height_loose": {
-    "description": "行高选项：宽松",
-    "message": "宽松 (1.6)"
+    "description": "Line height option: Loose",
+    "message": "Loose (1.6)"
   },
   "options_line_height_normal": {
-    "description": "行高选项：适中",
-    "message": "适中 (1.4)"
+    "description": "Line height option: Normal",
+    "message": "Normal (1.4)"
   },
   "options_mode_dynamic_description": {
-    "description": "动态字段模式说明正文",
-    "message": "该模板支持多字段，AI 将自动填充所有字段。popup 页面将根据字段名智能生成对应的输入区域。"
+    "description": "Description for Dynamic Field mode.",
+    "message": "This model supports multiple fields. The AI will automatically populate all fields. The popup page will intelligently generate corresponding input areas based on field names."
   },
   "options_mode_dynamic_heading": {
-    "description": "动态字段模式说明标题",
-    "message": "动态字段模式"
+    "description": "Heading for Dynamic Field mode.",
+    "message": "Dynamic Field Mode"
   },
   "options_mode_legacy_description": {
-    "description": "Legacy 模式说明正文",
-    "message": "该模板字段数 ≤ 2，将使用传统的正面/背面模式。"
+    "description": "Description for Legacy mode.",
+    "message": "This model has ≤ 2 fields and will use the traditional Front/Back mode."
   },
   "options_mode_legacy_heading": {
-    "description": "Legacy 模式说明标题",
-    "message": "兼容模式"
+    "description": "Heading for Legacy mode.",
+    "message": "Compatibility Mode"
   },
   "options_page_heading": {
-    "description": "Options 页面主标题",
-    "message": "设置中心"
+    "description": "Main heading for the Options page.",
+    "message": "Settings Center"
   },
   "options_page_title": {
-    "description": "Options 页面 <title> 文本",
-    "message": "设置"
+    "description": "<title> text for the Options page.",
+    "message": "Settings"
   },
   "options_placeholder_api_url": {
-    "description": "API 地址输入框占位提示",
+    "description": "Placeholder for the API URL input.",
     "message": "https://"
   },
   "options_placeholder_model_example": {
-    "description": "模型名称输入框示例提示",
-    "message": "例如：$MODEL$",
+    "description": "Example hint for the model name input.",
+    "message": "e.g.: $MODEL$",
     "placeholders": {
       "MODEL": {
         "content": "$1",
-        "description": "提供商默认模型名称",
+        "description": "Provider's default model name",
         "example": "gpt-4o-mini"
       }
     }
   },
   "options_placeholder_model_input": {
-    "description": "模型名称输入框占位提示",
-    "message": "输入模型名称"
+    "description": "Placeholder for the model name input.",
+    "message": "Enter model name"
   },
   "options_prompt_config_placeholder": {
-    "description": "Prompt 编辑器配置区域的占位提示",
-    "message": "请选择字段后配置字段内容。"
+    "description": "Placeholder for the Prompt editor config area.",
+    "message": "Please select fields to configure their content."
   },
   "options_prompt_current_model": {
-    "description": "Prompt 面板默认显示的当前模板提示",
-    "message": "当前模板：未选择"
+    "description": "Default display for the current model in the Prompt panel.",
+    "message": "Current Model: Not Selected"
   },
   "options_prompt_current_model_label": {
-    "description": "Prompt 面板当前选择模板显示",
-    "message": "当前模板：$MODEL$",
+    "description": "Display for the currently selected model in the Prompt panel.",
+    "message": "Current Model: $MODEL$",
     "placeholders": {
       "MODEL": {
         "content": "$1",
-        "description": "当前模板名称",
-        "example": "默认单词模板"
+        "description": "Current model name",
+        "example": "Default Word Model"
       }
     }
   },
   "options_prompt_custom_template": {
-    "description": "Prompt 自定义编辑区域标题",
-    "message": "自定义 Prompt 模板"
+    "description": "Title for the custom Prompt editing area.",
+    "message": "Custom Prompt Template"
   },
   "options_prompt_dirty_hint": {
-    "description": "Prompt 模板被修改后的提示",
-    "message": "已修改，保存后生效"
+    "description": "Hint that the Prompt template has been modified.",
+    "message": "Modified, will take effect after saving"
   },
   "options_prompt_error_field_empty": {
-    "description": "单个字段内容为空时的提示",
-    "message": "字段“$FIELD$”的内容不能为空。",
+    "description": "Error message when a single field's content is empty.",
+    "message": "Content for field \"$FIELD$\" cannot be empty.",
     "placeholders": {
       "FIELD": {
         "content": "$1",
-        "description": "字段名称",
-        "example": "例句"
+        "description": "Field name",
+        "example": "Sentence"
       }
     }
   },
   "options_prompt_error_field_required": {
-    "description": "Prompt 字段内容未填写时的错误提示",
-    "message": "字段内容为必填项"
+    "description": "Error message when Prompt field content is not filled.",
+    "message": "Field content is required"
   },
   "options_prompt_error_fields_empty": {
-    "description": "多个字段内容为空时的提示",
-    "message": "以下字段内容不能为空：$FIELDS$",
+    "description": "Error message when multiple fields' content is empty.",
+    "message": "The following fields cannot be empty: $FIELDS$",
     "placeholders": {
       "FIELDS": {
         "content": "$1",
-        "description": "以顿号连接的字段名称列表",
-        "example": "释义、例句"
+        "description": "Comma-separated list of field names",
+        "example": "Definition, Sentence"
       }
     }
   },
   "options_prompt_error_generate_first": {
-    "description": "生成默认 Prompt 前未配置字段的提示",
-    "message": "请先选择并配置字段，然后再生成默认 Prompt。"
+    "description": "Error for not configuring fields before generating a default Prompt.",
+    "message": "Please select and configure fields before generating the default prompt."
   },
   "options_prompt_error_select_fields": {
-    "description": "未选择任何字段时的提示",
-    "message": "请选择至少一个要输出的字段。"
+    "description": "Error message when no fields are selected.",
+    "message": "Please select at least one field to output."
   },
   "options_prompt_field_config": {
-    "description": "Prompt 面板字段配置区域标题",
-    "message": "字段配置"
+    "description": "Title for the field configuration area in the Prompt panel.",
+    "message": "Field Configuration"
   },
   "options_prompt_field_config_hint": {
-    "description": "Prompt 面板字段配置说明",
-    "message": "配置生成 AI 输出该字段所需的信息"
+    "description": "Instructions for field configuration in the Prompt panel.",
+    "message": "Configure the information needed for the AI to generate output for this field"
   },
   "options_prompt_field_label": {
-    "description": "Prompt 编辑器中字段内容标签",
-    "message": "字段内容"
+    "description": "Field content label in the Prompt editor.",
+    "message": "Field Content"
   },
   "options_prompt_field_placeholder": {
-    "description": "Prompt 编辑器字段内容输入框占位提示",
-    "message": "描述该字段应包含的内容，例如输出结构、语气等要求"
+    "description": "Placeholder for the field content input in the Prompt editor.",
+    "message": "Describe what this field should contain, e.g., output structure, tone, etc."
   },
   "options_prompt_field_select": {
-    "description": "Prompt 面板字段选择区域标题",
-    "message": "字段选择"
+    "description": "Title for the field selection area in the Prompt panel.",
+    "message": "Field Selection"
   },
   "options_prompt_field_select_hint": {
-    "description": "Prompt 面板字段选择提示",
-    "message": "点击字段切换选中状态"
+    "description": "Hint for field selection in the Prompt panel.",
+    "message": "Click a field to toggle its selection status"
   },
   "options_prompt_generate_default": {
-    "description": "Prompt 面板测试按钮文本",
-    "message": "测试连接并刷新模型"
+    "description": "Test button text in the Prompt panel.",
+    "message": "Test Connection and Refresh Models"
   },
   "options_prompt_hint_save_usage": {
-    "description": "Prompt 面板提示：保存后生效",
-    "message": "提示：保存设置后将在 popup 中使用此 Prompt。"
+    "description": "Hint in the Prompt panel: takes effect after saving.",
+    "message": "Hint: This prompt will be used in the popup after saving the settings."
   },
   "options_prompt_no_fields": {
-    "description": "Prompt 编辑器提示：无字段返回",
-    "message": "当前模板未返回任何字段。"
+    "description": "Prompt editor hint: no fields returned.",
+    "message": "The current model does not return any fields."
   },
   "options_prompt_not_found": {
-    "description": "Prompt 相关 DOM 元素缺失时的警告",
-    "message": "未找到 Prompt 设置元素"
+    "description": "Warning when Prompt-related DOM elements are missing.",
+    "message": "Prompt settings elements not found"
   },
   "options_prompt_reset_default": {
-    "description": "Prompt 区域重置按钮文本",
-    "message": "重置为默认模板"
+    "description": "Reset button text in the Prompt area.",
+    "message": "Reset to Default Template"
   },
   "options_prompt_rule_field_definition": {
-    "description": "Prompt 规则：字段定义标题",
-    "message": "字段返回内容定义："
+    "description": "Prompt rule: Field definition title.",
+    "message": "Field Content Definition:"
   },
   "options_prompt_rule_field_fallback": {
-    "description": "Prompt 规则：字段占位符默认说明",
-    "message": "请生成与该字段相关的内容。"
+    "description": "Prompt rule: Default description for field placeholders.",
+    "message": "Please generate content related to this field."
   },
   "options_prompt_rule_intro": {
-    "description": "生成默认 Prompt 时的规则说明",
-    "message": "请严格按照下列要求生成输出。"
+    "description": "Rule instructions when generating a default Prompt.",
+    "message": "Please strictly follow the requirements below to generate the output."
   },
   "options_prompt_rule_note_json_only": {
-    "description": "Prompt 规则：仅返回 JSON 提示",
-    "message": "- 仅返回 JSON，不要包含额外解释。"
+    "description": "Prompt rule: Return only JSON hint.",
+    "message": "- Return only JSON, do not include extra explanations."
   },
   "options_prompt_rule_note_requirements": {
-    "description": "Prompt 规则：满足要求提示",
-    "message": "- 确保各字段内容满足上文要求。"
+    "description": "Prompt rule: Meet requirements hint.",
+    "message": "- Ensure the content of each field meets the requirements above."
   },
   "options_prompt_rule_notes": {
-    "description": "Prompt 规则：注意事项标题",
-    "message": "注意事项："
+    "description": "Prompt rule: Notes title.",
+    "message": "Notes:"
   },
   "options_prompt_rule_output_format": {
-    "description": "Prompt 规则：输出格式标题",
-    "message": "输出格式定义："
+    "description": "Prompt rule: Output format title.",
+    "message": "Output Format Definition:"
   },
   "options_prompt_rule_output_json": {
-    "description": "Prompt 规则：JSON 输出要求",
-    "message": "请按照以下 JSON 结构返回结果，仅包含所列字段："
+    "description": "Prompt rule: JSON output requirement.",
+    "message": "Please return the result in the following JSON structure, including only the listed fields:"
   },
   "options_prompt_rule_output_line": {
-    "description": "Prompt 规则：JSON 字段定义",
-    "message": "  \"$FIELD$\": \"请填入$FIELD$的内容\"$SUFFIX$",
+    "description": "Prompt rule: JSON field definition.",
+    "message": "  \"$FIELD$\": \"Please fill in the content for $FIELD$\"$SUFFIX$",
     "placeholders": {
       "FIELD": {
         "content": "$1",
-        "description": "字段名称",
-        "example": "释义"
+        "description": "Field name",
+        "example": "Definition"
       },
       "SUFFIX": {
         "content": "$2",
-        "description": "逗号或空字符串",
+        "description": "Comma or empty string",
         "example": ","
       }
     }
   },
   "options_prompt_select_fields": {
-    "description": "Prompt 编辑器提示：提示选择字段",
-    "message": "请选择需要输出的字段，并补全字段内容。"
+    "description": "Prompt editor hint: prompt to select fields.",
+    "message": "Please select the fields to output and complete their content."
   },
   "options_prompt_status_generated": {
-    "description": "生成默认 Prompt 后的提示",
-    "message": "已根据当前字段配置生成默认 Prompt。"
+    "description": "Message after generating a default Prompt.",
+    "message": "Default prompt has been generated based on the current field configuration."
   },
   "options_prompt_status_ready": {
-    "description": "Prompt 字段配置完成提示",
-    "message": "字段配置已就绪。"
+    "description": "Message for completed Prompt field configuration.",
+    "message": "Field configuration is ready."
   },
   "options_prompt_template_placeholder": {
-    "description": "自定义 Prompt 编辑框占位提示",
-    "message": "请选择模型后编写对应的 Prompt。\n建议包含以下占位符：\n- {{INPUT_TEXT}} 表示用户输入\n- {{FIELD_SCHEMA}} 表示字段结构"
+    "description": "Placeholder for the custom Prompt editor.",
+    "message": "Please select a model and then write the corresponding prompt.\nIt is recommended to include the following placeholders:\n- {{INPUT_TEXT}} for user input\n- {{FIELD_SCHEMA}} for field structure"
   },
   "options_reset_confirm": {
-    "description": "重置配置前的确认提示",
-    "message": "确定要重置所有配置吗？此操作不可撤销。"
+    "description": "Confirmation prompt before resetting config.",
+    "message": "Are you sure you want to reset all configurations? This action cannot be undone."
   },
   "options_reset_status_failed": {
-    "description": "重置配置失败的提示",
-    "message": "重置配置失败：$ERROR$",
+    "description": "Message for a failed config reset.",
+    "message": "Failed to reset config: $ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误信息",
-        "example": "写入失败"
+        "description": "Error message",
+        "example": "Write failed"
       }
     }
   },
   "options_reset_status_running": {
-    "description": "重置配置进行中的提示",
-    "message": "正在重置配置..."
+    "description": "Message for an in-progress config reset.",
+    "message": "Resetting config..."
   },
   "options_reset_status_success": {
-    "description": "重置配置成功的提示",
-    "message": "配置已重置为默认值"
+    "description": "Message for a successful config reset.",
+    "message": "Config has been reset to default values"
   },
   "options_save_status_failed": {
-    "description": "保存设置失败时的提示",
-    "message": "保存出错：$ERROR$",
+    "description": "Error message when saving settings fails.",
+    "message": "Error saving settings: $ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "权限被拒绝"
+        "description": "Error details",
+        "example": "Permission denied"
       }
     }
   },
   "options_save_status_success": {
-    "description": "保存设置成功后的提示",
-    "message": "设置已保存"
+    "description": "Message after successfully saving settings.",
+    "message": "Settings saved"
   },
   "options_section_choose_provider": {
-    "description": "AI 提供商选择段落标题",
-    "message": "选择 AI 提供商"
+    "description": "Title for the AI provider selection section.",
+    "message": "Choose AI Provider"
   },
   "options_section_config_management": {
-    "description": "配置管理区域标题",
-    "message": "配置管理"
+    "description": "Title for the config management area.",
+    "message": "Configuration Management"
   },
   "options_section_config_management_hint": {
-    "description": "配置管理区域的说明文字",
-    "message": "导出、导入或重置您的配置设置。注意：导出的配置文件不包含 API 密钥以确保安全。"
+    "description": "Description for the config management area.",
+    "message": "Export, import, or reset your configuration settings. Note: Exported config files do not include API keys for security."
   },
   "options_section_prompt_by_model": {
-    "description": "Prompt 配置段落标题",
-    "message": "按模板配置 Prompt"
+    "description": "Title for the Prompt configuration section.",
+    "message": "Configure Prompt by Model"
   },
   "options_section_prompt_instruction": {
-    "description": "Prompt 配置区域的使用说明",
-    "message": "请在「Anki 连接」面板选择要编辑的模型，随后在这里自定义 Prompt。"
+    "description": "Instructions for the Prompt configuration area.",
+    "message": "Please select the model to edit in the 'Anki Connect' panel, then customize the prompt here."
   },
   "options_section_style_preview": {
-    "description": "样式预览区域标题",
-    "message": "样式预览"
+    "description": "Title for the style preview area.",
+    "message": "Style Preview"
   },
   "options_status_health_error": {
-    "description": "提供商状态：异常",
-    "message": "异常"
+    "description": "Provider status: Error",
+    "message": "Error"
   },
   "options_status_health_ok": {
-    "description": "提供商状态：健康",
-    "message": "健康"
+    "description": "Provider status: Healthy",
+    "message": "Healthy"
   },
   "options_status_health_unknown": {
-    "description": "提供商状态：未知",
-    "message": "未知"
+    "description": "Provider status: Unknown",
+    "message": "Unknown"
   },
   "options_status_last_checked": {
-    "description": "提供商最近检查时间提示",
-    "message": "上次检查：$TIME$",
+    "description": "Hint for the provider's last check time.",
+    "message": "Last checked: $TIME$",
     "placeholders": {
       "TIME": {
         "content": "$1",
-        "description": "最近检查时间文本",
+        "description": "Last check time text",
         "example": "2025-01-10 12:00"
       }
     }
   },
   "options_status_not_tested": {
-    "description": "连接状态默认提示",
-    "message": "尚未测试连接"
+    "description": "Default message for connection status.",
+    "message": "Connection not tested yet"
   },
   "options_status_prefix": {
-    "description": "提供商健康状态前缀",
-    "message": "状态：$STATUS$",
+    "description": "Prefix for provider health status.",
+    "message": "Status: $STATUS$",
     "placeholders": {
       "STATUS": {
         "content": "$1",
-        "description": "提供商健康状态文本",
-        "example": "健康"
+        "description": "Provider health status text",
+        "example": "Healthy"
       }
     }
   },
   "options_status_provider_test_success": {
-    "description": "提供商连接测试成功提示",
-    "message": "连接测试成功"
+    "description": "Message for a successful provider connection test.",
+    "message": "Connection test successful"
   },
   "options_status_reason": {
-    "description": "提供商异常的原因提示",
-    "message": "原因：$REASON$",
+    "description": "Hint for the reason of a provider error.",
+    "message": "Reason: $REASON$",
     "placeholders": {
       "REASON": {
         "content": "$1",
-        "description": "异常原因说明",
-        "example": "请求超时"
+        "description": "Reason for the error",
+        "example": "Request timed out"
       }
     }
   },
   "options_status_saving": {
-    "description": "保存设置时的状态提示",
-    "message": "正在保存设置..."
+    "description": "Status message when saving settings.",
+    "message": "Saving settings..."
   },
   "options_style_preview_description": {
-    "description": "样式预览区域示例文本第二行",
-    "message": "用于预览字体、对齐与行高效果。"
+    "description": "Second line of sample text in the style preview area.",
+    "message": "Used to preview font, alignment, and line height effects."
   },
   "options_style_preview_sample": {
-    "description": "样式预览区域示例文本第一行",
-    "message": "这是一个示例文本。"
+    "description": "First line of sample text in the style preview area.",
+    "message": "This is a sample text."
   },
   "options_tab_ai": {
-    "description": "AI 设置面板的标签文本",
-    "message": "AI 配置"
+    "description": "Label for the AI settings panel.",
+    "message": "AI Settings"
   },
   "options_tab_anki": {
-    "description": "Anki 设置面板的标签文本",
-    "message": "Anki 连接"
+    "description": "Label for the Anki settings panel.",
+    "message": "Anki Connect"
   },
   "options_tab_prompt": {
-    "description": "Prompt 设置面板的标签文本",
-    "message": "Prompt 配置"
+    "description": "Label for the Prompt settings panel.",
+    "message": "Prompt Settings"
   },
   "options_tab_style": {
-    "description": "界面样式设置面板的标签文本",
-    "message": "样式设置"
+    "description": "Label for the UI style settings panel.",
+    "message": "Style Settings"
   },
   "options_tab_system": {
-    "description": "系统设置面板的标签文本",
-    "message": "系统设置"
+    "description": "Label for the system settings panel.",
+    "message": "System Settings"
   },
   "options_test_running": {
-    "description": "测试 Anki 或 AI 连接时的提示",
-    "message": "正在测试连接并刷新数据..."
+    "description": "Message when testing Anki or AI connection.",
+    "message": "Testing connection and refreshing data..."
   },
   "options_test_success_with_version": {
-    "description": "Anki 测试成功后显示的版本信息",
-    "message": "连接成功，AnkiConnect 版本: $VERSION$",
+    "description": "Version information displayed after a successful Anki test.",
+    "message": "Connection successful, AnkiConnect version: $VERSION$",
     "placeholders": {
       "VERSION": {
         "content": "$1",
-        "description": "AnkiConnect 返回的版本号",
+        "description": "Version number returned by AnkiConnect",
         "example": "2.5.0"
       }
     }
   },
   "options_text_align_center": {
-    "description": "文本对齐选项：居中",
-    "message": "居中"
+    "description": "Text align option: Center",
+    "message": "Center"
   },
   "options_text_align_left": {
-    "description": "文本对齐选项：左对齐",
-    "message": "左对齐"
+    "description": "Text align option: Left",
+    "message": "Left"
   },
   "options_text_align_right": {
-    "description": "文本对齐选项：右对齐",
-    "message": "右对齐"
+    "description": "Text align option: Right",
+    "message": "Right"
   },
   "options_warning_permission_declined": {
-    "description": "权限请求被拒绝的日志提示",
-    "message": "域名权限请求被拒绝：$ERROR$",
+    "description": "Log message for a declined permission request.",
+    "message": "Domain permission request declined: $ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误详情",
+        "description": "Error details",
         "example": "User cancelled"
       }
     }
   },
   "popup_app_title": {
-    "description": "Popup 页面标题，用于 <title> 与头部标题",
-    "message": "Anki 单词助手"
+    "description": "Popup page title, used for <title> and header.",
+    "message": "Anki Word Assistant"
   },
   "popup_confirm_reload": {
-    "description": "严重错误后的刷新提示",
-    "message": "$MESSAGE$\n\n点击确定刷新页面，取消继续使用",
+    "description": "Refresh prompt after a critical error.",
+    "message": "$MESSAGE$\n\nClick OK to refresh the page, or Cancel to continue.",
     "placeholders": {
       "MESSAGE": {
         "content": "$1",
-        "description": "上一条错误提示",
-        "example": "检测到频繁错误，建议刷新页面或检查网络连接"
+        "description": "Previous error message",
+        "example": "Frequent errors detected, it is recommended to refresh the page or check the network connection"
       }
     }
   },
   "popup_confirm_retry": {
-    "description": "错误后是否重试的确认弹窗",
-    "message": "$MESSAGE$\n\n是否立即重试？",
+    "description": "Confirmation dialog to retry after an error.",
+    "message": "$MESSAGE$\n\nRetry now?",
     "placeholders": {
       "MESSAGE": {
         "content": "$1",
-        "description": "上一条错误提示",
-        "example": "AI 解析失败：请求超时"
+        "description": "Previous error message",
+        "example": "AI parsing failed: Request timed out"
       }
     }
   },
   "popup_dynamic_field_placeholder": {
-    "description": "动态字段 textarea 的占位提示",
-    "message": "AI将自动填充此字段..."
+    "description": "Placeholder for the dynamic field textarea.",
+    "message": "AI will auto-fill this field..."
   },
   "popup_dynamic_fields_missing": {
-    "description": "动态字段为空时在容器内展示的提示",
-    "message": "当前未配置可填充的字段，请先在选项页完成字段配置。"
+    "description": "Message displayed in the container when dynamic fields are empty.",
+    "message": "No fillable fields are currently configured. Please complete the field configuration in the options page."
   },
   "popup_dynamic_fill_complete": {
-    "description": "动态字段填充完成时的提示前缀",
-    "message": "动态字段填充完成:"
+    "description": "Prefix for the message when dynamic field filling is complete.",
+    "message": "Dynamic field filling complete:"
   },
   "popup_dynamic_fill_error": {
-    "description": "动态字段填充错误提示前缀",
-    "message": "填充动态字段时发生错误:"
+    "description": "Prefix for the error message when filling dynamic fields.",
+    "message": "Error filling dynamic fields:"
   },
   "popup_error_ai_config": {
-    "description": "AI 服务凭据缺失或错误时的提示",
-    "message": "AI服务配置错误，请检查设置页面的API Key"
+    "description": "Error message for missing or incorrect AI service credentials.",
+    "message": "AI service configuration error, please check the API Key in the settings page"
   },
   "popup_error_ai_field_mismatch": {
-    "description": "AI 返回字段与期望不符时的提示",
-    "message": "AI输出字段不匹配，请检查模板配置"
+    "description": "Error message when AI returned fields do not match expectations.",
+    "message": "AI output fields do not match, please check the model configuration"
   },
   "popup_error_ai_format_retry": {
-    "description": "AI 返回格式异常时的重试提示",
-    "message": "AI解析格式错误，正在自动重试..."
+    "description": "Retry message for an abnormal AI return format.",
+    "message": "AI parsing format error, auto-retrying..."
   },
   "popup_error_ai_generic": {
-    "description": "AI 解析失败的通用提示，包含精简错误信息",
-    "message": "AI解析失败: $DETAIL$",
+    "description": "Generic error message for AI parsing failure, including a concise error message.",
+    "message": "AI parsing failed: $DETAIL$",
     "placeholders": {
       "DETAIL": {
         "content": "$1",
-        "description": "精简后的错误说明",
-        "example": "请求超时"
+        "description": "Concise error description",
+        "example": "Request timed out"
       }
     }
   },
   "popup_error_ai_quota": {
-    "description": "AI 服务额度耗尽时的提示",
-    "message": "AI服务额度不足，请检查账户状态或更换服务商"
+    "description": "Error message when AI service quota is exhausted.",
+    "message": "AI service quota exceeded, please check your account status or switch providers"
   },
   "popup_error_anki_deck_missing": {
-    "description": "牌组不存在时的提示",
-    "message": "指定的牌组不存在，请检查配置"
+    "description": "Error message when the deck does not exist.",
+    "message": "The specified deck does not exist, please check the configuration"
   },
   "popup_error_anki_duplicate": {
-    "description": "写入时出现重复内容的提示",
-    "message": "卡片内容重复，请修改后重试"
+    "description": "Error message for duplicate content on write.",
+    "message": "Card content is a duplicate, please modify and try again"
   },
   "popup_error_anki_generic": {
-    "description": "Anki 操作失败的通用提示，包含精简错误信息",
-    "message": "Anki操作失败: $DETAIL$",
+    "description": "Generic error message for a failed Anki operation, including a concise error message.",
+    "message": "Anki operation failed: $DETAIL$",
     "placeholders": {
       "DETAIL": {
         "content": "$1",
-        "description": "精简后的错误说明",
-        "example": "连接超时"
+        "description": "Concise error description",
+        "example": "Connection timed out"
       }
     }
   },
   "popup_error_anki_launch": {
-    "description": "未启动 Anki 或插件缺失时的提示",
-    "message": "请启动Anki并确保AnkiConnect插件已安装"
+    "description": "Error message when Anki is not running or the addon is missing.",
+    "message": "Please start Anki and ensure the AnkiConnect addon is installed"
   },
   "popup_error_anki_model_missing": {
-    "description": "模板不存在时的提示",
-    "message": "指定的模板不存在，请检查配置"
+    "description": "Error message when the model does not exist.",
+    "message": "The specified model does not exist, please check the configuration"
   },
   "popup_error_config_load": {
-    "description": "加载用户配置失败时使用默认配置的提示",
-    "message": "配置加载异常，已使用默认配置"
+    "description": "Message for using default config when loading user config fails.",
+    "message": "Configuration loading failed, using default configuration"
   },
   "popup_error_dom_missing": {
-    "description": "关键 DOM 元素缺失时的提示",
-    "message": "页面元素缺失，请刷新页面重试"
+    "description": "Error message for missing critical DOM elements.",
+    "message": "Page elements are missing, please refresh the page and try again"
   },
   "popup_error_field_empty": {
-    "description": "写入前未填写任何字段时的提示",
-    "message": "请至少填写一个字段内容"
+    "description": "Error message for not filling any fields before writing.",
+    "message": "Please fill in at least one field"
   },
   "popup_error_field_generic": {
-    "description": "字段处理相关错误的通用提示",
-    "message": "字段处理错误: $DETAIL$",
+    "description": "Generic error message for field processing related errors.",
+    "message": "Field processing error: $DETAIL$",
     "placeholders": {
       "DETAIL": {
         "content": "$1",
-        "description": "精简后的错误说明",
-        "example": "字段格式不正确"
+        "description": "Concise error description",
+        "example": "Invalid field format"
       }
     }
   },
   "popup_error_generic": {
-    "description": "未分类错误的通用提示",
-    "message": "操作失败: $DETAIL$",
+    "description": "Generic error message for uncategorized errors.",
+    "message": "Operation failed: $DETAIL$",
     "placeholders": {
       "DETAIL": {
         "content": "$1",
-        "description": "精简后的错误说明",
-        "example": "未知错误"
+        "description": "Concise error description",
+        "example": "Unknown error"
       }
     }
   },
   "popup_error_network": {
-    "description": "网络异常时的提示",
-    "message": "网络连接失败，请检查网络后重试"
+    "description": "Error message for a network error.",
+    "message": "Network connection failed, please check your network and try again"
   },
   "popup_error_rate_limit": {
-    "description": "频繁错误时提示用户刷新或检查网络",
-    "message": "检测到频繁错误，建议刷新页面或检查网络连接"
+    "description": "Message prompting user to refresh or check network due to frequent errors.",
+    "message": "Frequent errors detected, it is recommended to refresh the page or check the network connection"
   },
   "popup_field_all_empty_warning": {
-    "description": "所有字段为空时的警告",
-    "message": "警告：所有字段都为空，请检查 AI 解析结果"
+    "description": "Warning when all fields are empty.",
+    "message": "Warning: All fields are empty, please check the AI parsing result"
   },
   "popup_field_empty_count": {
-    "description": "显示空字段数量的提示",
-    "message": "($COUNT$ 个字段为空)",
+    "description": "Message showing the number of empty fields.",
+    "message": "($COUNT$ fields are empty)",
     "placeholders": {
       "COUNT": {
         "content": "$1",
-        "description": "为空的字段数量",
+        "description": "Number of empty fields",
         "example": "3"
       }
     }
   },
   "popup_field_fill_failed": {
-    "description": "字段填充失败的详细提示",
-    "message": "字段填充失败: $DETAIL$",
+    "description": "Detailed message for a failed field fill.",
+    "message": "Field filling failed: $DETAIL$",
     "placeholders": {
       "DETAIL": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "字段示例未找到"
+        "description": "Error details",
+        "example": "Field example not found"
       }
     }
   },
   "popup_field_missing_dom_prefix": {
-    "description": "缺失 DOM 元素列表前缀",
-    "message": "缺失DOM元素:"
+    "description": "Prefix for the list of missing DOM elements.",
+    "message": "Missing DOM elements:"
   },
   "popup_field_missing_dom_summary": {
-    "description": "缺失 DOM 元素数量总结",
-    "message": "[$COUNT$ 个元素缺失]",
+    "description": "Summary of the number of missing DOM elements.",
+    "message": "[$COUNT$ elements missing]",
     "placeholders": {
       "COUNT": {
         "content": "$1",
-        "description": "缺失的元素数量",
+        "description": "Number of missing elements",
         "example": "2"
       }
     }
   },
   "popup_field_not_found": {
-    "description": "动态字段对应的 DOM 元素缺失时的提示",
-    "message": "找不到字段元素: $ID$ ($LABEL$)",
+    "description": "Error message when a dynamic field's corresponding DOM element is missing.",
+    "message": "Field element not found: $ID$ ($LABEL$)",
     "placeholders": {
       "ID": {
         "content": "$1",
-        "description": "字段元素 ID",
+        "description": "Field element ID",
         "example": "dynamic-field-1"
       },
       "LABEL": {
         "content": "$2",
-        "description": "字段标签名称",
-        "example": "释义"
+        "description": "Field label name",
+        "example": "Definition"
       }
     }
   },
   "popup_field_preview": {
-    "description": "字段预览内容前缀",
-    "message": "已填充: $VALUE$",
+    "description": "Prefix for the field preview content.",
+    "message": "Filled: $VALUE$",
     "placeholders": {
       "VALUE": {
         "content": "$1",
-        "description": "截断后的字段内容",
+        "description": "Truncated field content",
         "example": "example text..."
       }
     }
   },
   "popup_field_progress": {
-    "description": "字段填充进度信息",
-    "message": "已填充 $FILLED$/$TOTAL$ 个字段",
+    "description": "Field filling progress information.",
+    "message": "$FILLED$/$TOTAL$ fields filled",
     "placeholders": {
       "FILLED": {
         "content": "$1",
-        "description": "已填充字段数量",
+        "description": "Number of filled fields",
         "example": "2"
       },
       "TOTAL": {
         "content": "$2",
-        "description": "字段总数",
+        "description": "Total number of fields",
         "example": "5"
       }
     }
   },
   "popup_field_tag_filled": {
-    "description": "字段 chip 的已填充状态文本",
-    "message": "已填充: $FIELD$",
+    "description": "Filled status text for a field chip.",
+    "message": "Filled: $FIELD$",
     "placeholders": {
       "FIELD": {
         "content": "$1",
-        "description": "字段名称",
-        "example": "释义"
+        "description": "Field name",
+        "example": "Definition"
       }
     }
   },
   "popup_field_tag_pending": {
-    "description": "字段 chip 的未填充状态文本",
-    "message": "待填充: $FIELD$",
+    "description": "Pending status text for a field chip.",
+    "message": "Pending: $FIELD$",
     "placeholders": {
       "FIELD": {
         "content": "$1",
-        "description": "字段名称",
-        "example": "例句"
+        "description": "Field name",
+        "example": "Sentence"
       }
     }
   },
   "popup_field_tag_pending_label": {
-    "description": "字段 chip 的待填充状态标签",
-    "message": "待填充"
+    "description": "Pending status label for a field chip.",
+    "message": "Pending"
   },
   "popup_hint_anki_connection": {
-    "description": "Anki 写入失败的连接原因提示",
-    "message": "Anki 操作失败可能是连接问题"
+    "description": "Hint for connection as a reason for Anki write failure.",
+    "message": "Anki operation failure might be a connection issue"
   },
   "popup_hint_parse_network": {
-    "description": "解析失败的网络原因提示",
-    "message": "解析失败可能是临时网络问题"
+    "description": "Hint for network as a reason for parsing failure.",
+    "message": "Parsing failure might be a temporary network issue"
   },
   "popup_hint_retry_general": {
-    "description": "通用失败时的重试提示",
-    "message": "操作失败可能是临时问题"
+    "description": "Hint to retry for a generic failure.",
+    "message": "Operation failure might be a temporary issue"
   },
   "popup_input_label": {
-    "description": "Popup 文本输入区域的标签",
-    "message": "输入文本"
+    "description": "Label for the Popup text input area.",
+    "message": "Input Text"
   },
   "popup_input_placeholder": {
-    "description": "Popup 文本输入框的占位提示",
-    "message": "粘贴或输入文本..."
+    "description": "Placeholder for the Popup text input.",
+    "message": "Paste or type text..."
   },
   "popup_parse_button": {
-    "description": "触发 AI 解析的按钮文本",
-    "message": "解析"
+    "description": "Button text to trigger AI parsing.",
+    "message": "Parse"
   },
   "popup_retry_hint_anki": {
-    "description": "Anki 失败的附加提示",
-    "message": "Anki 操作失败可能是连接问题"
+    "description": "Additional hint for an Anki failure.",
+    "message": "Anki operation failure might be a connection issue"
   },
   "popup_retry_hint_generic": {
-    "description": "通用失败的附加提示",
-    "message": "操作失败可能是临时问题"
+    "description": "Additional hint for a generic failure.",
+    "message": "Operation failure might be a temporary issue"
   },
   "popup_retry_hint_parse": {
-    "description": "解析失败的附加提示",
-    "message": "解析失败可能是临时网络问题"
+    "description": "Additional hint for a parsing failure.",
+    "message": "Parsing failure might be a temporary network issue"
   },
   "popup_status_collect_complete": {
-    "description": "字段收集成功时的提示前缀",
-    "message": "字段收集完成:"
+    "description": "Prefix for the message on successful field collection.",
+    "message": "Field collection complete:"
   },
   "popup_status_collect_error": {
-    "description": "字段收集阶段的错误提示",
-    "message": "字段收集失败：$DETAIL$",
+    "description": "Error message for the field collection stage.",
+    "message": "Field collection failed: $DETAIL$",
     "placeholders": {
       "DETAIL": {
         "content": "$1",
-        "description": "错误详情列表",
-        "example": "text-input 未找到"
+        "description": "List of error details",
+        "example": "text-input not found"
       }
     }
   },
   "popup_status_collect_failed": {
-    "description": "字段收集失败时的提示前缀",
-    "message": "字段收集失败:"
+    "description": "Prefix for the message on failed field collection.",
+    "message": "Field collection failed:"
   },
   "popup_status_config_loaded": {
-    "description": "用户配置加载完成时的提示前缀",
-    "message": "用户配置加载完成:"
+    "description": "Prefix for the message when user config is loaded.",
+    "message": "User config loaded:"
   },
   "popup_status_field_names_invalid": {
-    "description": "动态字段名无效时的提示",
-    "message": "字段名数组为空或无效"
+    "description": "Error message for invalid dynamic field names.",
+    "message": "Field name array is empty or invalid"
   },
   "popup_status_legacy_fallback_failed": {
-    "description": "Legacy 回退失败时的提示",
-    "message": "回退到legacy模式也失败: $DETAIL$",
+    "description": "Error message for a failed legacy fallback.",
+    "message": "Fallback to legacy mode also failed: $DETAIL$",
     "placeholders": {
       "DETAIL": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "DOM 元素缺失"
+        "description": "Error details",
+        "example": "DOM element missing"
       }
     }
   },
   "popup_status_no_configured_fields": {
-    "description": "任意阶段检测到无字段配置的提示",
-    "message": "当前模板未配置字段，请在选项页完成配置。"
+    "description": "Message for no field configuration detected at any stage.",
+    "message": "No fields configured for the current model. Please complete the configuration on the options page."
   },
   "popup_status_no_fields_parse": {
-    "description": "解析时检测到无字段配置",
-    "message": "当前模板未配置可解析的字段，请在选项页完成设置。"
+    "description": "No field configuration detected during parsing.",
+    "message": "No parsable fields configured for the current model. Please complete the setup on the options page."
   },
   "popup_status_no_fields_write": {
-    "description": "写入时检测到无字段配置",
-    "message": "当前模板未配置可写入的字段，请在选项页完成设置。"
+    "description": "No field configuration detected during writing.",
+    "message": "No writable fields configured for the current model. Please complete the setup on the options page."
   },
   "popup_status_no_fillable_fields": {
-    "description": "写入前未收集到任何字段时的提示",
-    "message": "没有可写入的字段内容"
+    "description": "Error message for no fields collected before writing.",
+    "message": "No fillable field content"
   },
   "popup_status_parse_result_empty": {
-    "description": "AI 返回结果为空或格式错误的提示",
-    "message": "AI 解析结果为空或格式无效"
+    "description": "Error message for an empty or invalid AI result.",
+    "message": "AI parsing result is empty or in an invalid format"
   },
   "popup_status_parsed": {
-    "description": "popup 状态栏：解析完成",
-    "message": "解析完成"
+    "description": "popup status bar: parsing complete",
+    "message": "Parsing complete"
   },
   "popup_status_parsing": {
-    "description": "popup 状态栏：解析进行中",
-    "message": "正在进行AI解析..."
+    "description": "popup status bar: parsing in progress",
+    "message": "AI parsing in progress..."
   },
   "popup_status_prompt_input": {
-    "description": "popup 状态栏：等待用户输入",
-    "message": "请输入要解析的文本"
+    "description": "popup status bar: waiting for user input",
+    "message": "Please enter text to parse"
   },
   "popup_status_ready": {
-    "description": "popup 状态栏：完成初始化",
-    "message": "准备就绪"
+    "description": "popup status bar: initialization complete",
+    "message": "Ready"
   },
   "popup_status_ready_to_write": {
-    "description": "写入前的提示前缀",
-    "message": "准备写入 Anki:"
+    "description": "Prefix for the message before writing.",
+    "message": "Ready to write to Anki:"
   },
   "popup_status_style_error": {
-    "description": "样式包装阶段的错误提示",
-    "message": "样式包装失败: $DETAIL$",
+    "description": "Error message for the style wrapping stage.",
+    "message": "Style wrapping failed: $DETAIL$",
     "placeholders": {
       "DETAIL": {
         "content": "$1",
-        "description": "错误详情",
-        "example": "DOM 元素不存在"
+        "description": "Error details",
+        "example": "DOM element does not exist"
       }
     }
   },
   "popup_status_validation_continue": {
-    "description": "字段验证通过但带警告时的提示",
-    "message": "$MESSAGE$，继续写入...",
+    "description": "Message for continuing to write with validation warnings.",
+    "message": "$MESSAGE$, continuing to write...",
     "placeholders": {
       "MESSAGE": {
         "content": "$1",
-        "description": "验证警告信息",
-        "example": "卡片内容存在未填字段"
+        "description": "Validation warning message",
+        "example": "Card content has unfilled fields"
       }
     }
   },
   "popup_status_validation_failed": {
-    "description": "字段验证失败时的提示前缀",
-    "message": "字段验证失败:"
+    "description": "Prefix for the message on failed field validation.",
+    "message": "Field validation failed:"
   },
   "popup_status_validation_warning_header": {
-    "description": "字段验证警告标题",
-    "message": "字段验证警告:"
+    "description": "Header for field validation warnings.",
+    "message": "Field Validation Warnings:"
   },
   "popup_status_write_success": {
-    "description": "写入完成后的提示",
-    "message": "写入成功"
+    "description": "Message after a successful write.",
+    "message": "Write successful"
   },
   "popup_status_writing": {
-    "description": "popup 状态栏：写入进行中",
-    "message": "正在写入 Anki..."
+    "description": "popup status bar: writing in progress",
+    "message": "Writing to Anki..."
   },
   "popup_warning_prefix": {
-    "description": "用于拼接警告详情的前缀",
-    "message": "警告: $DETAIL$",
+    "description": "Prefix for concatenating warning details.",
+    "message": "Warning: $DETAIL$",
     "placeholders": {
       "DETAIL": {
         "content": "$1",
-        "description": "警告文字",
-        "example": "解析结果为空"
+        "description": "Warning text",
+        "example": "Parsing result is empty"
       }
     }
   },
   "popup_write_button": {
-    "description": "触发写入 Anki 的按钮文本",
-    "message": "写入 Anki"
+    "description": "Button text to trigger writing to Anki.",
+    "message": "Write to Anki"
   },
   "prompt_engine_custom_template_header": {
-    "description": "动态 Prompt 模板生成时的头部",
-    "message": "$TEMPLATE$\n-------------------------------\n以下是本次输入的内容：$INPUT$",
+    "description": "Header for dynamic Prompt template generation.",
+    "message": "$TEMPLATE$\n-------------------------------\nHere is the input for this session: $INPUT$",
     "placeholders": {
       "INPUT": {
         "content": "$2",
-        "description": "用户输入文本",
+        "description": "User input text",
         "example": "test word"
       },
       "TEMPLATE": {
         "content": "$1",
-        "description": "自定义 Prompt 模板",
-        "example": "你是一名英语老师。"
+        "description": "Custom Prompt template",
+        "example": "You are an English teacher."
       }
     }
   },
   "prompt_engine_default_header": {
-    "description": "默认综合 Prompt 头部说明",
-    "message": "# Role: 专业单词查询助手\n\n请完成以下任务：\n1. 查询单词/短语: \"{{INPUT_TEXT}}\"\n2. 生成详细解析信息\n3. 按以下JSON格式输出：\n{{FIELD_SCHEMA}}\n\n要求：\n- 输出纯JSON格式，不包含任何解释文字\n- 根据单词/短语的特点，填充相应字段\n- 如果某个字段不适用，可以不输出该字段"
+    "description": "Default comprehensive Prompt header description.",
+    "message": "# Role: Professional Word Lookup Assistant\n\nPlease complete the following tasks:\n1. Look up the word/phrase: \"{{INPUT_TEXT}}\"\n2. Generate detailed analysis information\n3. Output in the following JSON format:\n{{FIELD_SCHEMA}}\n\nRequirements:\n- Output in pure JSON format, without any explanatory text\n- Fill in the corresponding fields based on the characteristics of the word/phrase\n- If a field is not applicable, you can omit it"
   },
   "prompt_engine_error_json_parse": {
-    "description": "解析 Prompt 生成结果 JSON 失败时的提示",
-    "message": "JSON 解析失败: $ERROR$",
+    "description": "Error message for failing to parse the Prompt generation result JSON.",
+    "message": "JSON parsing failed: $ERROR$",
     "placeholders": {
       "ERROR": {
         "content": "$1",
-        "description": "错误详情",
+        "description": "Error details",
         "example": "Unexpected token"
       }
     }
   },
   "prompt_engine_field_prompt": {
-    "description": "生成字段说明时的模板",
-    "message": "$FIELD$相关内容",
+    "description": "Template for generating field descriptions.",
+    "message": "Content related to $FIELD$",
     "placeholders": {
       "FIELD": {
         "content": "$1",
-        "description": "字段名称",
-        "example": "释义"
+        "description": "Field name",
+        "example": "Definition"
       }
     }
   },
@@ -1564,61 +1564,61 @@
     "message": "Definition and explanation"
   },
   "prompt_engine_requirements_body": {
-    "description": "动态 Prompt 要求说明",
-    "message": "\n\n要求:\n- 输出有效JSON格式\n- 只能使用字段: $FIELDS$\n- 可部分输出，但字段名必须准确",
+    "description": "Dynamic Prompt requirements description.",
+    "message": "\n\nRequirements:\n- Output in valid JSON format\n- Only use fields: $FIELDS$\n- Partial output is acceptable, but field names must be accurate",
     "placeholders": {
       "FIELDS": {
         "content": "$1",
-        "description": "允许的字段列表",
+        "description": "Allowed fields list",
         "example": "front, back"
       }
     }
   },
   "storage_error_api_key_decrypt": {
-    "description": "解密 API Key 失败的日志提示前缀",
-    "message": "[storage] $PROVIDER$ 的 API 密钥解密失败:",
+    "description": "Log message prefix for a failed API Key decryption.",
+    "message": "[storage] Failed to decrypt API key for $PROVIDER$:",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
+        "description": "Provider ID",
         "example": "anthropic"
       }
     }
   },
   "storage_error_api_key_decrypt_reset": {
-    "description": "解密 API Key 失败并回退为空字符串时的提示",
-    "message": "[storage] $PROVIDER$ 的 API 密钥解密失败，已初始化为空字符串。",
+    "description": "Message for a failed API Key decryption that falls back to an empty string.",
+    "message": "[storage] Failed to decrypt API key for $PROVIDER$, reset to an empty string.",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
+        "description": "Provider ID",
         "example": "anthropic"
       }
     }
   },
   "storage_error_loading_config": {
-    "description": "读取配置失败的日志前缀",
-    "message": "加载设置时出错:"
+    "description": "Log prefix for a failed config load.",
+    "message": "Error loading settings:"
   },
   "storage_info_migrating_config": {
-    "description": "检测到旧版配置时的提示",
-    "message": "检测到旧版设置，正在更新架构。"
+    "description": "Message for detecting legacy settings.",
+    "message": "Legacy settings detected, updating schema."
   },
   "storage_info_migration_done": {
-    "description": "配置迁移完成提示",
-    "message": "设置迁移完成。"
+    "description": "Message for a completed config migration.",
+    "message": "Settings migration complete."
   },
   "storage_info_missing_config": {
-    "description": "未找到用户配置时的提示",
-    "message": "未找到已保存的设置，将返回默认值。"
+    "description": "Message for not finding a user config.",
+    "message": "No saved settings found, will return default values."
   },
   "storage_warning_missing_salt": {
-    "description": "缺少加密盐时的日志提示",
-    "message": "[storage] 未找到 $PROVIDER$ 的加密盐，因此使用默认提供商。",
+    "description": "Log message for a missing encryption salt.",
+    "message": "[storage] Encryption salt for $PROVIDER$ not found, using default provider.",
     "placeholders": {
       "PROVIDER": {
         "content": "$1",
-        "description": "提供商 ID",
+        "description": "Provider ID",
         "example": "openai"
       }
     }
