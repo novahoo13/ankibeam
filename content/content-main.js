@@ -21,8 +21,12 @@ function logWarn(message, payload) {
 
 (async function bootstrap() {
   try {
-    const selectionModule = await import(chrome.runtime.getURL("content/selection.js"));
+    const [selectionModule, floatingButtonModule] = await Promise.all([
+      import(chrome.runtime.getURL("content/selection.js")),
+      import(chrome.runtime.getURL("content/floating-button.js")),
+    ]);
     const { createSelectionMonitor, isRestrictedLocation } = selectionModule;
+    const { createFloatingButtonController } = floatingButtonModule;
 
     if (isRestrictedLocation(window.location, document)) {
       logInfo("制限されたページのため、コンテンツスクリプトを終了します。", {
@@ -31,7 +35,7 @@ function logWarn(message, payload) {
       return;
     }
 
-    const controller = createController(createSelectionMonitor, loadFloatingAssistantConfig);
+    const controller = createController(createSelectionMonitor, createFloatingButtonController, loadFloatingAssistantConfig);
     await controller.refreshConfig();
 
     if (chrome?.storage?.onChanged?.addListener) {
@@ -55,8 +59,9 @@ function logWarn(message, payload) {
   }
 })();
 
-function createController(createSelectionMonitor, loadConfig) {
+function createController(createSelectionMonitor, createFloatingButtonController, loadConfig) {
   let monitor = null;
+  let floatingButton = null;
   let monitoring = false;
   let currentEnabled = false;
 
@@ -91,6 +96,16 @@ function createController(createSelectionMonitor, loadConfig) {
     if (!monitor) {
       monitor = createSelectionMonitor(handleSelectionEvent);
     }
+    if (!floatingButton) {
+      try {
+        floatingButton = createFloatingButtonController();
+        floatingButton.setTriggerHandler(() => {
+          logInfo("フローティングボタンが起動されました。");
+        });
+      } catch (creationError) {
+        console.error(`${LOG_PREFIX} フローティングボタンの初期化に失敗しました。`, creationError);
+      }
+    }
     if (monitoring) {
       return;
     }
@@ -105,6 +120,11 @@ function createController(createSelectionMonitor, loadConfig) {
       monitor.stop();
     }
     monitoring = false;
+    if (floatingButton) {
+      floatingButton.hide(true);
+      floatingButton.destroy();
+      floatingButton = null;
+    }
   }
 
   function handleSelectionEvent(result) {
@@ -112,6 +132,13 @@ function createController(createSelectionMonitor, loadConfig) {
       return;
     }
     if (result.kind === "valid") {
+      if (floatingButton) {
+        floatingButton.showForSelection({
+          text: result.text,
+          rect: result.rect,
+          signature: result.signature,
+        });
+      }
       const payload = {
         anchorTagName: result.anchorTagName,
         focusTagName: result.focusTagName,
@@ -121,6 +148,9 @@ function createController(createSelectionMonitor, loadConfig) {
       }
       logInfo(`選択テキスト: "${result.text}"`, payload);
       return;
+    }
+    if (floatingButton) {
+      floatingButton.hide(true);
     }
     if (result.kind === "unsupported-input") {
       logWarn("入力要素や編集可能領域の選択は対象外です。", {

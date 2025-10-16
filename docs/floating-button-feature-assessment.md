@@ -627,7 +627,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 - [x] 平滑动画
 
 **P2 (增强功能)**:
-- [ ] 滚动自动隐藏
+- [x] 滚动自动隐藏
 - [ ] 域名黑名单
 - [ ] 快捷键支持
 - [ ] 悬浮球位置记忆
