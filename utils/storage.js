@@ -9,7 +9,7 @@ import {
 } from "./providers.config.js";
 
 const CONFIG_KEY = "ankiWordAssistantConfig";
-export const CONFIG_VERSION = "2.2";
+export const CONFIG_VERSION = "2.3";
 const ENCRYPTION_KEY_MATERIAL = "anki-word-assistant-secret-key";
 const IV_LENGTH = 12;
 
@@ -71,6 +71,7 @@ function buildDefaultConfig() {
     },
     ui: {
       fieldDisplayMode: "auto",
+      enableFloatingAssistant: true,
     },
     styleConfig: {
       fontSize: "14px",
@@ -331,6 +332,9 @@ function mergeUiConfig(baseUi, legacyUi) {
   };
   if (typeof merged.fieldDisplayMode !== "string") {
     merged.fieldDisplayMode = baseUi.fieldDisplayMode;
+  }
+  if (typeof merged.enableFloatingAssistant !== "boolean") {
+    merged.enableFloatingAssistant = baseUi.enableFloatingAssistant;
   }
   return merged;
 }

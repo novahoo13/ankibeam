@@ -33,7 +33,7 @@
 **Tests**:  
 - `npm test`（需新增针对选区解析辅助函数的单测 `tests/content-selection.test.js`）。  
 - 手动：在示例网页、禁止域名（`chrome://`）验证内容脚本注入与否。
-**Status**: Not Started
+**Status**: Complete
 
 ## Stage 2: 悬浮球组件与事件管理
 **Goal**: 实现悬浮球的渲染、定位、显示/隐藏逻辑，以及节流与清理机制。
