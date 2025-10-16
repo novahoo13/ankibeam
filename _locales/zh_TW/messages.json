@@ -1610,6 +1610,14 @@
       }
     }
   },
+  "floating_panel_close_label": {
+    "description": "浮動解析面板的關閉按鈕文字。",
+    "message": "關閉面板"
+  },
+  "floating_panel_retry_label": {
+    "description": "浮動解析面板中的重試按鈕文字。",
+    "message": "重試"
+  },
   "options_provider_test_status_error": {
     "description": "提供者連線測試失敗時的狀態訊息。",
     "message": "測試失敗：$ERROR$",

@@ -1697,6 +1697,14 @@
       }
     }
   },
+  "floating_panel_close_label": {
+    "description": "悬浮解析面板的关闭按钮文本。",
+    "message": "关闭面板"
+  },
+  "floating_panel_retry_label": {
+    "description": "悬浮解析面板中的重试按钮文本。",
+    "message": "重试"
+  },
   "options_provider_test_status_error": {
     "description": "提供商测试失败时的状态文本。",
     "message": "测试失败：$ERROR$",

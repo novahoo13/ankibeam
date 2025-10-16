@@ -1610,6 +1610,14 @@
       }
     }
   },
+  "floating_panel_close_label": {
+    "description": "フローティングアシスタントパネルの閉じるボタン用ラベル。",
+    "message": "パネルを閉じる"
+  },
+  "floating_panel_retry_label": {
+    "description": "フローティングアシスタントパネル内の再試行ボタンラベル。",
+    "message": "再試行"
+  },
   "options_provider_test_status_error": {
     "description": "プロバイダー接続テストが失敗した際のステータスメッセージ。",
     "message": "テストに失敗しました: $ERROR$",

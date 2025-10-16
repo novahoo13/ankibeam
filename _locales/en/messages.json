@@ -1697,6 +1697,14 @@
       }
     }
   },
+  "floating_panel_close_label": {
+    "description": "Accessible label for closing the floating assistant panel.",
+    "message": "Close panel"
+  },
+  "floating_panel_retry_label": {
+    "description": "Retry button label shown inside the floating assistant panel.",
+    "message": "Retry"
+  },
   "options_provider_test_status_error": {
     "description": "Status message when a provider test fails.",
     "message": "Test failed: $ERROR$",

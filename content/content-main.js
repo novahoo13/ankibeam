@@ -21,12 +21,14 @@ function logWarn(message, payload) {
 
 (async function bootstrap() {
   try {
-    const [selectionModule, floatingButtonModule] = await Promise.all([
+    const [selectionModule, floatingButtonModule, floatingPanelModule] = await Promise.all([
       import(chrome.runtime.getURL("content/selection.js")),
       import(chrome.runtime.getURL("content/floating-button.js")),
+      import(chrome.runtime.getURL("content/floating-panel.js")),
     ]);
     const { createSelectionMonitor, isRestrictedLocation } = selectionModule;
     const { createFloatingButtonController } = floatingButtonModule;
+    const { createFloatingPanelController } = floatingPanelModule;
 
     if (isRestrictedLocation(window.location, document)) {
       logInfo("制限されたページのため、コンテンツスクリプトを終了します。", {
@@ -35,7 +37,12 @@ function logWarn(message, payload) {
       return;
     }
 
-    const controller = createController(createSelectionMonitor, createFloatingButtonController, loadFloatingAssistantConfig);
+    const controller = createController(
+      createSelectionMonitor,
+      createFloatingButtonController,
+      createFloatingPanelController,
+      loadFloatingAssistantConfig,
+    );
     await controller.refreshConfig();
 
     if (chrome?.storage?.onChanged?.addListener) {
@@ -59,11 +66,13 @@ function logWarn(message, payload) {
   }
 })();
 
-function createController(createSelectionMonitor, createFloatingButtonController, loadConfig) {
+function createController(createSelectionMonitor, createFloatingButtonController, createFloatingPanelController, loadConfig) {
   let monitor = null;
   let floatingButton = null;
+  let floatingPanel = null;
   let monitoring = false;
   let currentEnabled = false;
+  let currentConfig = null;
 
   async function refreshConfig() {
     try {
@@ -76,6 +85,11 @@ function createController(createSelectionMonitor, createFloatingButtonController
 
   function applyConfig(config) {
     const normalized = normalizeConfig(config);
+    currentConfig = normalized;
+    if (floatingPanel) {
+      floatingPanel.renderFieldsFromConfig(currentConfig);
+    }
+
     const enabled = Boolean(normalized.ui?.enableFloatingAssistant);
     if (enabled === currentEnabled) {
       return;
@@ -99,11 +113,41 @@ function createController(createSelectionMonitor, createFloatingButtonController
     if (!floatingButton) {
       try {
         floatingButton = createFloatingButtonController();
-        floatingButton.setTriggerHandler(() => {
+        floatingButton.setTriggerHandler((selection) => {
           logInfo("フローティングボタンが起動されました。");
+          if (!floatingPanel) {
+            return;
+          }
+          floatingPanel.showLoading(selection);
+          const layout = floatingPanel.renderFieldsFromConfig(currentConfig);
+          if (!layout.hasFields) {
+            floatingPanel.showError({
+              message: layout.message ?? undefined,
+              allowRetry: false,
+            });
+            return;
+          }
+          floatingPanel.showReady();
         });
       } catch (creationError) {
         console.error(`${LOG_PREFIX} フローティングボタンの初期化に失敗しました。`, creationError);
+      }
+    }
+    if (!floatingPanel) {
+      try {
+        floatingPanel = createFloatingPanelController();
+        floatingPanel.setRetryHandler(() => {
+          logInfo("パネルから再試行要求が呼び出されました。");
+        });
+        floatingPanel.setCloseHandler((reason) => {
+          logInfo("解析パネルが閉じられました。", { reason });
+        });
+        if (currentConfig) {
+          floatingPanel.renderFieldsFromConfig(currentConfig);
+        }
+      } catch (panelError) {
+        console.error(`${LOG_PREFIX} 解析パネルの初期化に失敗しました。`, panelError);
+        floatingPanel = null;
       }
     }
     if (monitoring) {
@@ -125,13 +169,24 @@ function createController(createSelectionMonitor, createFloatingButtonController
       floatingButton.destroy();
       floatingButton = null;
     }
+    if (floatingPanel) {
+      floatingPanel.hide(true);
+      floatingPanel.destroy();
+      floatingPanel = null;
+    }
   }
 
   function handleSelectionEvent(result) {
     if (!result) {
+      if (floatingPanel) {
+        floatingPanel.hide(true);
+      }
       return;
     }
     if (result.kind === "valid") {
+      if (floatingPanel) {
+        floatingPanel.patchSelection(result);
+      }
       if (floatingButton) {
         floatingButton.showForSelection({
           text: result.text,
@@ -151,6 +206,9 @@ function createController(createSelectionMonitor, createFloatingButtonController
     }
     if (floatingButton) {
       floatingButton.hide(true);
+    }
+    if (floatingPanel) {
+      floatingPanel.hide(true);
     }
     if (result.kind === "unsupported-input") {
       logWarn("入力要素や編集可能領域の選択は対象外です。", {
@@ -210,23 +268,79 @@ async function readStoredConfig() {
   }
 }
 
+function sanitizeStringArray(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value
+    .map((entry) => (typeof entry === "string" ? entry.trim() : ""))
+    .filter((entry) => entry.length > 0);
+}
+
 function normalizeConfig(rawConfig) {
-  const base = {
+  const defaults = {
     ui: {
       enableFloatingAssistant: true,
+      fieldDisplayMode: "auto",
     },
+    ankiConfig: {
+      defaultDeck: "",
+      defaultModel: "",
+      modelFields: [],
+      defaultTags: [],
+    },
+    promptTemplates: {
+      promptTemplatesByModel: {},
+      custom: "",
+    },
+    styleConfig: {},
+    language: "zh-CN",
   };
 
   if (!rawConfig || typeof rawConfig !== "object") {
-    return base;
+    return { ...defaults };
   }
 
   const normalized = { ...rawConfig };
-  const ui = (normalized.ui && typeof normalized.ui === "object" ? { ...normalized.ui } : {});
-  if (typeof ui.enableFloatingAssistant !== "boolean") {
-    ui.enableFloatingAssistant = true;
+
+  const ui =
+    rawConfig.ui && typeof rawConfig.ui === "object"
+      ? { ...defaults.ui, ...rawConfig.ui }
+      : { ...defaults.ui };
+  ui.enableFloatingAssistant = Boolean(ui.enableFloatingAssistant);
+  normalized.ui = ui;
+
+  const ankiConfig =
+    rawConfig.ankiConfig && typeof rawConfig.ankiConfig === "object"
+      ? { ...defaults.ankiConfig, ...rawConfig.ankiConfig }
+      : { ...defaults.ankiConfig };
+  ankiConfig.modelFields = sanitizeStringArray(ankiConfig.modelFields);
+  ankiConfig.defaultTags = sanitizeStringArray(ankiConfig.defaultTags);
+  normalized.ankiConfig = ankiConfig;
+
+  const promptTemplates =
+    rawConfig.promptTemplates && typeof rawConfig.promptTemplates === "object"
+      ? { ...defaults.promptTemplates, ...rawConfig.promptTemplates }
+      : { ...defaults.promptTemplates };
+  if (
+    !promptTemplates.promptTemplatesByModel ||
+    typeof promptTemplates.promptTemplatesByModel !== "object"
+  ) {
+    promptTemplates.promptTemplatesByModel = {};
+  }
+  normalized.promptTemplates = promptTemplates;
+
+  const styleConfig =
+    rawConfig.styleConfig && typeof rawConfig.styleConfig === "object"
+      ? { ...rawConfig.styleConfig }
+      : { ...defaults.styleConfig };
+  normalized.styleConfig = styleConfig;
+
+  if (typeof rawConfig.language === "string" && rawConfig.language.trim()) {
+    normalized.language = rawConfig.language.trim();
+  } else if (typeof normalized.language !== "string" || !normalized.language.trim()) {
+    normalized.language = defaults.language;
   }
 
-  normalized.ui = ui;
   return normalized;
 }

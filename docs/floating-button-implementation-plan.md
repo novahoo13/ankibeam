@@ -57,7 +57,7 @@
 **Tests**:  
 - `npm test` 新增 `tests/floating-panel.test.js` 检查字段渲染与状态切换。  
 - 手动：中文/英文界面验证文案，深色背景网页验证对比度，并检查超长内容时弹窗内部出现滚动条。
-**Status**: Not Started
+**Status**: Complete
 
 ## Stage 4: AI 解析与 Anki 写入集成
 **Goal**: 将面板操作串联现有业务模块，确保解析、字段校验、写入流程可用。
