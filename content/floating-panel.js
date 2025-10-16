@@ -120,6 +120,7 @@ export function createFloatingPanelController(options = {}) {
   let emptyNotice = null;
   let actionContainer = null;
   let retryButton = null;
+  let writeButton = null;
   let currentState = STATE_IDLE;
   let visible = false;
   let destroyed = false;
@@ -129,6 +130,7 @@ export function createFloatingPanelController(options = {}) {
   let currentFieldMode = "legacy";
   let retryHandler = null;
   let closeHandler = null;
+  let writeHandler = null;
 
   function ensureDom() {
     if (host) {
@@ -355,20 +357,34 @@ export function createFloatingPanelController(options = {}) {
   justify-content: flex-end;
   gap: 8px;
 }
-.retry-button {
+.action-button {
   all: unset;
   padding: 8px 14px;
   font-size: 13px;
   font-weight: 500;
   border-radius: 999px;
   cursor: pointer;
+  transition: background 0.16s ease-out, color 0.16s ease-out;
+}
+.retry-button {
   background: rgba(37, 99, 235, 0.12);
   color: rgb(37, 99, 235);
-  transition: background 0.16s ease-out, color 0.16s ease-out;
 }
 .retry-button:hover {
   background: rgba(37, 99, 235, 0.18);
   color: rgb(29, 78, 216);
+}
+.write-button {
+  background: rgba(34, 197, 94, 0.12);
+  color: rgb(34, 197, 94);
+}
+.write-button:hover {
+  background: rgba(34, 197, 94, 0.18);
+  color: rgb(22, 163, 74);
+}
+.write-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 @media (prefers-color-scheme: dark) {
   .panel-empty {
@@ -383,6 +399,14 @@ export function createFloatingPanelController(options = {}) {
   .retry-button:hover {
     background: rgba(96, 165, 250, 0.26);
     color: rgb(191, 219, 254);
+  }
+  .write-button {
+    background: rgba(74, 222, 128, 0.18);
+    color: rgb(134, 239, 172);
+  }
+  .write-button:hover {
+    background: rgba(74, 222, 128, 0.26);
+    color: rgb(187, 247, 208);
   }
 }
 `;
@@ -470,7 +494,7 @@ export function createFloatingPanelController(options = {}) {
 
     retryButton = documentRef.createElement("button");
     retryButton.type = "button";
-    retryButton.className = "retry-button";
+    retryButton.className = "retry-button action-button";
     retryButton.textContent = getText("floating_panel_retry_label", "再試行");
     retryButton.hidden = true;
     retryButton.addEventListener("click", () => {
@@ -479,7 +503,20 @@ export function createFloatingPanelController(options = {}) {
       }
     });
 
+    writeButton = documentRef.createElement("button");
+    writeButton.type = "button";
+    writeButton.className = "write-button action-button";
+    writeButton.textContent = getText("floating_panel_write_label", "Ankiに書き込む");
+    writeButton.disabled = true;
+    writeButton.hidden = false;
+    writeButton.addEventListener("click", () => {
+      if (typeof writeHandler === "function") {
+        writeHandler();
+      }
+    });
+
     actionContainer.appendChild(retryButton);
+    actionContainer.appendChild(writeButton);
 
     panel.appendChild(header);
     panel.appendChild(status);
@@ -795,6 +832,9 @@ export function createFloatingPanelController(options = {}) {
     visible = false;
     currentSelection = null;
     setStatus(STATE_IDLE);
+    if (writeButton) {
+      writeButton.disabled = true;
+    }
     unbindGlobalListeners();
   }
 
@@ -828,6 +868,9 @@ export function createFloatingPanelController(options = {}) {
   function showLoading(selection, options = {}) {
     show(selection);
     setStatus(STATE_LOADING, options);
+    if (writeButton) {
+      writeButton.disabled = true;
+    }
   }
 
   function showReady(options = {}) {
@@ -835,6 +878,9 @@ export function createFloatingPanelController(options = {}) {
       return;
     }
     setStatus(STATE_READY, options);
+    if (writeButton) {
+      writeButton.disabled = false;
+    }
     focusFirstField();
   }
 
@@ -980,6 +1026,74 @@ export function createFloatingPanelController(options = {}) {
     closeHandler = handler ?? null;
   }
 
+  function setWriteHandler(handler) {
+    if (handler && typeof handler !== "function") {
+      throw new TypeError("write handler must be a function");
+    }
+    writeHandler = handler ?? null;
+  }
+
+  function collectFields() {
+    const fields = {};
+    const collectedFields = [];
+    const emptyFields = [];
+
+    if (!fieldContainer || !shadowRoot) {
+      throw new Error("フィールドコンテナが初期化されていません。");
+    }
+
+    if (currentFieldMode === "legacy") {
+      // Legacy mode: Front and Back
+      const frontElem = shadowRoot.getElementById("front-input");
+      const backElem = shadowRoot.getElementById("back-input");
+
+      const modelFields = currentConfig?.ankiConfig?.modelFields;
+      const frontFieldName = (modelFields && modelFields[0]) || "Front";
+      const backFieldName = (modelFields && modelFields[1]) || "Back";
+
+      const frontValue = frontElem?.value?.trim() || "";
+      const backValue = backElem?.value?.trim() || "";
+
+      fields[frontFieldName] = frontElem?.value || "";
+      fields[backFieldName] = backElem?.value || "";
+
+      if (frontValue) {
+        collectedFields.push(frontFieldName);
+      } else {
+        emptyFields.push(frontFieldName);
+      }
+
+      if (backValue) {
+        collectedFields.push(backFieldName);
+      } else {
+        emptyFields.push(backFieldName);
+      }
+    } else {
+      // Dynamic mode
+      const textareas = fieldContainer.querySelectorAll("textarea[data-field-name]");
+      textareas.forEach((textarea) => {
+        const fieldName = textarea.getAttribute("data-field-name");
+        if (!fieldName) return;
+
+        const value = textarea.value?.trim() || "";
+        fields[fieldName] = textarea.value || "";
+
+        if (value) {
+          collectedFields.push(fieldName);
+        } else {
+          emptyFields.push(fieldName);
+        }
+      });
+    }
+
+    return {
+      fields,
+      collectedFields,
+      emptyFields,
+      mode: currentFieldMode,
+    };
+  }
+
   function getFieldRoot() {
     return shadowRoot;
   }
@@ -1005,6 +1119,8 @@ export function createFloatingPanelController(options = {}) {
     destroy,
     setRetryHandler,
     setCloseHandler,
+    setWriteHandler,
+    collectFields,
     getFieldRoot,
     getDebugState,
     get config() {

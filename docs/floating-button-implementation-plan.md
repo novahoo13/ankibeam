@@ -61,14 +61,27 @@
 
 ## Stage 4: AI 解析与 Anki 写入集成
 **Goal**: 将面板操作串联现有业务模块，确保解析、字段校验、写入流程可用。
-**Success Criteria**:  
-- 解析调用复用 `ai-service.js`，支持 Legacy/Dynamic 双模式，错误提示与 popup 保持一致。  
-- 写入按钮调用 `ankiconnect.js`，成功/失败有明确反馈并具备幂等处理。  
+**Success Criteria**:
+- 解析调用复用 `ai-service.js`，支持 Legacy/Dynamic 双模式，错误提示与 popup 保持一致。
+- 写入按钮调用 `ankiconnect.js`，成功/失败有明确反馈并具备幂等处理。
 - 在配置缺失（无 API Key、无字段映射）时给出引导链接至设置页。
-**Tests**:  
-- `npm test` 运行所有测试；为接口桥接添加模拟测试（可在 `tests/content-integration.test.js` 中使用 `mock`）。  
+**Tests**:
+- `npm test` 运行所有测试；为接口桥接添加模拟测试（可在 `tests/content-integration.test.js` 中使用 `mock`）。
 - 手动：通过本地 AnkiConnect 写入一次真实卡片，验证字段正确落库。
-**Status**: Not Started
+**Status**: Complete
+
+### 实现内容
+- [x] 在 `content-main.js` 中集成 AI 解析调用 (`handleAIParsing`)
+- [x] 支持 Legacy 和 Dynamic 双模式解析
+- [x] 实现重试机制，复用现有重试处理器
+- [x] 在 `floating-panel.js` 中添加"写入到 Anki"按钮
+- [x] 实现 `collectFields()` 方法从 Shadow DOM 收集字段
+- [x] 实现字段验证逻辑，复用 `field-handler.js` 的 `validateFields`
+- [x] 实现 `handleAnkiWrite()` 处理 Anki 写入流程
+- [x] 添加错误处理和用户友好的错误提示
+- [x] 写入成功后显示成功消息并自动关闭面板
+- [x] 编写 `tests/content-integration.test.js` 测试字段收集功能
+- [x] 所有测试通过 (30/30)
 
 ## Stage 5: 设置页联动、国际化与全面验收
 **Goal**: 在选项页提供悬浮球开关，补齐多语言、文档与验收流程。

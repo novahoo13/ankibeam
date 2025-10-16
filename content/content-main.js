@@ -1,5 +1,13 @@
 // content-main.js - フローティングアシスタントのエントリ
 
+import {
+  parseTextWithFallback,
+  parseTextWithDynamicFieldsFallback,
+} from "../utils/ai-service.js";
+import { isLegacyMode, validateFields } from "../utils/field-handler.js";
+import { getPromptConfigForModel } from "../utils/prompt-engine.js";
+import { addNote } from "../utils/ankiconnect.js";
+
 const LOG_PREFIX = "[floating-assistant]";
 const CONFIG_STORAGE_KEY = "ankiWordAssistantConfig";
 
@@ -113,11 +121,50 @@ function createController(createSelectionMonitor, createFloatingButtonController
     if (!floatingButton) {
       try {
         floatingButton = createFloatingButtonController();
-        floatingButton.setTriggerHandler((selection) => {
+        floatingButton.setTriggerHandler(async (selection) => {
           logInfo("フローティングボタンが起動されました。");
           if (!floatingPanel) {
             return;
           }
+
+          // 显示加载状态
+          floatingPanel.showLoading(selection);
+
+          // 渲染字段
+          const layout = floatingPanel.renderFieldsFromConfig(currentConfig);
+          if (!layout.hasFields) {
+            floatingPanel.showError({
+              message: layout.message ?? undefined,
+              allowRetry: false,
+            });
+            return;
+          }
+
+          // 调用 AI 解析
+          try {
+            await handleAIParsing(selection.text, layout);
+          } catch (error) {
+            logWarn("AI解析失败", error);
+            floatingPanel.showError({
+              message: error?.message ?? "AI解析失败，请重试。",
+              allowRetry: true,
+            });
+          }
+        });
+      } catch (creationError) {
+        console.error(`${LOG_PREFIX} フローティングボタンの初期化に失敗しました。`, creationError);
+      }
+    }
+    if (!floatingPanel) {
+      try {
+        floatingPanel = createFloatingPanelController();
+        floatingPanel.setRetryHandler(async (selection) => {
+          logInfo("パネルから再試行要求が呼び出されました。");
+          if (!selection || !selection.text) {
+            logWarn("再試行時に選択テキストが見つかりません。");
+            return;
+          }
+
           floatingPanel.showLoading(selection);
           const layout = floatingPanel.renderFieldsFromConfig(currentConfig);
           if (!layout.hasFields) {
@@ -127,20 +174,22 @@ function createController(createSelectionMonitor, createFloatingButtonController
             });
             return;
           }
-          floatingPanel.showReady();
-        });
-      } catch (creationError) {
-        console.error(`${LOG_PREFIX} フローティングボタンの初期化に失敗しました。`, creationError);
-      }
-    }
-    if (!floatingPanel) {
-      try {
-        floatingPanel = createFloatingPanelController();
-        floatingPanel.setRetryHandler(() => {
-          logInfo("パネルから再試行要求が呼び出されました。");
+
+          try {
+            await handleAIParsing(selection.text, layout);
+          } catch (error) {
+            logWarn("再試行でもAI解析が失敗しました。", error);
+            floatingPanel.showError({
+              message: error?.message ?? "AI解析失敗、もう一度お試しください。",
+              allowRetry: true,
+            });
+          }
         });
         floatingPanel.setCloseHandler((reason) => {
           logInfo("解析パネルが閉じられました。", { reason });
+        });
+        floatingPanel.setWriteHandler(async () => {
+          await handleAnkiWrite();
         });
         if (currentConfig) {
           floatingPanel.renderFieldsFromConfig(currentConfig);
@@ -214,6 +263,178 @@ function createController(createSelectionMonitor, createFloatingButtonController
       logWarn("入力要素や編集可能領域の選択は対象外です。", {
         anchorTagName: result.anchorTagName,
         focusTagName: result.focusTagName,
+      });
+    }
+  }
+
+  async function handleAIParsing(selectedText, layout) {
+    if (!selectedText || !selectedText.trim()) {
+      throw new Error("選択されたテキストが空です。");
+    }
+
+    if (!currentConfig) {
+      throw new Error("設定が読み込まれていません。");
+    }
+
+    const modelFields = currentConfig?.ankiConfig?.modelFields;
+    const isLegacy = isLegacyMode(currentConfig);
+
+    let result;
+
+    if (isLegacy) {
+      // Legacy モード: Front/Back の2つのフィールド
+      logInfo("Legacy モードでAI解析を実行します。");
+      result = await parseTextWithFallback(selectedText);
+    } else {
+      // Dynamic モード: ユーザー設定に基づく複数フィールド
+      const { modelName, selectedFields, allFields } = getActivePromptSetup();
+      const dynamicFields =
+        selectedFields && selectedFields.length > 0
+          ? selectedFields
+          : Array.isArray(modelFields) && modelFields.length > 0
+          ? modelFields
+          : allFields;
+
+      if (!dynamicFields || dynamicFields.length === 0) {
+        throw new Error("現在のテンプレートには解析可能なフィールドが設定されていません。オプションページで設定を完了してください。");
+      }
+
+      logInfo("Dynamic モードでAI解析を実行します。", { fields: dynamicFields });
+
+      const customTemplate = getPromptConfigForModel(
+        modelName,
+        currentConfig
+      ).customPrompt;
+
+      result = await parseTextWithDynamicFieldsFallback(
+        selectedText,
+        dynamicFields,
+        customTemplate
+      );
+    }
+
+    // AI解析結果をパネルのフィールドに適用
+    if (floatingPanel) {
+      floatingPanel.applyFieldValues(result);
+      floatingPanel.showReady();
+    }
+
+    logInfo("AI解析が完了しました。", result);
+  }
+
+  function getActivePromptSetup() {
+    const allFields = Array.isArray(currentConfig?.ankiConfig?.modelFields)
+      ? [...currentConfig.ankiConfig.modelFields]
+      : [];
+
+    let modelName = currentConfig?.ankiConfig?.defaultModel || "";
+
+    const promptTemplates = currentConfig?.promptTemplates?.promptTemplatesByModel || {};
+    if (!modelName && Object.keys(promptTemplates).length > 0) {
+      modelName = Object.keys(promptTemplates)[0];
+    }
+
+    const promptConfig = getPromptConfigForModel(modelName, currentConfig);
+    let selectedFields = Array.isArray(promptConfig.selectedFields)
+      ? promptConfig.selectedFields.filter(
+          (field) => typeof field === "string" && field.trim()
+        )
+      : [];
+
+    if (selectedFields.length > 0 && allFields.length > 0) {
+      selectedFields = selectedFields.filter((field) =>
+        allFields.includes(field)
+      );
+    }
+
+    if (selectedFields.length === 0) {
+      selectedFields = allFields.slice();
+    }
+
+    return {
+      modelName,
+      allFields,
+      selectedFields,
+      promptConfig,
+    };
+  }
+
+  async function handleAnkiWrite() {
+    if (!floatingPanel) {
+      return;
+    }
+
+    try {
+      // 收集字段
+      const collected = floatingPanel.collectFields();
+      logInfo("フィールド収集完了", collected);
+
+      const isLegacy = collected.mode === "legacy";
+
+      // 验证字段
+      const validation = validateFields(collected.fields, isLegacy);
+
+      if (!validation.isValid) {
+        const errorMessage = validation.message || "フィールド検証に失敗しました。";
+        floatingPanel.showError({
+          message: errorMessage,
+          allowRetry: false,
+        });
+        return;
+      }
+
+      // 显示写入状态
+      floatingPanel.showLoading(currentSelection, {
+        message: "Ankiに書き込んでいます...",
+      });
+
+      // 准备写入数据
+      const deckName = currentConfig?.ankiConfig?.defaultDeck || "Default";
+      const modelName = currentConfig?.ankiConfig?.defaultModel || "Basic";
+      const tags = currentConfig?.ankiConfig?.defaultTags || [];
+
+      const noteData = {
+        deckName,
+        modelName,
+        fields: collected.fields,
+        tags,
+      };
+
+      logInfo("Ankiに書き込みます。", noteData);
+
+      // 调用 AnkiConnect
+      const result = await addNote(noteData);
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      // 成功
+      floatingPanel.showReady({
+        message: "Ankiに書き込みました！",
+      });
+
+      logInfo("Anki書き込み成功", { noteId: result.result });
+
+      // 2秒后关闭面板
+      setTimeout(() => {
+        if (floatingPanel) {
+          floatingPanel.hide(false);
+        }
+      }, 2000);
+    } catch (error) {
+      logWarn("Anki書き込み失敗", error);
+
+      let errorMessage = error?.message || "Anki書き込みに失敗しました。";
+
+      // 特殊错误处理
+      if (errorMessage.includes("fetch") || errorMessage.includes("Failed to fetch")) {
+        errorMessage = "Ankiが起動していることと、AnkiConnectプラグインがインストールされていることを確認してください。";
+      }
+
+      floatingPanel.showError({
+        message: errorMessage,
+        allowRetry: false,
       });
     }
   }
