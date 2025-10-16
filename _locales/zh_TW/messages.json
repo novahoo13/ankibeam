@@ -1635,5 +1635,17 @@
   "options_default_model_placeholder": {
     "description": "預設模型下拉選單的提示。",
     "message": "請選擇預設模型"
+  },
+  "options_ui_floating_assistant_label": {
+    "description": "懸浮球助手功能標籤。",
+    "message": "懸浮球助手"
+  },
+  "options_ui_floating_assistant_enable": {
+    "description": "啟用懸浮球助手的複選框標籤。",
+    "message": "啟用懸浮球助手"
+  },
+  "options_ui_floating_assistant_description": {
+    "description": "懸浮球助手功能描述文字。",
+    "message": "在網頁中選取文字後，自動顯示懸浮球按鈕，點擊即可快速解析並建立 Anki 卡片。若遇到相容問題可關閉此功能。"
   }
 }

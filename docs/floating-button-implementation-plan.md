@@ -85,15 +85,26 @@
 
 ## Stage 5: 设置页联动、国际化与全面验收
 **Goal**: 在选项页提供悬浮球开关，补齐多语言、文档与验收流程。
-**Success Criteria**:  
-- `options.html/js` 存在新的开关控件，实时更新配置并驱动内容脚本启停。  
-- 开关旁展示说明文案（例如“若遇到兼容问题可关闭”），对应语言的翻译全部就绪。  
-- 所有新增文案在各语言包（含脚本生成）中就绪，`generate_i18n_messages.py` 通过。  
+**Success Criteria**:
+- `options.html/js` 存在新的开关控件，实时更新配置并驱动内容脚本启停。
+- 开关旁展示说明文案（例如"若遇到兼容问题可关闭"），对应语言的翻译全部就绪。
+- 所有新增文案在各语言包（含脚本生成）中就绪，`generate_i18n_messages.py` 通过。
 - 验收清单覆盖主要浏览器页面的通用场景说明，并记录输入源限制。
-**Tests**:  
-- `npm test` 全量；执行 `python scripts/generate_i18n_messages.py --check`（若已有检查模式）。  
+**Tests**:
+- `npm test` 全量；执行 `python scripts/generate_i18n_messages.py --check`（若已有检查模式）。
 - 手动：按验收清单逐项验证含禁用开关、长文本、连续解析等场景（具体站点由你后续补充），并在选项页与弹窗内切换所有受支持语言核对翻译。
-**Status**: Not Started
+**Status**: Complete
+
+### 实现内容
+- [x] 在 `options.html` 的系统设置面板中添加悬浮球助手开关
+- [x] 在 `options.js` 中实现配置读取与保存逻辑 (lines 1705-1708, 1889-1896)
+- [x] 验证 `content-main.js` 已实现实时配置监听 (lines 56-70, 101-115)
+- [x] 为所有支持的语言添加翻译键:
+  - [x] zh_CN: `options_ui_floating_assistant_label`, `options_ui_floating_assistant_enable`, `options_ui_floating_assistant_description`
+  - [x] zh_TW: 相同键值，繁体中文翻译
+  - [x] ja: 相同键值，日语翻译
+  - [x] en: 相同键值，英文翻译
+- [x] 运行 `npm test` 验证，所有30个测试通过
 
 ---
 

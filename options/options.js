@@ -1702,6 +1702,11 @@ async function loadAndDisplayConfig() {
     );
   }
 
+  const floatingAssistantCheckbox = document.getElementById("enable-floating-assistant");
+  if (floatingAssistantCheckbox) {
+    floatingAssistantCheckbox.checked = config?.ui?.enableFloatingAssistant ?? true;
+  }
+
   console.info('設定の読み込みが完了しました。');
 }
 
@@ -1879,6 +1884,15 @@ async function handleSave() {
     fontSize,
     textAlign,
     lineHeight,
+  };
+
+  const floatingAssistantCheckbox = document.getElementById("enable-floating-assistant");
+  const enableFloatingAssistant = floatingAssistantCheckbox ? floatingAssistantCheckbox.checked : true;
+
+  nextConfig.ui = {
+    ...(nextConfig.ui ?? {}),
+    fieldDisplayMode: nextConfig.ui?.fieldDisplayMode ?? "auto",
+    enableFloatingAssistant,
   };
 
   nextConfig.language = language;

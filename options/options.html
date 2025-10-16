@@ -618,6 +618,39 @@
               <div class="space-y-6">
                 <!-- 区域间垂直间距24px -->
                 <!--
+                  悬浮球助手功能开关区域
+                  - 控制悬浮球功能的启用/禁用
+                  - 提供功能说明文案
+                  - 配置变更后立即生效
+                -->
+                <div class="mb-6">
+                  <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="options_ui_floating_assistant_label">
+                    悬浮球助手
+                  </label>
+                  <div class="bg-slate-50 border border-slate-200 rounded-md p-4">
+                    <div class="flex items-center justify-between mb-2">
+                      <div class="flex items-center">
+                        <input
+                          type="checkbox"
+                          id="enable-floating-assistant"
+                          class="w-4 h-4 text-slate-600 bg-gray-100 border-gray-300 rounded focus:ring-slate-500 focus:ring-2"
+                        />
+                        <label
+                          for="enable-floating-assistant"
+                          class="ml-2 text-sm font-medium text-gray-700 cursor-pointer"
+                          data-i18n="options_ui_floating_assistant_enable"
+                        >
+                          启用悬浮球助手
+                        </label>
+                      </div>
+                    </div>
+                    <p class="text-xs text-gray-600" data-i18n="options_ui_floating_assistant_description">
+                      在网页中选中文本后，自动显示悬浮球按钮，点击即可快速解析并创建 Anki 卡片。若遇到兼容问题可关闭此功能。
+                    </p>
+                  </div>
+                </div>
+
+                <!--
                   语言设置区域
                   - 目前仅支持简体中文
                   - 预留多语言功能扩展接口

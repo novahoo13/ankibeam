@@ -1635,5 +1635,17 @@
   "options_default_model_placeholder": {
     "description": "既定モデル選択のプレースホルダー。",
     "message": "既定のモデルを選択"
+  },
+  "options_ui_floating_assistant_label": {
+    "description": "フローティングアシスタント機能のラベル。",
+    "message": "フローティングアシスタント"
+  },
+  "options_ui_floating_assistant_enable": {
+    "description": "フローティングアシスタント有効化のチェックボックスラベル。",
+    "message": "フローティングアシスタントを有効にする"
+  },
+  "options_ui_floating_assistant_description": {
+    "description": "フローティングアシスタント機能の説明文。",
+    "message": "ウェブページでテキストを選択すると、フローティングボタンが自動的に表示されます。クリックするとすぐに解析してAnkiカードを作成できます。互換性の問題がある場合は、この機能を無効にすることができます。"
   }
 }

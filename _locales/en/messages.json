@@ -1723,5 +1723,17 @@
   "options_default_model_placeholder": {
     "description": "Placeholder for the default model select box.",
     "message": "Select a default model"
+  },
+  "options_ui_floating_assistant_label": {
+    "description": "Label for the floating assistant feature.",
+    "message": "Floating Assistant"
+  },
+  "options_ui_floating_assistant_enable": {
+    "description": "Checkbox label for enabling the floating assistant.",
+    "message": "Enable Floating Assistant"
+  },
+  "options_ui_floating_assistant_description": {
+    "description": "Description text for the floating assistant feature.",
+    "message": "When you select text on a web page, a floating button will automatically appear. Click it to quickly parse and create Anki cards. You can disable this feature if you encounter compatibility issues."
   }
 }
