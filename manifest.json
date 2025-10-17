@@ -28,7 +28,18 @@
 	],
 	"web_accessible_resources": [
 		{
-			"resources": ["content/selection.js", "content/floating-button.js", "content/floating-panel.js"],
+			"resources": [
+				"content/selection.js",
+				"content/floating-button.js",
+				"content/floating-panel.js",
+				"utils/ai-service.js",
+				"utils/ankiconnect.js",
+				"utils/field-handler.js",
+				"utils/i18n.js",
+				"utils/prompt-engine.js",
+				"utils/providers.config.js",
+				"utils/storage.js"
+			],
 			"matches": ["<all_urls>"]
 		}
 	],

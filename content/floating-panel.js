@@ -808,7 +808,14 @@ export function createFloatingPanelController(options = {}) {
     host.style.pointerEvents = "auto";
     wrapper.dataset.visible = "true";
     visible = true;
-    bindGlobalListeners();
+
+    // パネルを開くクリックイベントがグローバルリスナーに伝播しないよう、
+    // リスナーのバインドを次のマイクロタスクまで遅延させます
+    windowRef.setTimeout(() => {
+      if (visible) {
+        bindGlobalListeners();
+      }
+    }, 0);
 
     updatePosition(selection?.rect);
     panel.focus();
@@ -1001,10 +1008,15 @@ export function createFloatingPanelController(options = {}) {
     }
     const previousSignature = currentSelection?.signature;
     currentSelection = selection;
-    if (previousSignature && selection.signature && previousSignature !== selection.signature) {
+
+    // パネルが loading または ready 状態の時は、選択範囲の変更でパネルを閉じない
+    // ユーザーがテキストを選択している間にパネルが消えないようにする
+    const isWorkingState = currentState === STATE_LOADING || currentState === STATE_READY;
+    if (!isWorkingState && previousSignature && selection.signature && previousSignature !== selection.signature) {
       hide(true);
       return;
     }
+
     if (!selection.rect) {
       hide(true);
       return;

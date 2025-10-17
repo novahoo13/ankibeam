@@ -1,15 +1,14 @@
 // content-main.js - フローティングアシスタントのエントリ
 
-import {
-  parseTextWithFallback,
-  parseTextWithDynamicFieldsFallback,
-} from "../utils/ai-service.js";
-import { isLegacyMode, validateFields } from "../utils/field-handler.js";
-import { getPromptConfigForModel } from "../utils/prompt-engine.js";
-import { addNote } from "../utils/ankiconnect.js";
-
 const LOG_PREFIX = "[floating-assistant]";
 const CONFIG_STORAGE_KEY = "ankiWordAssistantConfig";
+
+let parseTextWithFallback = null;
+let parseTextWithDynamicFieldsFallback = null;
+let isLegacyMode = null;
+let validateFields = null;
+let getPromptConfigForModel = null;
+let addNote = null;
 
 function logInfo(message, payload) {
   if (payload !== undefined) {
@@ -29,14 +28,33 @@ function logWarn(message, payload) {
 
 (async function bootstrap() {
   try {
-    const [selectionModule, floatingButtonModule, floatingPanelModule] = await Promise.all([
+    const [
+      selectionModule,
+      floatingButtonModule,
+      floatingPanelModule,
+      aiServiceModule,
+      fieldHandlerModule,
+      promptEngineModule,
+      ankiConnectModule,
+    ] = await Promise.all([
       import(chrome.runtime.getURL("content/selection.js")),
       import(chrome.runtime.getURL("content/floating-button.js")),
       import(chrome.runtime.getURL("content/floating-panel.js")),
+      import(chrome.runtime.getURL("utils/ai-service.js")),
+      import(chrome.runtime.getURL("utils/field-handler.js")),
+      import(chrome.runtime.getURL("utils/prompt-engine.js")),
+      import(chrome.runtime.getURL("utils/ankiconnect.js")),
     ]);
     const { createSelectionMonitor, isRestrictedLocation } = selectionModule;
     const { createFloatingButtonController } = floatingButtonModule;
     const { createFloatingPanelController } = floatingPanelModule;
+    ({
+      parseTextWithFallback,
+      parseTextWithDynamicFieldsFallback,
+    } = aiServiceModule);
+    ({ isLegacyMode, validateFields } = fieldHandlerModule);
+    ({ getPromptConfigForModel } = promptEngineModule);
+    ({ addNote } = ankiConnectModule);
 
     if (isRestrictedLocation(window.location, document)) {
       logInfo("制限されたページのため、コンテンツスクリプトを終了します。", {
@@ -257,7 +275,18 @@ function createController(createSelectionMonitor, createFloatingButtonController
       floatingButton.hide(true);
     }
     if (floatingPanel) {
-      floatingPanel.hide(true);
+      const panelState =
+        typeof floatingPanel.getDebugState === "function"
+          ? floatingPanel.getDebugState()
+          : null;
+      const isPanelActive =
+        panelState?.visible &&
+        (panelState.currentState === "loading" ||
+          panelState.currentState === "ready" ||
+          panelState.currentState === "error");
+      if (!isPanelActive) {
+        floatingPanel.hide(true);
+      }
     }
     if (result.kind === "unsupported-input") {
       logWarn("入力要素や編集可能領域の選択は対象外です。", {
@@ -416,12 +445,6 @@ function createController(createSelectionMonitor, createFloatingButtonController
 
       logInfo("Anki書き込み成功", { noteId: result.result });
 
-      // 2秒后关闭面板
-      setTimeout(() => {
-        if (floatingPanel) {
-          floatingPanel.hide(false);
-        }
-      }, 2000);
     } catch (error) {
       logWarn("Anki書き込み失敗", error);
 

@@ -154,6 +154,7 @@ export function createFloatingButtonController(options = {}) {
 
   function handleButtonClick(event) {
     event.preventDefault();
+    event.stopPropagation();
     if (!visible || !currentSelection) {
       return;
     }

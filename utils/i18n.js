@@ -254,11 +254,19 @@ export async function setPageLanguage() {
         document.documentElement.lang = normalized;
         userConfiguredLocale = normalized;
 
-        const messages = await loadMessagesForLocale(normalized);
-        if (messages) {
-          customMessages = messages;
-          customMessagesLocale = normalized;
-          console.log(`Loaded custom messages for locale: ${normalized}`);
+        // Content script では chrome.i18n.getMessage() を使用するため、
+        // messages.json の直接読み込みはスキップします
+        if (typeof chrome !== "undefined" && chrome?.runtime?.getManifest) {
+          // Extension context では chrome.i18n を使用
+          console.log(`Using chrome.i18n for locale: ${normalized}`);
+        } else {
+          // 通常の Web ページコンテキストでのみ messages.json を読み込む
+          const messages = await loadMessagesForLocale(normalized);
+          if (messages) {
+            customMessages = messages;
+            customMessagesLocale = normalized;
+            console.log(`Loaded custom messages for locale: ${normalized}`);
+          }
         }
         return;
       }
