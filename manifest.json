@@ -11,6 +11,10 @@
 		"https://api.openai.com/*",
 		"https://api.anthropic.com/*"
 	],
+	"background": {
+		"service_worker": "background/background.js",
+		"type": "module"
+	},
 	"action": {
 		"default_popup": "popup/popup.html",
 		"default_icon": {
@@ -34,11 +38,13 @@
 				"content/floating-panel.js",
 				"utils/ai-service.js",
 				"utils/ankiconnect.js",
+				"utils/ankiconnect-proxy.js",
 				"utils/field-handler.js",
 				"utils/i18n.js",
 				"utils/prompt-engine.js",
 				"utils/providers.config.js",
-				"utils/storage.js"
+				"utils/storage.js",
+				"_locales/*/messages.json"
 			],
 			"matches": ["<all_urls>"]
 		}

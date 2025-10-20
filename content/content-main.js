@@ -43,7 +43,7 @@ function logWarn(message, payload) {
       import(chrome.runtime.getURL("utils/ai-service.js")),
       import(chrome.runtime.getURL("utils/field-handler.js")),
       import(chrome.runtime.getURL("utils/prompt-engine.js")),
-      import(chrome.runtime.getURL("utils/ankiconnect.js")),
+      import(chrome.runtime.getURL("utils/ankiconnect-proxy.js")),
     ]);
     const { createSelectionMonitor, isRestrictedLocation } = selectionModule;
     const { createFloatingButtonController } = floatingButtonModule;
@@ -99,6 +99,7 @@ function createController(createSelectionMonitor, createFloatingButtonController
   let monitoring = false;
   let currentEnabled = false;
   let currentConfig = null;
+  let currentSelection = null;
 
   async function refreshConfig() {
     try {
@@ -145,6 +146,9 @@ function createController(createSelectionMonitor, createFloatingButtonController
             return;
           }
 
+          // 保存当前选择
+          currentSelection = selection;
+
           // 显示加载状态
           floatingPanel.showLoading(selection);
 
@@ -182,6 +186,9 @@ function createController(createSelectionMonitor, createFloatingButtonController
             logWarn("再試行時に選択テキストが見つかりません。");
             return;
           }
+
+          // 保存当前选择
+          currentSelection = selection;
 
           floatingPanel.showLoading(selection);
           const layout = floatingPanel.renderFieldsFromConfig(currentConfig);
@@ -250,6 +257,12 @@ function createController(createSelectionMonitor, createFloatingButtonController
       }
       return;
     }
+
+    // フローティングアシスタントパネル内の選択を無視
+    if (result.kind === "ignored-floating-panel") {
+      return;
+    }
+
     if (result.kind === "valid") {
       if (floatingPanel) {
         floatingPanel.patchSelection(result);

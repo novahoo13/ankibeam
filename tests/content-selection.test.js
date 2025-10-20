@@ -103,6 +103,76 @@ test("evaluateSelection treats whitespace-only selections as empty", () => {
   });
 });
 
+test("evaluateSelection ignores selections inside floating assistant panel", () => {
+  withDom(`
+    <div>
+      <p>Normal text</p>
+      <div id="anki-floating-assistant-panel-host">
+        <p id="panel-text">Panel text</p>
+      </div>
+    </div>
+  `, (window) => {
+    const { document } = window;
+    const selection = window.getSelection();
+    const range = document.createRange();
+
+    const panelTextNode = document.getElementById("panel-text").firstChild;
+    range.setStart(panelTextNode, 0);
+    range.setEnd(panelTextNode, 5);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    const result = evaluateSelection(selection);
+    assert.equal(result.kind, "ignored-floating-panel");
+    assert.equal(result.text, "Panel");
+  });
+});
+
+test("evaluateSelection validates floating assistant host detection", () => {
+  withDom(`
+    <div>
+      <div id="anki-floating-assistant-host">
+        <p id="inside-button">Button content</p>
+      </div>
+      <div id="anki-floating-assistant-panel-host">
+        <p id="inside-panel">Panel content</p>
+      </div>
+      <p id="outside">Normal content</p>
+    </div>
+  `, (window) => {
+    const { document } = window;
+    const selection = window.getSelection();
+    const range = document.createRange();
+
+    // Test button host
+    const buttonNode = document.getElementById("inside-button").firstChild;
+    range.setStart(buttonNode, 0);
+    range.setEnd(buttonNode, 6);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    let result = evaluateSelection(selection);
+    assert.equal(result.kind, "ignored-floating-panel", "Button host should be ignored");
+
+    // Test panel host
+    const panelNode = document.getElementById("inside-panel").firstChild;
+    range.setStart(panelNode, 0);
+    range.setEnd(panelNode, 5);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    result = evaluateSelection(selection);
+    assert.equal(result.kind, "ignored-floating-panel", "Panel host should be ignored");
+
+    // Test outside normal content (should work normally)
+    const outsideNode = document.getElementById("outside").firstChild;
+    range.setStart(outsideNode, 0);
+    range.setEnd(outsideNode, 6);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    result = evaluateSelection(selection);
+    assert.equal(result.kind, "valid", "Normal content should be valid");
+  });
+});
+
 test("isRestrictedLocation identifies reserved protocols and PDFs", () => {
   assert.equal(
     isRestrictedLocation(new URL("chrome://settings/")),

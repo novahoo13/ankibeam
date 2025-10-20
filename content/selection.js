@@ -42,6 +42,36 @@ function isUnsupportedElement(element) {
   return false;
 }
 
+function isInsideFloatingAssistant(element) {
+  if (!element) {
+    return false;
+  }
+
+  let current = element;
+  while (current) {
+    // フローティングアシスタントのホスト要素をチェック
+    if (current.id === "anki-floating-assistant-panel-host" ||
+        current.id === "anki-floating-assistant-host") {
+      return true;
+    }
+
+    // Shadow Root をチェック
+    if (typeof current.getRootNode === "function") {
+      const root = current.getRootNode();
+      if (root !== document && root.host) {
+        const hostId = root.host.id;
+        if (hostId && hostId.includes("anki-floating-assistant")) {
+          return true;
+        }
+      }
+    }
+
+    current = current.parentElement;
+  }
+
+  return false;
+}
+
 function buildClientRect(range) {
   if (!range?.getBoundingClientRect) {
     return null;
@@ -80,6 +110,16 @@ export function evaluateSelection(selection) {
 
   const anchorElement = resolveElement(selection.anchorNode);
   const focusElement = resolveElement(selection.focusNode);
+
+  // フローティングアシスタントパネル内の選択を無視
+  if (isInsideFloatingAssistant(anchorElement) || isInsideFloatingAssistant(focusElement)) {
+    return {
+      kind: "ignored-floating-panel",
+      text,
+      anchorTagName: anchorElement?.tagName ?? null,
+      focusTagName: focusElement?.tagName ?? null,
+    };
+  }
 
   if (isUnsupportedElement(anchorElement) || isUnsupportedElement(focusElement)) {
     return {
