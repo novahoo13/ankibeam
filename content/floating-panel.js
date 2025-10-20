@@ -203,7 +203,7 @@ export function createFloatingPanelController(options = {}) {
 .panel:focus {
   outline: none;
   box-shadow:
-    0 0 0 2px rgba(59, 130, 246, 0.2),
+    0 0 0 2px rgba(71, 85, 105, 0.2),
     0 18px 50px rgba(15, 23, 42, 0.24);
 }
 .panel-header {
@@ -231,8 +231,8 @@ export function createFloatingPanelController(options = {}) {
   transition: background 0.16s ease-out, color 0.16s ease-out;
 }
 .panel-close:hover {
-  background: rgba(59, 130, 246, 0.12);
-  color: rgb(37, 99, 235);
+  background: rgba(71, 85, 105, 0.12);
+  color: rgb(71, 85, 105);
 }
 .panel-status {
   display: flex;
@@ -262,8 +262,8 @@ export function createFloatingPanelController(options = {}) {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 2px solid rgba(59, 130, 246, 0.45);
-  border-top-color: rgb(37, 99, 235);
+  border: 2px solid rgba(71, 85, 105, 0.45);
+  border-top-color: rgb(71, 85, 105);
   opacity: 0;
 }
 .status-icon[data-kind="spinner"]::before {
@@ -303,7 +303,7 @@ export function createFloatingPanelController(options = {}) {
   border-radius: 999px;
 }
 .panel-body::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.35);
+  background: rgba(71, 85, 105, 0.35);
   border-radius: 999px;
 }
 .field-group {
@@ -340,8 +340,8 @@ export function createFloatingPanelController(options = {}) {
 .field-input:focus,
 .field-textarea:focus {
   outline: none;
-  border-color: rgba(59, 130, 246, 0.65);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.18);
+  border-color: rgba(71, 85, 105, 0.65);
+  box-shadow: 0 0 0 2px rgba(71, 85, 105, 0.18);
 }
 .panel-empty {
   font-size: 12px;
@@ -367,12 +367,12 @@ export function createFloatingPanelController(options = {}) {
   transition: background 0.16s ease-out, color 0.16s ease-out;
 }
 .retry-button {
-  background: rgba(37, 99, 235, 0.12);
-  color: rgb(37, 99, 235);
+  background: rgba(71, 85, 105, 0.12);
+  color: rgb(71, 85, 105);
 }
 .retry-button:hover {
-  background: rgba(37, 99, 235, 0.18);
-  color: rgb(29, 78, 216);
+  background: rgba(71, 85, 105, 0.18);
+  color: rgb(51, 65, 85);
 }
 .write-button {
   background: rgba(34, 197, 94, 0.12);
@@ -393,12 +393,12 @@ export function createFloatingPanelController(options = {}) {
     border-color: rgba(148, 163, 184, 0.55);
   }
   .retry-button {
-    background: rgba(96, 165, 250, 0.18);
-    color: rgb(147, 197, 253);
+    background: rgba(148, 163, 184, 0.18);
+    color: rgb(203, 213, 225);
   }
   .retry-button:hover {
-    background: rgba(96, 165, 250, 0.26);
-    color: rgb(191, 219, 254);
+    background: rgba(148, 163, 184, 0.26);
+    color: rgb(226, 232, 240);
   }
   .write-button {
     background: rgba(74, 222, 128, 0.18);

@@ -114,7 +114,7 @@ export function createFloatingButtonController(options = {}) {
   width: ${DEFAULT_BUTTON_SIZE}px;
   height: ${DEFAULT_BUTTON_SIZE}px;
   border-radius: 9999px;
-  background: rgb(37 99 235 / 0.95);
+  background: rgb(71 85 105 / 0.95);
   color: #fff;
   display: inline-flex;
   align-items: center;
@@ -126,10 +126,10 @@ export function createFloatingButtonController(options = {}) {
   transition: background 0.12s ease-out;
 }
 .floating-button:hover {
-  background: rgb(30 64 175 / 0.95);
+  background: rgb(51 65 85 / 0.95);
 }
 .floating-button:focus-visible {
-  outline: 2px solid #facc15;
+  outline: 2px solid rgba(71, 85, 105, 0.5);
   outline-offset: 2px;
 }
 `;
