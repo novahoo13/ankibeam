@@ -1,6 +1,6 @@
 // floating-button.js - フローティングボタンの管理
 
-const DEFAULT_BUTTON_SIZE = 44;
+const DEFAULT_BUTTON_SIZE = 20;
 const DEFAULT_GAP = 12;
 const DEFAULT_VIEWPORT_PADDING = 8;
 const SHOW_DELAY_MS = 120;
@@ -114,7 +114,7 @@ export function createFloatingButtonController(options = {}) {
   width: ${DEFAULT_BUTTON_SIZE}px;
   height: ${DEFAULT_BUTTON_SIZE}px;
   border-radius: 9999px;
-  background: rgb(71 85 105 / 0.95);
+  background: rgb(255 255 255 / 0.95);
   color: #fff;
   display: inline-flex;
   align-items: center;
@@ -124,9 +124,15 @@ export function createFloatingButtonController(options = {}) {
   cursor: pointer;
   box-shadow: 0 10px 25px rgba(15, 23, 42, 0.22);
   transition: background 0.12s ease-out;
+  padding: 8px;
 }
 .floating-button:hover {
-  background: rgb(51 65 85 / 0.95);
+  background: rgb(240 240 240 / 0.95);
+}
+.floating-button img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .floating-button:focus-visible {
   outline: 2px solid rgba(71, 85, 105, 0.5);
@@ -142,7 +148,12 @@ export function createFloatingButtonController(options = {}) {
     button.type = "button";
     button.className = "floating-button";
     button.setAttribute("aria-label", "Open floating assistant");
-    button.textContent = "AI";
+
+    // SVGアイコンの読み込み
+    const iconImg = documentRef.createElement("img");
+    iconImg.src = chrome.runtime.getURL("icons/ANKI.svg");
+    iconImg.alt = "Anki Assistant";
+    button.appendChild(iconImg);
 
     wrapper.appendChild(button);
     shadowRoot.append(style, wrapper);

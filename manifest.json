@@ -44,7 +44,8 @@
 				"utils/prompt-engine.js",
 				"utils/providers.config.js",
 				"utils/storage.js",
-				"_locales/*/messages.json"
+				"_locales/*/messages.json",
+				"icons/ANKI.svg"
 			],
 			"matches": ["<all_urls>"]
 		}
