@@ -957,6 +957,8 @@ export function createFloatingPanelController(options = {}) {
         message: reasonMessage,
       };
     }
+    // フィールド描画後に多言語化を更新
+    updateLocalization();
     return result;
   }
 
@@ -1110,6 +1112,74 @@ export function createFloatingPanelController(options = {}) {
     return shadowRoot;
   }
 
+  function updateLocalization() {
+    if (!shadowRoot) {
+      return;
+    }
+
+    // パネルタイトルを更新
+    const titleElement = shadowRoot.querySelector(".panel-title");
+    if (titleElement) {
+      titleElement.textContent = getText("popup_app_title", "Anki Word Assistant");
+    }
+
+    // 閉じるボタンのaria-labelを更新
+    const closeButton = shadowRoot.querySelector(".panel-close");
+    if (closeButton) {
+      closeButton.setAttribute(
+        "aria-label",
+        getText("floating_panel_close_label", "パネルを閉じる"),
+      );
+    }
+
+    // 再試行ボタンのテキストを更新
+    if (retryButton) {
+      retryButton.textContent = getText("floating_panel_retry_label", "再試行");
+    }
+
+    // 書き込みボタンのテキストを更新
+    if (writeButton) {
+      writeButton.textContent = getText("floating_panel_write_label", "Ankiに書き込む");
+    }
+
+    // 空の通知メッセージを更新
+    if (emptyNotice) {
+      emptyNotice.textContent = getText(
+        "popup_dynamic_fields_missing",
+        "当前未配置可填充的字段，请先在选项页完成字段配置。",
+      );
+    }
+
+    // Legacy モードのフィールドラベルを更新
+    if (currentFieldMode === "legacy" && fieldContainer) {
+      const frontLabel = fieldContainer.querySelector('label[for="front-input"]');
+      if (frontLabel) {
+        frontLabel.textContent = getText("cardFront", "正面:");
+      }
+      const backLabel = fieldContainer.querySelector('label[for="back-input"]');
+      if (backLabel) {
+        backLabel.textContent = getText("cardBack", "背面:");
+      }
+    }
+
+    // Dynamic モードのプレースホルダーを更新
+    if (currentFieldMode === "dynamic" && fieldContainer) {
+      const placeholder = getText(
+        "popup_dynamic_field_placeholder",
+        "AI将自动填充此字段...",
+      );
+      const textareas = fieldContainer.querySelectorAll(".field-textarea");
+      textareas.forEach((textarea) => {
+        textarea.placeholder = placeholder;
+      });
+    }
+
+    // 現在のステータスメッセージを更新（状態に応じて）
+    if (currentState !== STATE_IDLE) {
+      setStatus(currentState);
+    }
+  }
+
   function getDebugState() {
     return {
       visible,
@@ -1135,6 +1205,7 @@ export function createFloatingPanelController(options = {}) {
     collectFields,
     getFieldRoot,
     getDebugState,
+    updateLocalization,
     get config() {
       return currentConfig;
     },

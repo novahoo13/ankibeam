@@ -1618,6 +1618,18 @@
     "description": "浮動解析面板中的重試按鈕文字。",
     "message": "重試"
   },
+  "floating_panel_write_label": {
+    "description": "浮動解析面板中的寫入按鈕文字。",
+    "message": "寫入 Anki"
+  },
+  "cardFront": {
+    "description": "Legacy 模式正面欄位標籤。",
+    "message": "正面:"
+  },
+  "cardBack": {
+    "description": "Legacy 模式背面欄位標籤。",
+    "message": "背面:"
+  },
   "options_provider_test_status_error": {
     "description": "提供者連線測試失敗時的狀態訊息。",
     "message": "測試失敗：$ERROR$",

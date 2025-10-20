@@ -1705,6 +1705,18 @@
     "description": "悬浮解析面板中的重试按钮文本。",
     "message": "重试"
   },
+  "floating_panel_write_label": {
+    "description": "悬浮解析面板中的写入按钮文本。",
+    "message": "写入 Anki"
+  },
+  "cardFront": {
+    "description": "Legacy 模式正面字段标签。",
+    "message": "正面:"
+  },
+  "cardBack": {
+    "description": "Legacy 模式背面字段标签。",
+    "message": "背面:"
+  },
   "options_provider_test_status_error": {
     "description": "提供商测试失败时的状态文本。",
     "message": "测试失败：$ERROR$",

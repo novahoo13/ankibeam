@@ -436,6 +436,9 @@ async function initialize() {
     config = (await loadConfig()) || {};
     console.log(getText("popup_status_config_loaded", "用户配置加载完成:"), config);
 
+    // 重新本地化页面，确保静态元素使用用户配置的语言
+    localizePage();
+
     // 注册主要功能按钮的点击事件处理器
     document.getElementById("parse-btn").addEventListener("click", handleParse);
     document

@@ -1705,6 +1705,18 @@
     "description": "Retry button label shown inside the floating assistant panel.",
     "message": "Retry"
   },
+  "floating_panel_write_label": {
+    "description": "Write button label shown inside the floating assistant panel.",
+    "message": "Write to Anki"
+  },
+  "cardFront": {
+    "description": "Legacy mode front field label.",
+    "message": "Front:"
+  },
+  "cardBack": {
+    "description": "Legacy mode back field label.",
+    "message": "Back:"
+  },
   "options_provider_test_status_error": {
     "description": "Status message when a provider test fails.",
     "message": "Test failed: $ERROR$",
