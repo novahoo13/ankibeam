@@ -319,12 +319,41 @@ function createController(
       return;
     }
 
-    // 忽略在浮动助下面板内部的选择
+    // 忽略在浮动助手面板内部的选择
     if (result.kind === "ignored-floating-panel") {
+      logInfo("忽略面板内部的文本选择。", {
+        anchorTagName: result.anchorTagName,
+        focusTagName: result.focusTagName,
+      });
       return;
     }
 
     if (result.kind === "valid") {
+      // 额外防护: 如果 anchorTagName 或 focusTagName 是 HTML/BODY
+      // 且面板已打开，则可能是面板内部选择被误判为有效
+      // 此时不应触发 patchSelection，以避免位移
+      const isHtmlBodyTag =
+        result.anchorTagName === "HTML" ||
+        result.anchorTagName === "BODY" ||
+        result.focusTagName === "HTML" ||
+        result.focusTagName === "BODY";
+
+      const panelState =
+        floatingPanel && typeof floatingPanel.getDebugState === "function"
+          ? floatingPanel.getDebugState()
+          : null;
+      const isPanelOpen = panelState?.visible;
+
+      if (isHtmlBodyTag && isPanelOpen) {
+        // 面板已打开且选择节点是 HTML/BODY，非常可能是面板内选择
+        // 不触发任何操作，直接返回
+        logInfo("检测到可疑的 HTML/BODY 选择，面板已打开，忽略此选择。", {
+          anchorTagName: result.anchorTagName,
+          focusTagName: result.focusTagName,
+        });
+        return;
+      }
+
       // 有效选择
       if (floatingPanel) {
         // 更新面板中的选择信息

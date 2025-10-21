@@ -95,6 +95,53 @@ function isInsideFloatingAssistant(element) {
 }
 
 /**
+ * 检查一个矩形区域是否与浮动助手面板重叠。
+ * 用于检测Shadow DOM内部的选择（此时anchorNode可能是<html>）。
+ * @param {object} rect - 选择范围的矩形信息。
+ * @returns {boolean} 如果矩形与面板重叠，则返回 true。
+ */
+function isRectInsideFloatingPanel(rect) {
+  if (!rect) {
+    return false;
+  }
+
+  // 查找面板宿主元素
+  const panelHost = document.getElementById("anki-floating-assistant-panel-host");
+  if (!panelHost || !panelHost.shadowRoot) {
+    return false;
+  }
+
+  // 获取面板wrapper元素
+  const wrapper = panelHost.shadowRoot.querySelector(".panel-wrapper");
+  if (!wrapper) {
+    return false;
+  }
+
+  // 检查wrapper是否可见
+  if (wrapper.dataset.visible !== "true") {
+    return false;
+  }
+
+  // 获取面板的实际位置
+  const panel = wrapper.querySelector(".panel");
+  if (!panel) {
+    return false;
+  }
+
+  const panelRect = panel.getBoundingClientRect();
+
+  // 检查选择矩形是否在面板矩形范围内（允许一定误差）
+  const margin = 5; // 5px 误差范围
+  const isInside =
+    rect.left >= panelRect.left - margin &&
+    rect.right <= panelRect.right + margin &&
+    rect.top >= panelRect.top - margin &&
+    rect.bottom <= panelRect.bottom + margin;
+
+  return isInside;
+}
+
+/**
  * 根据选择范围（Range）构建一个包含位置和尺寸信息的矩形对象。
  * @param {Range} range - 文本选择的范围。
  * @returns {object|null} 返回一个 ClientRect 对象，如果范围无效则返回 null。
@@ -187,6 +234,27 @@ export function evaluateSelection(selection) {
 
   const range = selection.getRangeAt(0);
   const rect = buildClientRect(range);
+
+  // 特殊处理: 当 anchorNode 或 focusNode 是 HTML/BODY 时
+  // 这通常发生在 Shadow DOM 内部的选择
+  // 此时需要通过 rect 位置来判断是否在面板内
+  const anchorTag = anchorElement?.tagName;
+  const focusTag = focusElement?.tagName;
+  if (
+    (anchorTag === "HTML" || anchorTag === "BODY" ||
+     focusTag === "HTML" || focusTag === "BODY") &&
+    rect
+  ) {
+    // 检查选择矩形是否在面板范围内
+    if (isRectInsideFloatingPanel(rect)) {
+      return {
+        kind: "ignored-floating-panel",
+        text,
+        anchorTagName: anchorTag,
+        focusTagName: focusTag,
+      };
+    }
+  }
 
   // 返回有效的选择结果
   return {
