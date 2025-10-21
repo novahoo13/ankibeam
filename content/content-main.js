@@ -20,10 +20,10 @@ let addNote = null;
  */
 function logInfo(message, payload) {
   if (payload !== undefined) {
-    console.info(`${LOG_PREFIX} ${message}`, payload);
+    // console.info(`${LOG_PREFIX} ${message}`, payload);
     return;
   }
-  console.info(`${LOG_PREFIX} ${message}`);
+  // console.info(`${LOG_PREFIX} ${message}`);
 }
 
 /**
@@ -33,10 +33,10 @@ function logInfo(message, payload) {
  */
 function logWarn(message, payload) {
   if (payload !== undefined) {
-    console.warn(`${LOG_PREFIX} ${message}`, payload);
+    // console.warn(`${LOG_PREFIX} ${message}`, payload);
     return;
   }
-  console.warn(`${LOG_PREFIX} ${message}`);
+  // console.warn(`${LOG_PREFIX} ${message}`);
 }
 
 /**

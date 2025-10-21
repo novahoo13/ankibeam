@@ -434,7 +434,7 @@ async function initialize() {
   try {
     // 从chrome.storage加载用户配置，供全局使用
     config = (await loadConfig()) || {};
-    console.log(getText("popup_status_config_loaded", "用户配置加载完成:"), config);
+    // console.log(getText("popup_status_config_loaded", "用户配置加载完成:"), config);
 
     // 重新本地化页面，确保静态元素使用用户配置的语言
     localizePage();
@@ -583,7 +583,7 @@ async function handleWriteToAnki() {
 
     // 处理验证警告：显示提示但不阻止写入操作
     if (validation.warnings.length > 0) {
-      console.warn(getText("popup_status_validation_warning_header", "字段验证警告:"), validation.warnings);
+      // console.warn(getText("popup_status_validation_warning_header", "字段验证警告:"), validation.warnings);
       updateStatus(
         getText(
           "popup_status_validation_continue",
@@ -668,16 +668,16 @@ async function handleWriteToAnki() {
     };
 
     // 记录写入操作的详细信息用于调试
-    console.log(getText("popup_status_ready_to_write", "准备写入Anki:"), {
-      mode: isLegacy ? "legacy" : "dynamic",
-      totalFields: rawCollectResult.totalFields,
-      collectedFields: rawCollectResult.collectedFields,
-      finalFields: filledFieldCount,
-      payloadFields: payloadFieldCount,
-      validation: validation.isValid,
-      warnings: validation.warnings.length,
-      noteData,
-    });
+    // console.log(getText("popup_status_ready_to_write", "准备写入Anki:"), {
+    //   mode: isLegacy ? "legacy" : "dynamic",
+    //   totalFields: rawCollectResult.totalFields,
+    //   collectedFields: rawCollectResult.collectedFields,
+    //   finalFields: filledFieldCount,
+    //   payloadFields: payloadFieldCount,
+    //   validation: validation.isValid,
+    //   warnings: validation.warnings.length,
+    //   noteData,
+    // });
 
     // 调用AnkiConnect API执行实际写入操作
     const result = await addNote(noteData);
@@ -896,7 +896,7 @@ function fillDynamicFields(aiResult, fieldNames) {
       const element = document.getElementById(inputId);
 
       if (!element) {
-        console.warn(getText("popup_field_not_found", `找不到字段元素: ${inputId} (${fieldName})`, [inputId, fieldName]));
+        // console.warn(getText("popup_field_not_found", `找不到字段元素: ${inputId} (${fieldName})`, [inputId, fieldName]));
         missingElements.push(fieldName);
         return;
       }
@@ -955,7 +955,7 @@ function fillDynamicFields(aiResult, fieldNames) {
 
     // 添加特殊情况提示
     if (missingElements.length > 0) {
-      console.error(getText("popup_field_missing_dom_prefix", "缺失DOM元素:"), missingElements);
+      // console.error(getText("popup_field_missing_dom_prefix", "缺失DOM元素:"), missingElements);
       statusMessage += ` ${getText("popup_field_missing_dom_summary", `[${missingElements.length} 个元素缺失]`, [String(missingElements.length)])}`;
       statusType = "error";
     }
@@ -963,11 +963,11 @@ function fillDynamicFields(aiResult, fieldNames) {
     updateStatus(statusMessage, statusType);
 
     // 打印详细日志
-    console.log(getText("popup_dynamic_fill_complete", "动态字段填充完成:"), {
-      fillResult,
-      aiResult,
-      fieldNames,
-    });
+    // console.log(getText("popup_dynamic_fill_complete", "动态字段填充完成:"), {
+    //   fillResult,
+    //   aiResult,
+    //   fieldNames,
+    // });
 
     // 触发字段变化事件，供其他模块监听
     const event = new CustomEvent("dynamicFieldsFilled", {
@@ -977,7 +977,7 @@ function fillDynamicFields(aiResult, fieldNames) {
 
     return fillResult;
   } catch (error) {
-    console.error(getText("popup_dynamic_fill_error", "填充动态字段时发生错误:"), error);
+    // console.error(getText("popup_dynamic_fill_error", "填充动态字段时发生错误:"), error);
     updateStatus(getText("popup_field_fill_failed", `字段填充失败: ${error.message}`, [error.message]), "error");
 
     // 返回错误状态

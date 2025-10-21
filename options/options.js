@@ -13,9 +13,7 @@ import {
   getModelNames,
   getModelFieldNames,
 } from "../utils/ankiconnect.js";
-import {
-  testConnection as testAi,
-} from "../utils/ai-service.js";
+import { testConnection as testAi } from "../utils/ai-service.js";
 import {
   loadPromptForModel,
   savePromptForModel,
@@ -78,7 +76,7 @@ function resolveCurrentLanguageName(locale) {
         }
       }
     } catch (error) {
-      console.warn("Intl.DisplayNames failed:", error);
+      // console.warn("Intl.DisplayNames failed:", error);
     }
   }
 
@@ -89,7 +87,7 @@ function resolveCurrentLanguageName(locale) {
 const actualApiKeys = Object.create(null);
 const providerUiRegistry = new Map();
 const manifestHostPermissionSet = new Set(
-  getAllManifestHostPermissions() ?? [],
+  getAllManifestHostPermissions() ?? []
 );
 
 class PermissionRequestError extends Error {
@@ -98,8 +96,8 @@ class PermissionRequestError extends Error {
       getText(
         "options_permission_request_error",
         `Failed to request permission for ${origin}`,
-        [origin],
-      ),
+        [origin]
+      )
     );
     this.name = "PermissionRequestError";
     this.origin = origin;
@@ -258,7 +256,7 @@ async function ensureApiOriginsPermission(models) {
         continue;
       }
     } catch (error) {
-      console.warn('[options] 権限の確認に失敗しました:', error);
+      // console.warn('[options] 権限の確認に失敗しました:', error);
       throw new PermissionRequestError(origin, error);
     }
 
@@ -271,7 +269,7 @@ async function ensureApiOriginsPermission(models) {
       if (error instanceof PermissionRequestError) {
         throw error;
       }
-      console.warn('[options] 権限リクエストでエラーが発生しました:', error);
+      // console.warn('[options] 権限リクエストでエラーが発生しました:', error);
       throw new PermissionRequestError(origin, error);
     }
   }
@@ -362,8 +360,7 @@ function createProviderSection(provider, defaultModelState = {}) {
 
   const apiKeyLabel = document.createElement("label");
   apiKeyLabel.htmlFor = `${provider.id}-api-key`;
-  apiKeyLabel.className =
-    "block text-sm font-medium text-gray-700 mb-2";
+  apiKeyLabel.className = "block text-sm font-medium text-gray-700 mb-2";
   apiKeyLabel.textContent =
     provider.ui?.apiKeyLabel ?? `${provider.label} API Key`;
   apiKeyBlock.appendChild(apiKeyLabel);
@@ -432,8 +429,7 @@ function createProviderSection(provider, defaultModelState = {}) {
 
   const modelLabel = document.createElement("label");
   modelLabel.htmlFor = `${provider.id}-model-name`;
-  modelLabel.className =
-    "block text-sm font-medium text-gray-700 mb-2";
+  modelLabel.className = "block text-sm font-medium text-gray-700 mb-2";
   modelLabel.textContent = getText("options_label_model_name", "模型名称");
   modelBlock.appendChild(modelLabel);
 
@@ -451,14 +447,20 @@ function createProviderSection(provider, defaultModelState = {}) {
     "w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500";
   modelInput.dataset.provider = provider.id;
   modelInput.dataset.field = "modelName";
-  modelInput.value =
-    defaultModelState.modelName ?? provider.defaultModel ?? "";
+  modelInput.value = defaultModelState.modelName ?? provider.defaultModel ?? "";
   modelBlock.appendChild(modelInput);
 
-  if (Array.isArray(provider.supportedModels) && provider.supportedModels.length > 0) {
+  if (
+    Array.isArray(provider.supportedModels) &&
+    provider.supportedModels.length > 0
+  ) {
     const modelsHint = document.createElement("small");
     modelsHint.className = "text-xs text-gray-500 mt-1 block";
-    modelsHint.textContent = getText("options_hint_model_common", `常用模型：${provider.supportedModels.join("、")}`, [provider.supportedModels.join("、")]);
+    modelsHint.textContent = getText(
+      "options_hint_model_common",
+      `常用模型：${provider.supportedModels.join("、")}`,
+      [provider.supportedModels.join("、")]
+    );
     modelBlock.appendChild(modelsHint);
   }
 
@@ -467,8 +469,7 @@ function createProviderSection(provider, defaultModelState = {}) {
 
   const urlLabel = document.createElement("label");
   urlLabel.htmlFor = `${provider.id}-api-url`;
-  urlLabel.className =
-    "block text-sm font-medium text-gray-700 mb-2";
+  urlLabel.className = "block text-sm font-medium text-gray-700 mb-2";
   urlLabel.textContent = getText("options_label_api_url", "API 地址");
   urlBlock.appendChild(urlLabel);
 
@@ -476,9 +477,7 @@ function createProviderSection(provider, defaultModelState = {}) {
   apiUrlInput.type = "text";
   apiUrlInput.id = `${provider.id}-api-url`;
   apiUrlInput.placeholder =
-    defaultModelState.apiUrl ??
-    provider.api?.baseUrl ??
-    "https://";
+    defaultModelState.apiUrl ?? provider.api?.baseUrl ?? "https://";
   apiUrlInput.className =
     "w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500";
   apiUrlInput.dataset.provider = provider.id;
@@ -492,7 +491,7 @@ function createProviderSection(provider, defaultModelState = {}) {
     urlHint.textContent = getText(
       "options_provider_custom_url_hint",
       `Current URL: ${defaultModelState.apiUrl}`,
-      [defaultModelState.apiUrl],
+      [defaultModelState.apiUrl]
     );
     urlBlock.appendChild(urlHint);
   }
@@ -510,7 +509,7 @@ function createProviderSection(provider, defaultModelState = {}) {
   testButton.textContent = getText(
     "options_provider_test_button",
     `Test ${provider.label} connection`,
-    [provider.label],
+    [provider.label]
   );
   actionsRow.appendChild(testButton);
 
@@ -551,13 +550,15 @@ function setProviderFormState(providerId, modelState = {}) {
     return;
   }
 
-  const apiKey =
-    typeof modelState.apiKey === "string" ? modelState.apiKey : "";
+  const apiKey = typeof modelState.apiKey === "string" ? modelState.apiKey : "";
   actualApiKeys[providerId] = apiKey;
 
   entry.inputs.apiKey.type = "password";
   entry.inputs.apiKey.value = apiKey ? API_KEY_PLACEHOLDER : "";
-  entry.toggleButton.textContent = getText("options_button_toggle_show", "显示");
+  entry.toggleButton.textContent = getText(
+    "options_button_toggle_show",
+    "显示"
+  );
 
   entry.inputs.modelName.value =
     typeof modelState.modelName === "string" ? modelState.modelName : "";
@@ -889,7 +890,10 @@ function renderFieldSelection(fields) {
     if (configList) {
       configList.innerHTML = "";
     }
-    setPromptConfigStatus(getText("options_prompt_no_fields", "当前模板未返回任何字段。"), "info");
+    setPromptConfigStatus(
+      getText("options_prompt_no_fields", "当前模板未返回任何字段。"),
+      "info"
+    );
     return;
   }
 
@@ -911,7 +915,13 @@ function renderFieldSelection(fields) {
     .join("");
 
   if (promptEditorState.selectedFields.length === 0) {
-    setPromptConfigStatus(getText("options_prompt_select_fields", "请选择需要输出的字段，并补全字段内容。"), "info");
+    setPromptConfigStatus(
+      getText(
+        "options_prompt_select_fields",
+        "请选择需要输出的字段，并补全字段内容。"
+      ),
+      "info"
+    );
   }
 }
 
@@ -931,10 +941,7 @@ function renderFieldConfigForm() {
     return;
   }
 
-  const fieldLabelText = getText(
-    "options_prompt_field_label",
-    "字段内容"
-  );
+  const fieldLabelText = getText("options_prompt_field_label", "字段内容");
   const fieldPlaceholderText = getText(
     "options_prompt_field_placeholder",
     "描述该字段应包含的内容，例如输出结构、语气等要求"
@@ -1026,14 +1033,15 @@ function generateDefaultPrompt() {
     const content = (config.content || "").trim();
     const fieldDetail =
       content ||
-      getText("options_prompt_rule_field_fallback", "请生成与该字段相关的内容。");
+      getText(
+        "options_prompt_rule_field_fallback",
+        "请生成与该字段相关的内容。"
+      );
     lines.push(`${field}：${fieldDetail}`);
     lines.push("");
   });
 
-  lines.push(
-    getText("options_prompt_rule_output_format", "输出格式定义：")
-  );
+  lines.push(getText("options_prompt_rule_output_format", "输出格式定义："));
   lines.push(
     getText(
       "options_prompt_rule_output_json",
@@ -1156,7 +1164,10 @@ function validateFieldConfigurations(showStatus = false) {
         card.classList.add("border-red-300");
       }
       if (errorLabel) {
-        errorLabel.textContent = getText("options_prompt_error_field_required", "字段内容为必填项");
+        errorLabel.textContent = getText(
+          "options_prompt_error_field_required",
+          "字段内容为必填项"
+        );
       }
     } else {
       if (card) {
@@ -1173,7 +1184,13 @@ function validateFieldConfigurations(showStatus = false) {
 
   if (selectedFields.length === 0) {
     if (showStatus) {
-      setPromptConfigStatus(getText("options_prompt_error_select_fields", "请选择至少一个要输出的字段。"), "error");
+      setPromptConfigStatus(
+        getText(
+          "options_prompt_error_select_fields",
+          "请选择至少一个要输出的字段。"
+        ),
+        "error"
+      );
     }
     return { isValid: false, missingFields };
   }
@@ -1190,7 +1207,10 @@ function validateFieldConfigurations(showStatus = false) {
   }
 
   if (showStatus) {
-    setPromptConfigStatus(getText("options_prompt_status_ready", "字段配置已就绪。"), "success");
+    setPromptConfigStatus(
+      getText("options_prompt_status_ready", "字段配置已就绪。"),
+      "success"
+    );
     setTimeout(() => {
       setPromptConfigStatus("", "");
     }, 1500);
@@ -1235,10 +1255,19 @@ function handleResetPromptTemplate() {
 
   const generatedPrompt = (promptEditorState.lastGeneratedPrompt || "").trim();
   if (generatedPrompt) {
-    setPromptConfigStatus(getText("options_prompt_status_generated", "已根据当前字段配置生成默认 Prompt。"), "info");
+    setPromptConfigStatus(
+      getText(
+        "options_prompt_status_generated",
+        "已根据当前字段配置生成默认 Prompt。"
+      ),
+      "info"
+    );
   } else {
     setPromptConfigStatus(
-      getText("options_prompt_error_generate_first", "请先选择并配置字段，然后再生成默认 Prompt。"),
+      getText(
+        "options_prompt_error_generate_first",
+        "请先选择并配置字段，然后再生成默认 Prompt。"
+      ),
       "info"
     );
   }
@@ -1260,7 +1289,7 @@ function showPromptConfig(modelName, fields) {
   const modelHint = document.getElementById("prompt-model-hint");
 
   if (!editorContainer || !selectionList || !configList || !promptTextarea) {
-    console.warn('Prompt設定要素が見つかりません');
+    // console.warn('Prompt設定要素が見つかりません');
     return;
   }
 
@@ -1302,12 +1331,15 @@ function showPromptConfig(modelName, fields) {
     currentModelLabel.textContent = getText(
       "options_prompt_current_model_label",
       `当前模板：${modelName}`,
-      [modelName],
+      [modelName]
     );
   }
 
   if (modelHint) {
-    modelHint.textContent = getText("options_prompt_hint_save_usage", "提示：保存设置后将在 popup 中使用此 Prompt。");
+    modelHint.textContent = getText(
+      "options_prompt_hint_save_usage",
+      "提示：保存设置后将在 popup 中使用此 Prompt。"
+    );
   }
 
   renderFieldSelection(availableFields);
@@ -1343,7 +1375,7 @@ function hidePromptConfig() {
   const modelHint = document.getElementById("prompt-model-hint");
 
   if (!editorContainer || !selectionList || !configList || !promptTextarea) {
-    console.warn('Prompt設定要素が見つかりません');
+    // console.warn('Prompt設定要素が見つかりません');
     return;
   }
 
@@ -1355,7 +1387,10 @@ function hidePromptConfig() {
   promptEditorState.lastGeneratedPrompt = "";
 
   if (currentModelLabel) {
-    currentModelLabel.textContent = getText("options_prompt_current_model", "当前模板：未选择");
+    currentModelLabel.textContent = getText(
+      "options_prompt_current_model",
+      "当前模板：未选择"
+    );
   }
 
   if (modelHint) {
@@ -1449,15 +1484,18 @@ async function handleExportConfiguration() {
       "success"
     );
   } catch (error) {
-    console.error('設定のエクスポートに失敗しました:', error);
+    console.error("設定のエクスポートに失敗しました:", error);
     updateStatus(
       "save-status",
-      getText("options_export_status_failed", `配置导出失败: ${error.message}`, [error.message]),
+      getText(
+        "options_export_status_failed",
+        `配置导出失败: ${error.message}`,
+        [error.message]
+      ),
       "error"
     );
   }
 }
-
 
 /**
  * 导入配置文件
@@ -1481,15 +1519,21 @@ async function handleImportConfiguration(event) {
     try {
       importedConfig = JSON.parse(text);
     } catch (parseError) {
-      throw createI18nError("options_import_error_json_invalid", { fallback: "配置文件不是有效的 JSON" });
+      throw createI18nError("options_import_error_json_invalid", {
+        fallback: "配置文件不是有效的 JSON",
+      });
     }
 
     if (!importedConfig || typeof importedConfig !== "object") {
-      throw createI18nError("options_import_error_format_invalid", { fallback: "配置文件格式不正确" });
+      throw createI18nError("options_import_error_format_invalid", {
+        fallback: "配置文件格式不正确",
+      });
     }
 
     if (!importedConfig.aiConfig) {
-      throw createI18nError("options_import_error_missing_ai_config", { fallback: "配置文件缺少 aiConfig" });
+      throw createI18nError("options_import_error_missing_ai_config", {
+        fallback: "配置文件缺少 aiConfig",
+      });
     }
 
     const baseConfig = storageApi.getDefaultConfig();
@@ -1556,15 +1600,22 @@ async function handleImportConfiguration(event) {
     currentConfig = mergedConfig;
     updateStatus(
       "save-status",
-      getText("options_import_status_success", "配置导入成功，请重新配置 API 密钥"),
+      getText(
+        "options_import_status_success",
+        "配置导入成功，请重新配置 API 密钥"
+      ),
       "success"
     );
     setTimeout(() => window.location.reload(), 1000);
   } catch (error) {
-    console.error('設定のインポートに失敗しました:', error);
+    console.error("設定のインポートに失敗しました:", error);
     updateStatus(
       "save-status",
-      getText("options_import_status_failed", `配置导入失败: ${error.message}`, [error.message]),
+      getText(
+        "options_import_status_failed",
+        `配置导入失败: ${error.message}`,
+        [error.message]
+      ),
       "error"
     );
   } finally {
@@ -1580,10 +1631,7 @@ async function handleImportConfiguration(event) {
 async function handleResetConfiguration() {
   if (
     !confirm(
-      getText(
-        "options_reset_confirm",
-        "确定要重置所有配置吗？此操作不可撤销。"
-      )
+      getText("options_reset_confirm", "确定要重置所有配置吗？此操作不可撤销。")
     )
   ) {
     return;
@@ -1605,10 +1653,12 @@ async function handleResetConfiguration() {
     );
     setTimeout(() => window.location.reload(), 800);
   } catch (error) {
-    console.error('設定のリセットに失敗しました:', error);
+    console.error("設定のリセットに失敗しました:", error);
     updateStatus(
       "save-status",
-      getText("options_reset_status_failed", `重置配置失败: ${error.message}`, [error.message]),
+      getText("options_reset_status_failed", `重置配置失败: ${error.message}`, [
+        error.message,
+      ]),
       "error"
     );
   }
@@ -1685,7 +1735,9 @@ async function loadAndDisplayConfig() {
         ? savedLanguage
         : getLocale();
     const options = Array.from(languageSelect.options ?? []);
-    const hasMatch = options.some((option) => option.value === resolvedLanguage);
+    const hasMatch = options.some(
+      (option) => option.value === resolvedLanguage
+    );
     if (hasMatch) {
       languageSelect.value = resolvedLanguage;
     } else if (options.length > 0) {
@@ -1702,12 +1754,15 @@ async function loadAndDisplayConfig() {
     );
   }
 
-  const floatingAssistantCheckbox = document.getElementById("enable-floating-assistant");
+  const floatingAssistantCheckbox = document.getElementById(
+    "enable-floating-assistant"
+  );
   if (floatingAssistantCheckbox) {
-    floatingAssistantCheckbox.checked = config?.ui?.enableFloatingAssistant ?? true;
+    floatingAssistantCheckbox.checked =
+      config?.ui?.enableFloatingAssistant ?? true;
   }
 
-  console.info('設定の読み込みが完了しました。');
+  // console.info('設定の読み込みが完了しました。');
 }
 
 /**
@@ -1736,10 +1791,7 @@ async function handleSave() {
     return;
   }
 
-  if (
-    selectedState.apiUrl &&
-    !/^https?:\/\//i.test(selectedState.apiUrl)
-  ) {
+  if (selectedState.apiUrl && !/^https?:\/\//i.test(selectedState.apiUrl)) {
     updateStatus(
       "save-status",
       getText("options_error_invalid_api_url", "API 地址格式不正确"),
@@ -1830,8 +1882,7 @@ async function handleSave() {
     if (!providerUiRegistry.has(provider.id)) {
       return;
     }
-    const baseState =
-      currentConfig?.aiConfig?.models?.[provider.id] ?? {};
+    const baseState = currentConfig?.aiConfig?.models?.[provider.id] ?? {};
     const formState = collectProviderFormState(provider.id);
     const defaultModelState =
       defaultConfigSnapshot?.aiConfig?.models?.[provider.id] ?? {};
@@ -1845,10 +1896,7 @@ async function handleSave() {
         provider.defaultModel ||
         "",
       apiUrl:
-        formState.apiUrl ||
-        baseState.apiUrl ||
-        defaultModelState.apiUrl ||
-        "",
+        formState.apiUrl || baseState.apiUrl || defaultModelState.apiUrl || "",
     };
 
     if (!fallbackSet.has(provider.id)) {
@@ -1886,8 +1934,12 @@ async function handleSave() {
     lineHeight,
   };
 
-  const floatingAssistantCheckbox = document.getElementById("enable-floating-assistant");
-  const enableFloatingAssistant = floatingAssistantCheckbox ? floatingAssistantCheckbox.checked : true;
+  const floatingAssistantCheckbox = document.getElementById(
+    "enable-floating-assistant"
+  );
+  const enableFloatingAssistant = floatingAssistantCheckbox
+    ? floatingAssistantCheckbox.checked
+    : true;
 
   nextConfig.ui = {
     ...(nextConfig.ui ?? {}),
@@ -1911,11 +1963,7 @@ async function handleSave() {
       if (promptTextarea.value !== normalizedValue) {
         promptTextarea.value = normalizedValue;
       }
-      promptApi.savePromptForModel(
-        selectedModel,
-        normalizedValue,
-        nextConfig
-      );
+      promptApi.savePromptForModel(selectedModel, normalizedValue, nextConfig);
       promptValueForSelectedModel = normalizedValue;
     } else {
       promptApi.updatePromptConfigForModel(
@@ -1966,15 +2014,17 @@ async function handleSave() {
     }
   } catch (error) {
     if (error instanceof PermissionRequestError) {
-      console.warn('[options] ドメイン権限の要求が拒否されました:', error);
+      // console.warn('[options] ドメイン権限の要求が拒否されました:', error);
       updateStatus("save-status", error.message, "error");
       return;
     }
 
-    console.error('設定の保存でエラーが発生しました:', error);
+    console.error("設定の保存でエラーが発生しました:", error);
     updateStatus(
       "save-status",
-      getText("options_save_status_failed", `保存出错: ${error.message}`, [error.message]),
+      getText("options_save_status_failed", `保存出错: ${error.message}`, [
+        error.message,
+      ]),
       "error"
     );
   }
@@ -2008,7 +2058,7 @@ async function handleModelChange() {
     const fieldHeading = getText(
       "options_model_fields_heading",
       `模型字段 (${fieldCount}个):`,
-      [String(fieldCount)],
+      [String(fieldCount)]
     );
 
     container.innerHTML = `
@@ -2028,15 +2078,15 @@ async function handleModelChange() {
     const legacyHeading = getText("options_mode_legacy_heading", "🔄 兼容模式");
     const legacyDescription = getText(
       "options_mode_legacy_description",
-      "该模型字段数 ≤ 2，将使用传统的正面/背面模式。",
+      "该模型字段数 ≤ 2，将使用传统的正面/背面模式。"
     );
     const dynamicHeading = getText(
       "options_mode_dynamic_heading",
-      "✨ 动态字段模式",
+      "✨ 动态字段模式"
     );
     const dynamicDescription = getText(
       "options_mode_dynamic_description",
-      "该模型支持多字段，AI将自动填充所有字段。popup页面将根据字段名智能生成相应的输入区域。",
+      "该模型支持多字段，AI将自动填充所有字段。popup页面将根据字段名智能生成相应的输入区域。"
     );
 
     if (fieldCount <= 2) {
@@ -2061,7 +2111,7 @@ async function handleModelChange() {
     // 显示Prompt配置区域并加载对应模板的Prompt
     showPromptConfig(modelName, currentModelFields);
   } catch (error) {
-    console.error('フィールドの取得に失敗しました:', error);
+    console.error("フィールドの取得に失敗しました:", error);
     document.getElementById("field-mapping").style.display = "none";
     currentModelFields = []; // 清空
   }
@@ -2123,10 +2173,12 @@ async function handleTestAnki() {
       "success"
     );
   } catch (error) {
-    console.error('Anki 接続テストでエラーが発生しました:', error);
+    console.error("Anki 接続テストでエラーが発生しました:", error);
     updateStatus(
       "anki-status",
-      getText("options_error_fetch_anki_data", `连接错误: ${error.message}`, [error.message]),
+      getText("options_error_fetch_anki_data", `连接错误: ${error.message}`, [
+        error.message,
+      ]),
       "error"
     );
   }
@@ -2208,13 +2260,14 @@ async function handleTestProvider(providerId) {
     currentConfig.aiConfig.models[providerId] = nextState;
     updateProviderHealthMeta(providerId, nextState);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : String(error);
+    const message = error instanceof Error ? error.message : String(error);
     console.error(`${providerId} のテストに失敗しました:`, error);
     updateStatus(
       entry.statusEl.id,
-      getText("options_provider_test_status_error", `Test failed: ${message}`, [message]),
-      "error",
+      getText("options_provider_test_status_error", `Test failed: ${message}`, [
+        message,
+      ]),
+      "error"
     );
 
     const fallbackState = {
@@ -2250,7 +2303,7 @@ function populateSavedAnkiOptions(config) {
     deckPlaceholderOption.value = "";
     deckPlaceholderOption.textContent = getText(
       "options_default_deck_placeholder",
-      "Select a default deck",
+      "Select a default deck"
     );
     deckSelect.appendChild(deckPlaceholderOption);
     const deckOption = document.createElement("option");
@@ -2268,7 +2321,7 @@ function populateSavedAnkiOptions(config) {
     modelPlaceholderOption.value = "";
     modelPlaceholderOption.textContent = getText(
       "options_default_model_placeholder",
-      "Select a default model",
+      "Select a default model"
     );
     modelSelect.appendChild(modelPlaceholderOption);
     const modelOption = document.createElement("option");
@@ -2300,7 +2353,7 @@ function displaySavedModelInfo(modelName, modelFields) {
   const fieldHeading = getText(
     "options_model_fields_heading",
     `模型字段 (${fieldCount}个):`,
-    [String(fieldCount)],
+    [String(fieldCount)]
   );
 
   container.innerHTML = `
@@ -2320,15 +2373,15 @@ function displaySavedModelInfo(modelName, modelFields) {
   const legacyHeading = getText("options_mode_legacy_heading", "🔄 兼容模式");
   const legacyDescription = getText(
     "options_mode_legacy_description",
-    "该模型字段数 ≤ 2，将使用传统的正面/背面模式。",
+    "该模型字段数 ≤ 2，将使用传统的正面/背面模式。"
   );
   const dynamicHeading = getText(
     "options_mode_dynamic_heading",
-    "✨ 动态字段模式",
+    "✨ 动态字段模式"
   );
   const dynamicDescription = getText(
     "options_mode_dynamic_description",
-    "该模型支持多字段，AI将自动填充所有字段。popup页面将根据字段名智能生成相应的输入区域。",
+    "该模型支持多字段，AI将自动填充所有字段。popup页面将根据字段名智能生成相应的输入区域。"
   );
 
   if (fieldCount <= 2) {
@@ -2362,13 +2415,19 @@ async function loadAnkiData() {
     // 牌组
     const decksResult = await ankiApi.getDeckNames();
     if (decksResult.error) {
-      throw createI18nError("options_error_fetch_decks", { fallback: `读取牌组失败: ${decksResult.error}` , substitutions: [decksResult.error] });
+      throw createI18nError("options_error_fetch_decks", {
+        fallback: `读取牌组失败: ${decksResult.error}`,
+        substitutions: [decksResult.error],
+      });
     }
 
     // 模型
     const modelsResult = await ankiApi.getModelNames();
     if (modelsResult.error) {
-      throw createI18nError("options_error_fetch_models", { fallback: `读取模型失败: ${modelsResult.error}` , substitutions: [modelsResult.error] });
+      throw createI18nError("options_error_fetch_models", {
+        fallback: `读取模型失败: ${modelsResult.error}`,
+        substitutions: [modelsResult.error],
+      });
     }
 
     // 牌组下拉
@@ -2378,7 +2437,7 @@ async function loadAnkiData() {
     deckPlaceholderOption.value = "";
     deckPlaceholderOption.textContent = getText(
       "options_default_deck_placeholder",
-      "Select a default deck",
+      "Select a default deck"
     );
     deckSelect.appendChild(deckPlaceholderOption);
     decksResult.result.forEach((deck) => {
@@ -2395,7 +2454,7 @@ async function loadAnkiData() {
     modelPlaceholderOption.value = "";
     modelPlaceholderOption.textContent = getText(
       "options_default_model_placeholder",
-      "Select a default model",
+      "Select a default model"
     );
     modelSelect.appendChild(modelPlaceholderOption);
     modelsResult.result.forEach((model) => {
@@ -2405,10 +2464,12 @@ async function loadAnkiData() {
       modelSelect.appendChild(option);
     });
   } catch (error) {
-    console.error('Ankiデータの取得でエラーが発生しました:', error);
+    console.error("Ankiデータの取得でエラーが発生しました:", error);
     updateStatus(
       "anki-status",
-      getText("options_error_fetch_anki_data", `出错: ${error.message}`, [error.message]),
+      getText("options_error_fetch_anki_data", `出错: ${error.message}`, [
+        error.message,
+      ]),
       "error"
     );
   }
@@ -2517,7 +2578,6 @@ function initTabNavigation() {
   });
 }
 
-
 // ==================== 配置管理功能 ====================
 
 /**
@@ -2540,7 +2600,9 @@ async function handleImportConfigurationFile(event) {
 
     // 简单验证配置格式
     if (!importedConfig.version || !importedConfig.aiConfig) {
-      throw createI18nError("options_import_error_format_invalid", { fallback: "配置文件格式不正确" });
+      throw createI18nError("options_import_error_format_invalid", {
+        fallback: "配置文件格式不正确",
+      });
     }
 
     // 合并配置（保留当前的API密钥，避免明文导入）
@@ -2564,17 +2626,22 @@ async function handleImportConfigurationFile(event) {
     await storageApi.saveConfig(mergedConfig);
     updateStatus(
       "save-status",
-      getText("options_import_status_success", "配置导入成功，请重新配置API密钥"),
+      getText(
+        "options_import_status_success",
+        "配置导入成功，请重新配置API密钥"
+      ),
       "success"
     );
 
     // 重新加载页面配置
     setTimeout(() => window.location.reload(), 1500);
   } catch (error) {
-    console.error('設定のインポートに失敗しました:', error);
+    console.error("設定のインポートに失敗しました:", error);
     updateStatus(
       "save-status",
-      getText("options_import_status_failed", `导入失败: ${error.message}`, [error.message]),
+      getText("options_import_status_failed", `导入失败: ${error.message}`, [
+        error.message,
+      ]),
       "error"
     );
   }
@@ -2582,9 +2649,3 @@ async function handleImportConfigurationFile(event) {
   // 清空文件输入，允许重复导入相同文件
   event.target.value = "";
 }
-
-/**
- * 重置配置 - 使用现有的handleResetConfiguration函数
- */
-// 这个函数已经在文件中存在了，不需要重复定义
-
