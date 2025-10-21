@@ -1,23 +1,41 @@
-// floating-panel.js - フローティング解析パネルの管理
+// 文件名: floating-panel.js
+// 描述: 该文件负责管理悬浮式AI解析面板的创建、显示、状态管理和用户交互。
 
 import { translate } from "../utils/i18n.js";
 import { isLegacyMode } from "../utils/field-handler.js";
 
+// 日志前缀，用于控制台输出，方便调试。
 const LOG_PREFIX = "[floating-assistant/panel]";
 
-const PANEL_WIDTH = 360;
-const PANEL_MAX_HEIGHT = 420;
-const PANEL_GAP = 12;
-const PANEL_PADDING = 8;
+// 定义面板的尺寸和布局相关的常量。
+const PANEL_WIDTH = 360; // 面板宽度
+const PANEL_MAX_HEIGHT = 420; // 面板最大高度
+const PANEL_GAP = 12; // 面板与选中文本之间的间隙
+const PANEL_PADDING = 8; // 面板与视口边缘的内边距
 
-const STATE_IDLE = "idle";
-const STATE_LOADING = "loading";
-const STATE_READY = "ready";
-const STATE_ERROR = "error";
+// 定义面板的几种状态。
+const STATE_IDLE = "idle"; // 空闲状态
+const STATE_LOADING = "loading"; // 加载状态
+const STATE_READY = "ready"; // 准备就绪状态
+const STATE_ERROR = "error"; // 错误状态
 
+/**
+ * 获取国际化文本的辅助函数。
+ * @param {string} key - i18n消息的键。
+ * @param {string} fallback - 如果找不到键，则使用的备用文本。
+ * @param {Object} substitutions - 用于替换文本中占位符的变量。
+ * @returns {string} - 翻译后的文本。
+ */
 const getText = (key, fallback, substitutions) =>
   translate(key, { fallback, substitutions });
 
+/**
+ * 将一个值限制在指定的最小值和最大值之间。
+ * @param {number} value - 要限制的值。
+ * @param {number} min - 允许的最小值。
+ * @param {number} max - 允许的最大值。
+ * @returns {number} - 限制后的值。
+ */
 function clamp(value, min, max) {
   if (value < min) {
     return min;
@@ -28,6 +46,11 @@ function clamp(value, min, max) {
   return value;
 }
 
+/**
+ * 规范化字段列表，移除重复和无效的字段。
+ * @param {Array<string>} rawFields - 原始字段名数组。
+ * @returns {Array<string>} - 规范化后的字段名数组。
+ */
 function normalizeFieldList(rawFields) {
   if (!Array.isArray(rawFields)) {
     return [];
@@ -48,6 +71,11 @@ function normalizeFieldList(rawFields) {
   return normalized;
 }
 
+/**
+ * 根据配置选择当前应该使用的Anki模型名称。
+ * @param {object} config - 应用配置对象。
+ * @returns {string} - 选定的模型名称。
+ */
 function selectModelName(config) {
   const templates = config?.promptTemplates?.promptTemplatesByModel ?? {};
   const defaultModel = config?.ankiConfig?.defaultModel;
@@ -61,6 +89,12 @@ function selectModelName(config) {
   return defaultModel ?? "";
 }
 
+/**
+ * 解析并返回当前模型选定的字段列表。
+ * @param {object} config - 应用配置对象。
+ * @param {Array<string>} allFields - 当前模型的所有字段列表。
+ * @returns {Array<string>} - 筛选后的选定字段列表。
+ */
 function resolveSelectedFields(config, allFields) {
   const templates = config?.promptTemplates?.promptTemplatesByModel ?? {};
   const modelName = selectModelName(config);
@@ -75,6 +109,11 @@ function resolveSelectedFields(config, allFields) {
   return selected.filter((field) => allFields.includes(field));
 }
 
+/**
+ * 根据配置构建字段布局信息（传统模式或动态模式）。
+ * @param {object} config - 应用配置对象。
+ * @returns {{mode: string, fields: Array<string>}} - 字段布局信息。
+ */
 function buildFieldLayout(config) {
   const legacy = isLegacyMode(config);
   const allFields = normalizeFieldList(config?.ankiConfig?.modelFields ?? []);
@@ -91,6 +130,14 @@ function buildFieldLayout(config) {
   };
 }
 
+/**
+ * 创建一个带文本内容的HTML元素。
+ * @param {Document} documentRef - 文档对象引用。
+ * @param {string} tagName - 元素的标签名。
+ * @param {string} className - 元素的CSS类名。
+ * @param {string} textContent - 元素的文本内容。
+ * @returns {HTMLElement} - 创建的HTML元素。
+ */
 function createTextElement(documentRef, tagName, className, textContent) {
   const element = documentRef.createElement(tagName);
   if (className) {
@@ -102,6 +149,11 @@ function createTextElement(documentRef, tagName, className, textContent) {
   return element;
 }
 
+/**
+ * 创建并导出一个悬浮面板控制器实例。
+ * @param {object} options - 控制器选项，如window和document的引用。
+ * @returns {object} - 悬浮面板控制器API对象。
+ */
 export function createFloatingPanelController(options = {}) {
   const windowRef = options.windowRef ?? window;
   const documentRef = options.documentRef ?? document;
@@ -110,33 +162,39 @@ export function createFloatingPanelController(options = {}) {
     throw new Error("windowRef and documentRef are required");
   }
 
-  let host = null;
-  let shadowRoot = null;
-  let wrapper = null;
-  let panel = null;
-  let statusLabel = null;
-  let statusIcon = null;
-  let fieldContainer = null;
-  let emptyNotice = null;
-  let actionContainer = null;
-  let retryButton = null;
-  let writeButton = null;
-  let currentState = STATE_IDLE;
-  let visible = false;
-  let destroyed = false;
-  let listenersBound = false;
-  let currentSelection = null;
-  let currentConfig = null;
-  let currentFieldMode = "legacy";
-  let retryHandler = null;
-  let closeHandler = null;
-  let writeHandler = null;
+  // DOM元素和状态变量的引用
+  let host = null; // Shadow DOM的宿主元素
+  let shadowRoot = null; // Shadow DOM根节点
+  let wrapper = null; // 面板的包装器，用于定位和动画
+  let panel = null; // 面板主元素
+  let statusLabel = null; // 显示状态文本的标签
+  let statusIcon = null; // 显示状态图标（如加载中、成功、失败）
+  let fieldContainer = null; // 容纳所有字段输入的容器
+  let emptyNotice = null; // 当没有字段时显示的提示信息
+  let actionContainer = null; // 容纳操作按钮（如重试、写入）的容器
+  let retryButton = null; // 重试按钮
+  let writeButton = null; // 写入Anki按钮
+  let currentState = STATE_IDLE; // 当前面板状态
+  let visible = false; // 面板是否可见
+  let destroyed = false; // 控制器是否已被销毁
+  let listenersBound = false; // 全局事件监听器是否已绑定
+  let currentSelection = null; // 当前用户选择的文本及位置信息
+  let currentConfig = null; // 当前的应用配置
+  let currentFieldMode = "legacy"; // 当前字段模式（legacy或dynamic）
+  let retryHandler = null; // 重试操作的回调函数
+  let closeHandler = null; // 面板关闭时的回调函数
+  let writeHandler = null; // 写入Anki操作的回调函数
 
+  /**
+   * 确保面板所需的DOM结构已经创建并注入到页面中。
+   * 该函数是惰性执行的，只在首次需要时创建DOM。
+   */
   function ensureDom() {
     if (host) {
       return;
     }
 
+    // 创建Shadow DOM宿主
     host = documentRef.createElement("div");
     host.id = "anki-floating-assistant-panel-host";
     host.style.position = "fixed";
@@ -144,12 +202,13 @@ export function createFloatingPanelController(options = {}) {
     host.style.left = "0";
     host.style.width = "0";
     host.style.height = "0";
-    host.style.zIndex = "2147483647";
+    host.style.zIndex = "2147483647"; // 确保在最顶层
     host.style.pointerEvents = "none";
     host.style.display = "none";
 
     shadowRoot = host.attachShadow({ mode: "open" });
 
+    // 创建样式表并注入Shadow DOM
     const style = documentRef.createElement("style");
     style.textContent = `
 :host {
@@ -411,6 +470,7 @@ export function createFloatingPanelController(options = {}) {
 }
 `;
 
+    // 创建面板的各个组成部分
     wrapper = documentRef.createElement("div");
     wrapper.className = "panel-wrapper";
     wrapper.dataset.visible = "false";
@@ -428,7 +488,7 @@ export function createFloatingPanelController(options = {}) {
       documentRef,
       "div",
       "panel-title",
-      getText("popup_app_title", "Anki Word Assistant"),
+      getText("popup_app_title", "Anki Word Assistant")
     );
 
     const closeButton = documentRef.createElement("button");
@@ -436,7 +496,7 @@ export function createFloatingPanelController(options = {}) {
     closeButton.type = "button";
     closeButton.setAttribute(
       "aria-label",
-      getText("floating_panel_close_label", "パネルを閉じる"),
+      getText("floating_panel_close_label", "关闭面板")
     );
     closeButton.innerHTML = `
 <svg width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -461,12 +521,7 @@ export function createFloatingPanelController(options = {}) {
     statusIcon.className = "status-icon";
     statusIcon.dataset.kind = "spinner";
 
-    statusLabel = createTextElement(
-      documentRef,
-      "span",
-      "status-label",
-      "",
-    );
+    statusLabel = createTextElement(documentRef, "span", "status-label", "");
 
     status.appendChild(statusIcon);
     status.appendChild(statusLabel);
@@ -483,7 +538,7 @@ export function createFloatingPanelController(options = {}) {
     emptyNotice.hidden = true;
     emptyNotice.textContent = getText(
       "popup_dynamic_fields_missing",
-      "当前未配置可填充的字段，请先在选项页完成字段配置。",
+      "当前未配置可填充的字段，请先在选项页完成字段配置。"
     );
 
     body.appendChild(fieldContainer);
@@ -495,7 +550,7 @@ export function createFloatingPanelController(options = {}) {
     retryButton = documentRef.createElement("button");
     retryButton.type = "button";
     retryButton.className = "retry-button action-button";
-    retryButton.textContent = getText("floating_panel_retry_label", "再試行");
+    retryButton.textContent = getText("floating_panel_retry_label", "重试");
     retryButton.hidden = true;
     retryButton.addEventListener("click", () => {
       if (typeof retryHandler === "function") {
@@ -506,7 +561,7 @@ export function createFloatingPanelController(options = {}) {
     writeButton = documentRef.createElement("button");
     writeButton.type = "button";
     writeButton.className = "write-button action-button";
-    writeButton.textContent = getText("floating_panel_write_label", "Ankiに書き込む");
+    writeButton.textContent = getText("floating_panel_write_label", "写入Anki");
     writeButton.disabled = true;
     writeButton.hidden = false;
     writeButton.addEventListener("click", () => {
@@ -527,11 +582,16 @@ export function createFloatingPanelController(options = {}) {
 
     shadowRoot.append(style, wrapper);
 
+    // 监听键盘事件，用于处理Esc键关闭面板
     shadowRoot.addEventListener("keydown", handleKeyDown, true);
 
     documentRef.documentElement?.appendChild(host);
   }
 
+  /**
+   * 处理键盘按下事件，主要用于监听Escape键来关闭面板。
+   * @param {KeyboardEvent} event - 键盘事件对象。
+   */
   function handleKeyDown(event) {
     if (event.key === "Escape") {
       if (!visible) {
@@ -545,6 +605,9 @@ export function createFloatingPanelController(options = {}) {
     }
   }
 
+  /**
+   * 绑定全局事件监听器，如滚动、窗口大小调整和点击事件。
+   */
   function bindGlobalListeners() {
     if (listenersBound) {
       return;
@@ -555,6 +618,9 @@ export function createFloatingPanelController(options = {}) {
     listenersBound = true;
   }
 
+  /**
+   * 解绑全局事件监听器。
+   */
   function unbindGlobalListeners() {
     if (!listenersBound) {
       return;
@@ -565,6 +631,9 @@ export function createFloatingPanelController(options = {}) {
     listenersBound = false;
   }
 
+  /**
+   * 处理滚动或窗口大小调整事件，用于实时更新面板位置。
+   */
   function handleViewportChange() {
     if (!visible) {
       return;
@@ -576,11 +645,16 @@ export function createFloatingPanelController(options = {}) {
     updatePosition(currentSelection.rect);
   }
 
+  /**
+   * 处理页面上的点击事件，如果点击发生在面板外部，则关闭面板。
+   * @param {PointerEvent} event - 指针事件对象。
+   */
   function handlePointerDown(event) {
     if (!visible) {
       return;
     }
-    const path = typeof event.composedPath === "function" ? event.composedPath() : [];
+    const path =
+      typeof event.composedPath === "function" ? event.composedPath() : [];
     if (path.includes(host) || path.includes(panel)) {
       return;
     }
@@ -590,6 +664,10 @@ export function createFloatingPanelController(options = {}) {
     }
   }
 
+  /**
+   * 测量面板的实际渲染尺寸。
+   * @returns {{width: number, height: number}} - 面板的宽度和高度。
+   */
   function measurePanelSize() {
     if (!panel) {
       return { width: PANEL_WIDTH, height: PANEL_MAX_HEIGHT };
@@ -609,6 +687,10 @@ export function createFloatingPanelController(options = {}) {
     return { width, height };
   }
 
+  /**
+   * 根据用户选择的文本矩形区域，计算并更新面板的位置。
+   * @param {DOMRect} rect - 用户选择文本的矩形区域。
+   */
   function updatePosition(rect) {
     if (!wrapper || !panel || !rect) {
       return;
@@ -629,16 +711,27 @@ export function createFloatingPanelController(options = {}) {
     let x = clamp(preferredX, padding, viewport.width - padding - size.width);
     let y = preferredY;
 
+    // 如果面板在下方超出视口，尝试在上方显示
     if (preferredY + size.height > viewport.height - padding) {
       const flippedY = rect.top - gap - size.height;
-      y = flippedY >= padding ? flippedY : viewport.height - padding - size.height;
+      y =
+        flippedY >= padding
+          ? flippedY
+          : viewport.height - padding - size.height;
     }
 
     y = clamp(y, padding, viewport.height - padding - size.height);
 
-    wrapper.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0)`;
+    wrapper.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(
+      y
+    )}px, 0)`;
   }
 
+  /**
+   * 设置面板的状态，并更新UI（图标和状态文本）。
+   * @param {string} nextState - 新的状态（如 'loading', 'ready', 'error'）。
+   * @param {object} options - 附加选项，如自定义消息和是否允许重试。
+   */
   function setStatus(nextState, options = {}) {
     currentState = nextState;
     if (!statusLabel || !statusIcon) {
@@ -651,13 +744,18 @@ export function createFloatingPanelController(options = {}) {
 
     if (nextState === STATE_LOADING) {
       statusIcon.dataset.kind = "spinner";
-      statusLabel.textContent = message ?? getText("popup_status_parsing", "正在解析选中的内容...");
+      statusLabel.textContent =
+        message ?? getText("popup_status_parsing", "正在解析选中的内容...");
     } else if (nextState === STATE_READY) {
       statusIcon.dataset.kind = "success";
-      statusLabel.textContent = message ?? getText("popup_status_ready_to_write", "解析完成，可以继续编辑字段。");
+      statusLabel.textContent =
+        message ??
+        getText("popup_status_ready_to_write", "解析完成，可以继续编辑字段。");
     } else if (nextState === STATE_ERROR) {
       statusIcon.dataset.kind = "error";
-      statusLabel.textContent = message ?? getText("popup_error_generic", "解析时出现错误，请稍后重试。");
+      statusLabel.textContent =
+        message ??
+        getText("popup_error_generic", "解析时出现错误，请稍后重试。");
     } else {
       statusIcon.dataset.kind = "spinner";
       statusLabel.textContent = "";
@@ -668,6 +766,9 @@ export function createFloatingPanelController(options = {}) {
     }
   }
 
+  /**
+   * 渲染传统的"正面"和"背面"字段。
+   */
   function renderLegacyFields() {
     if (!fieldContainer) {
       return;
@@ -722,6 +823,10 @@ export function createFloatingPanelController(options = {}) {
     emptyNotice.hidden = true;
   }
 
+  /**
+   * 根据配置动态渲染字段。
+   * @param {Array<string>} fieldNames - 要渲染的字段名称列表。
+   */
   function renderDynamicFields(fieldNames) {
     if (!fieldContainer) {
       return;
@@ -733,7 +838,7 @@ export function createFloatingPanelController(options = {}) {
       emptyNotice.hidden = false;
       emptyNotice.textContent = getText(
         "popup_dynamic_fields_missing",
-        "当前未配置可填充的字段，请先在选项页完成字段配置。",
+        "当前未配置可填充的字段，请先在选项页完成字段配置。"
       );
       return;
     }
@@ -742,7 +847,7 @@ export function createFloatingPanelController(options = {}) {
 
     const placeholder = getText(
       "popup_dynamic_field_placeholder",
-      "AI将自动填充此字段...",
+      "AI将自动填充此字段..."
     );
 
     fieldNames.forEach((fieldName, index) => {
@@ -771,6 +876,10 @@ export function createFloatingPanelController(options = {}) {
     });
   }
 
+  /**
+   * 自动调整文本区域的高度以适应其内容。
+   * @param {HTMLTextAreaElement} textarea - 文本区域元素。
+   */
   function autoResize(textarea) {
     if (!textarea) {
       return;
@@ -780,6 +889,9 @@ export function createFloatingPanelController(options = {}) {
     textarea.style.height = `${next}px`;
   }
 
+  /**
+   * 将焦点设置到面板中的第一个输入字段。
+   */
   function focusFirstField() {
     if (!fieldContainer) {
       return;
@@ -796,6 +908,10 @@ export function createFloatingPanelController(options = {}) {
     }
   }
 
+  /**
+   * 显示悬浮面板。
+   * @param {object} selection - 用户选择的文本信息，包含位置矩形。
+   */
   function show(selection) {
     ensureDom();
     if (!host || !wrapper || !panel) {
@@ -809,8 +925,8 @@ export function createFloatingPanelController(options = {}) {
     wrapper.dataset.visible = "true";
     visible = true;
 
-    // パネルを開くクリックイベントがグローバルリスナーに伝播しないよう、
-    // リスナーのバインドを次のマイクロタスクまで遅延させます
+    // 为了防止打开面板的点击事件传播到全局监听器，
+    // 将监听器的绑定延迟到下一个微任务。
     windowRef.setTimeout(() => {
       if (visible) {
         bindGlobalListeners();
@@ -821,6 +937,10 @@ export function createFloatingPanelController(options = {}) {
     panel.focus();
   }
 
+  /**
+   * 隐藏悬浮面板。
+   * @param {boolean} immediate - 是否立即隐藏，无动画效果。
+   */
   function hide(immediate = false) {
     if (!host || !wrapper) {
       return;
@@ -830,6 +950,7 @@ export function createFloatingPanelController(options = {}) {
     if (immediate) {
       host.style.display = "none";
     } else {
+      // 等待动画结束后再隐藏host，以避免闪烁
       windowRef.setTimeout(() => {
         if (!visible) {
           host.style.display = "none";
@@ -845,6 +966,9 @@ export function createFloatingPanelController(options = {}) {
     unbindGlobalListeners();
   }
 
+  /**
+   * 销毁面板和控制器，清理所有DOM和事件监听器。
+   */
   function destroy() {
     if (destroyed) {
       return;
@@ -857,6 +981,7 @@ export function createFloatingPanelController(options = {}) {
     if (host?.isConnected) {
       host.remove();
     }
+    // 清理所有引用
     host = null;
     shadowRoot = null;
     wrapper = null;
@@ -872,6 +997,11 @@ export function createFloatingPanelController(options = {}) {
     currentSelection = null;
   }
 
+  /**
+   * 显示加载状态的面板。
+   * @param {object} selection - 用户选择信息。
+   * @param {object} options - 状态选项。
+   */
   function showLoading(selection, options = {}) {
     show(selection);
     setStatus(STATE_LOADING, options);
@@ -880,6 +1010,10 @@ export function createFloatingPanelController(options = {}) {
     }
   }
 
+  /**
+   * 显示准备就绪状态的面板。
+   * @param {object} options - 状态选项。
+   */
   function showReady(options = {}) {
     if (!visible) {
       return;
@@ -891,6 +1025,10 @@ export function createFloatingPanelController(options = {}) {
     focusFirstField();
   }
 
+  /**
+   * 显示错误状态的面板。
+   * @param {object} options - 状态选项，如错误消息和是否允许重试。
+   */
   function showError(options = {}) {
     if (!visible) {
       return;
@@ -901,6 +1039,11 @@ export function createFloatingPanelController(options = {}) {
     });
   }
 
+  /**
+   * 根据提供的配置渲染字段布局。
+   * @param {object} config - 应用配置对象。
+   * @returns {{mode: string, hasFields: boolean, message: string|null}} - 渲染结果。
+   */
   function renderFieldsFromConfig(config) {
     ensureDom();
     currentConfig = config ?? null;
@@ -932,7 +1075,7 @@ export function createFloatingPanelController(options = {}) {
         emptyNotice.hidden = false;
         reasonMessage = getText(
           "popup_dynamic_fields_missing",
-          "当前未配置可填充的字段，请先在选项页完成字段配置。",
+          "当前未配置可填充的字段，请先在选项页完成字段配置。"
         );
         emptyNotice.textContent = reasonMessage;
         result = {
@@ -942,13 +1085,13 @@ export function createFloatingPanelController(options = {}) {
         };
       }
     } catch (error) {
-      console.error(`${LOG_PREFIX} フィールド描画中にエラーが発生しました。`, error);
+      console.error(`${LOG_PREFIX} 渲染字段时发生错误。`, error);
       currentFieldMode = "dynamic";
       fieldContainer.innerHTML = "";
       emptyNotice.hidden = false;
       reasonMessage = getText(
         "popup_error_field_generic",
-        "字段渲染时出现问题，请检查配置。",
+        "字段渲染时出现问题，请检查配置。"
       );
       emptyNotice.textContent = reasonMessage;
       result = {
@@ -957,11 +1100,15 @@ export function createFloatingPanelController(options = {}) {
         message: reasonMessage,
       };
     }
-    // フィールド描画後に多言語化を更新
+    // 字段渲染后更新国际化文本
     updateLocalization();
     return result;
   }
 
+  /**
+   * 将AI解析出的值填充到对应的字段输入框中。
+   * @param {object} values - 包含字段名和值的对象。
+   */
   function applyFieldValues(values) {
     if (!values || typeof values !== "object") {
       return;
@@ -991,7 +1138,7 @@ export function createFloatingPanelController(options = {}) {
           ? CSS.escape(fieldName)
           : String(fieldName).replace(/[^a-zA-Z0-9_-]/g, "_");
       const target = fieldContainer.querySelector(
-        `[data-field-name="${escaped}"]`,
+        `[data-field-name="${escaped}"]`
       );
       if (target) {
         target.value = String(value ?? "");
@@ -1000,6 +1147,10 @@ export function createFloatingPanelController(options = {}) {
     }
   }
 
+  /**
+   * 当用户选择的文本发生变化时，更新面板状态或位置。
+   * @param {object} selection - 新的用户选择信息。
+   */
   function patchSelection(selection) {
     if (!selection) {
       hide(true);
@@ -1011,10 +1162,16 @@ export function createFloatingPanelController(options = {}) {
     const previousSignature = currentSelection?.signature;
     currentSelection = selection;
 
-    // パネルが loading または ready 状態の時は、選択範囲の変更でパネルを閉じない
-    // ユーザーがテキストを選択している間にパネルが消えないようにする
-    const isWorkingState = currentState === STATE_LOADING || currentState === STATE_READY;
-    if (!isWorkingState && previousSignature && selection.signature && previousSignature !== selection.signature) {
+    // 当面板处于加载或就绪状态时，选择范围的改变不应关闭面板，
+    // 以防止用户在选择文本时面板消失。
+    const isWorkingState =
+      currentState === STATE_LOADING || currentState === STATE_READY;
+    if (
+      !isWorkingState &&
+      previousSignature &&
+      selection.signature &&
+      previousSignature !== selection.signature
+    ) {
       hide(true);
       return;
     }
@@ -1026,6 +1183,10 @@ export function createFloatingPanelController(options = {}) {
     updatePosition(selection.rect);
   }
 
+  /**
+   * 设置重试操作的回调函数。
+   * @param {Function} handler - 回调函数。
+   */
   function setRetryHandler(handler) {
     if (handler && typeof handler !== "function") {
       throw new TypeError("retry handler must be a function");
@@ -1033,6 +1194,10 @@ export function createFloatingPanelController(options = {}) {
     retryHandler = handler ?? null;
   }
 
+  /**
+   * 设置面板关闭的回调函数。
+   * @param {Function} handler - 回调函数。
+   */
   function setCloseHandler(handler) {
     if (handler && typeof handler !== "function") {
       throw new TypeError("close handler must be a function");
@@ -1040,6 +1205,10 @@ export function createFloatingPanelController(options = {}) {
     closeHandler = handler ?? null;
   }
 
+  /**
+   * 设置写入Anki操作的回调函数。
+   * @param {Function} handler - 回调函数。
+   */
   function setWriteHandler(handler) {
     if (handler && typeof handler !== "function") {
       throw new TypeError("write handler must be a function");
@@ -1047,17 +1216,21 @@ export function createFloatingPanelController(options = {}) {
     writeHandler = handler ?? null;
   }
 
+  /**
+   * 收集面板中所有字段的当前值。
+   * @returns {{fields: object, collectedFields: Array<string>, emptyFields: Array<string>, mode: string}} - 收集到的字段数据。
+   */
   function collectFields() {
     const fields = {};
     const collectedFields = [];
     const emptyFields = [];
 
     if (!fieldContainer || !shadowRoot) {
-      throw new Error("フィールドコンテナが初期化されていません。");
+      throw new Error("字段容器未初始化。");
     }
 
     if (currentFieldMode === "legacy") {
-      // Legacy mode: Front and Back
+      // 传统模式：正面和背面
       const frontElem = shadowRoot.getElementById("front-input");
       const backElem = shadowRoot.getElementById("back-input");
 
@@ -1083,8 +1256,10 @@ export function createFloatingPanelController(options = {}) {
         emptyFields.push(backFieldName);
       }
     } else {
-      // Dynamic mode
-      const textareas = fieldContainer.querySelectorAll("textarea[data-field-name]");
+      // 动态模式
+      const textareas = fieldContainer.querySelectorAll(
+        "textarea[data-field-name]"
+      );
       textareas.forEach((textarea) => {
         const fieldName = textarea.getAttribute("data-field-name");
         if (!fieldName) return;
@@ -1108,51 +1283,66 @@ export function createFloatingPanelController(options = {}) {
     };
   }
 
+  /**
+   * 获取Shadow DOM的根节点，用于外部访问。
+   * @returns {ShadowRoot} - Shadow DOM根节点。
+   */
   function getFieldRoot() {
     return shadowRoot;
   }
 
+  /**
+   * 更新面板UI上的所有国际化（i18n）文本。
+   */
   function updateLocalization() {
     if (!shadowRoot) {
       return;
     }
 
-    // パネルタイトルを更新
+    // 更新面板标题
     const titleElement = shadowRoot.querySelector(".panel-title");
     if (titleElement) {
-      titleElement.textContent = getText("popup_app_title", "Anki Word Assistant");
+      titleElement.textContent = getText(
+        "popup_app_title",
+        "Anki Word Assistant"
+      );
     }
 
-    // 閉じるボタンのaria-labelを更新
+    // 更新关闭按钮的aria-label
     const closeButton = shadowRoot.querySelector(".panel-close");
     if (closeButton) {
       closeButton.setAttribute(
         "aria-label",
-        getText("floating_panel_close_label", "パネルを閉じる"),
+        getText("floating_panel_close_label", "关闭面板")
       );
     }
 
-    // 再試行ボタンのテキストを更新
+    // 更新重试按钮的文本
     if (retryButton) {
-      retryButton.textContent = getText("floating_panel_retry_label", "再試行");
+      retryButton.textContent = getText("floating_panel_retry_label", "重试");
     }
 
-    // 書き込みボタンのテキストを更新
+    // 更新写入按钮的文本
     if (writeButton) {
-      writeButton.textContent = getText("floating_panel_write_label", "Ankiに書き込む");
+      writeButton.textContent = getText(
+        "floating_panel_write_label",
+        "写入Anki"
+      );
     }
 
-    // 空の通知メッセージを更新
+    // 更新空字段提示消息
     if (emptyNotice) {
       emptyNotice.textContent = getText(
         "popup_dynamic_fields_missing",
-        "当前未配置可填充的字段，请先在选项页完成字段配置。",
+        "当前未配置可填充的字段，请先在选项页完成字段配置。"
       );
     }
 
-    // Legacy モードのフィールドラベルを更新
+    // 更新传统模式的字段标签
     if (currentFieldMode === "legacy" && fieldContainer) {
-      const frontLabel = fieldContainer.querySelector('label[for="front-input"]');
+      const frontLabel = fieldContainer.querySelector(
+        'label[for="front-input"]'
+      );
       if (frontLabel) {
         frontLabel.textContent = getText("cardFront", "正面:");
       }
@@ -1162,11 +1352,11 @@ export function createFloatingPanelController(options = {}) {
       }
     }
 
-    // Dynamic モードのプレースホルダーを更新
+    // 更新动态模式的占位符文本
     if (currentFieldMode === "dynamic" && fieldContainer) {
       const placeholder = getText(
         "popup_dynamic_field_placeholder",
-        "AI将自动填充此字段...",
+        "AI将自动填充此字段..."
       );
       const textareas = fieldContainer.querySelectorAll(".field-textarea");
       textareas.forEach((textarea) => {
@@ -1174,12 +1364,16 @@ export function createFloatingPanelController(options = {}) {
       });
     }
 
-    // 現在のステータスメッセージを更新（状態に応じて）
+    // 根据当前状态更新状态消息
     if (currentState !== STATE_IDLE) {
       setStatus(currentState);
     }
   }
 
+  /**
+   * 获取用于调试的当前面板状态信息。
+   * @returns {object} - 调试状态对象。
+   */
   function getDebugState() {
     return {
       visible,
@@ -1190,6 +1384,7 @@ export function createFloatingPanelController(options = {}) {
     };
   }
 
+  // 返回公共API
   return {
     showLoading,
     showReady,
