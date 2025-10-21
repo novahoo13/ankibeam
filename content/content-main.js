@@ -510,7 +510,29 @@ function createController(
   }
 
   /**
+   * 内容样式包装器
+   * 将纯文本内容转换为带样式的HTML，用于在Anki中显示
+   * 与popup.js的wrapContentWithStyle保持一致
+   * @param {string} content - 原始文本内容
+   * @returns {string} 包装后的HTML字符串
+   */
+  function wrapContentWithStyle(content) {
+    // 从配置中获取样式
+    const styleConfig = currentConfig?.styleConfig || {};
+    const fontSize = styleConfig.fontSize || "14px";
+    const textAlign = styleConfig.textAlign || "left";
+    const lineHeight = styleConfig.lineHeight || "1.4";
+
+    // 将换行符转换成 <br>
+    const contentWithBreaks = content.replace(/\n/g, "<br>");
+
+    // 包装后返回
+    return `<div style="font-size: ${fontSize}; text-align: ${textAlign}; line-height: ${lineHeight};">${contentWithBreaks}</div>`;
+  }
+
+  /**
    * 处理将笔记写入Anki的逻辑
+   * 与popup.js的handleWriteToAnki保持完全一致的处理流程
    */
   async function handleAnkiWrite() {
     if (!floatingPanel) {
@@ -518,17 +540,52 @@ function createController(
     }
 
     try {
-      // 从面板收集字段数据
-      const collected = floatingPanel.collectFields();
-      logInfo("字段收集完成", collected);
+      // 第一步：从面板收集字段原始内容用于验证（不带HTML样式）
+      const rawCollected = floatingPanel.collectFields();
+      logInfo("字段收集完成（原始内容）", {
+        mode: rawCollected.mode,
+        collectedFields: rawCollected.collectedFields,
+        emptyFields: rawCollected.emptyFields,
+      });
 
-      const isLegacy = collected.mode === "legacy";
+      const isLegacyMode = rawCollected.mode === "legacy";
 
-      // 验证字段数据
-      const validation = validateFields(collected.fields, isLegacy);
+      // 准备字段配置：根据模式确定要写入的字段列表
+      const modelFields = currentConfig?.ankiConfig?.modelFields;
+      const { selectedFields, allFields } = getActivePromptSetup();
+      const dynamicFields =
+        selectedFields && selectedFields.length > 0
+          ? selectedFields
+          : Array.isArray(modelFields) && !isLegacyMode
+          ? modelFields
+          : allFields;
 
+      // Dynamic模式必须有字段配置，否则无法写入
+      if (!isLegacyMode && (!dynamicFields || dynamicFields.length === 0)) {
+        floatingPanel.showError({
+          message: "当前模板未配置可写入的字段，请在选项页完成设置。",
+          allowRetry: false,
+        });
+        return;
+      }
+
+      // 确定最终要处理的字段列表
+      const targetFields = isLegacyMode ? modelFields : dynamicFields;
+
+      // 第二步：验证字段内容的完整性和有效性
+      const validation = validateFields(
+        rawCollected.fields,
+        isLegacyMode,
+        rawCollected
+      );
+
+      // 验证失败时显示详细错误信息并终止写入
       if (!validation.isValid) {
-        const errorMessage = validation.message || "字段验证失败。";
+        let errorMessage = validation.message;
+        if (validation.warnings.length > 0) {
+          const warningsText = validation.warnings.join(", ");
+          errorMessage += `\n警告: ${warningsText}`;
+        }
         floatingPanel.showError({
           message: errorMessage,
           allowRetry: false,
@@ -536,26 +593,104 @@ function createController(
         return;
       }
 
+      // 处理验证警告：显示提示但不阻止写入操作
+      if (validation.warnings.length > 0) {
+        logWarn("字段验证警告:", validation.warnings);
+        floatingPanel.showLoading(currentSelection, {
+          message: `${validation.message}，继续写入...`,
+        });
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+
+      // 第三步：应用样式包装到字段内容
+      const fields = {};
+
+      if (isLegacyMode) {
+        // Legacy模式：处理传统的双字段结构（正面/背面）
+        const fieldNames =
+          modelFields && modelFields.length >= 2
+            ? modelFields
+            : ["Front", "Back"];
+
+        // 应用样式包装并只包含非空字段到最终数据中
+        Object.keys(rawCollected.fields).forEach((fieldName) => {
+          const rawValue = rawCollected.fields[fieldName];
+          if (rawValue && rawValue.trim()) {
+            fields[fieldName] = wrapContentWithStyle(rawValue);
+          }
+        });
+
+        // 确保至少有字段名的键存在
+        if (!(fieldNames[0] in fields)) {
+          fields[fieldNames[0]] = rawCollected.fields[fieldNames[0]] || "";
+        }
+        if (!(fieldNames[1] in fields)) {
+          fields[fieldNames[1]] = rawCollected.fields[fieldNames[1]] || "";
+        }
+      } else {
+        // Dynamic模式：处理用户自定义的多字段结构
+        Object.keys(rawCollected.fields).forEach((fieldName) => {
+          const rawValue = rawCollected.fields[fieldName];
+
+          // 基于原始值判断是否有内容，避免HTML标签干扰
+          if (rawValue && rawValue.trim()) {
+            fields[fieldName] = wrapContentWithStyle(rawValue);
+          }
+        });
+
+        // 为Anki模型的所有字段提供空值，防止缺失字段错误
+        (allFields || []).forEach((fieldName) => {
+          if (!(fieldName in fields)) {
+            fields[fieldName] = "";
+          }
+        });
+      }
+
+      // 最终验证：确保有实际内容可以写入Anki
+      const filledFieldCount = Object.values(fields).filter(
+        (value) => typeof value === "string" && value.trim()
+      ).length;
+      const payloadFieldCount = Object.keys(fields).length;
+
+      if (filledFieldCount === 0) {
+        floatingPanel.showError({
+          message: "没有可写入的字段内容",
+          allowRetry: false,
+        });
+        return;
+      }
+
       // 显示写入状态
       floatingPanel.showLoading(currentSelection, {
-        message: "正在写入Anki...",
+        message: "正在写入 Anki...",
       });
 
-      // 准备写入Anki的数据
+      // 从配置中获取Anki卡片的基本属性
       const deckName = currentConfig?.ankiConfig?.defaultDeck || "Default";
       const modelName = currentConfig?.ankiConfig?.defaultModel || "Basic";
       const tags = currentConfig?.ankiConfig?.defaultTags || [];
 
+      // 构建AnkiConnect API所需的完整笔记数据
       const noteData = {
-        deckName,
-        modelName,
-        fields: collected.fields,
-        tags,
+        deckName: deckName,
+        modelName: modelName,
+        fields: fields,
+        tags: tags,
       };
 
-      logInfo("正在写入Anki。", noteData);
+      // 记录写入操作的详细信息用于调试
+      logInfo("准备写入Anki:", {
+        mode: isLegacyMode ? "legacy" : "dynamic",
+        totalFields: rawCollected.collectedFields || payloadFieldCount,
+        collectedFields: rawCollected.collectedFields,
+        finalFields: filledFieldCount,
+        payloadFields: payloadFieldCount,
+        validation: validation.isValid,
+        warnings: validation.warnings.length,
+        noteData,
+      });
 
-      // 调用 AnkiConnect 添加笔记
+      // 调用 AnkiConnect API执行实际写入操作
       const result = await addNote(noteData);
 
       if (result.error) {
@@ -564,10 +699,14 @@ function createController(
 
       // 成功
       floatingPanel.showReady({
-        message: "成功写入Anki！",
+        message: "写入成功",
       });
 
-      logInfo("Anki写入成功", { noteId: result.result });
+      logInfo("Anki写入成功", {
+        noteId: result.result,
+        fieldsCount: filledFieldCount,
+        mode: isLegacyMode ? "legacy" : "dynamic",
+      });
     } catch (error) {
       logWarn("Anki写入失败", error);
 
@@ -579,6 +718,12 @@ function createController(
         errorMessage.includes("Failed to fetch")
       ) {
         errorMessage = "请确认Anki已启动，并且AnkiConnect插件已安装。";
+      } else if (errorMessage.includes("duplicate") || errorMessage.includes("重复")) {
+        errorMessage = "卡片内容重复，请修改后重试";
+      } else if (errorMessage.includes("deck") && errorMessage.includes("not found")) {
+        errorMessage = "指定的牌组不存在，请检查配置";
+      } else if (errorMessage.includes("model") && errorMessage.includes("not found")) {
+        errorMessage = "指定的模板不存在，请检查配置";
       }
 
       floatingPanel.showError({
