@@ -4,9 +4,9 @@
 
 // --- 默认常量定义 ---
 const DEFAULT_BUTTON_SIZE = 20; // 按钮的默认大小（像素）
-const DEFAULT_GAP = 12; // 按钮与选中文本之间的默认间距（像素）
+const DEFAULT_GAP = 25; // 按钮与选中文本之间的默认间距（像素）
 const DEFAULT_VIEWPORT_PADDING = 8; // 按钮距离视口边缘的默认内边距（像素）
-const SHOW_DELAY_MS = 120; // 延迟显示按钮的时间（毫秒），以防止在选择文本过程中闪烁
+const SHOW_DELAY_MS = 900; // 延迟显示按钮的时间（毫秒），以防止在选择文本过程中闪烁
 
 /**
  * 将一个值限制在指定的最小值和最大值之间。
