@@ -259,6 +259,10 @@ export async function setPageLanguage() {
           customMessages = messages;
           customMessagesLocale = normalized;
           console.log(`Loaded custom messages for locale: ${normalized}`);
+        } else {
+          customMessages = null;
+          customMessagesLocale = null;
+          console.warn(`No messages.json found for locale: ${normalized}, falling back to chrome.i18n`);
         }
         return;
       }

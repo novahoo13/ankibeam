@@ -1697,6 +1697,26 @@
       }
     }
   },
+  "floating_panel_close_label": {
+    "description": "悬浮解析面板的关闭按钮文本。",
+    "message": "关闭面板"
+  },
+  "floating_panel_retry_label": {
+    "description": "悬浮解析面板中的重试按钮文本。",
+    "message": "重试"
+  },
+  "floating_panel_write_label": {
+    "description": "悬浮解析面板中的写入按钮文本。",
+    "message": "写入 Anki"
+  },
+  "cardFront": {
+    "description": "Legacy 模式正面字段标签。",
+    "message": "正面:"
+  },
+  "cardBack": {
+    "description": "Legacy 模式背面字段标签。",
+    "message": "背面:"
+  },
   "options_provider_test_status_error": {
     "description": "提供商测试失败时的状态文本。",
     "message": "测试失败：$ERROR$",
@@ -1715,5 +1735,17 @@
   "options_default_model_placeholder": {
     "description": "默认模型选框的占位提示。",
     "message": "请选择默认模型"
+  },
+  "options_ui_floating_assistant_label": {
+    "description": "悬浮球助手功能标签。",
+    "message": "悬浮球助手"
+  },
+  "options_ui_floating_assistant_enable": {
+    "description": "启用悬浮球助手的复选框标签。",
+    "message": "启用悬浮球助手"
+  },
+  "options_ui_floating_assistant_description": {
+    "description": "悬浮球助手功能描述文字。",
+    "message": "在网页中选中文本后，自动显示悬浮球按钮，点击即可快速解析并创建 Anki 卡片。若遇到兼容问题可关闭此功能。"
   }
 }

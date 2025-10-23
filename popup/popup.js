@@ -35,9 +35,6 @@ const createDetailedError = (key, fallback, detail, substitutions) => {
   return err;
 };
 
-
-
-
 // 全局配置对象（初始化后保存用户配置）
 let config = {};
 
@@ -139,7 +136,12 @@ class ErrorBoundary {
 
     // 频繁错误保护：如果短时间内错误过多，显示严重错误提示
     if (this.isFrequentError()) {
-      this.showCriticalError(getText("popup_error_rate_limit", "检测到频繁错误，建议刷新页面或检查网络连接"));
+      this.showCriticalError(
+        getText(
+          "popup_error_rate_limit",
+          "检测到频繁错误，建议刷新页面或检查网络连接"
+        )
+      );
       return;
     }
 
@@ -187,59 +189,101 @@ class ErrorBoundary {
     // AI解析服务相关错误的详细分类处理
     if (context === "parse" || context === "ai") {
       if (message.includes("API Key")) {
-        return getText("popup_error_ai_config", "AI服务配置错误，请检查设置页面的API Key");
+        return getText(
+          "popup_error_ai_config",
+          "AI服务配置错误，请检查设置页面的API Key"
+        );
       }
       if (message.includes("quota") || message.includes("limit")) {
-        return getText("popup_error_ai_quota", "AI服务额度不足，请检查账户状态或更换服务商");
+        return getText(
+          "popup_error_ai_quota",
+          "AI服务额度不足，请检查账户状态或更换服务商"
+        );
       }
       if (message.includes("JSON解析失败")) {
-        return getText("popup_error_ai_format_retry", "AI解析格式错误，正在自动重试...");
+        return getText(
+          "popup_error_ai_format_retry",
+          "AI解析格式错误，正在自动重试..."
+        );
       }
       if (message.includes("输出包含无效字段")) {
-        return getText("popup_error_ai_field_mismatch", "AI输出字段不匹配，请检查模板配置");
+        return getText(
+          "popup_error_ai_field_mismatch",
+          "AI输出字段不匹配，请检查模板配置"
+        );
       }
       const simplified = this.simplifyErrorMessage(message);
-      return getText("popup_error_ai_generic", `AI解析失败: ${simplified}`, [simplified]);
+      return getText("popup_error_ai_generic", `AI解析失败: ${simplified}`, [
+        simplified,
+      ]);
     }
 
     // AnkiConnect连接和操作相关错误处理
     if (context === "anki") {
       if (message.includes("Failed to fetch") || message.includes("未启动")) {
-        return getText("popup_error_anki_launch", "请启动Anki并确保AnkiConnect插件已安装");
+        return getText(
+          "popup_error_anki_launch",
+          "请启动Anki并确保AnkiConnect插件已安装"
+        );
       }
       if (message.includes("duplicate") || message.includes("重复")) {
-        return getText("popup_error_anki_duplicate", "卡片内容重复，请修改后重试");
+        return getText(
+          "popup_error_anki_duplicate",
+          "卡片内容重复，请修改后重试"
+        );
       }
       if (message.includes("deck") && message.includes("not found")) {
-        return getText("popup_error_anki_deck_missing", "指定的牌组不存在，请检查配置");
+        return getText(
+          "popup_error_anki_deck_missing",
+          "指定的牌组不存在，请检查配置"
+        );
       }
       if (message.includes("model") && message.includes("not found")) {
-        return getText("popup_error_anki_model_missing", "指定的模板不存在，请检查配置");
+        return getText(
+          "popup_error_anki_model_missing",
+          "指定的模板不存在，请检查配置"
+        );
       }
       const simplifiedAnki = this.simplifyErrorMessage(message);
-      return getText("popup_error_anki_generic", `Anki操作失败: ${simplifiedAnki}`, [simplifiedAnki]);
+      return getText(
+        "popup_error_anki_generic",
+        `Anki操作失败: ${simplifiedAnki}`,
+        [simplifiedAnki]
+      );
     }
 
     // 用户配置加载失败的处理
     if (context === "config") {
-      return getText("popup_error_config_fallback", "配置加载异常，已使用默认配置");
+      return getText(
+        "popup_error_config_fallback",
+        "配置加载异常，已使用默认配置"
+      );
     }
 
     // UI字段操作和验证相关错误
     if (context === "fields") {
       if (message.includes("找不到")) {
-        return getText("popup_error_dom_missing", "页面元素缺失，请刷新页面重试");
+        return getText(
+          "popup_error_dom_missing",
+          "页面元素缺失，请刷新页面重试"
+        );
       }
       if (message.includes("字段为空")) {
         return getText("popup_error_field_minimum", "请至少填写一个字段内容");
       }
       const simplifiedField = this.simplifyErrorMessage(message);
-      return getText("popup_error_field_generic", `字段处理错误: ${simplifiedField}`, [simplifiedField]);
+      return getText(
+        "popup_error_field_generic",
+        `字段处理错误: ${simplifiedField}`,
+        [simplifiedField]
+      );
     }
 
     // 未分类错误的通用处理
     const simplifiedGeneric = this.simplifyErrorMessage(message);
-    return getText("popup_error_generic", `操作失败: ${simplifiedGeneric}`, [simplifiedGeneric]);
+    return getText("popup_error_generic", `操作失败: ${simplifiedGeneric}`, [
+      simplifiedGeneric,
+    ]);
   }
 
   /**
@@ -346,7 +390,11 @@ class ErrorBoundary {
     if (!retryCallback) return;
 
     const retryMessage = this.getRetryMessage(context);
-    const retryPrompt = getText("popup_confirm_retry", `${retryMessage}\n\n是否立即重试？`, [retryMessage]);
+    const retryPrompt = getText(
+      "popup_confirm_retry",
+      `${retryMessage}\n\n是否立即重试？`,
+      [retryMessage]
+    );
     if (confirm(retryPrompt)) {
       retryCallback();
     }
@@ -362,9 +410,15 @@ class ErrorBoundary {
     switch (context) {
       case "parse":
       case "ai":
-        return getText("popup_hint_parse_network", "解析失败可能是临时网络问题");
+        return getText(
+          "popup_hint_parse_network",
+          "解析失败可能是临时网络问题"
+        );
       case "anki":
-        return getText("popup_hint_anki_connection", "Anki操作失败可能是连接问题");
+        return getText(
+          "popup_hint_anki_connection",
+          "Anki操作失败可能是连接问题"
+        );
       default:
         return getText("popup_hint_retry_general", "操作失败可能是临时问题");
     }
@@ -380,7 +434,11 @@ class ErrorBoundary {
 
     // 延迟显示页面刷新建议，给用户思考时间
     setTimeout(() => {
-      const reloadPrompt = getText("popup_confirm_reload", `${message}\n\n点击确定刷新页面，取消继续使用`, [message]);
+      const reloadPrompt = getText(
+        "popup_confirm_reload",
+        `${message}\n\n点击确定刷新页面，取消继续使用`,
+        [message]
+      );
       if (confirm(reloadPrompt)) {
         window.location.reload();
       }
@@ -434,7 +492,10 @@ async function initialize() {
   try {
     // 从chrome.storage加载用户配置，供全局使用
     config = (await loadConfig()) || {};
-    console.log(getText("popup_status_config_loaded", "用户配置加载完成:"), config);
+    // console.log(getText("popup_status_config_loaded", "用户配置加载完成:"), config);
+
+    // 重新本地化页面，确保静态元素使用用户配置的语言
+    localizePage();
 
     // 注册主要功能按钮的点击事件处理器
     document.getElementById("parse-btn").addEventListener("click", handleParse);
@@ -463,7 +524,10 @@ async function handleParse() {
   // 获取用户输入的待解析文本
   const textInput = document.getElementById("text-input").value;
   if (!textInput.trim()) {
-    updateStatus(getText("popup_status_input_required", "请输入要解析的文本"), "error");
+    updateStatus(
+      getText("popup_status_input_required", "请输入要解析的文本"),
+      "error"
+    );
     return;
   }
 
@@ -491,7 +555,9 @@ async function handleParse() {
           : allFields;
       // 验证字段配置，确保有可用的解析目标
       if (!dynamicFields || dynamicFields.length === 0) {
-        throw createI18nError("popup_status_no_fields_parse", { fallback: "当前模板未配置可解析的字段，请在选项页完成设置。" });
+        throw createI18nError("popup_status_no_fields_parse", {
+          fallback: "当前模板未配置可解析的字段，请在选项页完成设置。",
+        });
       }
 
       // 获取自定义提示模板并执行AI解析
@@ -546,7 +612,9 @@ async function handleWriteToAnki() {
 
     // Dynamic模式必须有字段配置，否则无法写入
     if (!isLegacy && (!dynamicFields || dynamicFields.length === 0)) {
-      throw createI18nError("popup_status_no_fields_write", { fallback: "当前模板未配置可写入的字段，请在选项页完成设置。" });
+      throw createI18nError("popup_status_no_fields_write", {
+        fallback: "当前模板未配置可写入的字段，请在选项页完成设置。",
+      });
     }
 
     // 确定最终要处理的字段列表
@@ -557,8 +625,12 @@ async function handleWriteToAnki() {
 
     // 字段收集过程的错误检查
     if (rawCollectResult.error) {
-      const collectDetail = rawCollectResult.errors.join(', ');
-      throw createDetailedError("popup_status_collect_failed", "字段收集失败:", collectDetail);
+      const collectDetail = rawCollectResult.errors.join(", ");
+      throw createDetailedError(
+        "popup_status_collect_failed",
+        "字段收集失败:",
+        collectDetail
+      );
     }
 
     // 第二步：验证字段内容的完整性和有效性
@@ -572,15 +644,23 @@ async function handleWriteToAnki() {
     if (!validation.isValid) {
       let errorMessage = validation.message;
       if (validation.warnings.length > 0) {
-        const warningsText = validation.warnings.join(', ');
-        errorMessage += `\n${getText("popup_warning_prefix", `警告: ${warningsText}`, [warningsText])}`;
+        const warningsText = validation.warnings.join(", ");
+        errorMessage += `\n${getText(
+          "popup_warning_prefix",
+          `警告: ${warningsText}`,
+          [warningsText]
+        )}`;
       }
-      throw createDetailedError("popup_status_validation_failed", "字段验证失败:", errorMessage);
+      throw createDetailedError(
+        "popup_status_validation_failed",
+        "字段验证失败:",
+        errorMessage
+      );
     }
 
     // 处理验证警告：显示提示但不阻止写入操作
     if (validation.warnings.length > 0) {
-      console.warn(getText("popup_status_validation_warning_header", "字段验证警告:"), validation.warnings);
+      // console.warn(getText("popup_status_validation_warning_header", "字段验证警告:"), validation.warnings);
       updateStatus(
         getText(
           "popup_status_validation_continue",
@@ -600,8 +680,12 @@ async function handleWriteToAnki() {
 
     // 样式包装过程的错误检查
     if (styledCollectResult.error) {
-      const styleErrorDetail = styledCollectResult.errors.join(', ');
-      throw createDetailedError("popup_status_style_error", "样式包装失败:", styleErrorDetail);
+      const styleErrorDetail = styledCollectResult.errors.join(", ");
+      throw createDetailedError(
+        "popup_status_style_error",
+        "样式包装失败:",
+        styleErrorDetail
+      );
     }
 
     // 第四步：构建Anki API所需的字段数据结构
@@ -648,7 +732,9 @@ async function handleWriteToAnki() {
     ).length;
     const payloadFieldCount = Object.keys(fields).length;
     if (filledFieldCount === 0) {
-      throw createI18nError("popup_status_no_fillable_fields", { fallback: "没有可写入的字段内容" });
+      throw createI18nError("popup_status_no_fillable_fields", {
+        fallback: "没有可写入的字段内容",
+      });
     }
 
     // 从配置中获取Anki卡片的基本属性
@@ -665,16 +751,16 @@ async function handleWriteToAnki() {
     };
 
     // 记录写入操作的详细信息用于调试
-    console.log(getText("popup_status_ready_to_write", "准备写入Anki:"), {
-      mode: isLegacy ? "legacy" : "dynamic",
-      totalFields: rawCollectResult.totalFields,
-      collectedFields: rawCollectResult.collectedFields,
-      finalFields: filledFieldCount,
-      payloadFields: payloadFieldCount,
-      validation: validation.isValid,
-      warnings: validation.warnings.length,
-      noteData,
-    });
+    // console.log(getText("popup_status_ready_to_write", "准备写入Anki:"), {
+    //   mode: isLegacy ? "legacy" : "dynamic",
+    //   totalFields: rawCollectResult.totalFields,
+    //   collectedFields: rawCollectResult.collectedFields,
+    //   finalFields: filledFieldCount,
+    //   payloadFields: payloadFieldCount,
+    //   validation: validation.isValid,
+    //   warnings: validation.warnings.length,
+    //   noteData,
+    // });
 
     // 调用AnkiConnect API执行实际写入操作
     const result = await addNote(noteData);
@@ -739,7 +825,9 @@ async function initializeDynamicFields() {
           ? modelFields
           : allFields;
       if (!fieldsToRender || fieldsToRender.length === 0) {
-        throw createI18nError("popup_status_no_configured_fields", { fallback: "当前模板未配置字段，请在选项页完成配置。" });
+        throw createI18nError("popup_status_no_configured_fields", {
+          fallback: "当前模板未配置字段，请在选项页完成配置。",
+        });
       }
       renderDynamicFields(fieldsToRender);
     }
@@ -749,7 +837,11 @@ async function initializeDynamicFields() {
     try {
       renderLegacyFields();
     } catch (fallbackError) {
-      const legacyFallbackMessage = getText("popup_status_legacy_fallback_failed", "回退到legacy模式也失败:", [fallbackError?.message ?? String(fallbackError)]);
+      const legacyFallbackMessage = getText(
+        "popup_status_legacy_fallback_failed",
+        "回退到legacy模式也失败:",
+        [fallbackError?.message ?? String(fallbackError)]
+      );
       console.error(legacyFallbackMessage, fallbackError);
     }
   }
@@ -788,13 +880,19 @@ function renderDynamicFields(fieldNames) {
 
   // 字段名验证：如果没有有效字段则显示提示信息
   if (!Array.isArray(fieldNames) || fieldNames.length === 0) {
-    const emptyFieldsHint = getText("popup_dynamic_fields_missing", "当前未配置可填充的字段，请先在选项页完成字段配置。");
+    const emptyFieldsHint = getText(
+      "popup_dynamic_fields_missing",
+      "当前未配置可填充的字段，请先在选项页完成字段配置。"
+    );
     container.innerHTML = `<div class="text-xs text-gray-500 border border-dashed border-slate-300 rounded-md p-3 bg-slate-50">${emptyFieldsHint}</div>`;
     return;
   }
 
   // 为每个字段生成对应的HTML输入元素
-  const fieldPlaceholder = getText("popup_dynamic_field_placeholder", "AI将自动填充此字段...");
+  const fieldPlaceholder = getText(
+    "popup_dynamic_field_placeholder",
+    "AI将自动填充此字段..."
+  );
   const fieldsHtml = fieldNames
     .map((fieldName, index) => {
       const inputId = `field-${index}`;
@@ -856,8 +954,13 @@ function applyFieldStatusStyle(element, value) {
   // 根据内容状态添加不同的样式类和提示信息
   if (trimmedValue) {
     element.classList.add("filled");
-    const previewValue = trimmedValue.length > 20 ? `${trimmedValue.substring(0, 20)}...` : trimmedValue;
-    element.title = getText("popup_field_preview", `已填充: ${previewValue}`, [previewValue]);
+    const previewValue =
+      trimmedValue.length > 20
+        ? `${trimmedValue.substring(0, 20)}...`
+        : trimmedValue;
+    element.title = getText("popup_field_preview", `已填充: ${previewValue}`, [
+      previewValue,
+    ]);
   } else {
     element.classList.add("empty");
     element.title = getText("popup_field_tag_pending_label", "待填充");
@@ -876,11 +979,15 @@ function fillDynamicFields(aiResult, fieldNames) {
   try {
     // 验证输入参数
     if (!aiResult || typeof aiResult !== "object") {
-      throw createI18nError("popup_status_parse_result_empty", { fallback: "AI解析结果为空或格式无效" });
+      throw createI18nError("popup_status_parse_result_empty", {
+        fallback: "AI解析结果为空或格式无效",
+      });
     }
 
     if (!Array.isArray(fieldNames) || fieldNames.length === 0) {
-      throw createI18nError("popup_status_field_names_invalid", { fallback: "字段名数组为空或无效" });
+      throw createI18nError("popup_status_field_names_invalid", {
+        fallback: "字段名数组为空或无效",
+      });
     }
 
     let filledCount = 0;
@@ -893,7 +1000,7 @@ function fillDynamicFields(aiResult, fieldNames) {
       const element = document.getElementById(inputId);
 
       if (!element) {
-        console.warn(getText("popup_field_not_found", `找不到字段元素: ${inputId} (${fieldName})`, [inputId, fieldName]));
+        // console.warn(getText("popup_field_not_found", `找不到字段元素: ${inputId} (${fieldName})`, [inputId, fieldName]));
         missingElements.push(fieldName);
         return;
       }
@@ -924,7 +1031,9 @@ function fillDynamicFields(aiResult, fieldNames) {
       // 添加工具提示
       element.title = trimmedValue
         ? getText("popup_field_tag_filled", `已填充: ${fieldName}`, [fieldName])
-        : getText("popup_field_tag_pending", `待填充: ${fieldName}`, [fieldName]);
+        : getText("popup_field_tag_pending", `待填充: ${fieldName}`, [
+            fieldName,
+          ]);
     });
 
     // 生成状态反馈
@@ -939,32 +1048,47 @@ function fillDynamicFields(aiResult, fieldNames) {
     };
 
     // 显示详细状态信息
-    let statusMessage = getText("popup_field_progress", `已填充 ${filledCount}/${fieldNames.length} 个字段`, [String(filledCount), String(fieldNames.length)]);
+    let statusMessage = getText(
+      "popup_field_progress",
+      `已填充 ${filledCount}/${fieldNames.length} 个字段`,
+      [String(filledCount), String(fieldNames.length)]
+    );
     let statusType = "success";
 
     if (filledCount === 0) {
-      statusMessage = getText("popup_field_all_empty_warning", "警告：所有字段都为空，请检查AI解析结果");
+      statusMessage = getText(
+        "popup_field_all_empty_warning",
+        "警告：所有字段都为空，请检查AI解析结果"
+      );
       statusType = "error";
     } else if (filledCount < fieldNames.length) {
-      statusMessage += ` ${getText("popup_field_empty_count", `(${emptyFields.length} 个字段为空)`, [String(emptyFields.length)])}`;
+      statusMessage += ` ${getText(
+        "popup_field_empty_count",
+        `(${emptyFields.length} 个字段为空)`,
+        [String(emptyFields.length)]
+      )}`;
       statusType = "warning";
     }
 
     // 添加特殊情况提示
     if (missingElements.length > 0) {
-      console.error(getText("popup_field_missing_dom_prefix", "缺失DOM元素:"), missingElements);
-      statusMessage += ` ${getText("popup_field_missing_dom_summary", `[${missingElements.length} 个元素缺失]`, [String(missingElements.length)])}`;
+      // console.error(getText("popup_field_missing_dom_prefix", "缺失DOM元素:"), missingElements);
+      statusMessage += ` ${getText(
+        "popup_field_missing_dom_summary",
+        `[${missingElements.length} 个元素缺失]`,
+        [String(missingElements.length)]
+      )}`;
       statusType = "error";
     }
 
     updateStatus(statusMessage, statusType);
 
     // 打印详细日志
-    console.log(getText("popup_dynamic_fill_complete", "动态字段填充完成:"), {
-      fillResult,
-      aiResult,
-      fieldNames,
-    });
+    // console.log(getText("popup_dynamic_fill_complete", "动态字段填充完成:"), {
+    //   fillResult,
+    //   aiResult,
+    //   fieldNames,
+    // });
 
     // 触发字段变化事件，供其他模块监听
     const event = new CustomEvent("dynamicFieldsFilled", {
@@ -974,8 +1098,13 @@ function fillDynamicFields(aiResult, fieldNames) {
 
     return fillResult;
   } catch (error) {
-    console.error(getText("popup_dynamic_fill_error", "填充动态字段时发生错误:"), error);
-    updateStatus(getText("popup_field_fill_failed", `字段填充失败: ${error.message}`, [error.message]), "error");
+    // console.error(getText("popup_dynamic_fill_error", "填充动态字段时发生错误:"), error);
+    updateStatus(
+      getText("popup_field_fill_failed", `字段填充失败: ${error.message}`, [
+        error.message,
+      ]),
+      "error"
+    );
 
     // 返回错误状态
     return {
