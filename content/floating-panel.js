@@ -546,6 +546,10 @@ export function createFloatingPanelController(options = {}) {
 </svg>
 `;
     closeButton.addEventListener("click", () => {
+      // 如果面板被固定,先取消固定
+      if (isPinned) {
+        togglePin();
+      }
       hide(true);
       if (typeof closeHandler === "function") {
         closeHandler("manual");
