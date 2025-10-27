@@ -186,6 +186,11 @@ export function createFloatingPanelController(options = {}) {
   let writeHandler = null; // 写入Anki操作的回调函数
   let isPinned = false; // 面板是否被固定
   let pinButton = null; // 固定按钮
+  let isDragging = false; // 是否正在拖动面板
+  let dragStartX = 0; // 拖动开始时的鼠标X坐标
+  let dragStartY = 0; // 拖动开始时的鼠标Y坐标
+  let panelStartX = 0; // 拖动开始时面板的X坐标
+  let panelStartY = 0; // 拖动开始时面板的Y坐标
 
   /**
    * 确保面板所需的DOM结构已经创建并注入到页面中。
@@ -250,6 +255,7 @@ export function createFloatingPanelController(options = {}) {
   flex-direction: column;
   gap: 12px;
   border: 1px solid rgba(148, 163, 184, 0.16);
+  cursor: grab;
 }
 @media (prefers-color-scheme: dark) {
   .panel {
@@ -634,6 +640,9 @@ export function createFloatingPanelController(options = {}) {
     // 监听键盘事件，用于处理Esc键关闭面板
     shadowRoot.addEventListener("keydown", handleKeyDown, true);
 
+    // 为panel添加拖动监听器（只在pin状态下启用）
+    panel.addEventListener("mousedown", handlePanelMouseDown);
+
     documentRef.documentElement?.appendChild(host);
   }
 
@@ -711,6 +720,119 @@ export function createFloatingPanelController(options = {}) {
     if (typeof closeHandler === "function") {
       closeHandler("outside");
     }
+  }
+
+  /**
+   * 处理面板的拖动开始事件。
+   * 只在面板被固定时允许拖动。
+   * @param {MouseEvent} event - 鼠标事件对象。
+   */
+  function handlePanelMouseDown(event) {
+    // 只在固定状态下允许拖动
+    if (!isPinned || !visible) {
+      return;
+    }
+
+    // 检查点击目标是否是可交互元素，如果是则不启动拖动
+    const target = event.target;
+    const isInteractive =
+      target.tagName === "INPUT" ||
+      target.tagName === "TEXTAREA" ||
+      target.tagName === "BUTTON" ||
+      target.closest("button") ||
+      target.closest("input") ||
+      target.closest("textarea") ||
+      target.closest(".panel-status") ||
+      target.closest(".panel-header") ||
+      target.closest(".panel-actions");
+
+    if (isInteractive) {
+      return;
+    }
+
+    // 记录拖动开始时的状态
+    isDragging = true;
+    dragStartX = event.clientX;
+    dragStartY = event.clientY;
+
+    // 获取当前面板位置
+    const transform = wrapper.style.transform;
+    const match = transform.match(/translate3d\(([^,]+)px,\s*([^,]+)px/);
+    if (match) {
+      panelStartX = parseFloat(match[1]);
+      panelStartY = parseFloat(match[2]);
+    } else {
+      panelStartX = 0;
+      panelStartY = 0;
+    }
+
+    // 添加全局拖动监听器
+    documentRef.addEventListener("mousemove", handlePanelMouseMove, true);
+    documentRef.addEventListener("mouseup", handlePanelMouseUp, true);
+
+    // 添加拖动时的样式
+    if (panel) {
+      panel.style.cursor = "grabbing";
+      panel.style.userSelect = "none";
+    }
+
+    event.preventDefault();
+  }
+
+  /**
+   * 处理面板的拖动移动事件。
+   * @param {MouseEvent} event - 鼠标事件对象。
+   */
+  function handlePanelMouseMove(event) {
+    if (!isDragging || !wrapper) {
+      return;
+    }
+
+    // 计算新位置
+    const deltaX = event.clientX - dragStartX;
+    const deltaY = event.clientY - dragStartY;
+    const newX = panelStartX + deltaX;
+    const newY = panelStartY + deltaY;
+
+    // 限制在视口范围内
+    const viewport = {
+      width: windowRef.innerWidth,
+      height: windowRef.innerHeight,
+    };
+    const size = measurePanelSize();
+    const padding = PANEL_PADDING;
+
+    const clampedX = clamp(newX, padding, viewport.width - padding - size.width);
+    const clampedY = clamp(newY, padding, viewport.height - padding - size.height);
+
+    // 更新位置
+    wrapper.style.transform = `translate3d(${Math.round(clampedX)}px, ${Math.round(clampedY)}px, 0)`;
+
+    event.preventDefault();
+  }
+
+  /**
+   * 处理面板的拖动结束事件。
+   * @param {MouseEvent} event - 鼠标事件对象。
+   */
+  function handlePanelMouseUp(event) {
+    if (!isDragging) {
+      return;
+    }
+
+    isDragging = false;
+
+    // 移除全局拖动监听器
+    documentRef.removeEventListener("mousemove", handlePanelMouseMove, true);
+    documentRef.removeEventListener("mouseup", handlePanelMouseUp, true);
+
+    // 恢复样式
+    if (panel) {
+      panel.style.cursor = "";
+      panel.style.userSelect = "";
+    }
+
+    event.preventDefault();
   }
 
   /**
@@ -1063,6 +1185,12 @@ export function createFloatingPanelController(options = {}) {
     if (shadowRoot) {
       shadowRoot.removeEventListener("keydown", handleKeyDown, true);
     }
+    if (panel) {
+      panel.removeEventListener("mousedown", handlePanelMouseDown);
+    }
+    // 清理拖动监听器（如果存在）
+    documentRef.removeEventListener("mousemove", handlePanelMouseMove, true);
+    documentRef.removeEventListener("mouseup", handlePanelMouseUp, true);
     if (host?.isConnected) {
       host.remove();
     }
@@ -1082,6 +1210,7 @@ export function createFloatingPanelController(options = {}) {
     visible = false;
     currentSelection = null;
     isPinned = false;
+    isDragging = false;
   }
 
   /**
