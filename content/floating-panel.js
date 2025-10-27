@@ -232,7 +232,7 @@ export function createFloatingPanelController(options = {}) {
   pointer-events: none;
   opacity: 0;
   transform: translate3d(-9999px, -9999px, 0);
-  transition: opacity 0.16s ease-out, transform 0.16s ease-out;
+  transition: opacity 0.16s ease-out;
 }
 .panel-wrapper[data-visible="true"] {
   pointer-events: auto;
@@ -301,7 +301,7 @@ export function createFloatingPanelController(options = {}) {
   cursor: pointer;
   color: inherit;
   background: transparent;
-  transition: background 0.16s ease-out, color 0.16s ease-out, transform 0.16s ease-out;
+  transition: background 0.16s ease-out, color 0.16s ease-out;
 }
 .panel-pin:hover,
 .panel-close:hover {
@@ -775,10 +775,6 @@ export function createFloatingPanelController(options = {}) {
       panel.style.cursor = "grabbing";
       panel.style.userSelect = "none";
     }
-    // 禁用 transition 以避免拖动延迟
-    if (wrapper) {
-      wrapper.style.transition = "none";
-    }
 
     event.preventDefault();
   }
@@ -834,10 +830,6 @@ export function createFloatingPanelController(options = {}) {
     if (panel) {
       panel.style.cursor = "";
       panel.style.userSelect = "";
-    }
-    // 恢复 transition
-    if (wrapper) {
-      wrapper.style.transition = "";
     }
 
     event.preventDefault();
