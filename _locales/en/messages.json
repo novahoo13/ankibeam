@@ -1709,6 +1709,14 @@
     "description": "Write button label shown inside the floating assistant panel.",
     "message": "Write to Anki"
   },
+  "floating_panel_pin_label": {
+    "description": "Pin button label shown inside the floating assistant panel.",
+    "message": "Pin panel"
+  },
+  "floating_panel_unpin_label": {
+    "description": "Unpin button label shown inside the floating assistant panel.",
+    "message": "Unpin panel"
+  },
   "cardFront": {
     "description": "Legacy mode front field label.",
     "message": "Front:"

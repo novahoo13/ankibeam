@@ -311,6 +311,11 @@ function createController(
    * @param {object | null} result - 选择结果
    */
   function handleSelectionEvent(result) {
+    // 如果面板已固定，不处理新的选择事件
+    if (floatingPanel && floatingPanel.isPinned && floatingPanel.isPinned()) {
+      return;
+    }
+
     if (!result) {
       // 如果没有选择，隐藏面板
       if (floatingPanel) {
