@@ -775,6 +775,10 @@ export function createFloatingPanelController(options = {}) {
       panel.style.cursor = "grabbing";
       panel.style.userSelect = "none";
     }
+    // 禁用 transition 以避免拖动延迟
+    if (wrapper) {
+      wrapper.style.transition = "none";
+    }
 
     event.preventDefault();
   }
@@ -830,6 +834,10 @@ export function createFloatingPanelController(options = {}) {
     if (panel) {
       panel.style.cursor = "";
       panel.style.userSelect = "";
+    }
+    // 恢复 transition
+    if (wrapper) {
+      wrapper.style.transition = "";
     }
 
     event.preventDefault();
