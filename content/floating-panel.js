@@ -191,6 +191,7 @@ export function createFloatingPanelController(options = {}) {
   let dragStartY = 0; // 拖动开始时的鼠标Y坐标
   let panelStartX = 0; // 拖动开始时面板的X坐标
   let panelStartY = 0; // 拖动开始时面板的Y坐标
+  let writeSuccess = false; // 是否刚刚成功写入Anki
 
   /**
    * 确保面板所需的DOM结构已经创建并注入到页面中。
@@ -725,6 +726,14 @@ export function createFloatingPanelController(options = {}) {
     if (path.includes(host) || path.includes(panel)) {
       return;
     }
+    // 如果写入成功，忽略固定状态，直接关闭面板
+    if (writeSuccess) {
+      forceHide(true);
+      if (typeof closeHandler === "function") {
+        closeHandler("outside");
+      }
+      return;
+    }
     hide(true);
     if (typeof closeHandler === "function") {
       closeHandler("outside");
@@ -1183,7 +1192,29 @@ export function createFloatingPanelController(options = {}) {
     if (writeButton) {
       writeButton.disabled = true;
     }
+    writeSuccess = false; // 重置写入成功标记
     unbindGlobalListeners();
+  }
+
+  /**
+   * 强制隐藏悬浮面板，忽略固定状态。
+   * @param {boolean} immediate - 是否立即隐藏，无动画效果。
+   */
+  function forceHide(immediate = false) {
+    // 取消固定状态并关闭面板
+    // 不需要恢复固定状态，因为面板已关闭，固定状态应该重置
+    if (isPinned) {
+      isPinned = false;
+      // 更新固定按钮的UI状态
+      if (pinButton) {
+        pinButton.dataset.pinned = "false";
+        pinButton.setAttribute(
+          "aria-label",
+          getText("floating_panel_pin_label", "固定面板")
+        );
+      }
+    }
+    hide(immediate);
   }
 
   /**
@@ -1232,6 +1263,8 @@ export function createFloatingPanelController(options = {}) {
    * @param {object} options - 状态选项。
    */
   function showLoading(selection, options = {}) {
+    // 重置写入成功标记，因为开始新的操作
+    writeSuccess = false;
     // 如果面板被固定,不调用 show() 以避免重置位置
     // 只更新状态和按钮状态
     if (isPinned && visible) {
@@ -1261,6 +1294,24 @@ export function createFloatingPanelController(options = {}) {
       writeButton.disabled = false;
     }
     focusFirstField();
+  }
+
+  /**
+   * 标记为写入成功状态，此时点击面板外部会自动关闭（忽略固定状态）。
+   */
+  function markWriteSuccess() {
+    writeSuccess = true;
+    // 如果面板被固定，监听器可能已被解绑，需要强制重新绑定
+    if (isPinned && !listenersBound) {
+      // 直接绑定监听器，因为我们需要在写入成功后监听点击外部事件
+      windowRef.addEventListener("scroll", handleViewportChange, true);
+      windowRef.addEventListener("resize", handleViewportChange, true);
+      documentRef.addEventListener("pointerdown", handlePointerDown, true);
+      listenersBound = true;
+    } else {
+      // 正常情况下，使用标准的绑定函数
+      bindGlobalListeners();
+    }
   }
 
   /**
@@ -1657,6 +1708,7 @@ export function createFloatingPanelController(options = {}) {
     getFieldRoot,
     getDebugState,
     updateLocalization,
+    markWriteSuccess,
     isPinned: getIsPinned,
     get config() {
       return currentConfig;

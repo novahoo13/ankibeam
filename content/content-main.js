@@ -723,6 +723,9 @@ function createController(
         message: getText("popup_status_write_success", "写入成功"),
       });
 
+      // 标记写入成功，以便点击面板外部时自动关闭
+      floatingPanel.markWriteSuccess();
+
       logInfo("Anki写入成功", {
         noteId: result.result,
         fieldsCount: filledFieldCount,
