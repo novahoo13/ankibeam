@@ -398,6 +398,15 @@ export function createFloatingPanelController(options = {}) {
   flex-direction: column;
   gap: 6px;
 }
+.field-input::-webkit-scrollbar,
+.field-textarea::-webkit-scrollbar {
+  display: none;
+}
+.field-input,
+.field-textarea {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
 .field-label {
   font-size: 13px;
   font-weight: 500;
@@ -728,12 +737,13 @@ export function createFloatingPanelController(options = {}) {
    * @param {MouseEvent} event - 鼠标事件对象。
    */
   function handlePanelMouseDown(event) {
-    // 只在固定状态下允许拖动
-    if (!isPinned || !visible) {
+    // 面板必须可见才能拖动
+    if (!visible) {
       return;
     }
 
     // 检查点击目标是否是可交互元素，如果是则不启动拖动
+    // 只排除真正的交互元素：输入框、文本框和按钮
     const target = event.target;
     const isInteractive =
       target.tagName === "INPUT" ||
@@ -741,13 +751,16 @@ export function createFloatingPanelController(options = {}) {
       target.tagName === "BUTTON" ||
       target.closest("button") ||
       target.closest("input") ||
-      target.closest("textarea") ||
-      target.closest(".panel-status") ||
-      target.closest(".panel-header") ||
-      target.closest(".panel-actions");
+      target.closest("textarea");
 
     if (isInteractive) {
       return;
+    }
+
+    // 开始拖动时，如果面板未固定，自动固定它
+    // 这样可以防止拖动过程中面板被自动隐藏
+    if (!isPinned) {
+      togglePin();
     }
 
     // 记录拖动开始时的状态
@@ -1219,10 +1232,19 @@ export function createFloatingPanelController(options = {}) {
    * @param {object} options - 状态选项。
    */
   function showLoading(selection, options = {}) {
-    show(selection);
-    setStatus(STATE_LOADING, options);
-    if (writeButton) {
-      writeButton.disabled = true;
+    // 如果面板被固定,不调用 show() 以避免重置位置
+    // 只更新状态和按钮状态
+    if (isPinned && visible) {
+      setStatus(STATE_LOADING, options);
+      if (writeButton) {
+        writeButton.disabled = true;
+      }
+    } else {
+      show(selection);
+      setStatus(STATE_LOADING, options);
+      if (writeButton) {
+        writeButton.disabled = true;
+      }
     }
   }
 
