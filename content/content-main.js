@@ -12,6 +12,17 @@ let isLegacyMode = null;
 let validateFields = null;
 let getPromptConfigForModel = null;
 let addNote = null;
+let translate = null;
+
+/**
+ * 获取国际化文本的辅助函数。
+ * @param {string} key - i18n消息的键。
+ * @param {string} fallback - 如果找不到键，则使用的备用文本。
+ * @param {Object} substitutions - 用于替换文本中占位符的变量。
+ * @returns {string} - 翻译后的文本。
+ */
+const getText = (key, fallback, substitutions) =>
+  translate(key, { fallback, substitutions });
 
 /**
  * 打印普通信息日志
@@ -54,6 +65,7 @@ function logWarn(message, payload) {
       fieldHandlerModule, // Anki字段处理
       promptEngineModule, // Prompt模板引擎
       ankiConnectModule, // AnkiConnect代理
+      i18nModule, // 多语言支持
     ] = await Promise.all([
       import(chrome.runtime.getURL("content/selection.js")),
       import(chrome.runtime.getURL("content/floating-button.js")),
@@ -62,6 +74,7 @@ function logWarn(message, payload) {
       import(chrome.runtime.getURL("utils/field-handler.js")),
       import(chrome.runtime.getURL("utils/prompt-engine.js")),
       import(chrome.runtime.getURL("utils/ankiconnect-proxy.js")),
+      import(chrome.runtime.getURL("utils/i18n.js")),
     ]);
 
     // 从加载的模块中解构并赋值函数到顶层变量
@@ -73,6 +86,7 @@ function logWarn(message, payload) {
     ({ isLegacyMode, validateFields } = fieldHandlerModule);
     ({ getPromptConfigForModel } = promptEngineModule);
     ({ addNote } = ankiConnectModule);
+    ({ translate } = i18nModule);
 
     // 检查当前页面是否是扩展程序不应运行的受限页面（如Chrome商店）
     if (isRestrictedLocation(window.location, document)) {
@@ -217,7 +231,7 @@ function createController(
           } catch (error) {
             logWarn("AI解析失败", error);
             floatingPanel.showError({
-              message: error?.message ?? "AI解析失败，请重试。",
+              message: error?.message ?? getText("popup_error_generic", "操作失败，请重试"),
               allowRetry: true,
             });
           }
@@ -255,7 +269,7 @@ function createController(
           } catch (error) {
             logWarn("重试AI解析仍然失败。", error);
             floatingPanel.showError({
-              message: error?.message ?? "AI解析失败，请再试一次。",
+              message: error?.message ?? getText("popup_error_generic", "操作失败，请重试"),
               allowRetry: true,
             });
           }
@@ -311,6 +325,11 @@ function createController(
    * @param {object | null} result - 选择结果
    */
   function handleSelectionEvent(result) {
+    // 如果面板已固定，不处理新的选择事件
+    if (floatingPanel && floatingPanel.isPinned && floatingPanel.isPinned()) {
+      return;
+    }
+
     if (!result) {
       // 如果没有选择，隐藏面板
       if (floatingPanel) {
@@ -412,11 +431,11 @@ function createController(
    */
   async function handleAIParsing(selectedText, layout) {
     if (!selectedText || !selectedText.trim()) {
-      throw new Error("选中的文本为空。");
+      throw new Error(getText("popup_error_field_empty", "请输入至少一个字段内容"));
     }
 
     if (!currentConfig) {
-      throw new Error("配置尚未加载。");
+      throw new Error(getText("popup_error_config_load", "配置加载失败"));
     }
 
     const modelFields = currentConfig?.ankiConfig?.modelFields;
@@ -439,7 +458,7 @@ function createController(
           : allFields;
 
       if (!dynamicFields || dynamicFields.length === 0) {
-        throw new Error("当前模板没有可供解析的字段。请在选项页面完成设置。");
+        throw new Error(getText("popup_status_no_fields_parse", "当前模板没有可供解析的字段，请在选项页面完成设置"));
       }
 
       logInfo("在动态模式下执行AI解析。", { fields: dynamicFields });
@@ -563,7 +582,7 @@ function createController(
       // Dynamic模式必须有字段配置，否则无法写入
       if (!isLegacyMode && (!dynamicFields || dynamicFields.length === 0)) {
         floatingPanel.showError({
-          message: "当前模板未配置可写入的字段，请在选项页完成设置。",
+          message: getText("popup_status_no_fields_write", "当前模板未配置可写入的字段，请在选项页完成设置"),
           allowRetry: false,
         });
         return;
@@ -597,7 +616,9 @@ function createController(
       if (validation.warnings.length > 0) {
         logWarn("字段验证警告:", validation.warnings);
         floatingPanel.showLoading(currentSelection, {
-          message: `${validation.message}，继续写入...`,
+          message: getText("popup_status_validation_continue", "验证通过但有警告，继续写入...", {
+            MESSAGE: validation.message
+          }),
         });
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
@@ -654,7 +675,7 @@ function createController(
 
       if (filledFieldCount === 0) {
         floatingPanel.showError({
-          message: "没有可写入的字段内容",
+          message: getText("popup_status_no_fillable_fields", "没有可写入的字段内容"),
           allowRetry: false,
         });
         return;
@@ -662,7 +683,7 @@ function createController(
 
       // 显示写入状态
       floatingPanel.showLoading(currentSelection, {
-        message: "正在写入 Anki...",
+        message: getText("popup_status_writing", "正在写入 Anki..."),
       });
 
       // 从配置中获取Anki卡片的基本属性
@@ -699,8 +720,11 @@ function createController(
 
       // 成功
       floatingPanel.showReady({
-        message: "写入成功",
+        message: getText("popup_status_write_success", "写入成功"),
       });
+
+      // 标记写入成功，以便点击面板外部时自动关闭
+      floatingPanel.markWriteSuccess();
 
       logInfo("Anki写入成功", {
         noteId: result.result,
@@ -710,20 +734,20 @@ function createController(
     } catch (error) {
       logWarn("Anki写入失败", error);
 
-      let errorMessage = error?.message || "写入Anki失败。";
+      let errorMessage = error?.message || getText("popup_error_anki_generic", "Anki操作失败", { DETAIL: "" });
 
       // 对特定错误进行更友好的提示
       if (
         errorMessage.includes("fetch") ||
         errorMessage.includes("Failed to fetch")
       ) {
-        errorMessage = "请确认Anki已启动，并且AnkiConnect插件已安装。";
+        errorMessage = getText("popup_error_anki_launch", "请确认Anki已启动，并且AnkiConnect插件已安装");
       } else if (errorMessage.includes("duplicate") || errorMessage.includes("重复")) {
-        errorMessage = "卡片内容重复，请修改后重试";
+        errorMessage = getText("popup_error_anki_duplicate", "卡片内容重复，请修改后重试");
       } else if (errorMessage.includes("deck") && errorMessage.includes("not found")) {
-        errorMessage = "指定的牌组不存在，请检查配置";
+        errorMessage = getText("popup_error_anki_deck_missing", "指定的牌组不存在，请检查配置");
       } else if (errorMessage.includes("model") && errorMessage.includes("not found")) {
-        errorMessage = "指定的模板不存在，请检查配置";
+        errorMessage = getText("popup_error_anki_model_missing", "指定的模板不存在，请检查配置");
       }
 
       floatingPanel.showError({

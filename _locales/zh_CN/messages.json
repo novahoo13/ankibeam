@@ -1709,6 +1709,14 @@
     "description": "悬浮解析面板中的写入按钮文本。",
     "message": "写入 Anki"
   },
+  "floating_panel_pin_label": {
+    "description": "悬浮解析面板中的固定按钮文本。",
+    "message": "固定面板"
+  },
+  "floating_panel_unpin_label": {
+    "description": "悬浮解析面板中的取消固定按钮文本。",
+    "message": "取消固定面板"
+  },
   "cardFront": {
     "description": "Legacy 模式正面字段标签。",
     "message": "正面:"

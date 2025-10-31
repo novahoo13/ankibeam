@@ -184,6 +184,14 @@ export function createFloatingPanelController(options = {}) {
   let retryHandler = null; // 重试操作的回调函数
   let closeHandler = null; // 面板关闭时的回调函数
   let writeHandler = null; // 写入Anki操作的回调函数
+  let isPinned = false; // 面板是否被固定
+  let pinButton = null; // 固定按钮
+  let isDragging = false; // 是否正在拖动面板
+  let dragStartX = 0; // 拖动开始时的鼠标X坐标
+  let dragStartY = 0; // 拖动开始时的鼠标Y坐标
+  let panelStartX = 0; // 拖动开始时面板的X坐标
+  let panelStartY = 0; // 拖动开始时面板的Y坐标
+  let writeSuccess = false; // 是否刚刚成功写入Anki
 
   /**
    * 确保面板所需的DOM结构已经创建并注入到页面中。
@@ -225,7 +233,7 @@ export function createFloatingPanelController(options = {}) {
   pointer-events: none;
   opacity: 0;
   transform: translate3d(-9999px, -9999px, 0);
-  transition: opacity 0.16s ease-out, transform 0.16s ease-out;
+  transition: opacity 0.16s ease-out;
 }
 .panel-wrapper[data-visible="true"] {
   pointer-events: auto;
@@ -248,6 +256,7 @@ export function createFloatingPanelController(options = {}) {
   flex-direction: column;
   gap: 12px;
   border: 1px solid rgba(148, 163, 184, 0.16);
+  cursor: grab;
 }
 @media (prefers-color-scheme: dark) {
   .panel {
@@ -276,6 +285,12 @@ export function createFloatingPanelController(options = {}) {
   font-weight: 600;
   letter-spacing: 0.01em;
 }
+.panel-actions-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.panel-pin,
 .panel-close {
   all: unset;
   width: 28px;
@@ -289,9 +304,23 @@ export function createFloatingPanelController(options = {}) {
   background: transparent;
   transition: background 0.16s ease-out, color 0.16s ease-out;
 }
+.panel-pin:hover,
 .panel-close:hover {
   background: rgba(71, 85, 105, 0.12);
   color: rgb(71, 85, 105);
+}
+.panel-pin[data-pinned="true"] {
+  color: rgb(34, 197, 94);
+}
+.panel-pin[data-pinned="true"]:hover {
+  background: rgba(34, 197, 94, 0.12);
+  color: rgb(22, 163, 74);
+}
+.panel-pin[data-pinned="true"] .pin-icon {
+  transform: rotate(45deg);
+}
+.pin-icon {
+  transition: transform 0.16s ease-out;
 }
 .panel-status {
   display: flex;
@@ -369,6 +398,15 @@ export function createFloatingPanelController(options = {}) {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+.field-input::-webkit-scrollbar,
+.field-textarea::-webkit-scrollbar {
+  display: none;
+}
+.field-input,
+.field-textarea {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 .field-label {
   font-size: 13px;
@@ -491,6 +529,26 @@ export function createFloatingPanelController(options = {}) {
       getText("popup_app_title", "Anki Word Assistant")
     );
 
+    // 创建操作按钮容器
+    const actionsHeader = documentRef.createElement("div");
+    actionsHeader.className = "panel-actions-header";
+
+    // 创建固定按钮
+    pinButton = documentRef.createElement("button");
+    pinButton.className = "panel-pin";
+    pinButton.type = "button";
+    pinButton.dataset.pinned = "false";
+    pinButton.setAttribute(
+      "aria-label",
+      getText("floating_panel_pin_label", "固定面板")
+    );
+    pinButton.innerHTML = `
+<svg class="pin-icon" width="14" height="14" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+  <path d="M10 3L10 11M7 6L10 3L13 6M10 11L10 17M6 11L14 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+`;
+    pinButton.addEventListener("click", togglePin);
+
     const closeButton = documentRef.createElement("button");
     closeButton.className = "panel-close";
     closeButton.type = "button";
@@ -504,14 +562,21 @@ export function createFloatingPanelController(options = {}) {
 </svg>
 `;
     closeButton.addEventListener("click", () => {
+      // 如果面板被固定,先取消固定
+      if (isPinned) {
+        togglePin();
+      }
       hide(true);
       if (typeof closeHandler === "function") {
         closeHandler("manual");
       }
     });
 
+    actionsHeader.appendChild(pinButton);
+    actionsHeader.appendChild(closeButton);
+
     header.appendChild(title);
-    header.appendChild(closeButton);
+    header.appendChild(actionsHeader);
 
     const status = documentRef.createElement("div");
     status.className = "panel-status";
@@ -584,6 +649,9 @@ export function createFloatingPanelController(options = {}) {
 
     // 监听键盘事件，用于处理Esc键关闭面板
     shadowRoot.addEventListener("keydown", handleKeyDown, true);
+
+    // 为panel添加拖动监听器（只在pin状态下启用）
+    panel.addEventListener("mousedown", handlePanelMouseDown);
 
     documentRef.documentElement?.appendChild(host);
   }
@@ -658,9 +726,166 @@ export function createFloatingPanelController(options = {}) {
     if (path.includes(host) || path.includes(panel)) {
       return;
     }
+    // 如果写入成功，忽略固定状态，直接关闭面板
+    if (writeSuccess) {
+      forceHide(true);
+      if (typeof closeHandler === "function") {
+        closeHandler("outside");
+      }
+      return;
+    }
     hide(true);
     if (typeof closeHandler === "function") {
       closeHandler("outside");
+    }
+  }
+
+  /**
+   * 处理面板的拖动开始事件。
+   * 只在面板被固定时允许拖动。
+   * @param {MouseEvent} event - 鼠标事件对象。
+   */
+  function handlePanelMouseDown(event) {
+    // 面板必须可见才能拖动
+    if (!visible) {
+      return;
+    }
+
+    // 检查点击目标是否是可交互元素，如果是则不启动拖动
+    // 只排除真正的交互元素：输入框、文本框和按钮
+    const target = event.target;
+    const isInteractive =
+      target.tagName === "INPUT" ||
+      target.tagName === "TEXTAREA" ||
+      target.tagName === "BUTTON" ||
+      target.closest("button") ||
+      target.closest("input") ||
+      target.closest("textarea");
+
+    if (isInteractive) {
+      return;
+    }
+
+    // 开始拖动时，如果面板未固定，自动固定它
+    // 这样可以防止拖动过程中面板被自动隐藏
+    if (!isPinned) {
+      togglePin();
+    }
+
+    // 记录拖动开始时的状态
+    isDragging = true;
+    dragStartX = event.clientX;
+    dragStartY = event.clientY;
+
+    // 获取当前面板位置
+    const transform = wrapper.style.transform;
+    const match = transform.match(/translate3d\(([^,]+)px,\s*([^,]+)px/);
+    if (match) {
+      panelStartX = parseFloat(match[1]);
+      panelStartY = parseFloat(match[2]);
+    } else {
+      panelStartX = 0;
+      panelStartY = 0;
+    }
+
+    // 添加全局拖动监听器
+    documentRef.addEventListener("mousemove", handlePanelMouseMove, true);
+    documentRef.addEventListener("mouseup", handlePanelMouseUp, true);
+
+    // 添加拖动时的样式
+    if (panel) {
+      panel.style.cursor = "grabbing";
+      panel.style.userSelect = "none";
+    }
+
+    event.preventDefault();
+  }
+
+  /**
+   * 处理面板的拖动移动事件。
+   * @param {MouseEvent} event - 鼠标事件对象。
+   */
+  function handlePanelMouseMove(event) {
+    if (!isDragging || !wrapper) {
+      return;
+    }
+
+    // 计算新位置
+    const deltaX = event.clientX - dragStartX;
+    const deltaY = event.clientY - dragStartY;
+    const newX = panelStartX + deltaX;
+    const newY = panelStartY + deltaY;
+
+    // 限制在视口范围内
+    const viewport = {
+      width: windowRef.innerWidth,
+      height: windowRef.innerHeight,
+    };
+    const size = measurePanelSize();
+    const padding = PANEL_PADDING;
+
+    const clampedX = clamp(newX, padding, viewport.width - padding - size.width);
+    const clampedY = clamp(newY, padding, viewport.height - padding - size.height);
+
+    // 更新位置
+    wrapper.style.transform = `translate3d(${Math.round(clampedX)}px, ${Math.round(clampedY)}px, 0)`;
+
+    event.preventDefault();
+  }
+
+  /**
+   * 处理面板的拖动结束事件。
+   * @param {MouseEvent} event - 鼠标事件对象。
+   */
+  function handlePanelMouseUp(event) {
+    if (!isDragging) {
+      return;
+    }
+
+    isDragging = false;
+
+    // 移除全局拖动监听器
+    documentRef.removeEventListener("mousemove", handlePanelMouseMove, true);
+    documentRef.removeEventListener("mouseup", handlePanelMouseUp, true);
+
+    // 恢复样式
+    if (panel) {
+      panel.style.cursor = "";
+      panel.style.userSelect = "";
+    }
+
+    event.preventDefault();
+  }
+
+  /**
+   * 切换面板的固定状态。
+   * 固定时，面板将不会因为滚动、点击外部等操作而自动隐藏。
+   */
+  function togglePin() {
+    isPinned = !isPinned;
+
+    if (!pinButton) {
+      return;
+    }
+
+    if (isPinned) {
+      // 固定时：解绑所有自动隐藏的监听器
+      unbindGlobalListeners();
+      // 更新pin按钮状态
+      pinButton.dataset.pinned = "true";
+      pinButton.setAttribute(
+        "aria-label",
+        getText("floating_panel_unpin_label", "取消固定面板")
+      );
+    } else {
+      // 取消固定：重新绑定自动隐藏的监听器
+      bindGlobalListeners();
+      // 更新pin按钮状态
+      pinButton.dataset.pinned = "false";
+      pinButton.setAttribute(
+        "aria-label",
+        getText("floating_panel_pin_label", "固定面板")
+      );
     }
   }
 
@@ -942,6 +1167,10 @@ export function createFloatingPanelController(options = {}) {
    * @param {boolean} immediate - 是否立即隐藏，无动画效果。
    */
   function hide(immediate = false) {
+    // 如果面板被固定，不执行隐藏操作
+    if (isPinned) {
+      return;
+    }
     if (!host || !wrapper) {
       return;
     }
@@ -963,7 +1192,29 @@ export function createFloatingPanelController(options = {}) {
     if (writeButton) {
       writeButton.disabled = true;
     }
+    writeSuccess = false; // 重置写入成功标记
     unbindGlobalListeners();
+  }
+
+  /**
+   * 强制隐藏悬浮面板，忽略固定状态。
+   * @param {boolean} immediate - 是否立即隐藏，无动画效果。
+   */
+  function forceHide(immediate = false) {
+    // 取消固定状态并关闭面板
+    // 不需要恢复固定状态，因为面板已关闭，固定状态应该重置
+    if (isPinned) {
+      isPinned = false;
+      // 更新固定按钮的UI状态
+      if (pinButton) {
+        pinButton.dataset.pinned = "false";
+        pinButton.setAttribute(
+          "aria-label",
+          getText("floating_panel_pin_label", "固定面板")
+        );
+      }
+    }
+    hide(immediate);
   }
 
   /**
@@ -978,6 +1229,12 @@ export function createFloatingPanelController(options = {}) {
     if (shadowRoot) {
       shadowRoot.removeEventListener("keydown", handleKeyDown, true);
     }
+    if (panel) {
+      panel.removeEventListener("mousedown", handlePanelMouseDown);
+    }
+    // 清理拖动监听器（如果存在）
+    documentRef.removeEventListener("mousemove", handlePanelMouseMove, true);
+    documentRef.removeEventListener("mouseup", handlePanelMouseUp, true);
     if (host?.isConnected) {
       host.remove();
     }
@@ -992,9 +1249,12 @@ export function createFloatingPanelController(options = {}) {
     emptyNotice = null;
     actionContainer = null;
     retryButton = null;
+    pinButton = null;
     currentState = STATE_IDLE;
     visible = false;
     currentSelection = null;
+    isPinned = false;
+    isDragging = false;
   }
 
   /**
@@ -1003,10 +1263,22 @@ export function createFloatingPanelController(options = {}) {
    * @param {object} options - 状态选项。
    */
   function showLoading(selection, options = {}) {
-    show(selection);
-    setStatus(STATE_LOADING, options);
-    if (writeButton) {
-      writeButton.disabled = true;
+    // 重置写入成功标记，因为开始新的操作
+    writeSuccess = false;
+    // 如果面板已经可见，只更新状态，不重置位置
+    // 这样可以保持用户拖动后的位置
+    if (visible) {
+      setStatus(STATE_LOADING, options);
+      if (writeButton) {
+        writeButton.disabled = true;
+      }
+    } else {
+      // 面板不可见时，需要先显示面板
+      show(selection);
+      setStatus(STATE_LOADING, options);
+      if (writeButton) {
+        writeButton.disabled = true;
+      }
     }
   }
 
@@ -1023,6 +1295,24 @@ export function createFloatingPanelController(options = {}) {
       writeButton.disabled = false;
     }
     focusFirstField();
+  }
+
+  /**
+   * 标记为写入成功状态，此时点击面板外部会自动关闭（忽略固定状态）。
+   */
+  function markWriteSuccess() {
+    writeSuccess = true;
+    // 如果面板被固定，监听器可能已被解绑，需要强制重新绑定
+    if (isPinned && !listenersBound) {
+      // 直接绑定监听器，因为我们需要在写入成功后监听点击外部事件
+      windowRef.addEventListener("scroll", handleViewportChange, true);
+      windowRef.addEventListener("resize", handleViewportChange, true);
+      documentRef.addEventListener("pointerdown", handlePointerDown, true);
+      listenersBound = true;
+    } else {
+      // 正常情况下，使用标准的绑定函数
+      bindGlobalListeners();
+    }
   }
 
   /**
@@ -1308,6 +1598,16 @@ export function createFloatingPanelController(options = {}) {
       );
     }
 
+    // 更新固定按钮的aria-label
+    if (pinButton) {
+      pinButton.setAttribute(
+        "aria-label",
+        isPinned
+          ? getText("floating_panel_unpin_label", "取消固定面板")
+          : getText("floating_panel_pin_label", "固定面板")
+      );
+    }
+
     // 更新关闭按钮的aria-label
     const closeButton = shadowRoot.querySelector(".panel-close");
     if (closeButton) {
@@ -1384,6 +1684,14 @@ export function createFloatingPanelController(options = {}) {
     };
   }
 
+  /**
+   * 获取当前面板是否被固定。
+   * @returns {boolean} - 面板是否被固定。
+   */
+  function getIsPinned() {
+    return isPinned;
+  }
+
   // 返回公共API
   return {
     showLoading,
@@ -1401,6 +1709,8 @@ export function createFloatingPanelController(options = {}) {
     getFieldRoot,
     getDebugState,
     updateLocalization,
+    markWriteSuccess,
+    isPinned: getIsPinned,
     get config() {
       return currentConfig;
     },

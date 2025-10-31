@@ -1622,6 +1622,14 @@
     "description": "フローティングアシスタントパネル内の書き込みボタンラベル。",
     "message": "Ankiに書き込む"
   },
+  "floating_panel_pin_label": {
+    "description": "フローティングアシスタントパネル内のピン留めボタンラベル。",
+    "message": "パネルをピン留め"
+  },
+  "floating_panel_unpin_label": {
+    "description": "フローティングアシスタントパネル内のピン留め解除ボタンラベル。",
+    "message": "ピン留めを解除"
+  },
   "cardFront": {
     "description": "Legacy モード表面フィールドラベル。",
     "message": "表面:"
