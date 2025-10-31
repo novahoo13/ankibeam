@@ -1265,14 +1265,15 @@ export function createFloatingPanelController(options = {}) {
   function showLoading(selection, options = {}) {
     // 重置写入成功标记，因为开始新的操作
     writeSuccess = false;
-    // 如果面板被固定,不调用 show() 以避免重置位置
-    // 只更新状态和按钮状态
-    if (isPinned && visible) {
+    // 如果面板已经可见，只更新状态，不重置位置
+    // 这样可以保持用户拖动后的位置
+    if (visible) {
       setStatus(STATE_LOADING, options);
       if (writeButton) {
         writeButton.disabled = true;
       }
     } else {
+      // 面板不可见时，需要先显示面板
       show(selection);
       setStatus(STATE_LOADING, options);
       if (writeButton) {
