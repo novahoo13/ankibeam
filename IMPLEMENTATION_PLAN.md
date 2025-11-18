@@ -142,9 +142,9 @@
 ### 待完成任务 (2.2 - JavaScript实现)
 
 #### 2.2.1 基础设施
-- [ ] 添加模板编辑器状态对象 `templateEditorState`
-- [ ] 实现视图切换函数 `switchTemplateView(view)`
-- [ ] 添加模板表单重置函数 `resetTemplateForm()`
+- [x] 添加模板编辑器状态对象 `templateEditorState` ([options.js](options/options.js):257-264)
+- [x] 实现视图切换函数 `switchTemplateView(view)` ([options.js](options/options.js):2892-2908)
+- [x] 添加模板表单重置函数 `resetTemplateForm()` ([options.js](options/options.js):2915-2958)
 
 #### 2.2.2 模板列表功能
 - [ ] 实现 `loadTemplateList()` - 加载并渲染模板列表

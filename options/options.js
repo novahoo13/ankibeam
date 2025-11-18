@@ -244,6 +244,26 @@ const promptEditorState = {
 };
 
 /**
+ * テンプレート編集器の状態オブジェクト
+ * Template editor state object
+ * @type {Object}
+ * @property {string|null} currentTemplateId - 現在編集中のテンプレートID (null=新規作成)
+ * @property {string} mode - 編集モード: 'create' | 'edit'
+ * @property {Array<string>} availableFields - 利用可能なフィールドリスト
+ * @property {Array<string>} selectedFields - 選択されたフィールドリスト
+ * @property {Object} fieldConfigs - フィールド設定オブジェクト {fieldName: {parseInstruction, order}}
+ * @property {string} lastGeneratedPrompt - 最後に生成されたPrompt内容
+ */
+const templateEditorState = {
+  currentTemplateId: null,
+  mode: "create",
+  availableFields: [],
+  selectedFields: [],
+  fieldConfigs: {},
+  lastGeneratedPrompt: "",
+};
+
+/**
  * API 密钥占位符常量
  * @type {string}
  * @constant
@@ -2859,6 +2879,82 @@ function initTabNavigation() {
       }
     });
   });
+}
+
+// ==================== テンプレート管理功能 (Template Management) ====================
+
+/**
+ * テンプレートビューを切り替える
+ * Switch between template list and form views
+ * @param {'list'|'form'} view - 表示するビュー
+ * @returns {void}
+ */
+function switchTemplateView(view) {
+  const listView = document.getElementById("template-list-view");
+  const formView = document.getElementById("template-form-view");
+
+  if (!listView || !formView) {
+    console.warn("[options] テンプレートビュー要素が見つかりません");
+    return;
+  }
+
+  if (view === "list") {
+    listView.style.display = "block";
+    formView.style.display = "none";
+  } else if (view === "form") {
+    listView.style.display = "none";
+    formView.style.display = "block";
+  }
+}
+
+/**
+ * テンプレートフォームをリセットする
+ * Reset template form to initial state
+ * @returns {void}
+ */
+function resetTemplateForm() {
+  // 状態をリセット / Reset state
+  templateEditorState.currentTemplateId = null;
+  templateEditorState.mode = "create";
+  templateEditorState.availableFields = [];
+  templateEditorState.selectedFields = [];
+  templateEditorState.fieldConfigs = {};
+  templateEditorState.lastGeneratedPrompt = "";
+
+  // 基本情報フィールドをクリア / Clear basic info fields
+  const nameInput = document.getElementById("template-name");
+  const descInput = document.getElementById("template-description");
+  if (nameInput) nameInput.value = "";
+  if (descInput) descInput.value = "";
+
+  // Anki設定をクリア / Clear Anki settings
+  const deckSelect = document.getElementById("template-deck");
+  const modelSelect = document.getElementById("template-model");
+  if (deckSelect) deckSelect.value = "";
+  if (modelSelect) modelSelect.value = "";
+
+  // フィールド関連をクリア / Clear field sections
+  const fieldMapping = document.getElementById("template-field-mapping");
+  const fieldsSection = document.getElementById("template-fields-section");
+  const promptSection = document.getElementById("template-prompt-section");
+  if (fieldMapping) fieldMapping.style.display = "none";
+  if (fieldsSection) fieldsSection.style.display = "none";
+  if (promptSection) promptSection.style.display = "none";
+
+  // Promptテキストエリアをクリア / Clear prompt textarea
+  const promptTextarea = document.getElementById("template-prompt");
+  if (promptTextarea) promptTextarea.value = "";
+
+  // ステータスメッセージをクリア / Clear status messages
+  const ankiStatus = document.getElementById("template-anki-status");
+  if (ankiStatus) ankiStatus.textContent = "";
+
+  // フォームタイトルを新規作成に設定 / Set form title to create mode
+  const formTitle = document.getElementById("template-form-title");
+  if (formTitle) {
+    formTitle.setAttribute("data-i18n", "template_form_title_new");
+    formTitle.textContent = getText("template_form_title_new", "新規テンプレート");
+  }
 }
 
 // ==================== 配置管理功能 ====================
