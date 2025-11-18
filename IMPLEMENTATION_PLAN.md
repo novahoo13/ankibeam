@@ -239,7 +239,103 @@
 
 **目标**: 让 popup 端基于模板渲染字段、触发解析/写入、在无模板时给出空态提示。
 
-**状态**: 🚧 进行中
+**状态**: ✅ 基本完成 (待补充其他语言的 i18n)
+
+### 已完成的任务
+
+#### 3.1 UI 结构 ([popup.html](popup/popup.html))
+- [x] 添加模板选择器区域
+  - 模板下拉选择器 `template-select`
+  - 模板信息 tooltip 按钮和内容
+  - 模板切换提示条 `template-change-notice`
+  - 空态提示区域 `template-empty-state` 和"前往设置"按钮
+
+#### 3.2 模板选择器相关函数 ([popup.js](popup/popup.js))
+- [x] 引入 template-store 模块和相关依赖
+- [x] 添加模板状态变量
+  - `currentTemplate`: 当前活动模板缓存
+  - `isTemplateChangedByPopup`: 防止重复渲染标记
+  - `needsReparse`: 重新解析标记
+- [x] 实现核心函数
+  - `getActiveTemplate()`: 获取当前活动模板
+  - `renderTemplateSelector()`: 渲染模板选择器列表
+  - `updateTemplateTooltip()`: 更新 tooltip 显示内容
+  - `handleTemplateChange()`: 处理用户切换模板
+  - `showReparseNotice()/hideReparseNotice()`: 显示/隐藏重新解析提示
+
+#### 3.3 解析和写入流程重构
+- [x] 修改 `handleParse()` 使用模板数据
+  - 获取并验证活动模板
+  - 使用模板的字段和 prompt
+  - 隐藏重新解析提示
+- [x] 修改 `handleWriteToAnki()` 使用模板数据
+  - 从模板获取 deckName 和 modelName
+  - Fallback 到全局配置
+
+#### 3.4 初始化和事件监听
+- [x] 修改 `initialize()` 函数
+  - 调用 `renderTemplateSelector()`
+  - 绑定模板选择器 change 事件
+  - 绑定"前往设置"按钮点击事件
+  - 添加 `chrome.storage.onChanged` 监听器
+  - 调用 `updateUIBasedOnTemplate()`
+
+#### 3.5 Storage 同步和 UI 状态管理
+- [x] 实现 `handleStorageChange()`
+  - 处理外部模板变更事件
+  - 防止自己触发的变更导致重复渲染
+  - 自动刷新模板选择器和 UI
+- [x] 实现 `updateUIBasedOnTemplate()`
+  - 根据模板状态更新按钮禁用状态
+  - 无模板时禁用解析和写入按钮
+  - 有模板时启用解析按钮
+
+#### 3.6 多语言支持
+- [x] 简体中文 (zh_CN)
+  - 添加所有 popup 模板相关的 i18n key
+  - 包括选择器标签、提示、错误消息等
+- [ ] 繁体中文 (zh_TW) - 待补充
+- [ ] 日语 (ja) - 待补充
+- [ ] 英语 (en) - 待补充
+
+### 技术亮点
+
+1. **模板驱动的解析流程**
+   - 完全基于模板的字段定义和 prompt
+   - 支持动态字段顺序（通过 `order` 属性）
+   - 优雅降级到 Legacy 模式
+
+2. **跨端同步机制**
+   - 通过 `chrome.storage.onChanged` 监听实现
+   - 使用 `isTemplateChangedByPopup` 标记防止循环更新
+   - 支持 popup、options、content 三端同步
+
+3. **用户体验优化**
+   - 模板切换后显示"重新解析"提示
+   - 空态时提供"前往设置"引导
+   - 按钮禁用状态清晰反馈
+   - Tooltip 显示模板详细信息
+
+4. **错误处理和验证**
+   - 解析前检查模板存在性
+   - 验证模板字段配置
+   - 友好的错误提示
+
+### 待完成
+
+- [ ] 补充其他三种语言的 i18n 文本
+- [ ] 端到端功能测试
+- [ ] 与 options 页面的联调测试
+
+### 交付文件
+
+- [popup/popup.html](popup/popup.html) - 更新UI结构
+- [popup/popup.js](popup/popup.js) - 实现模板相关逻辑
+- [_locales/zh_CN/messages.json](_locales/zh_CN/messages.json) - 简体中文文本
+
+### 下一步
+
+继续阶段4: 内容脚本与悬浮球模板同步
 
 ---
 
