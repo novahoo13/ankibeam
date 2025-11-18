@@ -946,6 +946,63 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (lineHeightSelect) {
     lineHeightSelect.addEventListener("change", updateStylePreview);
   }
+
+  // テンプレート関連のイベントリスナー / Template-related event listeners
+  const addTemplateBtn = document.getElementById("add-template-btn");
+  if (addTemplateBtn) {
+    addTemplateBtn.addEventListener("click", () => {
+      resetTemplateForm();
+      switchTemplateView("form");
+    });
+  }
+
+  const addTemplateBtnEmpty = document.getElementById("add-template-btn-empty");
+  if (addTemplateBtnEmpty) {
+    addTemplateBtnEmpty.addEventListener("click", () => {
+      resetTemplateForm();
+      switchTemplateView("form");
+    });
+  }
+
+  const templateFormCancel = document.getElementById("template-form-cancel");
+  if (templateFormCancel) {
+    templateFormCancel.addEventListener("click", () => {
+      switchTemplateView("list");
+    });
+  }
+
+  const templateFormCancelBottom = document.getElementById(
+    "template-form-cancel-bottom"
+  );
+  if (templateFormCancelBottom) {
+    templateFormCancelBottom.addEventListener("click", () => {
+      switchTemplateView("list");
+    });
+  }
+
+  // テンプレート表単内のイベントリスナー / Template form event listeners
+  const templateTestAnkiBtn = document.getElementById("template-test-anki-btn");
+  if (templateTestAnkiBtn) {
+    templateTestAnkiBtn.addEventListener("click", handleTemplateTestAnki);
+  }
+
+  const templateModelSelect = document.getElementById("template-model");
+  if (templateModelSelect) {
+    templateModelSelect.addEventListener("change", handleTemplateModelChange);
+  }
+
+  const templateGeneratePromptBtn = document.getElementById(
+    "template-generate-prompt-btn"
+  );
+  if (templateGeneratePromptBtn) {
+    templateGeneratePromptBtn.addEventListener(
+      "click",
+      handleTemplateGeneratePrompt
+    );
+  }
+
+  // テンプレートリストを読み込む / Load template list
+  loadTemplateList();
 });
 
 /**
@@ -2957,6 +3014,294 @@ function resetTemplateForm() {
   }
 }
 
+// ==================== テンプレートリスト機能 / Template List Functions ====================
+
+/**
+ * テンプレートリストを読み込んでレンダリングする
+ * Load and render the template list
+ * @returns {Promise<void>}
+ */
+async function loadTemplateList() {
+  try {
+    const config = await storageApi.loadConfig();
+    const templateLibrary = loadTemplateLibrary(config);
+    const templates = listTemplates(config);
+
+    const emptyState = document.getElementById("template-empty-state");
+    const listContainer = document.getElementById("template-list-container");
+    const cardsGrid = document.getElementById("template-cards-grid");
+
+    if (!templates || templates.length === 0) {
+      // 空態を表示 / Show empty state
+      if (emptyState) emptyState.style.display = "block";
+      if (listContainer) listContainer.style.display = "none";
+    } else {
+      // リストを表示 / Show list
+      if (emptyState) emptyState.style.display = "none";
+      if (listContainer) listContainer.style.display = "block";
+
+      // カードをレンダリング / Render cards
+      if (cardsGrid) {
+        cardsGrid.innerHTML = "";
+        templates.forEach((template) => {
+          const card = renderTemplateCard(template, templateLibrary.defaultTemplateId);
+          cardsGrid.appendChild(card);
+        });
+      }
+    }
+  } catch (error) {
+    console.error("テンプレートリストの読み込みに失敗:", error);
+    showToast(
+      getText("template_load_error", "テンプレートの読み込みに失敗しました"),
+      "error"
+    );
+  }
+}
+
+/**
+ * 単一のテンプレートカードをレンダリングする
+ * Render a single template card
+ * @param {Object} template - テンプレートオブジェクト
+ * @param {string|null} defaultTemplateId - デフォルトテンプレートID
+ * @returns {HTMLElement} カード要素
+ */
+function renderTemplateCard(template, defaultTemplateId) {
+  const card = document.createElement("div");
+  card.className = "bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition";
+  card.dataset.templateId = template.id;
+
+  const isDefault = template.id === defaultTemplateId;
+
+  // フォーマット更新日時 / Format update time
+  const updatedDate = template.updatedAt ? new Date(template.updatedAt) : new Date();
+  const formattedDate = updatedDate.toLocaleDateString(getLocale(), {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+  card.innerHTML = `
+    <div class="flex items-start justify-between mb-4">
+      <div class="flex-1">
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">${escapeHtml(template.name)}</h3>
+        <p class="text-sm text-gray-600 mb-3">${escapeHtml(template.description || "")}</p>
+        <div class="flex flex-wrap gap-2 text-xs text-gray-500">
+          <span class="inline-flex items-center">
+            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+            </svg>
+            ${escapeHtml(template.deckName || "-")}
+          </span>
+          <span class="text-gray-300">|</span>
+          <span class="inline-flex items-center">
+            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+            ${escapeHtml(template.modelName || "-")}
+          </span>
+          <span class="text-gray-300">|</span>
+          <span class="inline-flex items-center">
+            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            ${template.fields ? template.fields.length : 0} ${getText("template_card_fields_count", "個のフィールド")}
+          </span>
+        </div>
+      </div>
+      ${
+        isDefault
+          ? `<span class="ml-4 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800" data-i18n="template_card_default_badge">${getText("template_card_default_badge", "デフォルト")}</span>`
+          : ""
+      }
+    </div>
+
+    <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+      <span class="text-xs text-gray-500">
+        ${getText("template_card_updated_at", "更新日:")} ${formattedDate}
+      </span>
+      <div class="flex gap-2">
+        ${
+          !isDefault
+            ? `<button
+            type="button"
+            class="template-set-default-btn text-sm text-blue-600 hover:text-blue-800 font-medium"
+            data-template-id="${template.id}"
+            data-i18n="template_card_set_default"
+          >${getText("template_card_set_default", "デフォルトに設定")}</button>`
+            : ""
+        }
+        <button
+          type="button"
+          class="template-edit-btn text-sm text-gray-600 hover:text-gray-900 font-medium"
+          data-template-id="${template.id}"
+          data-i18n="template_card_edit"
+        >${getText("template_card_edit", "編集")}</button>
+        <button
+          type="button"
+          class="template-delete-btn text-sm text-red-600 hover:text-red-800 font-medium"
+          data-template-id="${template.id}"
+          data-i18n="template_card_delete"
+        >${getText("template_card_delete", "削除")}</button>
+      </div>
+    </div>
+  `;
+
+  // イベントリスナーをバインド / Bind event listeners
+  const setDefaultBtn = card.querySelector(".template-set-default-btn");
+  if (setDefaultBtn) {
+    setDefaultBtn.addEventListener("click", () =>
+      handleSetDefaultTemplate(template.id)
+    );
+  }
+
+  const editBtn = card.querySelector(".template-edit-btn");
+  if (editBtn) {
+    editBtn.addEventListener("click", () => handleEditTemplate(template.id));
+  }
+
+  const deleteBtn = card.querySelector(".template-delete-btn");
+  if (deleteBtn) {
+    deleteBtn.addEventListener("click", () => handleDeleteTemplate(template.id));
+  }
+
+  return card;
+}
+
+/**
+ * デフォルトテンプレートを設定する
+ * Set default template
+ * @param {string} templateId - テンプレートID
+ * @returns {Promise<void>}
+ */
+async function handleSetDefaultTemplate(templateId) {
+  try {
+    const config = await storageApi.loadConfig();
+    const updatedConfig = setDefaultTemplate(config, templateId);
+    await storageApi.saveConfig(updatedConfig);
+
+    showToast(
+      getText("options_toast_template_set_default", "デフォルトテンプレートを設定しました"),
+      "success"
+    );
+
+    // リストを再読み込み / Reload list
+    await loadTemplateList();
+  } catch (error) {
+    console.error("デフォルトテンプレートの設定に失敗:", error);
+    showToast(
+      getText("options_toast_template_set_default_error", "デフォルトテンプレートの設定に失敗しました"),
+      "error"
+    );
+  }
+}
+
+/**
+ * テンプレートを編集する
+ * Edit template
+ * @param {string} templateId - テンプレートID
+ * @returns {Promise<void>}
+ */
+async function handleEditTemplate(templateId) {
+  try {
+    const config = await storageApi.loadConfig();
+    const template = getTemplateById(config, templateId);
+
+    if (!template) {
+      showToast(
+        getText("options_toast_template_not_found", "テンプレートが見つかりません"),
+        "error"
+      );
+      return;
+    }
+
+    // 編集状態を設定 / Set edit state
+    templateEditorState.currentTemplateId = templateId;
+    templateEditorState.mode = "edit";
+
+    // フォームに値を設定 / Populate form
+    const nameInput = document.getElementById("template-name");
+    const descInput = document.getElementById("template-description");
+    const deckSelect = document.getElementById("template-deck");
+    const modelSelect = document.getElementById("template-model");
+    const promptTextarea = document.getElementById("template-prompt");
+
+    if (nameInput) nameInput.value = template.name || "";
+    if (descInput) descInput.value = template.description || "";
+    if (promptTextarea) promptTextarea.value = template.prompt || "";
+
+    // フォームタイトルを更新 / Update form title
+    const formTitle = document.getElementById("template-form-title");
+    if (formTitle) {
+      formTitle.setAttribute("data-i18n", "template_form_title_edit");
+      formTitle.textContent = getText("template_form_title_edit", "テンプレートを編集");
+    }
+
+    // Anki データを読み込み、deck/model を設定
+    // Load Anki data and set deck/model
+    // これは次のステップ (2.2.3) で実装する関数を呼び出す予定
+    // This will call functions to be implemented in next step (2.2.3)
+
+    // フォームビューに切り替え / Switch to form view
+    switchTemplateView("form");
+  } catch (error) {
+    console.error("テンプレートの編集準備に失敗:", error);
+    showToast(
+      getText("options_toast_template_edit_error", "テンプレートの編集準備に失敗しました"),
+      "error"
+    );
+  }
+}
+
+/**
+ * テンプレートを削除する
+ * Delete template
+ * @param {string} templateId - テンプレートID
+ * @returns {Promise<void>}
+ */
+async function handleDeleteTemplate(templateId) {
+  try {
+    const config = await storageApi.loadConfig();
+    const template = getTemplateById(config, templateId);
+
+    if (!template) {
+      showToast(
+        getText("options_toast_template_not_found", "テンプレートが見つかりません"),
+        "error"
+      );
+      return;
+    }
+
+    // 確認ダイアログを表示 / Show confirmation dialog
+    const confirmMessage = getText(
+      "template_card_delete_confirm",
+      `テンプレート「${template.name}」を削除してもよろしいですか?`,
+      [template.name]
+    );
+
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    // テンプレートを削除 / Delete template
+    const updatedConfig = deleteTemplate(config, templateId);
+    await storageApi.saveConfig(updatedConfig);
+
+    showToast(
+      getText("options_toast_template_deleted", "テンプレートを削除しました"),
+      "success"
+    );
+
+    // リストを再読み込み / Reload list
+    await loadTemplateList();
+  } catch (error) {
+    console.error("テンプレートの削除に失敗:", error);
+    showToast(
+      getText("options_toast_template_delete_error", "テンプレートの削除に失敗しました"),
+      "error"
+    );
+  }
+}
+
 // ==================== 配置管理功能 ====================
 
 /**
@@ -3031,4 +3376,508 @@ async function handleImportConfigurationFile(event) {
 
   // 清空文件输入，允许重复导入相同文件
   event.target.value = "";
+}
+
+// =============================================================================
+// 模板表单功能 (Template Form Functions) - 阶段 2.2.3
+// =============================================================================
+
+/**
+ * テンプレート用のAnki接続テスト
+ * Handle Anki connection test for template form
+ * @description 复用 handleTestAnki 的逻辑,但使用模板表单的 DOM 元素
+ * @returns {Promise<void>}
+ */
+async function handleTemplateTestAnki() {
+  const statusElement = document.getElementById("template-anki-status");
+  if (!statusElement) return;
+
+  updateTemplateStatus(
+    getText("options_test_running", "正在测试连接并刷新数据..."),
+    "loading"
+  );
+
+  try {
+    const result = await ankiApi.testConnection();
+    if (result.error) {
+      throw new Error(result.error);
+    }
+
+    updateTemplateStatus(
+      `连接成功，AnkiConnect 版本: ${result.result}`,
+      "success"
+    );
+
+    // 保存当前用户选择的值
+    const currentDeck = document.getElementById("template-deck").value;
+    const currentModel = document.getElementById("template-model").value;
+
+    // 连接成功后，拉取最新的 Anki 数据
+    await loadTemplateAnkiData();
+
+    // 尝试恢复用户之前的选择（如果仍然有效）
+    if (currentDeck) {
+      const deckSelect = document.getElementById("template-deck");
+      const deckOption = Array.from(deckSelect.options).find(
+        (opt) => opt.value === currentDeck
+      );
+      if (deckOption) {
+        deckSelect.value = currentDeck;
+      }
+    }
+
+    if (currentModel) {
+      const modelSelect = document.getElementById("template-model");
+      const modelOption = Array.from(modelSelect.options).find(
+        (opt) => opt.value === currentModel
+      );
+      if (modelOption) {
+        modelSelect.value = currentModel;
+        // 如果模型仍然有效，重新获取字段信息
+        await handleTemplateModelChange();
+      }
+    }
+
+    updateTemplateStatus(
+      getText("options_test_success_with_refresh", "连接成功，数据已刷新"),
+      "success"
+    );
+  } catch (error) {
+    console.error("Anki 连接测试失败:", error);
+    updateTemplateStatus(
+      getText("options_test_failed", `连接失败: ${error.message}`, [
+        error.message,
+      ]),
+      "error"
+    );
+  }
+}
+
+/**
+ * テンプレート用のAnkiデータ読み込み
+ * Load Anki data for template form
+ * @description 从 Anki 读取牌组和模型数据，更新模板表单的下拉框
+ * @returns {Promise<void>}
+ */
+async function loadTemplateAnkiData() {
+  try {
+    // 牌组
+    const decksResult = await ankiApi.getDeckNames();
+    if (decksResult.error) {
+      throw createI18nError("options_error_fetch_decks", {
+        fallback: `读取牌组失败: ${decksResult.error}`,
+        substitutions: [decksResult.error],
+      });
+    }
+
+    // 模型
+    const modelsResult = await ankiApi.getModelNames();
+    if (modelsResult.error) {
+      throw createI18nError("options_error_fetch_models", {
+        fallback: `读取模型失败: ${modelsResult.error}`,
+        substitutions: [modelsResult.error],
+      });
+    }
+
+    // 牌组下拉
+    const deckSelect = document.getElementById("template-deck");
+    deckSelect.innerHTML = "";
+    const deckPlaceholderOption = document.createElement("option");
+    deckPlaceholderOption.value = "";
+    deckPlaceholderOption.textContent = getText(
+      "options_default_deck_placeholder",
+      "Select a default deck"
+    );
+    deckSelect.appendChild(deckPlaceholderOption);
+    decksResult.result.forEach((deck) => {
+      const option = document.createElement("option");
+      option.value = deck;
+      option.textContent = deck;
+      deckSelect.appendChild(option);
+    });
+
+    // 模型下拉
+    const modelSelect = document.getElementById("template-model");
+    modelSelect.innerHTML = "";
+    const modelPlaceholderOption = document.createElement("option");
+    modelPlaceholderOption.value = "";
+    modelPlaceholderOption.textContent = getText(
+      "options_default_model_placeholder",
+      "Select a default model"
+    );
+    modelSelect.appendChild(modelPlaceholderOption);
+    modelsResult.result.forEach((model) => {
+      const option = document.createElement("option");
+      option.value = model;
+      option.textContent = model;
+      modelSelect.appendChild(option);
+    });
+  } catch (error) {
+    console.error("Anki 数据获取发生错误:", error);
+    updateTemplateStatus(
+      getText("options_error_fetch_anki_data", `出错: ${error.message}`, [
+        error.message,
+      ]),
+      "error"
+    );
+  }
+}
+
+/**
+ * テンプレート用のモデル変更処理
+ * Handle model change for template form
+ * @description 当用户选择不同的 Anki 模型时，获取并显示该模型的字段信息
+ * @returns {Promise<void>}
+ */
+async function handleTemplateModelChange() {
+  const modelName = document.getElementById("template-model").value;
+  if (!modelName) {
+    document.getElementById("template-field-mapping").style.display = "none";
+    document.getElementById("template-fields-section").style.display = "none";
+    document.getElementById("template-prompt-section").style.display = "none";
+    templateEditorState.availableFields = [];
+    return;
+  }
+
+  try {
+    const fieldsResult = await ankiApi.getModelFieldNames(modelName);
+    if (fieldsResult.error) {
+      throw new Error(fieldsResult.error);
+    }
+
+    // 保存获取到的 Anki 模型字段名
+    templateEditorState.availableFields = fieldsResult.result;
+
+    // 在 UI 中显示字段信息
+    const fieldMappingDiv = document.getElementById("template-field-mapping");
+    const container = document.getElementById(
+      "template-field-mapping-container"
+    );
+
+    const fieldCount = fieldsResult.result.length;
+    const fieldHeading = getText(
+      "options_model_fields_heading",
+      `模型字段 (${fieldCount}个):`,
+      [String(fieldCount)]
+    );
+
+    container.innerHTML = `
+      <strong>${fieldHeading}</strong>
+      <div class="field-tags">
+        ${fieldsResult.result
+          .map((field) => `<span class="field-tag">${field}</span>`)
+          .join("; ")}
+      </div>
+    `;
+
+    fieldMappingDiv.style.display = "block";
+
+    // 显示字段配置区域
+    renderTemplateFieldSelection(fieldsResult.result);
+    document.getElementById("template-fields-section").style.display = "block";
+  } catch (error) {
+    console.error("字段获取失败:", error);
+    document.getElementById("template-field-mapping").style.display = "none";
+    document.getElementById("template-fields-section").style.display = "none";
+    document.getElementById("template-prompt-section").style.display = "none";
+    templateEditorState.availableFields = [];
+  }
+}
+
+/**
+ * テンプレート用のフィールド選択UIレンダリング
+ * Render field selection UI for template form
+ * @description 渲染字段选择复选框列表
+ * @param {Array<string>} fields - 可用字段列表
+ * @returns {void}
+ */
+function renderTemplateFieldSelection(fields) {
+  const selectionList = document.getElementById(
+    "template-field-selection-list"
+  );
+  if (!selectionList) return;
+
+  selectionList.innerHTML = "";
+
+  fields.forEach((field) => {
+    const isSelected = templateEditorState.selectedFields.includes(field);
+
+    const checkboxWrapper = document.createElement("label");
+    checkboxWrapper.className =
+      "inline-flex items-center px-3 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = field;
+    checkbox.checked = isSelected;
+    checkbox.className = "mr-2";
+    checkbox.addEventListener("change", (e) => {
+      if (e.target.checked) {
+        if (!templateEditorState.selectedFields.includes(field)) {
+          templateEditorState.selectedFields.push(field);
+          // 确保字段配置对象存在
+          if (!templateEditorState.fieldConfigs[field]) {
+            templateEditorState.fieldConfigs[field] = { content: "" };
+          }
+        }
+      } else {
+        const index = templateEditorState.selectedFields.indexOf(field);
+        if (index > -1) {
+          templateEditorState.selectedFields.splice(index, 1);
+        }
+      }
+      renderTemplateFieldConfig();
+      synchronizeTemplatePrompt({ forceUpdate: false });
+    });
+
+    const label = document.createElement("span");
+    label.textContent = field;
+    label.className = "text-sm font-medium text-gray-700";
+
+    checkboxWrapper.appendChild(checkbox);
+    checkboxWrapper.appendChild(label);
+    selectionList.appendChild(checkboxWrapper);
+  });
+
+  // 渲染字段配置区域
+  renderTemplateFieldConfig();
+}
+
+/**
+ * テンプレート用のフィールド設定UIレンダリング
+ * Render field config UI for template form
+ * @description 渲染已选择字段的配置表单
+ * @returns {void}
+ */
+function renderTemplateFieldConfig() {
+  const configList = document.getElementById("template-field-config-list");
+  if (!configList) return;
+
+  configList.innerHTML = "";
+
+  if (templateEditorState.selectedFields.length === 0) {
+    configList.innerHTML = `<p class="text-sm text-gray-500">${getText(
+      "template_form_no_fields_selected",
+      "请先选择字段"
+    )}</p>`;
+    return;
+  }
+
+  templateEditorState.selectedFields.forEach((field) => {
+    const config = templateEditorState.fieldConfigs[field] || { content: "" };
+
+    const card = document.createElement("div");
+    card.className = "bg-white border border-gray-200 rounded-md p-4";
+    card.dataset.fieldConfigItem = field;
+
+    const fieldHeader = document.createElement("h5");
+    fieldHeader.className = "text-sm font-medium text-gray-900 mb-2";
+    fieldHeader.textContent = field;
+
+    const textarea = document.createElement("textarea");
+    textarea.rows = 3;
+    textarea.value = config.content || "";
+    textarea.className =
+      "w-full p-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500";
+    textarea.placeholder = getText(
+      "template_form_field_instruction_placeholder",
+      "请描述该字段应该包含什么内容..."
+    );
+    textarea.dataset.fieldRole = "content";
+    textarea.addEventListener("input", (e) => {
+      if (!templateEditorState.fieldConfigs[field]) {
+        templateEditorState.fieldConfigs[field] = {};
+      }
+      templateEditorState.fieldConfigs[field].content = e.target.value;
+      synchronizeTemplatePrompt({ forceUpdate: false });
+    });
+
+    card.appendChild(fieldHeader);
+    card.appendChild(textarea);
+    configList.appendChild(card);
+  });
+}
+
+/**
+ * テンプレート用のPrompt生成
+ * Generate prompt for template
+ * @description 根据选中的字段和配置生成 Prompt
+ * @returns {void}
+ */
+function handleTemplateGeneratePrompt() {
+  const selectedFields = templateEditorState.selectedFields || [];
+  if (selectedFields.length === 0) {
+    updateTemplateStatus(
+      getText(
+        "options_prompt_error_no_fields",
+        "请先选择至少一个字段，然后再生成 Prompt。"
+      ),
+      "info"
+    );
+    return;
+  }
+
+  // 显示 Prompt 编辑区域
+  const promptSection = document.getElementById("template-prompt-section");
+  if (promptSection) {
+    promptSection.style.display = "block";
+  }
+
+  // 生成并填充 Prompt
+  synchronizeTemplatePrompt({ forceUpdate: true });
+
+  updateTemplateStatus(
+    getText("template_form_prompt_generated", "Prompt 已生成"),
+    "success"
+  );
+}
+
+/**
+ * テンプレート用のPrompt同期
+ * Synchronize generated prompt for template
+ * @description 同步生成的 Prompt 到模板编辑器
+ * @param {Object} [options={}] - 配置选项
+ * @param {boolean} [options.forceUpdate=false] - 是否强制更新
+ * @returns {boolean} 是否更新了 Prompt
+ */
+function synchronizeTemplatePrompt(options = {}) {
+  const { forceUpdate = false } = options;
+  const promptTextarea = document.getElementById("template-prompt");
+
+  if (!promptTextarea) {
+    return false;
+  }
+
+  const generatedPrompt = generateTemplatePrompt();
+  const trimmedGenerated = (generatedPrompt || "").trim();
+  const trimmedCurrent = (promptTextarea.value || "").trim();
+
+  if (!trimmedGenerated) {
+    if (forceUpdate && promptTextarea.value) {
+      promptTextarea.value = "";
+      return true;
+    }
+    return false;
+  }
+
+  if (forceUpdate || !trimmedCurrent) {
+    if (trimmedCurrent !== trimmedGenerated) {
+      promptTextarea.value = generatedPrompt;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * テンプレート用のデフォルトPrompt生成
+ * Generate default prompt for template
+ * @description 根据选中的字段和配置生成结构化的 Prompt（复用 generateDefaultPrompt 的逻辑）
+ * @returns {string} 生成的 Prompt 文本
+ */
+function generateTemplatePrompt() {
+  const selectedFields = templateEditorState.selectedFields || [];
+  if (selectedFields.length === 0) {
+    return "";
+  }
+
+  const lines = [];
+  lines.push(
+    getText("options_prompt_rule_intro", "请严格按照下列要求生成输出。")
+  );
+  lines.push("");
+  lines.push(
+    getText("options_prompt_rule_field_definition", "字段返回内容定义：")
+  );
+
+  selectedFields.forEach((field) => {
+    const config = templateEditorState.fieldConfigs[field] || {};
+    const content = (config.content || "").trim();
+    const fieldDetail =
+      content ||
+      getText(
+        "options_prompt_rule_field_fallback",
+        "请生成与该字段相关的内容。"
+      );
+    lines.push(`${field}：${fieldDetail}`);
+    lines.push("");
+  });
+
+  lines.push(getText("options_prompt_rule_output_format", "输出格式定义："));
+  lines.push(
+    getText(
+      "options_prompt_rule_output_json",
+      "请按照以下 JSON 结构返回结果，仅包含所列字段："
+    )
+  );
+  lines.push("{");
+  selectedFields.forEach((field, index) => {
+    const comma = index === selectedFields.length - 1 ? "" : ",";
+    lines.push(
+      getText(
+        "options_prompt_rule_output_line",
+        `  "${field}": "请填入${field}的内容"${comma}`,
+        [field, comma]
+      )
+    );
+  });
+  lines.push("}");
+  lines.push("");
+  lines.push(getText("options_prompt_rule_notes", "注意事项："));
+  lines.push(
+    getText(
+      "options_prompt_rule_note_json_only",
+      "- 仅返回 JSON，不要包含额外解释。"
+    )
+  );
+  lines.push(
+    getText(
+      "options_prompt_rule_note_requirements",
+      "- 确保各字段内容满足上文要求。"
+    )
+  );
+
+  return (
+    lines
+      .join("\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim() + "\n"
+  );
+}
+
+/**
+ * テンプレートステータス更新
+ * Update template status message
+ * @description 更新模板表单的状态消息
+ * @param {string} message - 状态消息
+ * @param {string} level - 消息级别（"loading", "success", "error", "info"）
+ * @returns {void}
+ */
+function updateTemplateStatus(message, level) {
+  const statusElement = document.getElementById("template-anki-status");
+  if (!statusElement) return;
+
+  // 移除所有状态类
+  statusElement.className = "text-sm";
+
+  // 根据级别添加相应的类
+  switch (level) {
+    case "loading":
+      statusElement.className += " text-blue-600";
+      break;
+    case "success":
+      statusElement.className += " text-green-600";
+      break;
+    case "error":
+      statusElement.className += " text-red-600";
+      break;
+    case "info":
+      statusElement.className += " text-gray-600";
+      break;
+    default:
+      statusElement.className += " text-gray-600";
+  }
+
+  statusElement.textContent = message;
 }

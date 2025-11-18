@@ -147,18 +147,29 @@
 - [x] 添加模板表单重置函数 `resetTemplateForm()` ([options.js](options/options.js):2915-2958)
 
 #### 2.2.2 模板列表功能
-- [ ] 实现 `loadTemplateList()` - 加载并渲染模板列表
-- [ ] 实现 `renderTemplateCard(template)` - 渲染单个模板卡片
-- [ ] 实现 `handleSetDefaultTemplate(templateId)` - 设置默认模板
-- [ ] 实现 `handleEditTemplate(templateId)` - 编辑模板
-- [ ] 实现 `handleDeleteTemplate(templateId)` - 删除模板
+- [x] 实现 `loadTemplateList()` - 加载并渲染模板列表 ([options.js](options/options.js):2967-3002)
+- [x] 实现 `renderTemplateCard(template)` - 渲染单个模板卡片 ([options.js](options/options.js):3011-3111)
+- [x] 实现 `handleSetDefaultTemplate(templateId)` - 设置默认模板 ([options.js](options/options.js):3119-3139)
+- [x] 实现 `handleEditTemplate(templateId)` - 编辑模板 ([options.js](options/options.js):3147-3196)
+- [x] 实现 `handleDeleteTemplate(templateId)` - 删除模板 ([options.js](options/options.js):3204-3246)
+- [x] 绑定"新增模板"按钮事件 ([options.js](options/options.js):951-965)
+- [x] 绑定表单取消按钮事件 ([options.js](options/options.js):967-972)
+- [x] 在页面加载时调用 `loadTemplateList()` ([options.js](options/options.js):975)
 
 #### 2.2.3 模板表单功能 (复用现有代码)
-- [ ] 实现 `handleTemplateTestAnki()` - 复用 `testAnkiConnection()`
-- [ ] 实现 `loadTemplateAnkiData()` - 复用 `loadAnkiData()`
-- [ ] 实现 `handleTemplateModelChange()` - 复用 `handleModelChange()`
-- [ ] 实现 `renderTemplateFields(fields)` - 复用字段选择/配置逻辑
-- [ ] 实现 `handleTemplateGeneratePrompt()` - 复用 `generatePrompt()`
+- [x] 实现 `handleTemplateTestAnki()` - 复用 `testAnkiConnection()` ([options.js](options/options.js):2973-3024)
+- [x] 实现 `loadTemplateAnkiData()` - 复用 `loadAnkiData()` ([options.js](options/options.js):3026-3094)
+- [x] 实现 `handleTemplateModelChange()` - 复用 `handleModelChange()` ([options.js](options/options.js):3096-3156)
+- [x] 实现 `renderTemplateFieldSelection()` - 渲染字段选择UI ([options.js](options/options.js):3158-3214)
+- [x] 实现 `renderTemplateFieldConfig()` - 渲染字段配置UI ([options.js](options/options.js):3216-3270)
+- [x] 实现 `handleTemplateGeneratePrompt()` - 生成Prompt ([options.js](options/options.js):3272-3296)
+- [x] 实现 `synchronizeTemplatePrompt()` - 同步Prompt ([options.js](options/options.js):3298-3323)
+- [x] 实现 `generateTemplatePrompt()` - 生成默认Prompt ([options.js](options/options.js):3325-3384)
+- [x] 实现 `updateTemplateStatus()` - 更新状态消息 ([options.js](options/options.js):3386-3413)
+- [x] 绑定测试连接按钮事件 ([options.js](options/options.js):984-987)
+- [x] 绑定模型选择变更事件 ([options.js](options/options.js):989-992)
+- [x] 绑定生成Prompt按钮事件 ([options.js](options/options.js):994-1001)
+- [x] 绑定底部取消按钮事件 ([options.js](options/options.js):974-981)
 
 #### 2.2.4 模板保存与验证
 - [ ] 实现 `validateTemplateForm()` - 表单验证
