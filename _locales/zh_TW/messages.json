@@ -1146,6 +1146,66 @@
     "description": "Anki 測試成功並刷新資料後的提示",
     "message": "連線成功，資料已刷新"
   },
+  "popup_template_selector_label": {
+    "description": "Popup 範本選擇器標籤",
+    "message": "選擇範本:"
+  },
+  "popup_template_loading": {
+    "description": "範本載入中",
+    "message": "載入中..."
+  },
+  "popup_template_none": {
+    "description": "無可用範本",
+    "message": "無可用範本"
+  },
+  "popup_template_empty_state": {
+    "description": "尚未配置範本提示",
+    "message": "尚未配置範本，"
+  },
+  "popup_template_open_options": {
+    "description": "前往設定按鈕文字",
+    "message": "前往設定"
+  },
+  "popup_template_change_notice": {
+    "description": "範本切換提示",
+    "message": "範本已切換，請重新解析文字"
+  },
+  "popup_template_hover_deck_model": {
+    "description": "範本 tooltip 中的牌組和模型資訊",
+    "message": "牌組: $DECK$ / 範本: $MODEL$",
+    "placeholders": {
+      "DECK": {
+        "content": "$1",
+        "description": "牌組名稱"
+      },
+      "MODEL": {
+        "content": "$2",
+        "description": "模型名稱"
+      }
+    }
+  },
+  "popup_template_hover_fields": {
+    "description": "範本 tooltip 中的欄位列表",
+    "message": "欄位: $FIELDS$",
+    "placeholders": {
+      "FIELDS": {
+        "content": "$1",
+        "description": "欄位列表"
+      }
+    }
+  },
+  "popup_status_no_template": {
+    "description": "無範本錯誤提示",
+    "message": "請先在設定頁面建立解析範本"
+  },
+  "popup_status_template_no_fields": {
+    "description": "範本無欄位錯誤提示",
+    "message": "目前範本未配置欄位"
+  },
+  "popup_template_empty_hint": {
+    "description": "解析按鈕禁用時的提示",
+    "message": "請先在設定頁面建立範本"
+  },
   "options_text_align_center": {
     "description": "文字對齊選項：置中",
     "message": "置中"

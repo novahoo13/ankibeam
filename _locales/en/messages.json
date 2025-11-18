@@ -1198,6 +1198,66 @@
     "description": "Message displayed when Anki test is successful and data is refreshed.",
     "message": "Connection successful, data refreshed"
   },
+  "popup_template_selector_label": {
+    "description": "Popup template selector label",
+    "message": "Select Template:"
+  },
+  "popup_template_loading": {
+    "description": "Template loading message",
+    "message": "Loading..."
+  },
+  "popup_template_none": {
+    "description": "No templates available message",
+    "message": "No templates available"
+  },
+  "popup_template_empty_state": {
+    "description": "Template not configured hint",
+    "message": "No template configured, "
+  },
+  "popup_template_open_options": {
+    "description": "Open options button text",
+    "message": "Go to Settings"
+  },
+  "popup_template_change_notice": {
+    "description": "Template changed notice",
+    "message": "Template changed, please re-parse the text"
+  },
+  "popup_template_hover_deck_model": {
+    "description": "Template tooltip deck and model information",
+    "message": "Deck: $DECK$ / Model: $MODEL$",
+    "placeholders": {
+      "DECK": {
+        "content": "$1",
+        "description": "Deck name"
+      },
+      "MODEL": {
+        "content": "$2",
+        "description": "Model name"
+      }
+    }
+  },
+  "popup_template_hover_fields": {
+    "description": "Template tooltip field list",
+    "message": "Fields: $FIELDS$",
+    "placeholders": {
+      "FIELDS": {
+        "content": "$1",
+        "description": "Field list"
+      }
+    }
+  },
+  "popup_status_no_template": {
+    "description": "No template error message",
+    "message": "Please create a parsing template in the settings page first"
+  },
+  "popup_status_template_no_fields": {
+    "description": "Template has no fields error message",
+    "message": "Current template has no fields configured"
+  },
+  "popup_template_empty_hint": {
+    "description": "Parse button disabled hint",
+    "message": "Please create a template in the settings page first"
+  },
   "options_text_align_center": {
     "description": "Text align option: Center",
     "message": "Center"

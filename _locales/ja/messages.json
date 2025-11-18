@@ -1146,6 +1146,66 @@
     "description": "Ankiテスト成功後、データが更新された時のヒント",
     "message": "接続成功、データが更新されました"
   },
+  "popup_template_selector_label": {
+    "description": "Popup テンプレートセレクターラベル",
+    "message": "テンプレートを選択:"
+  },
+  "popup_template_loading": {
+    "description": "テンプレート読み込み中",
+    "message": "読み込み中..."
+  },
+  "popup_template_none": {
+    "description": "利用可能なテンプレートがありません",
+    "message": "利用可能なテンプレートがありません"
+  },
+  "popup_template_empty_state": {
+    "description": "テンプレート未設定のヒント",
+    "message": "テンプレートが設定されていません。"
+  },
+  "popup_template_open_options": {
+    "description": "設定画面へボタンテキスト",
+    "message": "設定画面へ"
+  },
+  "popup_template_change_notice": {
+    "description": "テンプレート切り替えヒント",
+    "message": "テンプレートが切り替わりました。テキストを再解析してください"
+  },
+  "popup_template_hover_deck_model": {
+    "description": "テンプレート tooltip のデッキとモデル情報",
+    "message": "デッキ: $DECK$ / モデル: $MODEL$",
+    "placeholders": {
+      "DECK": {
+        "content": "$1",
+        "description": "デッキ名"
+      },
+      "MODEL": {
+        "content": "$2",
+        "description": "モデル名"
+      }
+    }
+  },
+  "popup_template_hover_fields": {
+    "description": "テンプレート tooltip のフィールドリスト",
+    "message": "フィールド: $FIELDS$",
+    "placeholders": {
+      "FIELDS": {
+        "content": "$1",
+        "description": "フィールドリスト"
+      }
+    }
+  },
+  "popup_status_no_template": {
+    "description": "テンプレートなしエラーヒント",
+    "message": "まず設定画面で解析テンプレートを作成してください"
+  },
+  "popup_status_template_no_fields": {
+    "description": "テンプレートにフィールドがないエラーヒント",
+    "message": "現在のテンプレートにフィールドが設定されていません"
+  },
+  "popup_template_empty_hint": {
+    "description": "解析ボタン無効時のヒント",
+    "message": "まず設定画面でテンプレートを作成してください"
+  },
   "options_text_align_center": {
     "description": "テキスト配置オプション：中央揃え",
     "message": "中央揃え"
