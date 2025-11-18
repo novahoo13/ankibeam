@@ -261,6 +261,8 @@ const templateEditorState = {
   selectedFields: [],
   fieldConfigs: {},
   lastGeneratedPrompt: "",
+  modelNamesAndIds: {}, // 模型名称到ID的映射
+  modelId: null, // 当前选中模型的ID
 };
 
 /**
@@ -999,6 +1001,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       "click",
       handleTemplateGeneratePrompt
     );
+  }
+
+  const templateFormSaveBtn = document.getElementById("template-form-save");
+  if (templateFormSaveBtn) {
+    templateFormSaveBtn.addEventListener("click", handleTemplateSave);
   }
 
   // テンプレートリストを読み込む / Load template list
@@ -3236,10 +3243,46 @@ async function handleEditTemplate(templateId) {
       formTitle.textContent = getText("template_form_title_edit", "テンプレートを編集");
     }
 
-    // Anki データを読み込み、deck/model を設定
-    // Load Anki data and set deck/model
-    // これは次のステップ (2.2.3) で実装する関数を呼び出す予定
-    // This will call functions to be implemented in next step (2.2.3)
+    // Anki データを読み込み / Load Anki data
+    await loadTemplateAnkiData();
+
+    // deck/model を設定 / Set deck and model
+    if (deckSelect && template.deckName) {
+      deckSelect.value = template.deckName;
+    }
+    if (modelSelect && template.modelName) {
+      modelSelect.value = template.modelName;
+    }
+
+    // modelId を保存 / Save modelId
+    if (template.modelId) {
+      templateEditorState.modelId = template.modelId;
+    }
+
+    // 模型が選択されている場合、字段を読み込む / If model is selected, load fields
+    if (template.modelName) {
+      await handleTemplateModelChange();
+    }
+
+    // 字段選択状態を復元 / Restore field selection state
+    if (template.fields && Array.isArray(template.fields)) {
+      // 字段按 order 排序 / Sort fields by order
+      const sortedFields = [...template.fields].sort((a, b) => a.order - b.order);
+
+      // 保存选中的字段列表 / Save selected fields
+      templateEditorState.selectedFields = sortedFields.map((f) => f.name);
+
+      // 保存字段配置 / Save field configurations
+      templateEditorState.fieldConfigs = {};
+      sortedFields.forEach((field) => {
+        templateEditorState.fieldConfigs[field.name] = {
+          content: field.parseInstruction || "",
+        };
+      });
+
+      // 重新渲染字段配置 UI / Re-render field configuration UI
+      renderTemplateFieldConfig();
+    }
 
     // フォームビューに切り替え / Switch to form view
     switchTemplateView("form");
@@ -3470,14 +3513,17 @@ async function loadTemplateAnkiData() {
       });
     }
 
-    // 模型
-    const modelsResult = await ankiApi.getModelNames();
+    // 模型（同时获取名称和ID）
+    const modelsResult = await ankiApi.getModelNamesAndIds();
     if (modelsResult.error) {
       throw createI18nError("options_error_fetch_models", {
         fallback: `读取模型失败: ${modelsResult.error}`,
         substitutions: [modelsResult.error],
       });
     }
+
+    // 保存模型名称和ID的映射到 templateEditorState
+    templateEditorState.modelNamesAndIds = modelsResult.result || {};
 
     // 牌组下拉
     const deckSelect = document.getElementById("template-deck");
@@ -3496,7 +3542,7 @@ async function loadTemplateAnkiData() {
       deckSelect.appendChild(option);
     });
 
-    // 模型下拉
+    // 模型下拉（从 modelNamesAndIds 对象中获取模型名称）
     const modelSelect = document.getElementById("template-model");
     modelSelect.innerHTML = "";
     const modelPlaceholderOption = document.createElement("option");
@@ -3506,10 +3552,13 @@ async function loadTemplateAnkiData() {
       "Select a default model"
     );
     modelSelect.appendChild(modelPlaceholderOption);
-    modelsResult.result.forEach((model) => {
+
+    // modelNamesAndIds 是一个对象 {modelName: modelId, ...}
+    const modelNames = Object.keys(modelsResult.result || {});
+    modelNames.forEach((modelName) => {
       const option = document.createElement("option");
-      option.value = model;
-      option.textContent = model;
+      option.value = modelName;
+      option.textContent = modelName;
       modelSelect.appendChild(option);
     });
   } catch (error) {
@@ -3536,10 +3585,15 @@ async function handleTemplateModelChange() {
     document.getElementById("template-fields-section").style.display = "none";
     document.getElementById("template-prompt-section").style.display = "none";
     templateEditorState.availableFields = [];
+    templateEditorState.modelId = null;
     return;
   }
 
   try {
+    // 保存选中模型的ID
+    const modelId = templateEditorState.modelNamesAndIds[modelName];
+    templateEditorState.modelId = modelId || null;
+
     const fieldsResult = await ankiApi.getModelFieldNames(modelName);
     if (fieldsResult.error) {
       throw new Error(fieldsResult.error);
@@ -3880,4 +3934,212 @@ function updateTemplateStatus(message, level) {
   }
 
   statusElement.textContent = message;
+}
+
+// =============================================================================
+// 模板保存与验证 (Template Save & Validation) - 阶段 2.2.4
+// =============================================================================
+
+/**
+ * テンプレートフォームバリデーション
+ * Validate template form inputs
+ * @description 验证模板表单的所有必填字段
+ * @returns {Object} { valid: boolean, errors: string[] }
+ */
+function validateTemplateForm() {
+  const errors = [];
+
+  // 验证名称
+  const name = document.getElementById("template-name")?.value?.trim();
+  if (!name) {
+    errors.push(
+      getText("template_form_validation_name", "请输入模板名称")
+    );
+  }
+
+  // 验证描述
+  const description = document.getElementById("template-description")?.value?.trim();
+  if (!description) {
+    errors.push(
+      getText("template_form_validation_description", "请输入模板描述")
+    );
+  }
+
+  // 验证牌组
+  const deckName = document.getElementById("template-deck")?.value;
+  if (!deckName) {
+    errors.push(
+      getText("template_form_validation_deck", "请选择 Anki 牌组")
+    );
+  }
+
+  // 验证模型
+  const modelName = document.getElementById("template-model")?.value;
+  if (!modelName) {
+    errors.push(
+      getText("template_form_validation_model", "请选择 Anki 模型")
+    );
+  }
+
+  // 验证字段选择
+  const selectedFields = templateEditorState.selectedFields || [];
+  if (selectedFields.length === 0) {
+    errors.push(
+      getText("template_form_validation_fields", "请至少选择一个字段")
+    );
+  }
+
+  // 验证字段配置（每个选中的字段都需要有解析指令）
+  selectedFields.forEach((fieldName) => {
+    const config = templateEditorState.fieldConfigs[fieldName];
+    const parseInstruction = config?.content?.trim();
+    if (!parseInstruction) {
+      errors.push(
+        getText(
+          "template_form_validation_field_instruction",
+          `字段"${fieldName}"缺少解析指令`,
+          [fieldName]
+        )
+      );
+    }
+  });
+
+  // 验证 Prompt
+  const prompt = document.getElementById("template-prompt")?.value?.trim();
+  if (!prompt) {
+    errors.push(
+      getText("template_form_validation_prompt", "请输入或生成 Prompt")
+    );
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors: errors,
+  };
+}
+
+/**
+ * テンプレートフォームデータ収集
+ * Collect template form data
+ * @description 从表单收集所有模板数据
+ * @returns {Promise<Object>} 模板对象
+ */
+async function collectTemplateFormData() {
+  const name = document.getElementById("template-name")?.value?.trim() || "";
+  const description = document.getElementById("template-description")?.value?.trim() || "";
+  const deckName = document.getElementById("template-deck")?.value || "";
+  const modelName = document.getElementById("template-model")?.value || "";
+  const prompt = document.getElementById("template-prompt")?.value?.trim() || "";
+
+  // 从 templateEditorState 获取 modelId
+  const modelId = templateEditorState.modelId || null;
+
+  // 收集字段配置
+  const selectedFields = templateEditorState.selectedFields || [];
+  const fields = selectedFields.map((fieldName, index) => {
+    const config = templateEditorState.fieldConfigs[fieldName] || {};
+    return {
+      name: fieldName,
+      label: fieldName, // 默认使用字段名作为标签
+      parseInstruction: config.content?.trim() || "",
+      order: index,
+      isRequired: false, // 默认不是必填
+      aiStrategy: "auto", // 默认使用 AI 自动解析
+    };
+  });
+
+  // 构建模板对象
+  const template = {
+    name: name,
+    description: description,
+    deckName: deckName,
+    modelName: modelName,
+    modelId: modelId,
+    fields: fields,
+    prompt: prompt,
+  };
+
+  // 如果是编辑模式，保留原有的 ID 和创建时间
+  if (
+    templateEditorState.mode === "edit" &&
+    templateEditorState.currentTemplateId
+  ) {
+    template.id = templateEditorState.currentTemplateId;
+
+    // 读取原模板的 createdAt
+    const config = await loadConfig();
+    const originalTemplate = TemplateStore.getTemplateById(
+      config,
+      templateEditorState.currentTemplateId
+    );
+    if (originalTemplate && originalTemplate.createdAt) {
+      template.createdAt = originalTemplate.createdAt;
+    }
+  }
+
+  return template;
+}
+
+/**
+ * テンプレート保存処理
+ * Handle template save
+ * @description 验证并保存模板
+ * @returns {Promise<void>}
+ */
+async function handleTemplateSave() {
+  try {
+    // 验证表单
+    const validation = validateTemplateForm();
+    if (!validation.valid) {
+      // 显示所有验证错误
+      const errorMessage = validation.errors.join("\n");
+      updateTemplateStatus(errorMessage, "error");
+
+      // 也可以用弹窗显示
+      alert(
+        getText("template_form_validation_failed", "表单验证失败：\n") +
+          "\n" +
+          errorMessage
+      );
+      return;
+    }
+
+    // 收集表单数据（异步）
+    const templateData = await collectTemplateFormData();
+
+    // 加载当前配置
+    const config = await loadConfig();
+
+    // 保存模板（会自动处理新增/更新逻辑）
+    const savedTemplate = TemplateStore.saveTemplate(config, templateData);
+
+    // 保存配置到 storage
+    await saveConfig(config);
+
+    // 显示成功消息
+    updateTemplateStatus(
+      getText("options_toast_template_saved", "模板已保存"),
+      "success"
+    );
+
+    // 短暂延迟后切换回列表视图
+    setTimeout(() => {
+      switchTemplateView("list");
+      loadTemplateList(); // 刷新模板列表
+    }, 800);
+  } catch (error) {
+    console.error("保存模板失败:", error);
+    updateTemplateStatus(
+      getText(
+        "options_toast_template_save_failed",
+        `保存失败: ${error.message}`,
+        [error.message]
+      ),
+      "error"
+    );
+    alert(
+      getText("template_form_save_error", "保存模板时发生错误：\n") +
+        error.message
+    );
+  }
 }

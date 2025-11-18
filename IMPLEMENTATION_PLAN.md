@@ -172,17 +172,23 @@
 - [x] 绑定底部取消按钮事件 ([options.js](options/options.js):974-981)
 
 #### 2.2.4 模板保存与验证
-- [ ] 实现 `validateTemplateForm()` - 表单验证
-- [ ] 实现 `collectTemplateFormData()` - 收集表单数据
-- [ ] 实现 `handleTemplateSave()` - 保存模板
+- [x] 实现 `validateTemplateForm()` - 表单验证 ([options.js](options/options.js):3895-3965)
+- [x] 实现 `collectTemplateFormData()` - 收集表单数据 ([options.js](options/options.js):4027-4081)
+- [x] 实现 `handleTemplateSave()` - 保存模板 ([options.js](options/options.js):4088-4143)
+- [x] 绑定保存按钮事件 ([options.js](options/options.js):1004-1007)
+- [x] 增强 `handleEditTemplate()` - 完整加载模板数据到表单 ([options.js](options/options.js):3211-3289)
+- [x] 新增 `getModelNamesAndIds()` API - 获取模型ID ([ankiconnect.js](utils/ankiconnect.js):97-104)
+- [x] 增强 `loadTemplateAnkiData()` - 保存模型ID映射 ([options.js](options/options.js):3480-3490)
+- [x] 增强 `handleTemplateModelChange()` - 保存选中模型ID ([options.js](options/options.js):3557-3559)
+- [x] 扩展 `templateEditorState` - 添加 modelNamesAndIds 和 modelId 字段 ([options.js](options/options.js):264-265)
 
 #### 2.2.5 事件绑定
-- [ ] 绑定"新增模板"按钮事件
-- [ ] 绑定表单取消按钮事件
-- [ ] 绑定模板表单内的所有事件
+- [x] 绑定"新增模板"按钮事件 ([options.js](options/options.js):951-965) - 已在 2.2.2 完成
+- [x] 绑定表单取消按钮事件 ([options.js](options/options.js):967-981) - 已在 2.2.2 完成
+- [x] 绑定模板表单内的所有事件 ([options.js](options/options.js):984-1007) - 已在 2.2.3 和 2.2.4 完成
 
 #### 2.2.6 初始化集成
-- [ ] 在页面加载时调用 `loadTemplateList()`
+- [x] 在页面加载时调用 `loadTemplateList()` ([options.js](options/options.js):1010) - 已在 2.2.2 完成
 - [ ] 添加storage变更监听,同步模板列表
 
 ### 可复用的现有代码
