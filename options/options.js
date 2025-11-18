@@ -20,6 +20,7 @@ import {
   testConnection as testAnki,
   getDeckNames,
   getModelNames,
+  getModelNamesAndIds,
   getModelFieldNames,
 } from "../utils/ankiconnect.js";
 import { testConnection as testAi } from "../utils/ai-service.js";
@@ -198,6 +199,7 @@ const ankiApi = dependencyOverrides.anki ?? {
   testConnection: testAnki,
   getDeckNames,
   getModelNames,
+  getModelNamesAndIds,
   getModelFieldNames,
 };
 
@@ -3225,8 +3227,11 @@ function renderTemplateCard(template, defaultTemplateId) {
 async function handleSetDefaultTemplate(templateId) {
   try {
     const config = await storageApi.loadConfig();
-    const updatedConfig = setDefaultTemplate(config, templateId);
-    await storageApi.saveConfig(updatedConfig);
+    const updated = setDefaultTemplate(config, templateId);
+    if (!updated) {
+      throw new Error("Failed to set default template");
+    }
+    await storageApi.saveConfig(config);
 
     showToast(
       getText("options_toast_template_set_default", "デフォルトテンプレートを設定しました"),
@@ -3323,6 +3328,7 @@ async function handleEditTemplate(templateId) {
       });
 
       // 重新渲染字段配置 UI / Re-render field configuration UI
+      renderTemplateFieldSelection(templateEditorState.availableFields || []);
       renderTemplateFieldConfig();
     }
 
@@ -3368,8 +3374,11 @@ async function handleDeleteTemplate(templateId) {
     }
 
     // テンプレートを削除 / Delete template
-    const updatedConfig = deleteTemplate(config, templateId);
-    await storageApi.saveConfig(updatedConfig);
+    const deleted = deleteTemplate(config, templateId);
+    if (!deleted) {
+      throw new Error("Failed to delete template");
+    }
+    await storageApi.saveConfig(config);
 
     showToast(
       getText("options_toast_template_deleted", "テンプレートを削除しました"),
@@ -4110,7 +4119,7 @@ async function collectTemplateFormData() {
 
     // 读取原模板的 createdAt
     const config = await loadConfig();
-    const originalTemplate = TemplateStore.getTemplateById(
+    const originalTemplate = getTemplateById(
       config,
       templateEditorState.currentTemplateId
     );
@@ -4153,7 +4162,7 @@ async function handleTemplateSave() {
     const config = await loadConfig();
 
     // 保存模板（会自动处理新增/更新逻辑）
-    const savedTemplate = TemplateStore.saveTemplate(config, templateData);
+    const savedTemplate = saveTemplate(config, templateData);
 
     // 保存配置到 storage
     await saveConfig(config);
@@ -4185,3 +4194,4 @@ async function handleTemplateSave() {
     );
   }
 }
+
