@@ -1016,6 +1016,118 @@
     "description": "システム設定パネルのタブテキスト",
     "message": "システム設定"
   },
+  "options_tab_template_library": {
+    "description": "解析テンプレートパネルのタブテキスト",
+    "message": "解析テンプレート"
+  },
+  "template_library_empty_title": {
+    "description": "テンプレートライブラリが空の場合のタイトル",
+    "message": "解析テンプレートがありません"
+  },
+  "template_library_empty_description": {
+    "description": "テンプレートライブラリが空の場合の説明",
+    "message": "最初の解析テンプレートを作成して、Ankiカードのスマート管理を開始しましょう"
+  },
+  "template_library_add_button": {
+    "description": "テンプレート追加ボタンのテキスト",
+    "message": "新規テンプレート"
+  },
+  "template_library_title": {
+    "description": "テンプレートライブラリリストのタイトル",
+    "message": "解析テンプレートライブラリ"
+  },
+  "template_form_title_new": {
+    "description": "新規テンプレートフォームのタイトル",
+    "message": "新規解析テンプレート"
+  },
+  "template_form_title_edit": {
+    "description": "テンプレート編集フォームのタイトル",
+    "message": "解析テンプレートを編集"
+  },
+  "template_form_cancel": {
+    "description": "キャンセルボタンのテキスト",
+    "message": "キャンセル"
+  },
+  "template_form_basic_info": {
+    "description": "基本情報セクションのタイトル",
+    "message": "基本情報"
+  },
+  "template_form_name_label": {
+    "description": "テンプレート名のラベル",
+    "message": "テンプレート名"
+  },
+  "template_form_name_placeholder": {
+    "description": "テンプレート名入力ボックスのヒント",
+    "message": "例：英語学習、日本語単語など"
+  },
+  "template_form_description_label": {
+    "description": "テンプレート説明のラベル",
+    "message": "テンプレートの説明"
+  },
+  "template_form_description_placeholder": {
+    "description": "テンプレート説明入力ボックスのヒント",
+    "message": "このテンプレートの用途と特徴を簡単に説明してください"
+  },
+  "template_form_anki_section": {
+    "description": "Anki接続セクションのタイトル",
+    "message": "Anki接続設定"
+  },
+  "template_form_test_anki": {
+    "description": "Anki接続テストボタンのテキスト",
+    "message": "接続をテスト"
+  },
+  "template_form_deck_label": {
+    "description": "デッキのラベル",
+    "message": "対象デッキ"
+  },
+  "template_form_model_label": {
+    "description": "ノートタイプのラベル",
+    "message": "ノートタイプ"
+  },
+  "template_form_fields_available": {
+    "description": "利用可能なフィールドのタイトル",
+    "message": "利用可能なフィールド"
+  },
+  "template_form_fields_section": {
+    "description": "フィールド設定セクションのタイトル",
+    "message": "フィールド設定"
+  },
+  "template_form_field_select": {
+    "description": "フィールド選択のタイトル",
+    "message": "入力するフィールドを選択"
+  },
+  "template_form_field_select_hint": {
+    "description": "フィールド選択のヒント",
+    "message": "フィールドをクリックして選択状態を切り替えます"
+  },
+  "template_form_field_config": {
+    "description": "フィールド設定のタイトル",
+    "message": "フィールド内容を設定"
+  },
+  "template_form_field_config_hint": {
+    "description": "フィールド設定のヒント",
+    "message": "各フィールドに含める内容を記述してください"
+  },
+  "template_form_prompt_section": {
+    "description": "Prompt編集セクションのタイトル",
+    "message": "Prompt設定"
+  },
+  "template_form_generate_prompt": {
+    "description": "Prompt生成ボタンのテキスト",
+    "message": "デフォルトPromptを生成"
+  },
+  "template_form_prompt_label": {
+    "description": "Promptのラベル",
+    "message": "カスタムPrompt"
+  },
+  "template_form_prompt_placeholder": {
+    "description": "Prompt入力ボックスのヒント",
+    "message": "フィールド設定完了後、「デフォルトPromptを生成」ボタンをクリックして自動生成、または手動で編集できます"
+  },
+  "template_form_save": {
+    "description": "保存ボタンのテキスト",
+    "message": "テンプレートを保存"
+  },
   "options_test_running": {
     "description": "AnkiまたはAI接続テスト時のヒント",
     "message": "接続をテストし、データを更新しています..."

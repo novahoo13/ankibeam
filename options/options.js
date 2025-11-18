@@ -1046,7 +1046,7 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 
   // 比较两个库是否不同（简单的 JSON 字符串化比较）
   if (JSON.stringify(oldLibrary) !== JSON.stringify(newLibrary)) {
-    console.log("检测到模板库变更，刷新模板列表");
+    console.log("[options] テンプレートライブラリの変更を検出しました。テンプレートリストを更新します");
 
     // 只在列表视图时刷新
     const currentView = document.querySelector('[data-view="template-list"]');

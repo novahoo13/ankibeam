@@ -1067,6 +1067,118 @@
     "description": "系统设置面板的标签文本",
     "message": "系统设置"
   },
+  "options_tab_template_library": {
+    "description": "解析模板面板的标签文本",
+    "message": "解析模板"
+  },
+  "template_library_empty_title": {
+    "description": "模板库为空时的标题",
+    "message": "暂无解析模板"
+  },
+  "template_library_empty_description": {
+    "description": "模板库为空时的描述",
+    "message": "创建您的第一个解析模板，开始智能化管理 Anki 卡片"
+  },
+  "template_library_add_button": {
+    "description": "添加模板按钮文本",
+    "message": "新增模板"
+  },
+  "template_library_title": {
+    "description": "模板库列表标题",
+    "message": "解析模板库"
+  },
+  "template_form_title_new": {
+    "description": "新建模板表单标题",
+    "message": "新建解析模板"
+  },
+  "template_form_title_edit": {
+    "description": "编辑模板表单标题",
+    "message": "编辑解析模板"
+  },
+  "template_form_cancel": {
+    "description": "取消按钮文本",
+    "message": "取消"
+  },
+  "template_form_basic_info": {
+    "description": "基本信息区块标题",
+    "message": "基本信息"
+  },
+  "template_form_name_label": {
+    "description": "模板名称标签",
+    "message": "模板名称"
+  },
+  "template_form_name_placeholder": {
+    "description": "模板名称输入框提示",
+    "message": "例如：英语学习、日语单词等"
+  },
+  "template_form_description_label": {
+    "description": "模板描述标签",
+    "message": "模板描述"
+  },
+  "template_form_description_placeholder": {
+    "description": "模板描述输入框提示",
+    "message": "简要说明该模板的用途和特点"
+  },
+  "template_form_anki_section": {
+    "description": "Anki 连接区块标题",
+    "message": "Anki 连接配置"
+  },
+  "template_form_test_anki": {
+    "description": "测试 Anki 连接按钮文本",
+    "message": "测试连接"
+  },
+  "template_form_deck_label": {
+    "description": "牌组标签",
+    "message": "目标牌组"
+  },
+  "template_form_model_label": {
+    "description": "笔记类型标签",
+    "message": "笔记类型"
+  },
+  "template_form_fields_available": {
+    "description": "可用字段标题",
+    "message": "可用字段"
+  },
+  "template_form_fields_section": {
+    "description": "字段配置区块标题",
+    "message": "字段配置"
+  },
+  "template_form_field_select": {
+    "description": "字段选择标题",
+    "message": "选择要填充的字段"
+  },
+  "template_form_field_select_hint": {
+    "description": "字段选择提示",
+    "message": "点击字段切换选择状态"
+  },
+  "template_form_field_config": {
+    "description": "字段配置标题",
+    "message": "配置字段内容"
+  },
+  "template_form_field_config_hint": {
+    "description": "字段配置提示",
+    "message": "描述每个字段需要包含的内容"
+  },
+  "template_form_prompt_section": {
+    "description": "Prompt 编辑区块标题",
+    "message": "Prompt 配置"
+  },
+  "template_form_generate_prompt": {
+    "description": "生成 Prompt 按钮文本",
+    "message": "生成默认 Prompt"
+  },
+  "template_form_prompt_label": {
+    "description": "Prompt 标签",
+    "message": "自定义 Prompt"
+  },
+  "template_form_prompt_placeholder": {
+    "description": "Prompt 输入框提示",
+    "message": "配置完字段后，点击「生成默认 Prompt」按钮自动生成，也可以手动编辑"
+  },
+  "template_form_save": {
+    "description": "保存按钮文本",
+    "message": "保存模板"
+  },
   "options_test_running": {
     "description": "测试 Anki 或 AI 连接时的提示",
     "message": "正在测试连接并刷新数据..."

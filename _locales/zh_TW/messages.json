@@ -1016,6 +1016,118 @@
     "description": "系統設定面板的標籤文字",
     "message": "系統設定"
   },
+  "options_tab_template_library": {
+    "description": "解析範本面板的標籤文字",
+    "message": "解析範本"
+  },
+  "template_library_empty_title": {
+    "description": "範本庫為空時的標題",
+    "message": "暫無解析範本"
+  },
+  "template_library_empty_description": {
+    "description": "範本庫為空時的描述",
+    "message": "建立您的第一個解析範本，開始智慧化管理 Anki 卡片"
+  },
+  "template_library_add_button": {
+    "description": "新增範本按鈕文字",
+    "message": "新增範本"
+  },
+  "template_library_title": {
+    "description": "範本庫列表標題",
+    "message": "解析範本庫"
+  },
+  "template_form_title_new": {
+    "description": "新建範本表單標題",
+    "message": "新建解析範本"
+  },
+  "template_form_title_edit": {
+    "description": "編輯範本表單標題",
+    "message": "編輯解析範本"
+  },
+  "template_form_cancel": {
+    "description": "取消按鈕文字",
+    "message": "取消"
+  },
+  "template_form_basic_info": {
+    "description": "基本資訊區塊標題",
+    "message": "基本資訊"
+  },
+  "template_form_name_label": {
+    "description": "範本名稱標籤",
+    "message": "範本名稱"
+  },
+  "template_form_name_placeholder": {
+    "description": "範本名稱輸入框提示",
+    "message": "例如：英語學習、日語單字等"
+  },
+  "template_form_description_label": {
+    "description": "範本描述標籤",
+    "message": "範本描述"
+  },
+  "template_form_description_placeholder": {
+    "description": "範本描述輸入框提示",
+    "message": "簡要說明該範本的用途和特點"
+  },
+  "template_form_anki_section": {
+    "description": "Anki 連線區塊標題",
+    "message": "Anki 連線配置"
+  },
+  "template_form_test_anki": {
+    "description": "測試 Anki 連線按鈕文字",
+    "message": "測試連線"
+  },
+  "template_form_deck_label": {
+    "description": "牌組標籤",
+    "message": "目標牌組"
+  },
+  "template_form_model_label": {
+    "description": "筆記類型標籤",
+    "message": "筆記類型"
+  },
+  "template_form_fields_available": {
+    "description": "可用欄位標題",
+    "message": "可用欄位"
+  },
+  "template_form_fields_section": {
+    "description": "欄位配置區塊標題",
+    "message": "欄位配置"
+  },
+  "template_form_field_select": {
+    "description": "欄位選擇標題",
+    "message": "選擇要填充的欄位"
+  },
+  "template_form_field_select_hint": {
+    "description": "欄位選擇提示",
+    "message": "點擊欄位切換選擇狀態"
+  },
+  "template_form_field_config": {
+    "description": "欄位配置標題",
+    "message": "配置欄位內容"
+  },
+  "template_form_field_config_hint": {
+    "description": "欄位配置提示",
+    "message": "描述每個欄位需要包含的內容"
+  },
+  "template_form_prompt_section": {
+    "description": "Prompt 編輯區塊標題",
+    "message": "Prompt 配置"
+  },
+  "template_form_generate_prompt": {
+    "description": "產生 Prompt 按鈕文字",
+    "message": "產生預設 Prompt"
+  },
+  "template_form_prompt_label": {
+    "description": "Prompt 標籤",
+    "message": "自訂 Prompt"
+  },
+  "template_form_prompt_placeholder": {
+    "description": "Prompt 輸入框提示",
+    "message": "配置完欄位後，點擊「產生預設 Prompt」按鈕自動產生，也可以手動編輯"
+  },
+  "template_form_save": {
+    "description": "儲存按鈕文字",
+    "message": "儲存範本"
+  },
   "options_test_running": {
     "description": "測試 Anki 或 AI 連線時的提示",
     "message": "正在測試連線並刷新資料..."

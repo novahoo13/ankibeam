@@ -1067,6 +1067,118 @@
     "description": "Label for the system settings panel.",
     "message": "System Settings"
   },
+  "options_tab_template_library": {
+    "description": "Label for the parsing template panel.",
+    "message": "Parse Templates"
+  },
+  "template_library_empty_title": {
+    "description": "Title when template library is empty.",
+    "message": "No Parse Templates"
+  },
+  "template_library_empty_description": {
+    "description": "Description when template library is empty.",
+    "message": "Create your first parse template to start managing Anki cards intelligently"
+  },
+  "template_library_add_button": {
+    "description": "Add template button text.",
+    "message": "New Template"
+  },
+  "template_library_title": {
+    "description": "Template library list title.",
+    "message": "Parse Template Library"
+  },
+  "template_form_title_new": {
+    "description": "New template form title.",
+    "message": "New Parse Template"
+  },
+  "template_form_title_edit": {
+    "description": "Edit template form title.",
+    "message": "Edit Parse Template"
+  },
+  "template_form_cancel": {
+    "description": "Cancel button text.",
+    "message": "Cancel"
+  },
+  "template_form_basic_info": {
+    "description": "Basic information section title.",
+    "message": "Basic Information"
+  },
+  "template_form_name_label": {
+    "description": "Template name label.",
+    "message": "Template Name"
+  },
+  "template_form_name_placeholder": {
+    "description": "Template name input placeholder.",
+    "message": "e.g., English Learning, Japanese Vocabulary, etc."
+  },
+  "template_form_description_label": {
+    "description": "Template description label.",
+    "message": "Template Description"
+  },
+  "template_form_description_placeholder": {
+    "description": "Template description input placeholder.",
+    "message": "Briefly describe the purpose and features of this template"
+  },
+  "template_form_anki_section": {
+    "description": "Anki connection section title.",
+    "message": "Anki Connection Configuration"
+  },
+  "template_form_test_anki": {
+    "description": "Test Anki connection button text.",
+    "message": "Test Connection"
+  },
+  "template_form_deck_label": {
+    "description": "Deck label.",
+    "message": "Target Deck"
+  },
+  "template_form_model_label": {
+    "description": "Note type label.",
+    "message": "Note Type"
+  },
+  "template_form_fields_available": {
+    "description": "Available fields title.",
+    "message": "Available Fields"
+  },
+  "template_form_fields_section": {
+    "description": "Field configuration section title.",
+    "message": "Field Configuration"
+  },
+  "template_form_field_select": {
+    "description": "Field selection title.",
+    "message": "Select Fields to Populate"
+  },
+  "template_form_field_select_hint": {
+    "description": "Field selection hint.",
+    "message": "Click fields to toggle selection"
+  },
+  "template_form_field_config": {
+    "description": "Field configuration title.",
+    "message": "Configure Field Content"
+  },
+  "template_form_field_config_hint": {
+    "description": "Field configuration hint.",
+    "message": "Describe the content each field should contain"
+  },
+  "template_form_prompt_section": {
+    "description": "Prompt editing section title.",
+    "message": "Prompt Configuration"
+  },
+  "template_form_generate_prompt": {
+    "description": "Generate prompt button text.",
+    "message": "Generate Default Prompt"
+  },
+  "template_form_prompt_label": {
+    "description": "Prompt label.",
+    "message": "Custom Prompt"
+  },
+  "template_form_prompt_placeholder": {
+    "description": "Prompt input placeholder.",
+    "message": "After configuring fields, click 'Generate Default Prompt' to auto-generate, or edit manually"
+  },
+  "template_form_save": {
+    "description": "Save button text.",
+    "message": "Save Template"
+  },
   "options_test_running": {
     "description": "Message when testing Anki or AI connection.",
     "message": "Testing connection and refreshing data..."
