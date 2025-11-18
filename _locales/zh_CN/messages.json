@@ -1198,6 +1198,66 @@
     "description": "Anki 测试成功并刷新数据后的提示",
     "message": "连接成功，数据已刷新"
   },
+  "popup_template_selector_label": {
+    "description": "Popup 模板选择器标签",
+    "message": "选择模板:"
+  },
+  "popup_template_loading": {
+    "description": "模板加载中",
+    "message": "加载中..."
+  },
+  "popup_template_none": {
+    "description": "无可用模板",
+    "message": "无可用模板"
+  },
+  "popup_template_empty_state": {
+    "description": "尚未配置模板提示",
+    "message": "尚未配置模板，"
+  },
+  "popup_template_open_options": {
+    "description": "前往设置按钮文本",
+    "message": "前往设置"
+  },
+  "popup_template_change_notice": {
+    "description": "模板切换提示",
+    "message": "模板已切换，请重新解析文本"
+  },
+  "popup_template_hover_deck_model": {
+    "description": "模板 tooltip 中的牌组和模型信息",
+    "message": "牌组: $DECK$ / 模板: $MODEL$",
+    "placeholders": {
+      "DECK": {
+        "content": "$1",
+        "description": "牌组名称"
+      },
+      "MODEL": {
+        "content": "$2",
+        "description": "模型名称"
+      }
+    }
+  },
+  "popup_template_hover_fields": {
+    "description": "模板 tooltip 中的字段列表",
+    "message": "字段: $FIELDS$",
+    "placeholders": {
+      "FIELDS": {
+        "content": "$1",
+        "description": "字段列表"
+      }
+    }
+  },
+  "popup_status_no_template": {
+    "description": "无模板错误提示",
+    "message": "请先在设置页面创建解析模板"
+  },
+  "popup_status_template_no_fields": {
+    "description": "模板无字段错误提示",
+    "message": "当前模板未配置字段"
+  },
+  "popup_template_empty_hint": {
+    "description": "解析按钮禁用时的提示",
+    "message": "请先在设置页面创建模板"
+  },
   "options_text_align_center": {
     "description": "文本对齐选项：居中",
     "message": "居中"
