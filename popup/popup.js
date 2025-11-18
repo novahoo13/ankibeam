@@ -6,19 +6,25 @@ import {
   parseTextWithDynamicFieldsFallback,
 } from "../utils/ai-service.js";
 import { addNote, getModelFieldNames } from "../utils/ankiconnect.js";
-import { loadConfig } from "../utils/storage.js";
+import { loadConfig, saveConfig } from "../utils/storage.js";
 import {
   isLegacyMode,
   collectFieldsForWrite,
   validateFields,
 } from "../utils/field-handler.js";
-import { getPromptConfigForModel } from "../utils/prompt-engine.js";
+import { getPromptConfigForModel, buildPromptFromTemplate } from "../utils/prompt-engine.js";
 import {
   translate,
   createI18nError,
   localizePage,
   whenI18nReady,
 } from "../utils/i18n.js";
+import {
+  loadTemplateLibrary,
+  getActiveTemplate as getActiveTemplateFromConfig,
+  setActiveTemplate,
+  listTemplates,
+} from "../utils/template-store.js";
 
 const getText = (key, fallback, substitutions) =>
   translate(key, { fallback, substitutions });
@@ -40,6 +46,15 @@ let config = {};
 
 // 状态消息定时器（用于自动清除状态提示）
 let statusTimer = null;
+
+// 当前活动模板（缓存模板对象以避免重复查找）
+let currentTemplate = null;
+
+// 模板选择来源标识（防止自己触发的 storage 变更导致重复渲染）
+let isTemplateChangedByPopup = false;
+
+// 标记是否需要重新解析（模板切换后）
+let needsReparse = false;
 
 /**
  * 获取当前激活的提示设置和字段配置
@@ -88,6 +103,202 @@ function getActivePromptSetup() {
     promptConfig,
   };
 }
+
+/**
+ * アクティブなテンプレートを取得
+ * Get active template
+ * @description 获取当前活动的解析模板，若无则返回 null
+ * @returns {Object|null} 模板对象或 null
+ */
+function getActiveTemplate() {
+  if (!config) {
+    return null;
+  }
+
+  const template = getActiveTemplateFromConfig(config);
+  currentTemplate = template;
+  return template;
+}
+
+/**
+ * テンプレートセレクターのレンダリング
+ * Render template selector
+ * @description 渲染模板选择器下拉列表
+ * @returns {void}
+ */
+function renderTemplateSelector() {
+  const templateSelect = document.getElementById("template-select");
+  const emptyState = document.getElementById("template-empty-state");
+
+  if (!templateSelect || !emptyState) {
+    console.warn("[popup] Template selector elements not found");
+    return;
+  }
+
+  // 获取所有模板并按更新时间排序
+  const templates = listTemplates(config);
+
+  // 清空现有选项
+  templateSelect.innerHTML = "";
+
+  if (templates.length === 0) {
+    // 显示空态
+    templateSelect.innerHTML = `<option value="" data-i18n="popup_template_none">${getText("popup_template_none", "无可用模板")}</option>`;
+    templateSelect.disabled = true;
+    emptyState.classList.remove("hidden");
+    currentTemplate = null;
+    return;
+  }
+
+  // 隐藏空态
+  emptyState.classList.add("hidden");
+  templateSelect.disabled = false;
+
+  // 获取当前活动模板
+  const activeTemplate = getActiveTemplate();
+  const activeTemplateId = activeTemplate?.id || null;
+
+  // 渲染模板选项
+  templates.forEach((template) => {
+    const option = document.createElement("option");
+    option.value = template.id;
+    option.textContent = template.name;
+    option.selected = template.id === activeTemplateId;
+    templateSelect.appendChild(option);
+  });
+
+  // 更新 tooltip 内容
+  if (activeTemplate) {
+    updateTemplateTooltip(activeTemplate);
+  }
+}
+
+/**
+ * テンプレート情報ツールチップの更新
+ * Update template info tooltip
+ * @description 更新模板信息 tooltip 的显示内容
+ * @param {Object} template - 模板对象
+ * @returns {void}
+ */
+function updateTemplateTooltip(template) {
+  const tooltipContent = document.getElementById("template-tooltip-content");
+  if (!tooltipContent) {
+    return;
+  }
+
+  if (!template) {
+    tooltipContent.innerHTML = `<p data-i18n="popup_template_none">${getText("popup_template_none", "无可用模板")}</p>`;
+    return;
+  }
+
+  // 构建 tooltip 内容
+  const deckModelText = getText(
+    "popup_template_hover_deck_model",
+    "牌组: $DECK$ / 模板: $MODEL$",
+    [template.deckName || "-", template.modelName || "-"]
+  );
+
+  const fieldsText = getText(
+    "popup_template_hover_fields",
+    "字段: $FIELDS$",
+    [template.fields?.map((f) => f.name).join(", ") || "-"]
+  );
+
+  tooltipContent.innerHTML = `
+    <p>${deckModelText}</p>
+    <p class="mt-1">${fieldsText}</p>
+  `;
+}
+
+/**
+ * テンプレート変更処理
+ * Handle template change
+ * @description 处理用户切换模板的操作
+ * @param {string} templateId - 新选中的模板ID
+ * @returns {Promise<void>}
+ */
+async function handleTemplateChange(templateId) {
+  if (!templateId) {
+    return;
+  }
+
+  try {
+    // 标记模板变更由 popup 触发
+    isTemplateChangedByPopup = true;
+
+    // 保存活动模板到 storage
+    const updatedConfig = setActiveTemplate(config, templateId, "popup");
+    await saveConfig(updatedConfig);
+
+    // 更新本地配置缓存
+    config = updatedConfig;
+
+    // 获取新模板
+    const template = getActiveTemplate();
+
+    if (!template) {
+      console.warn(`[popup] Template ${templateId} not found`);
+      return;
+    }
+
+    // 更新 tooltip
+    updateTemplateTooltip(template);
+
+    // 检查是否有解析结果
+    const fieldsContainer = document.getElementById("fields-container");
+    const hasParseResult = fieldsContainer && fieldsContainer.children.length > 0;
+
+    if (hasParseResult) {
+      // 显示重新解析提示
+      showReparseNotice();
+      needsReparse = true;
+
+      // 禁用写入按钮
+      const writeBtn = document.getElementById("write-btn");
+      if (writeBtn) {
+        writeBtn.disabled = true;
+      }
+    }
+
+    console.log(`[popup] Template changed to: ${template.name}`);
+  } catch (error) {
+    console.error("[popup] Failed to change template:", error);
+    errorBoundary.handleError(error, "template");
+  } finally {
+    // 重置标记
+    setTimeout(() => {
+      isTemplateChangedByPopup = false;
+    }, 500);
+  }
+}
+
+/**
+ * 再解析通知の表示
+ * Show reparse notice
+ * @description 显示"需要重新解析"的提示条
+ * @returns {void}
+ */
+function showReparseNotice() {
+  const notice = document.getElementById("template-change-notice");
+  if (notice) {
+    notice.classList.remove("hidden");
+  }
+}
+
+/**
+ * 再解析通知の非表示
+ * Hide reparse notice
+ * @description 隐藏"需要重新解析"的提示条
+ * @returns {void}
+ */
+function hideReparseNotice() {
+  const notice = document.getElementById("template-change-notice");
+  if (notice) {
+    notice.classList.add("hidden");
+  }
+  needsReparse = false;
+}
+
 /**
  * 错误边界管理器
  * 负责全局错误处理、用户友好提示和错误恢复机制
