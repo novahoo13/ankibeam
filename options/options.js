@@ -2924,6 +2924,52 @@ function updateStatus(elementId, message, type) {
 }
 
 /**
+ * 显示 Toast 通知
+ * @description 在页面底部显示临时通知消息
+ * @param {string} message - 消息内容
+ * @param {'success'|'error'|'info'} type - 消息类型
+ * @returns {void}
+ */
+function showToast(message, type = "info") {
+  // 使用 save-status 元素显示消息
+  const statusElement = document.getElementById("save-status");
+  if (!statusElement) {
+    console.warn("save-status element not found, using console instead");
+    console.log(`[${type.toUpperCase()}] ${message}`);
+    return;
+  }
+
+  // 设置消息内容
+  statusElement.textContent = message;
+
+  // 根据类型设置样式
+  statusElement.className = "text-sm";
+  switch (type) {
+    case "success":
+      statusElement.className += " text-green-600 font-medium";
+      break;
+    case "error":
+      statusElement.className += " text-red-600 font-medium";
+      break;
+    case "info":
+    default:
+      statusElement.className += " text-blue-600 font-medium";
+      break;
+  }
+
+  // 清除之前的定时器（如果有）
+  if (statusElement.hideTimer) {
+    clearTimeout(statusElement.hideTimer);
+  }
+
+  // 3秒后自动隐藏消息
+  statusElement.hideTimer = setTimeout(() => {
+    statusElement.textContent = "";
+    statusElement.className = "text-sm text-gray-600";
+  }, 3000);
+}
+
+/**
  * 初始化选项卡导航
  * @description 设置选项卡按钮的点击和键盘导航事件
  * @returns {void}
