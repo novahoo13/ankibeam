@@ -1012,6 +1012,48 @@ document.addEventListener("DOMContentLoaded", async () => {
   loadTemplateList();
 });
 
+// =============================================================================
+// Storage 変更監視 (Storage Change Listener) - 阶段 2.2.6
+// =============================================================================
+
+/**
+ * Storage変更監視リスナー
+ * Storage change listener
+ * @description 监听 storage 的变化，当 templateLibrary 被修改时自动刷新模板列表
+ * @param {Object} changes - 变更对象
+ * @param {string} areaName - 存储区域名称
+ * @returns {void}
+ */
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  // 仅监听 local storage
+  if (areaName !== "local") {
+    return;
+  }
+
+  // 检查是否有 ankiWordAssistantConfig 的变更
+  if (!changes.ankiWordAssistantConfig) {
+    return;
+  }
+
+  const oldValue = changes.ankiWordAssistantConfig.oldValue;
+  const newValue = changes.ankiWordAssistantConfig.newValue;
+
+  // 检查 templateLibrary 是否发生变化
+  const oldLibrary = oldValue?.templateLibrary;
+  const newLibrary = newValue?.templateLibrary;
+
+  // 比较两个库是否不同（简单的 JSON 字符串化比较）
+  if (JSON.stringify(oldLibrary) !== JSON.stringify(newLibrary)) {
+    console.log("检测到模板库变更，刷新模板列表");
+
+    // 只在列表视图时刷新
+    const currentView = document.querySelector('[data-view="template-list"]');
+    if (currentView && currentView.style.display !== "none") {
+      loadTemplateList();
+    }
+  }
+});
+
 /**
  * Prompt 编辑器相关初始化
  * @description 设置 Prompt 编辑器的事件监听器和初始状态
