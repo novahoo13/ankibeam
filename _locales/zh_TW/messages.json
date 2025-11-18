@@ -1142,6 +1142,10 @@
       }
     }
   },
+  "options_test_success_with_refresh": {
+    "description": "Anki 測試成功並刷新資料後的提示",
+    "message": "連線成功，資料已刷新"
+  },
   "options_text_align_center": {
     "description": "文字對齊選項：置中",
     "message": "置中"

@@ -1142,6 +1142,10 @@
       }
     }
   },
+  "options_test_success_with_refresh": {
+    "description": "Ankiテスト成功後、データが更新された時のヒント",
+    "message": "接続成功、データが更新されました"
+  },
   "options_text_align_center": {
     "description": "テキスト配置オプション：中央揃え",
     "message": "中央揃え"

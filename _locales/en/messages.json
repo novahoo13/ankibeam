@@ -1194,6 +1194,10 @@
       }
     }
   },
+  "options_test_success_with_refresh": {
+    "description": "Message displayed when Anki test is successful and data is refreshed.",
+    "message": "Connection successful, data refreshed"
+  },
   "options_text_align_center": {
     "description": "Text align option: Center",
     "message": "Center"
