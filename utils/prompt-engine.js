@@ -205,12 +205,18 @@ export function normalizePromptTemplateConfig(entry) {
 }
 
 /**
- * 获取指定模型的 Prompt 配置（深拷贝）
+ * @deprecated このメソッドは非推奨です。テンプレートストアのgetTemplateById()を使用してください。
+ *
+ * 指定されたモデルのPrompt設定を取得（ディープコピー）
  * @param {string} modelName
  * @param {object} config
  * @returns {{selectedFields: string[], fieldConfigs: Record<string, {content: string}>, customPrompt: string}}
  */
 export function getPromptConfigForModel(modelName, config) {
+  console.warn(
+    "[prompt-engine] getPromptConfigForModel() は非推奨です。テンプレートストアの使用を推奨します。"
+  );
+
   if (!modelName || !config) {
     return createEmptyPromptTemplateConfig();
   }
@@ -227,13 +233,19 @@ export function getPromptConfigForModel(modelName, config) {
 }
 
 /**
- * 更新指定模型的 Prompt 配置
+ * @deprecated このメソッドは非推奨です。テンプレートストアのsaveTemplate()を使用してください。
+ *
+ * 指定されたモデルのPrompt設定を更新
  * @param {string} modelName
  * @param {object} partialConfig
  * @param {object} config
  * @returns {{selectedFields: string[], fieldConfigs: Record<string, {content: string}>, customPrompt: string}}
  */
 export function updatePromptConfigForModel(modelName, partialConfig, config) {
+  console.warn(
+    "[prompt-engine] updatePromptConfigForModel() は非推奨です。テンプレートストアの使用を推奨します。"
+  );
+
   if (!config) {
     return createEmptyPromptTemplateConfig();
   }
@@ -288,12 +300,51 @@ export function updatePromptConfigForModel(modelName, partialConfig, config) {
 }
 
 /**
- * 从配置中加载指定模型的prompt
- * @param {string} modelName - 模型名称
- * @param {object} config - 配置对象
- * @returns {string} - prompt模板
+ * テンプレートからプロンプトを構築
+ * テンプレートのフィールド定義を使用してAI用のプロンプトを生成する
+ * @param {Object} template - テンプレートオブジェクト
+ * @param {string} userInput - ユーザー入力テキスト
+ * @returns {string} 構築されたプロンプト
+ */
+export function buildPromptFromTemplate(template, userInput) {
+  if (!template || typeof template !== "object") {
+    throw new Error("テンプレートオブジェクトが無効です");
+  }
+
+  if (!userInput || typeof userInput !== "string") {
+    throw new Error("ユーザー入力が無効です");
+  }
+
+  // テンプレートにカスタムプロンプトがある場合はそれを使用
+  if (template.prompt && typeof template.prompt === "string" && template.prompt.trim()) {
+    return buildIntegratedPrompt(
+      userInput,
+      template.fields.map((f) => f.name),
+      template.prompt
+    );
+  }
+
+  // カスタムプロンプトがない場合はデフォルトテンプレートを使用
+  return buildIntegratedPrompt(
+    userInput,
+    template.fields.map((f) => f.name),
+    null
+  );
+}
+
+/**
+ * @deprecated このメソッドは非推奨です。代わりに buildPromptFromTemplate() を使用してください。
+ *
+ * 従来の設定からモデル用のプロンプトを読み込む
+ * @param {string} modelName - モデル名
+ * @param {object} config - 設定オブジェクト
+ * @returns {string} - プロンプトテンプレート
  */
 export function loadPromptForModel(modelName, config) {
+  console.warn(
+    "[prompt-engine] loadPromptForModel() は非推奨です。buildPromptFromTemplate() の使用を推奨します。"
+  );
+
   const promptConfig = getPromptConfigForModel(modelName, config);
   const customPrompt = promptConfig.customPrompt;
 
@@ -309,13 +360,18 @@ export function loadPromptForModel(modelName, config) {
 }
 
 /**
- * 保存指定模型的prompt到配置
- * @param {string} modelName - 模型名称
- * @param {string} prompt - prompt模板
- * @param {object} config - 配置对象
- * @returns {object} - 更新后的配置
+ * @deprecated このメソッドは非推奨です。テンプレートストアを使用してください。
+ *
+ * モデル用のプロンプトを設定に保存
+ * @param {string} modelName - モデル名
+ * @param {string} prompt - プロンプトテンプレート
+ * @param {object} config - 設定オブジェクト
+ * @returns {object} - 更新された設定
  */
 export function savePromptForModel(modelName, prompt, config) {
+  console.warn(
+    "[prompt-engine] savePromptForModel() は非推奨です。テンプレートストアを使用してください。"
+  );
   return updatePromptConfigForModel(modelName, { customPrompt: prompt }, config);
 }
 

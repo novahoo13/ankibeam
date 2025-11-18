@@ -114,9 +114,16 @@ function buildDefaultConfig() {
       modelFields: [], // 笔记模板字段
       defaultTags: [], // 默认标签
     },
+    templateLibrary: {
+      version: 1, // テンプレートライブラリのバージョン
+      defaultTemplateId: null, // デフォルトテンプレートID
+      templates: {}, // テンプレート一覧（ID -> テンプレートオブジェクト）
+    },
     ui: {
       fieldDisplayMode: "auto", // 字段显示模式
       enableFloatingAssistant: true, // 是否启用悬浮助手
+      activeTemplateId: null, // アクティブテンプレートID
+      templateSelectionSource: null, // テンプレート選択元("popup"|"floating"|"options")
     },
     styleConfig: {
       fontSize: "14px", // 字体大小
@@ -491,6 +498,44 @@ function mergeUiConfig(baseUi, legacyUi) {
   if (typeof merged.enableFloatingAssistant !== "boolean") {
     merged.enableFloatingAssistant = baseUi.enableFloatingAssistant;
   }
+  // 验证 activeTemplateId 字段
+  if (merged.activeTemplateId !== null && typeof merged.activeTemplateId !== "string") {
+    merged.activeTemplateId = baseUi.activeTemplateId;
+  }
+  // 验证 templateSelectionSource 字段
+  if (merged.templateSelectionSource !== null && typeof merged.templateSelectionSource !== "string") {
+    merged.templateSelectionSource = baseUi.templateSelectionSource;
+  }
+  return merged;
+}
+
+/**
+ * 合并テンプレートライブラリ配置
+ * @param {Object} baseLibrary - 基本テンプレートライブラリ配置
+ * @param {Object} legacyLibrary - 既存のテンプレートライブラリ配置
+ * @returns {Object} 合并后的テンプレートライブラリ配置
+ */
+function mergeTemplateLibrary(baseLibrary, legacyLibrary) {
+  if (!legacyLibrary || typeof legacyLibrary !== "object") {
+    return { ...baseLibrary };
+  }
+
+  const merged = {
+    version: typeof legacyLibrary.version === "number" ? legacyLibrary.version : baseLibrary.version,
+    defaultTemplateId:
+      typeof legacyLibrary.defaultTemplateId === "string"
+        ? legacyLibrary.defaultTemplateId
+        : legacyLibrary.defaultTemplateId === null
+        ? null
+        : baseLibrary.defaultTemplateId,
+    templates: {},
+  };
+
+  // テンプレート一覧をマージ
+  if (legacyLibrary.templates && typeof legacyLibrary.templates === "object") {
+    merged.templates = { ...legacyLibrary.templates };
+  }
+
   return merged;
 }
 
@@ -510,6 +555,10 @@ function mergeConfigWithDefaults(legacyConfig = {}) {
       legacyConfig.promptTemplates
     ),
     ankiConfig: mergeAnkiConfig(baseConfig.ankiConfig, legacyConfig.ankiConfig),
+    templateLibrary: mergeTemplateLibrary(
+      baseConfig.templateLibrary,
+      legacyConfig.templateLibrary
+    ),
     styleConfig: mergeStyleConfig(
       baseConfig.styleConfig,
       legacyConfig.styleConfig

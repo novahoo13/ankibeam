@@ -553,10 +553,20 @@ export function getMessage(key, substitutions) {
 export function translate(key, options = {}) {
   const { substitutions, fallback } = options || {};
   const message = resolveMessage(key, substitutions);
-  if (typeof message === "string" && message.trim()) {
+  const hasMessage = typeof message === "string" && message.trim();
+
+  // Node.js �Ȃǂ̍ċA���ł� chrome.i18n ��p�ł��Ȃ��ꍇ�Akey����Ԃ��Ă���
+  // fallback ���肳��Ă���ꍇ�́Akey ��Ԃ���܂߂Ȃ��悤�Ƀt�b�^�[���g�p����
+  const shouldUseFallback =
+    hasMessage &&
+    message === key &&
+    typeof fallback === "string" &&
+    fallback.trim();
+
+  if (hasMessage && !shouldUseFallback) {
     return message;
   }
-  if (typeof fallback === "string" && fallback.trim()) {
+  if (shouldUseFallback || (typeof fallback === "string" && fallback?.trim())) {
     return fallback;
   }
   if (fallback !== undefined && fallback !== null) {
