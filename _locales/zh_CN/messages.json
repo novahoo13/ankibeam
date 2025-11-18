@@ -1194,6 +1194,10 @@
       }
     }
   },
+  "options_test_success_with_refresh": {
+    "description": "Anki 测试成功并刷新数据后的提示",
+    "message": "连接成功，数据已刷新"
+  },
   "options_text_align_center": {
     "description": "文本对齐选项：居中",
     "message": "居中"
