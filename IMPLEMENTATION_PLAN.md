@@ -115,7 +115,78 @@
 
 **目标**: 将 options 页重构为"模板列表 + 模板编辑器",实现模板 CRUD、默认模板设置、Anki/Prompt 配置合并。
 
-**状态**: 未开始
+**状态**: 进行中
+
+### 已完成的任务 (2.1 - HTML结构)
+
+1. ✅ 重构tab导航
+   - 将5个tab改为4个: AI配置、解析模板、界面样式、系统
+   - 移除了Anki配置和Prompt配置tab
+   - 新增"解析模板"tab,使用文档图标
+
+2. ✅ 添加模板列表视图HTML ([options.html](options/options.html):351-391)
+   - 空态提示 (`template-empty-state`)
+   - 模板列表容器 (`template-list-container`)
+   - 新增模板按钮 (`add-template-btn`, `add-template-btn-empty`)
+   - 模板卡片网格 (`template-cards-grid`)
+
+3. ✅ 添加模板表单视图HTML ([options.html](options/options.html):393-552)
+   - 基本信息区块: 名称、描述
+   - Anki连接区块: 测试连接、牌组、模型、字段映射
+   - 字段配置区块: 字段选择、字段解析指令
+   - Prompt编辑区块: Prompt文本框、生成按钮
+   - 表单操作: 保存、取消
+
+4. ✅ 导入template-store模块 ([options.js](options/options.js):45-56)
+
+### 待完成任务 (2.2 - JavaScript实现)
+
+#### 2.2.1 基础设施
+- [ ] 添加模板编辑器状态对象 `templateEditorState`
+- [ ] 实现视图切换函数 `switchTemplateView(view)`
+- [ ] 添加模板表单重置函数 `resetTemplateForm()`
+
+#### 2.2.2 模板列表功能
+- [ ] 实现 `loadTemplateList()` - 加载并渲染模板列表
+- [ ] 实现 `renderTemplateCard(template)` - 渲染单个模板卡片
+- [ ] 实现 `handleSetDefaultTemplate(templateId)` - 设置默认模板
+- [ ] 实现 `handleEditTemplate(templateId)` - 编辑模板
+- [ ] 实现 `handleDeleteTemplate(templateId)` - 删除模板
+
+#### 2.2.3 模板表单功能 (复用现有代码)
+- [ ] 实现 `handleTemplateTestAnki()` - 复用 `testAnkiConnection()`
+- [ ] 实现 `loadTemplateAnkiData()` - 复用 `loadAnkiData()`
+- [ ] 实现 `handleTemplateModelChange()` - 复用 `handleModelChange()`
+- [ ] 实现 `renderTemplateFields(fields)` - 复用字段选择/配置逻辑
+- [ ] 实现 `handleTemplateGeneratePrompt()` - 复用 `generatePrompt()`
+
+#### 2.2.4 模板保存与验证
+- [ ] 实现 `validateTemplateForm()` - 表单验证
+- [ ] 实现 `collectTemplateFormData()` - 收集表单数据
+- [ ] 实现 `handleTemplateSave()` - 保存模板
+
+#### 2.2.5 事件绑定
+- [ ] 绑定"新增模板"按钮事件
+- [ ] 绑定表单取消按钮事件
+- [ ] 绑定模板表单内的所有事件
+
+#### 2.2.6 初始化集成
+- [ ] 在页面加载时调用 `loadTemplateList()`
+- [ ] 添加storage变更监听,同步模板列表
+
+### 可复用的现有代码
+
+从现有options.js中可以直接复用:
+- `testAnkiConnection()` - Anki连接测试 (line ~2396)
+- `loadAnkiData()` - 加载牌组和模型 (line ~2692)
+- `handleModelChange()` - 模型变更处理 (获取字段)
+- `showPromptConfig()` - Prompt配置显示
+- `generatePrompt()` - Prompt生成逻辑
+- 字段选择/配置的渲染逻辑
+
+### 下一步
+
+继续实现2.2.1基础设施部分
 
 ---
 

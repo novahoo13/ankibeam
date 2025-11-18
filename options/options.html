@@ -107,7 +107,7 @@
 
           <!--
             标签页导航栏
-            包含5个主要功能区域的导航按钮
+            包含4个主要功能区域的导航按钮
             - flex space-x-1: 水平布局，按钮间间4px间距
             - mb-6: 底部外边距24px
             - border-b border-gray-200: 底部边框分割线
@@ -151,21 +151,21 @@
             </button>
 
             <!--
-              Anki连接标签按钮
-              功能：AnkiConnect配置和卡片模板管理
-              - 测试Anki桌面版连接状态
-              - 选择默认牌组和卡片模板
-              - 显示可用的字段信息
+              解析模板标签按钮
+              功能：模板库管理、模板新增/编辑/删除、默认模板设置
+              - 管理解析模板列表
+              - 配置 Anki 连接和字段映射
+              - 自定义 Prompt 模板
             -->
             <button
               role="tab"
               aria-selected="false"
-              aria-controls="anki-config-panel"
+              aria-controls="template-library-panel"
               class="settings-tab-btn flex items-center px-3 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent hover:border-gray-300 transition-colors duration-200"
-              data-tab="anki-config"
-              data-i18n-aria="options_tab_anki"
+              data-tab="template-library"
+              data-i18n-aria="options_tab_template_library"
             >
-              <!-- 书本SVG图标 - 表示Anki学习卡片功能 -->
+              <!-- 模板SVG图标 - 表示模板管理功能 -->
               <svg
                 class="w-3 h-3 mr-1"
                 fill="none"
@@ -176,40 +176,10 @@
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
-                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 ></path>
               </svg>
-              <span data-i18n="options_tab_anki"></span>
-            </button>
-            <!--
-              Prompt配置标签按钮
-              功能：自定义AI Prompt模板和字段配置
-              - 用户可以根据不同的Anki模板自定义Prompt
-              - 支持字段映射和动态配置
-            -->
-            <button
-              role="tab"
-              aria-selected="false"
-              aria-controls="prompt-config-panel"
-              class="settings-tab-btn flex items-center px-3 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent hover:border-gray-300 transition-colors duration-200"
-              data-tab="prompt-config"
-              data-i18n-aria="options_tab_prompt"
-            >
-              <!-- 编辑SVG图标 - 表示Prompt编辑功能 -->
-              <svg
-                class="w-3 h-3 mr-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                ></path>
-              </svg>
-              <span data-i18n="options_tab_prompt"></span>
+              <span data-i18n="options_tab_template_library"></span>
             </button>
 
             <!--
@@ -330,6 +300,225 @@
                   class="provider-config-list space-y-6"
                   data-role="provider-config-list"
                 ></div>
+              </div>
+            </div>
+
+            <!--
+              解析模板面板
+              功能说明：
+              1. 模板列表视图：显示所有解析模板、新增模板按钮、空态提示
+              2. 模板表单视图：编辑/新增模板，包含Anki配置、字段配置、Prompt编辑
+              3. 默认模板设置：设置默认使用的模板
+              - 默认隐藏，点击标签显示
+            -->
+            <div
+              id="template-library"
+              class="tab-content"
+              role="tabpanel"
+              aria-labelledby="template-library-tab"
+            >
+              <!-- 模板列表视图 -->
+              <div id="template-list-view" data-view="template-list">
+                <!-- 空态提示 -->
+                <div id="template-empty-state" class="text-center py-12" style="display: none;">
+                  <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <h3 class="mt-2 text-sm font-medium text-gray-900" data-i18n="template_library_empty_title"></h3>
+                  <p class="mt-1 text-sm text-gray-500" data-i18n="template_library_empty_description"></p>
+                  <div class="mt-6">
+                    <button
+                      type="button"
+                      id="add-template-btn-empty"
+                      class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-slate-600 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+                      data-i18n="template_library_add_button"
+                    ></button>
+                  </div>
+                </div>
+
+                <!-- 模板列表容器 -->
+                <div id="template-list-container">
+                  <!-- 头部操作栏 -->
+                  <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-lg font-semibold text-gray-900" data-i18n="template_library_title"></h2>
+                    <button
+                      type="button"
+                      id="add-template-btn"
+                      class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-slate-600 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+                    >
+                      <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                      </svg>
+                      <span data-i18n="template_library_add_button"></span>
+                    </button>
+                  </div>
+
+                  <!-- 模板卡片列表 -->
+                  <div id="template-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- JavaScript 动态生成模板卡片 -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- 模板表单视图 -->
+              <div id="template-form-view" data-view="template-form" style="display: none;">
+                <div class="space-y-6">
+                  <!-- 表单头部 -->
+                  <div class="flex items-center justify-between">
+                    <h2 id="template-form-title" class="text-lg font-semibold text-gray-900" data-i18n="template_form_title_new"></h2>
+                    <button
+                      type="button"
+                      id="template-form-cancel"
+                      class="text-sm text-gray-600 hover:text-gray-900"
+                      data-i18n="template_form_cancel"
+                    ></button>
+                  </div>
+
+                  <!-- 基本信息区块 -->
+                  <section class="bg-white border border-gray-200 rounded-lg p-6 space-y-4">
+                    <h3 class="text-base font-medium text-gray-900" data-i18n="template_form_basic_info"></h3>
+
+                    <div>
+                      <label for="template-name" class="block text-sm font-medium text-gray-700 mb-2">
+                        <span data-i18n="template_form_name_label"></span>
+                        <span class="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        id="template-name"
+                        class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+                        data-i18n-placeholder="template_form_name_placeholder"
+                      />
+                    </div>
+
+                    <div>
+                      <label for="template-description" class="block text-sm font-medium text-gray-700 mb-2">
+                        <span data-i18n="template_form_description_label"></span>
+                        <span class="text-red-500">*</span>
+                      </label>
+                      <textarea
+                        id="template-description"
+                        rows="3"
+                        class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+                        data-i18n-placeholder="template_form_description_placeholder"
+                      ></textarea>
+                    </div>
+                  </section>
+
+                  <!-- Anki 连接区块 -->
+                  <section class="bg-slate-50 border border-slate-200 rounded-lg p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                      <h3 class="text-base font-medium text-gray-900" data-i18n="template_form_anki_section"></h3>
+                      <button
+                        type="button"
+                        id="template-test-anki-btn"
+                        class="bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition text-sm"
+                        data-i18n="template_form_test_anki"
+                      ></button>
+                    </div>
+
+                    <p id="template-anki-status" class="text-sm text-gray-600"></p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label for="template-deck" class="block text-sm font-medium text-gray-700 mb-2">
+                          <span data-i18n="template_form_deck_label"></span>
+                          <span class="text-red-500">*</span>
+                        </label>
+                        <select
+                          id="template-deck"
+                          class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+                        >
+                          <option value="" data-i18n="options_hint_test_anki_first"></option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label for="template-model" class="block text-sm font-medium text-gray-700 mb-2">
+                          <span data-i18n="template_form_model_label"></span>
+                          <span class="text-red-500">*</span>
+                        </label>
+                        <select
+                          id="template-model"
+                          class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+                        >
+                          <option value="" data-i18n="options_hint_test_anki_first"></option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- 字段映射显示 -->
+                    <div id="template-field-mapping" class="mt-4" style="display: none;">
+                      <h4 class="text-sm font-medium text-gray-700 mb-3" data-i18n="template_form_fields_available"></h4>
+                      <div id="template-field-mapping-container" class="bg-white border border-gray-200 rounded-md p-4">
+                        <!-- JavaScript 动态生成字段信息 -->
+                      </div>
+                    </div>
+                  </section>
+
+                  <!-- 字段配置区块 -->
+                  <section id="template-fields-section" class="bg-white border border-gray-200 rounded-lg p-6 space-y-4" style="display: none;">
+                    <h3 class="text-base font-medium text-gray-900" data-i18n="template_form_fields_section"></h3>
+
+                    <div>
+                      <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-sm font-medium text-gray-700" data-i18n="template_form_field_select"></h4>
+                        <span class="text-xs text-gray-500" data-i18n="template_form_field_select_hint"></span>
+                      </div>
+                      <div id="template-field-selection-list" class="flex flex-wrap gap-2"></div>
+                    </div>
+
+                    <div>
+                      <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-sm font-medium text-gray-700" data-i18n="template_form_field_config"></h4>
+                        <span class="text-xs text-gray-500" data-i18n="template_form_field_config_hint"></span>
+                      </div>
+                      <div id="template-field-config-list" class="space-y-4"></div>
+                    </div>
+                  </section>
+
+                  <!-- Prompt 编辑区块 -->
+                  <section id="template-prompt-section" class="bg-slate-50 border border-slate-200 rounded-lg p-6 space-y-4" style="display: none;">
+                    <div class="flex items-center justify-between">
+                      <h3 class="text-base font-medium text-gray-900" data-i18n="template_form_prompt_section"></h3>
+                      <button
+                        type="button"
+                        id="template-generate-prompt-btn"
+                        class="bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition text-sm"
+                        data-i18n="template_form_generate_prompt"
+                      ></button>
+                    </div>
+
+                    <div>
+                      <label for="template-prompt" class="block text-sm font-medium text-gray-700 mb-2">
+                        <span data-i18n="template_form_prompt_label"></span>
+                        <span class="text-red-500">*</span>
+                      </label>
+                      <textarea
+                        id="template-prompt"
+                        rows="12"
+                        class="w-full p-3 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 font-mono text-sm"
+                        data-i18n-placeholder="template_form_prompt_placeholder"
+                      ></textarea>
+                    </div>
+                  </section>
+
+                  <!-- 表单底部操作 -->
+                  <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
+                    <button
+                      type="button"
+                      id="template-form-cancel-bottom"
+                      class="px-6 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+                      data-i18n="template_form_cancel"
+                    ></button>
+                    <button
+                      type="button"
+                      id="template-form-save"
+                      class="px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-slate-600 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
+                      data-i18n="template_form_save"
+                    ></button>
+                  </div>
+                </div>
               </div>
             </div>
 

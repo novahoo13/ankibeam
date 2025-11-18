@@ -42,6 +42,18 @@ import {
   resetLocaleCache,
   whenI18nReady,
 } from "../utils/i18n.js";
+import {
+  loadTemplateLibrary,
+  getTemplateById,
+  saveTemplate,
+  deleteTemplate,
+  setDefaultTemplate,
+  setActiveTemplate,
+  listTemplates,
+  getActiveTemplate,
+  getDefaultTemplate,
+  normalizeTemplateFields,
+} from "../utils/template-store.js";
 
 /**
  * 获取国际化文本的便捷方法
