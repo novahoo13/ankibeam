@@ -2322,6 +2322,11 @@ async function handleSave() {
       : [],
   };
 
+  // 保留模板库数据，避免被覆盖
+  nextConfig.templateLibrary = {
+    ...(nextConfig.templateLibrary ?? {}),
+  };
+
   nextConfig.styleConfig = {
     ...(nextConfig.styleConfig ?? {}),
     fontSize,
@@ -2532,7 +2537,11 @@ async function handleTestAnki() {
     }
     updateStatus(
       "anki-status",
-      `连接成功，AnkiConnect 版本: ${result.result}`,
+      getText(
+        "options_test_success_with_version",
+        `连接成功，AnkiConnect 版本: ${result.result}`,
+        [result.result]
+      ),
       "success"
     );
 
@@ -3544,7 +3553,11 @@ async function handleTemplateTestAnki() {
     }
 
     updateTemplateStatus(
-      `连接成功，AnkiConnect 版本: ${result.result}`,
+      getText(
+        "options_test_success_with_version",
+        `连接成功，AnkiConnect 版本: ${result.result}`,
+        [result.result]
+      ),
       "success"
     );
 
