@@ -21,9 +21,11 @@ export function isLegacyMode(config) {
  * 从DOM中收集字段值用于写入Anki (增强版本，包含错误处理和验证)
  * @param {string[]} modelFields - 模型字段名数组，为空或长度<=2时使用legacy模式
  * @param {function} [wrapWithStyle] - 可选的样式包装函数
+ * @param {Object} [options] - 附加配置
+ * @param {boolean} [options.forceDynamic] - true时强制按动态字段处理
  * @returns {object} - 字段收集结果，包含fields对象和统计信息
  */
-export function collectFieldsForWrite(modelFields, wrapWithStyle = null) {
+export function collectFieldsForWrite(modelFields, wrapWithStyle = null, options = {}) {
   try {
     let fields = {};
     const collectResult = {
@@ -36,7 +38,8 @@ export function collectFieldsForWrite(modelFields, wrapWithStyle = null) {
       errors: []
     };
 
-    const isLegacy = isLegacyMode({ ankiConfig: { modelFields } });
+    const forceDynamic = options?.forceDynamic === true;
+    const isLegacy = !forceDynamic && isLegacyMode({ ankiConfig: { modelFields } });
     collectResult.mode = isLegacy ? 'legacy' : 'dynamic';
 
     if (isLegacy) {

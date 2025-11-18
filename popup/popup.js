@@ -2,13 +2,11 @@
 // 功能: 处理用户输入文本的AI解析和Anki卡片创建的完整UI流程
 
 import {
-  parseTextWithFallback,
   parseTextWithDynamicFieldsFallback,
 } from "../utils/ai-service.js";
 import { addNote, getModelFieldNames } from "../utils/ankiconnect.js";
 import { loadConfig, saveConfig } from "../utils/storage.js";
 import {
-  isLegacyMode,
   collectFieldsForWrite,
   validateFields,
 } from "../utils/field-handler.js";
@@ -20,7 +18,6 @@ import {
   whenI18nReady,
 } from "../utils/i18n.js";
 import {
-  loadTemplateLibrary,
   getActiveTemplate as getActiveTemplateFromConfig,
   setActiveTemplate,
   listTemplates,
@@ -118,6 +115,44 @@ function getActiveTemplate() {
   const template = getActiveTemplateFromConfig(config);
   currentTemplate = template;
   return template;
+}
+
+/**
+ * テンプレートのフィールド名一覧を取得
+ * @param {Object|null} template - テンプレート
+ * @returns {string[]} order順に整列したフィールド名
+ */
+function getTemplateFieldNames(template) {
+  if (!template || !Array.isArray(template.fields)) {
+    return [];
+  }
+
+  return template.fields
+    .slice()
+    .sort((a, b) => {
+      const orderA = typeof a.order === "number" ? a.order : 0;
+      const orderB = typeof b.order === "number" ? b.order : 0;
+      return orderA - orderB;
+    })
+    .map((field) => (typeof field.name === "string" ? field.name.trim() : ""))
+    .filter((name) => !!name);
+}
+
+/**
+ * 入力済みフィールドが存在するか判定
+ * @returns {boolean} いずれかのフィールドに値がある場合はtrue
+ */
+function hasFilledFieldValues() {
+  const container = document.getElementById("fields-container");
+  if (!container) {
+    return false;
+  }
+
+  const inputs = container.querySelectorAll("input, textarea");
+  return Array.from(inputs).some(
+    (element) =>
+      typeof element.value === "string" && element.value.trim().length > 0
+  );
 }
 
 /**
@@ -222,19 +257,28 @@ async function handleTemplateChange(templateId) {
     return;
   }
 
+  const previousConfig = config;
+  const hadFilledFields = hasFilledFieldValues();
+
   try {
     // 标记模板变更由 popup 触发
     isTemplateChangedByPopup = true;
 
     // 保存活动模板到 storage
-    const updatedConfig = setActiveTemplate(config, templateId, "popup");
+    const updatedConfig = {
+      ...(config || {}),
+      ui: {
+        ...(config?.ui || {}),
+      },
+    };
+    setActiveTemplate(updatedConfig, templateId, "popup");
     await saveConfig(updatedConfig);
 
     // 更新本地配置缓存
     config = updatedConfig;
 
     // 获取新模板
-    const template = getActiveTemplate();
+    const template = activeTemplate || getActiveTemplate();
 
     if (!template) {
       console.warn(`[popup] Template ${templateId} not found`);
@@ -244,11 +288,10 @@ async function handleTemplateChange(templateId) {
     // 更新 tooltip
     updateTemplateTooltip(template);
 
-    // 检查是否有解析结果
-    const fieldsContainer = document.getElementById("fields-container");
-    const hasParseResult = fieldsContainer && fieldsContainer.children.length > 0;
+    await initializeDynamicFields();
+    updateUIBasedOnTemplate();
 
-    if (hasParseResult) {
+    if (hadFilledFields) {
       // 显示重新解析提示
       showReparseNotice();
       needsReparse = true;
@@ -258,10 +301,13 @@ async function handleTemplateChange(templateId) {
       if (writeBtn) {
         writeBtn.disabled = true;
       }
+    } else {
+      hideReparseNotice();
     }
 
     console.log(`[popup] Template changed to: ${template.name}`);
   } catch (error) {
+    config = previousConfig;
     console.error("[popup] Failed to change template:", error);
     errorBoundary.handleError(error, "template");
   } finally {
@@ -306,42 +352,62 @@ function hideReparseNotice() {
  * @param {Object} change - storage 变更对象
  * @returns {void}
  */
-function handleStorageChange(change) {
+async function handleStorageChange(change) {
   // 防止自己触发的变更导致重复渲染
   if (isTemplateChangedByPopup) {
     return;
   }
 
-  const newConfig = change.newValue;
+  const newConfig = change?.newValue;
   if (!newConfig) {
     return;
   }
 
-  // 更新配置缓存
-  config = newConfig;
+  const previousTemplate = getActiveTemplate();
+  const previousFieldNames = getTemplateFieldNames(previousTemplate);
+  const hadFilledFields = hasFilledFieldValues();
 
-  // 检查活动模板是否变更
+  // 更新配置缓存并刷新下拉
+  config = newConfig;
+  renderTemplateSelector();
+
   const newTemplate = getActiveTemplate();
+  const newFieldNames = getTemplateFieldNames(newTemplate);
   const currentTemplateSelect = document.getElementById("template-select");
 
   if (currentTemplateSelect && newTemplate) {
-    const currentSelectedId = currentTemplateSelect.value;
-    if (newTemplate.id !== currentSelectedId) {
-      // 模板在其他地方被切换，刷新UI
-      console.log(`[popup] Template changed externally to: ${newTemplate.name}`);
-      renderTemplateSelector();
-      updateUIBasedOnTemplate();
-    }
-  } else if (!newTemplate) {
-    // 模板被删除
-    renderTemplateSelector();
-    updateUIBasedOnTemplate();
+    currentTemplateSelect.value = newTemplate.id;
   }
 
-  // 检查模板库是否有变更（新增、删除、更新）
-  const templateLibrary = loadTemplateLibrary(newConfig);
-  if (templateLibrary) {
-    renderTemplateSelector();
+  updateTemplateTooltip(newTemplate);
+
+  const templateChanged =
+    (previousTemplate?.id || null) !== (newTemplate?.id || null);
+  const fieldsChanged =
+    previousFieldNames.length !== newFieldNames.length ||
+    previousFieldNames.some((field, index) => field !== newFieldNames[index]);
+
+  if (!newTemplate) {
+    await initializeDynamicFields();
+    updateUIBasedOnTemplate();
+    hideReparseNotice();
+    return;
+  }
+
+  if (templateChanged || fieldsChanged) {
+    await initializeDynamicFields();
+    updateUIBasedOnTemplate();
+
+    if (hadFilledFields) {
+      showReparseNotice();
+      needsReparse = true;
+      const writeBtn = document.getElementById("write-btn");
+      if (writeBtn) {
+        writeBtn.disabled = true;
+      }
+    } else {
+      hideReparseNotice();
+    }
   }
 }
 
@@ -819,7 +885,7 @@ async function initialize() {
       }
     });
 
-    // 根据配置渲染字段输入框（Legacy模式或Dynamic模式）
+    // 根据模板渲染字段输入框
     await initializeDynamicFields();
 
     // 检查模板状态并更新UI
@@ -852,6 +918,7 @@ async function handleParse() {
 
   // 获取当前活动模板
   const template = getActiveTemplate();
+  const templateFields = getTemplateFieldNames(template);
 
   // 检查模板是否存在
   if (!template) {
@@ -863,7 +930,7 @@ async function handleParse() {
   }
 
   // 检查模板字段
-  if (!template.fields || template.fields.length === 0) {
+  if (templateFields.length === 0) {
     updateStatus(
       getText("popup_status_template_no_fields", "当前模板未配置字段"),
       "error"
@@ -878,41 +945,18 @@ async function handleParse() {
     // 隐藏重新解析提示（如果有）
     hideReparseNotice();
 
-    // 获取当前配置的模型字段（用于兼容性）
-    const modelFields = config?.ankiConfig?.modelFields;
-    let result;
+    // 使用模板的 prompt 或构建默认 prompt
+    const customPrompt = template.prompt || buildPromptFromTemplate(template, textInput);
 
-    // 根据配置选择解析模式
-    if (isLegacyMode(config)) {
-      // Legacy模式：使用固定的Front/Back字段结构
-      result = await parseTextWithFallback(textInput);
-      fillLegacyFields(result);
-    } else {
-      // 模板模式：使用模板定义的字段和 prompt
-      const templateFields = template.fields
-        .sort((a, b) => (a.order || 0) - (b.order || 0))
-        .map((f) => f.name);
+    // 执行AI解析
+    const result = await parseTextWithDynamicFieldsFallback(
+      textInput,
+      templateFields,
+      customPrompt
+    );
 
-      // 验证字段配置
-      if (!templateFields || templateFields.length === 0) {
-        throw createI18nError("popup_status_no_fields_parse", {
-          fallback: "当前模板未配置可解析的字段，请在选项页完成设置。",
-        });
-      }
-
-      // 使用模板的 prompt 或构建默认 prompt
-      const customPrompt = template.prompt || buildPromptFromTemplate(template, textInput);
-
-      // 执行AI解析
-      result = await parseTextWithDynamicFieldsFallback(
-        textInput,
-        templateFields,
-        customPrompt
-      );
-
-      // 将解析结果填充到动态字段中
-      fillDynamicFields(result, templateFields);
-    }
+    // 将解析结果填充到动态字段中
+    fillDynamicFields(result, templateFields);
 
     // 解析成功后启用写入按钮，允许用户将内容保存到Anki
     document.getElementById("write-btn").disabled = false;
@@ -931,7 +975,6 @@ async function handleParse() {
 /**
  * Anki写入按钮事件处理器
  * 收集字段内容、验证数据完整性、调用AnkiConnect API创建新卡片
- * 支持Legacy模式和Dynamic模式的不同字段处理逻辑
  */
 async function handleWriteToAnki() {
   // 显示写入中状态，禁用按钮防止重复提交
@@ -939,29 +982,29 @@ async function handleWriteToAnki() {
   document.getElementById("write-btn").disabled = true;
 
   try {
-    // 准备字段配置：根据模式确定要写入的字段列表
-    const modelFields = config?.ankiConfig?.modelFields;
-    const isLegacy = isLegacyMode(config);
-    const { selectedFields, allFields } = getActivePromptSetup();
-    const dynamicFields =
-      selectedFields && selectedFields.length > 0
-        ? selectedFields
-        : Array.isArray(modelFields) && !isLegacy
-        ? modelFields
-        : allFields;
+    // 准备字段配置：仅支持模板定义的字段
+    const activeTemplate = getActiveTemplate();
+    const templateFieldNames = getTemplateFieldNames(activeTemplate);
+    const { allFields } = getActivePromptSetup();
 
-    // Dynamic模式必须有字段配置，否则无法写入
-    if (!isLegacy && (!dynamicFields || dynamicFields.length === 0)) {
+    if (!activeTemplate) {
+      throw createI18nError("popup_status_no_template", {
+        fallback: "请先选择解析模板",
+      });
+    }
+
+    if (templateFieldNames.length === 0) {
       throw createI18nError("popup_status_no_fields_write", {
         fallback: "当前模板未配置可写入的字段，请在选项页完成设置。",
       });
     }
 
-    // 确定最终要处理的字段列表
-    const targetFields = isLegacy ? modelFields : dynamicFields;
+    const targetFields = templateFieldNames;
 
     // 第一步：收集字段原始内容用于验证（不带HTML样式）
-    const rawCollectResult = collectFieldsForWrite(targetFields);
+    const rawCollectResult = collectFieldsForWrite(targetFields, null, {
+      forceDynamic: true,
+    });
 
     // 字段收集过程的错误检查
     if (rawCollectResult.error) {
@@ -976,7 +1019,7 @@ async function handleWriteToAnki() {
     // 第二步：验证字段内容的完整性和有效性
     const validation = validateFields(
       rawCollectResult.fields,
-      isLegacy,
+      false,
       rawCollectResult
     );
 
@@ -1015,7 +1058,8 @@ async function handleWriteToAnki() {
     // 第三步：收集带HTML样式包装的字段内容用于实际写入
     const styledCollectResult = collectFieldsForWrite(
       targetFields,
-      wrapContentWithStyle
+      wrapContentWithStyle,
+      { forceDynamic: true }
     );
 
     // 样式包装过程的错误检查
@@ -1031,40 +1075,22 @@ async function handleWriteToAnki() {
     // 第四步：构建Anki API所需的字段数据结构
     const fields = {};
 
-    if (isLegacy) {
-      // Legacy模式：处理传统的双字段结构（正面/背面）
-      const fieldNames =
-        modelFields && modelFields.length >= 2
-          ? modelFields
-          : ["Front", "Back"];
-      const styledFields = styledCollectResult.fields;
+    // 构建字段值：严格按照模板定义
+    Object.keys(styledCollectResult.fields).forEach((fieldName) => {
+      const rawValue = rawCollectResult.fields[fieldName];
+      const styledValue = styledCollectResult.fields[fieldName];
 
-      // 只包含非空字段到最终数据中
-      if (styledFields[fieldNames[0]] && styledFields[fieldNames[0]].trim()) {
-        fields[fieldNames[0]] = styledFields[fieldNames[0]];
+      if (rawValue && rawValue.trim()) {
+        fields[fieldName] = styledValue;
       }
-      if (styledFields[fieldNames[1]] && styledFields[fieldNames[1]].trim()) {
-        fields[fieldNames[1]] = styledFields[fieldNames[1]];
+    });
+
+    // 为Anki模型的所有字段提供空值，防止缺失字段错误
+    (allFields || []).forEach((fieldName) => {
+      if (!(fieldName in fields)) {
+        fields[fieldName] = "";
       }
-    } else {
-      // Dynamic模式：处理用户自定义的多字段结构
-      Object.keys(styledCollectResult.fields).forEach((fieldName) => {
-        const rawValue = rawCollectResult.fields[fieldName];
-        const styledValue = styledCollectResult.fields[fieldName];
-
-        // 基于原始值判断是否有内容，避免HTML标签干扰
-        if (rawValue && rawValue.trim()) {
-          fields[fieldName] = styledValue;
-        }
-      });
-
-      // 为Anki模型的所有字段提供空值，防止缺失字段错误
-      (allFields || []).forEach((fieldName) => {
-        if (!(fieldName in fields)) {
-          fields[fieldName] = "";
-        }
-      });
-    }
+    });
 
     // 最终验证：确保有实际内容可以写入Anki
     const filledFieldCount = Object.values(fields).filter(
@@ -1094,7 +1120,7 @@ async function handleWriteToAnki() {
 
     // 记录写入操作的详细信息用于调试
     // console.log(getText("popup_status_ready_to_write", "准备写入Anki:"), {
-    //   mode: isLegacy ? "legacy" : "dynamic",
+    //   mode: "dynamic",
     //   totalFields: rawCollectResult.totalFields,
     //   collectedFields: rawCollectResult.collectedFields,
     //   finalFields: filledFieldCount,
@@ -1118,7 +1144,7 @@ async function handleWriteToAnki() {
       detail: {
         noteId: result.result,
         fieldsCount: filledFieldCount,
-        mode: isLegacy ? "legacy" : "dynamic",
+        mode: "dynamic",
       },
     });
     document.dispatchEvent(event);
@@ -1145,66 +1171,25 @@ async function handleWriteToAnki() {
 
 /**
  * 字段界面初始化
- * 根据用户配置决定渲染Legacy模式还是Dynamic模式的字段输入界面
- * 包含错误处理和回退机制
+ * 根据当前模板的字段配置渲染输入界面，并提供错误提示
  */
 async function initializeDynamicFields() {
   try {
     // 获取当前激活的字段配置
-    const { selectedFields, allFields } = getActivePromptSetup();
-    const modelFields = config?.ankiConfig?.modelFields;
+    const activeTemplate = getActiveTemplate();
+    const templateFieldNames = getTemplateFieldNames(activeTemplate);
 
-    // 根据配置模式渲染不同的字段界面
-    if (isLegacyMode(config)) {
-      // Legacy模式：渲染传统的双字段界面
-      renderLegacyFields();
-    } else {
-      // Dynamic模式：渲染用户配置的多字段界面
-      const fieldsToRender =
-        selectedFields && selectedFields.length > 0
-          ? selectedFields
-          : Array.isArray(modelFields)
-          ? modelFields
-          : allFields;
-      if (!fieldsToRender || fieldsToRender.length === 0) {
-        throw createI18nError("popup_status_no_configured_fields", {
-          fallback: "当前模板未配置字段，请在选项页完成配置。",
-        });
-      }
-      renderDynamicFields(fieldsToRender);
+    if (!activeTemplate || templateFieldNames.length === 0) {
+      throw createI18nError("popup_status_no_configured_fields", {
+        fallback: "当前模板未配置字段，请在选项页完成配置。",
+      });
     }
+
+    renderDynamicFields(templateFieldNames);
   } catch (error) {
     await errorBoundary.handleError(error, "fields");
-    // 出错时回退到Legacy模式作为最后手段
-    try {
-      renderLegacyFields();
-    } catch (fallbackError) {
-      const legacyFallbackMessage = getText(
-        "popup_status_legacy_fallback_failed",
-        "回退到legacy模式也失败:",
-        [fallbackError?.message ?? String(fallbackError)]
-      );
-      console.error(legacyFallbackMessage, fallbackError);
-    }
+    renderDynamicFields([]);
   }
-}
-
-/**
- * Legacy模式字段渲染
- * 创建固定的Front/Back双字段输入界面
- */
-function renderLegacyFields() {
-  const container = document.getElementById("fields-container");
-  container.innerHTML = `
-		<div class="form-group">
-			<label for="front-input" class="block text-sm font-medium text-gray-700 mb-1" data-i18n="cardFront">正面:</label>
-			<input type="text" id="front-input" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-sm" />
-		</div>
-		<div class="form-group">
-			<label for="back-input" class="block text-sm font-medium text-gray-700 mb-1" data-i18n="cardBack">背面:</label>
-			<textarea id="back-input" rows="5" class="w-full p-2 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-sm"></textarea>
-		</div>
-	`;
 }
 
 /**
@@ -1260,25 +1245,6 @@ function renderDynamicFields(fieldNames) {
 
   // 为新创建的文本框添加自适应高度功能
   setupAutoResizeTextareas();
-}
-
-/**
- * Legacy模式字段填充
- * 将AI解析的结果填入Front和Back字段，并应用状态样式
- * @param {object} result - AI解析结果对象，包含front和back字段
- */
-function fillLegacyFields(result) {
-  // 获取Legacy模式的两个固定字段元素
-  const frontInput = document.getElementById("front-input");
-  const backInput = document.getElementById("back-input");
-
-  // 填入AI解析的内容，空值则使用空字符串
-  frontInput.value = result.front || "";
-  backInput.value = result.back || "";
-
-  // 根据内容状态添加视觉样式反馈
-  applyFieldStatusStyle(frontInput, result.front || "");
-  applyFieldStatusStyle(backInput, result.back || "");
 }
 
 /**
