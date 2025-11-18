@@ -300,6 +300,85 @@ function hideReparseNotice() {
 }
 
 /**
+ * ストレージ変更処理
+ * Handle storage change
+ * @description 处理 storage 变更事件，同步模板选择
+ * @param {Object} change - storage 变更对象
+ * @returns {void}
+ */
+function handleStorageChange(change) {
+  // 防止自己触发的变更导致重复渲染
+  if (isTemplateChangedByPopup) {
+    return;
+  }
+
+  const newConfig = change.newValue;
+  if (!newConfig) {
+    return;
+  }
+
+  // 更新配置缓存
+  config = newConfig;
+
+  // 检查活动模板是否变更
+  const newTemplate = getActiveTemplate();
+  const currentTemplateSelect = document.getElementById("template-select");
+
+  if (currentTemplateSelect && newTemplate) {
+    const currentSelectedId = currentTemplateSelect.value;
+    if (newTemplate.id !== currentSelectedId) {
+      // 模板在其他地方被切换，刷新UI
+      console.log(`[popup] Template changed externally to: ${newTemplate.name}`);
+      renderTemplateSelector();
+      updateUIBasedOnTemplate();
+    }
+  } else if (!newTemplate) {
+    // 模板被删除
+    renderTemplateSelector();
+    updateUIBasedOnTemplate();
+  }
+
+  // 检查模板库是否有变更（新增、删除、更新）
+  const templateLibrary = loadTemplateLibrary(newConfig);
+  if (templateLibrary) {
+    renderTemplateSelector();
+  }
+}
+
+/**
+ * テンプレートベースでUIを更新
+ * Update UI based on template
+ * @description 根据当前模板状态更新按钮的禁用状态
+ * @returns {void}
+ */
+function updateUIBasedOnTemplate() {
+  const template = getActiveTemplate();
+  const parseBtn = document.getElementById("parse-btn");
+  const writeBtn = document.getElementById("write-btn");
+
+  if (!template || !template.fields || template.fields.length === 0) {
+    // 无模板或模板无字段：禁用解析和写入按钮
+    if (parseBtn) {
+      parseBtn.disabled = true;
+      parseBtn.title = getText("popup_template_empty_hint", "请先在设置页面创建模板");
+    }
+    if (writeBtn) {
+      writeBtn.disabled = true;
+    }
+  } else {
+    // 有模板：启用解析按钮
+    if (parseBtn) {
+      parseBtn.disabled = false;
+      parseBtn.title = "";
+    }
+    // 写入按钮需要在解析完成后才能启用
+    if (writeBtn) {
+      writeBtn.disabled = true;
+    }
+  }
+}
+
+/**
  * 错误边界管理器
  * 负责全局错误处理、用户友好提示和错误恢复机制
  * 提供频繁错误检测、自动重试和UI状态恢复功能
@@ -708,14 +787,43 @@ async function initialize() {
     // 重新本地化页面，确保静态元素使用用户配置的语言
     localizePage();
 
+    // 渲染模板选择器
+    renderTemplateSelector();
+
     // 注册主要功能按钮的点击事件处理器
     document.getElementById("parse-btn").addEventListener("click", handleParse);
     document
       .getElementById("write-btn")
       .addEventListener("click", handleWriteToAnki);
 
+    // 注册模板选择器的变更事件
+    const templateSelect = document.getElementById("template-select");
+    if (templateSelect) {
+      templateSelect.addEventListener("change", (e) => {
+        handleTemplateChange(e.target.value);
+      });
+    }
+
+    // 注册"前往设置"按钮的点击事件
+    const openOptionsBtn = document.getElementById("open-options-btn");
+    if (openOptionsBtn) {
+      openOptionsBtn.addEventListener("click", () => {
+        chrome.runtime.openOptionsPage();
+      });
+    }
+
+    // 添加 storage 变更监听器
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+      if (namespace === "local" && changes.ankiWordAssistantConfig) {
+        handleStorageChange(changes.ankiWordAssistantConfig);
+      }
+    });
+
     // 根据配置渲染字段输入框（Legacy模式或Dynamic模式）
     await initializeDynamicFields();
+
+    // 检查模板状态并更新UI
+    updateUIBasedOnTemplate();
 
     // 向用户显示应用已准备就绪
     updateStatus(getText("popup_status_ready", "准备就绪"), "success");
@@ -742,11 +850,35 @@ async function handleParse() {
     return;
   }
 
+  // 获取当前活动模板
+  const template = getActiveTemplate();
+
+  // 检查模板是否存在
+  if (!template) {
+    updateStatus(
+      getText("popup_status_no_template", "请先在设置页面创建解析模板"),
+      "error"
+    );
+    return;
+  }
+
+  // 检查模板字段
+  if (!template.fields || template.fields.length === 0) {
+    updateStatus(
+      getText("popup_status_template_no_fields", "当前模板未配置字段"),
+      "error"
+    );
+    return;
+  }
+
   // 显示加载状态，禁用按钮防止重复提交
   setUiLoading(true, getText("popup_status_parsing", "正在进行AI解析..."));
 
   try {
-    // 获取当前配置的模型字段
+    // 隐藏重新解析提示（如果有）
+    hideReparseNotice();
+
+    // 获取当前配置的模型字段（用于兼容性）
     const modelFields = config?.ankiConfig?.modelFields;
     let result;
 
@@ -756,33 +888,30 @@ async function handleParse() {
       result = await parseTextWithFallback(textInput);
       fillLegacyFields(result);
     } else {
-      // Dynamic模式：根据用户配置的字段进行动态解析
-      const { modelName, selectedFields, allFields } = getActivePromptSetup();
-      const dynamicFields =
-        selectedFields && selectedFields.length > 0
-          ? selectedFields
-          : Array.isArray(modelFields) && modelFields.length > 0
-          ? modelFields
-          : allFields;
-      // 验证字段配置，确保有可用的解析目标
-      if (!dynamicFields || dynamicFields.length === 0) {
+      // 模板模式：使用模板定义的字段和 prompt
+      const templateFields = template.fields
+        .sort((a, b) => (a.order || 0) - (b.order || 0))
+        .map((f) => f.name);
+
+      // 验证字段配置
+      if (!templateFields || templateFields.length === 0) {
         throw createI18nError("popup_status_no_fields_parse", {
           fallback: "当前模板未配置可解析的字段，请在选项页完成设置。",
         });
       }
 
-      // 获取自定义提示模板并执行AI解析
-      const customTemplate = getPromptConfigForModel(
-        modelName,
-        config
-      ).customPrompt;
+      // 使用模板的 prompt 或构建默认 prompt
+      const customPrompt = template.prompt || buildPromptFromTemplate(template, textInput);
+
+      // 执行AI解析
       result = await parseTextWithDynamicFieldsFallback(
         textInput,
-        dynamicFields,
-        customTemplate
+        templateFields,
+        customPrompt
       );
+
       // 将解析结果填充到动态字段中
-      fillDynamicFields(result, dynamicFields);
+      fillDynamicFields(result, templateFields);
     }
 
     // 解析成功后启用写入按钮，允许用户将内容保存到Anki
@@ -949,8 +1078,10 @@ async function handleWriteToAnki() {
     }
 
     // 从配置中获取Anki卡片的基本属性
-    const deckName = config?.ankiConfig?.defaultDeck || "Default";
-    const modelName = config?.ankiConfig?.defaultModel || "Basic";
+    // 优先使用模板的配置，fallback 到全局配置
+    const template = getActiveTemplate();
+    const deckName = template?.deckName || config?.ankiConfig?.defaultDeck || "Default";
+    const modelName = template?.modelName || config?.ankiConfig?.defaultModel || "Basic";
     const tags = config?.ankiConfig?.defaultTags || [];
 
     // 构建AnkiConnect API所需的完整笔记数据
