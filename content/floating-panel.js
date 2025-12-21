@@ -536,6 +536,7 @@ export function createFloatingPanelController(options = {}) {
 	}
 }
 .panel-template-select {
+    display: block; /* Force display block */
     width: 100%;
     height: 28px;
     margin-bottom: 8px;
@@ -547,6 +548,7 @@ export function createFloatingPanelController(options = {}) {
     border-radius: 6px;
     outline: none;
     cursor: pointer;
+    box-sizing: border-box; /* Ensure padding doesn't affect width */
 }
 .panel-template-select:focus {
     border-color: rgba(71, 85, 105, 0.65);
@@ -582,6 +584,8 @@ export function createFloatingPanelController(options = {}) {
 
 		const templateSelect = documentRef.createElement("select");
 		templateSelect.className = "panel-template-select";
+		// Default to visible, will be hidden if no templates later
+		templateSelect.style.display = "block";
 
 		templateSelect.addEventListener("change", async (e) => {
 			const newTemplateId = e.target.value;
