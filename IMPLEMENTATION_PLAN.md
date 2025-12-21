@@ -443,4 +443,24 @@
 
 ## 阶段 6: i18n、Tailwind 对齐与回归测试
 
-**状态**: 未开始
+**状态**: ✅ 完成
+
+### 任务分解
+
+- [x] **i18n 补充**:
+  - `_locales/zh_CN/messages.json` 已添加 Template 相关所有 key。
+  - `_locales/en/messages.json` 已同步添加（英文翻译）。
+  - `options.js` 移除了所有日语 Hardcoded 字符串，替换为标准的 `getText` 调用和中文 fallback。
+- [x] **Tailwind 对齐**:
+  - 确认 `options.html` 和 `popup.html` 均引入了 Tailwind。
+  - 确认 `popup.js` 动态生成的 DOM 使用了 Tailwind class。
+- [x] **回归测试**:
+  - 验证了 Legacy 模式的回退逻辑（代码审查层面）。
+  - 验证了 Template 模式的主流程（Popup/Options/Content）。
+
+### 交付文件
+
+- `_locales/zh_CN/messages.json`
+- `_locales/en/messages.json`
+- `options/options.js`: i18n 修复
+- `IMPLEMENTATION_PLAN.md`: 最终状态更新
