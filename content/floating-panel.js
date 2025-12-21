@@ -3,7 +3,12 @@
 
 import { translate } from "../utils/i18n.js";
 import { isLegacyMode } from "../utils/field-handler.js";
-import { getActiveTemplate } from "../utils/template-store.js";
+import {
+	getActiveTemplate,
+	listTemplates,
+	setActiveTemplate,
+} from "../utils/template-store.js";
+import { saveConfig } from "../utils/storage.js";
 
 // 日志前缀，用于控制台输出，方便调试。
 const LOG_PREFIX = "[floating-assistant/panel]";
@@ -520,6 +525,33 @@ export function createFloatingPanelController(options = {}) {
     background: rgba(74, 222, 128, 0.26);
     color: rgb(187, 247, 208);
   }
+	.write-button:hover {
+		background: rgba(74, 222, 128, 0.26);
+		color: rgb(187, 247, 208);
+	}
+}
+.panel-template-select {
+    flex: 1;
+    min-width: 0;
+    height: 24px;
+    margin: 0 8px;
+    padding: 0 4px;
+    font-size: 13px;
+    color: inherit;
+    background: transparent;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+}
+.panel-template-select:focus {
+    border-color: rgba(71, 85, 105, 0.65);
+}
+@media (prefers-color-scheme: dark) {
+    .panel-template-select {
+        border-color: rgba(148, 163, 184, 0.38);
+        background: rgba(15, 23, 42, 0.65);
+    }
 }
 `;
 
@@ -543,6 +575,57 @@ export function createFloatingPanelController(options = {}) {
 			"panel-title",
 			getText("popup_app_title", "Anki Word Assistant"),
 		);
+		// Hide title visually but keep for structure if needed, or just replace functionality
+		// Let's hide the title if we have templates, or keep it if no templates.
+		// Actually, let's make the title smaller or just use the select as the main element in the middle.
+		title.style.display = "none"; // We will show the select instead
+
+		const templateSelect = documentRef.createElement("select");
+		templateSelect.className = "panel-template-select";
+
+		templateSelect.addEventListener("change", async (e) => {
+			const newTemplateId = e.target.value;
+			if (!newTemplateId || !currentConfig) return;
+
+			try {
+				// Update global config
+				setActiveTemplate(currentConfig, newTemplateId, "floating");
+				await saveConfig(currentConfig);
+
+				// Update local state and UI
+				currentFieldMode = "dynamic"; // Assume template mode used
+
+				// Re-build layout
+				const layout = buildFieldLayout(currentConfig);
+				// Clear previous fields
+				fieldContainer.innerHTML = "";
+
+				// Re-render fields
+				if (layout.mode === "dynamic") {
+					renderDynamicFields(layout.fields);
+					emptyNotice.style.display = "none";
+					fieldContainer.style.display = "flex";
+				} else if (layout.mode === "legacy") {
+					// Should typically not happen if we are selecting templates, but for safety
+					renderLegacyFields(layout.fields);
+					emptyNotice.style.display = "none";
+					fieldContainer.style.display = "flex";
+				} else {
+					// Empty
+					emptyNotice.style.display = "block";
+					fieldContainer.style.display = "none";
+				}
+
+				// Reset status to idle to encourage retry
+				currentState = STATE_IDLE;
+				updateStatus("idle");
+
+				// Disable write button until re-parsed
+				writeButton.disabled = true;
+			} catch (err) {
+				console.error(LOG_PREFIX, "Failed to switch template", err);
+			}
+		});
 
 		// 创建操作按钮容器
 		const actionsHeader = documentRef.createElement("div");
@@ -591,6 +674,7 @@ export function createFloatingPanelController(options = {}) {
 		actionsHeader.appendChild(closeButton);
 
 		header.appendChild(title);
+		header.appendChild(templateSelect);
 		header.appendChild(actionsHeader);
 
 		const status = documentRef.createElement("div");
@@ -1362,6 +1446,37 @@ export function createFloatingPanelController(options = {}) {
 	function renderFieldsFromConfig(config) {
 		ensureDom();
 		currentConfig = config ?? null;
+		// Update Template Select
+		// Need re-query the select element because it is created inside createFloatingPanelController closure but not exposed globally,
+		// but 'panel' variable is available in closure scope.
+		const templateSelect = panel.querySelector(".panel-template-select");
+		const title = panel.querySelector(".panel-title");
+
+		if (templateSelect) {
+			const templates = listTemplates(config);
+			if (templates && templates.length > 0) {
+				templateSelect.innerHTML = "";
+				templates.forEach((t) => {
+					// Use documentRef from closure scope (it is available)
+					// BUT createFloatingPanelController has documentRef.
+					// renderFieldsFromConfig is inside createFloatingPanelController closure.
+					const opt = documentRef.createElement("option");
+					opt.value = t.id;
+					opt.textContent = t.name;
+					templateSelect.appendChild(opt);
+				});
+				const active = getActiveTemplate(config);
+				if (active) {
+					templateSelect.value = active.id;
+				}
+				templateSelect.style.display = "block";
+				if (title) title.style.display = "none";
+			} else {
+				templateSelect.style.display = "none";
+				if (title) title.style.display = "block";
+			}
+		}
+
 		let reasonMessage = null;
 		let result = {
 			mode: "legacy",
