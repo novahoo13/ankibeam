@@ -525,16 +525,7 @@ export function createFloatingPanelController(options = {}) {
     background: rgba(74, 222, 128, 0.26);
     color: rgb(187, 247, 208);
   }
-	.write-button:hover {
-		background: rgba(74, 222, 128, 0.26);
-		color: rgb(187, 247, 208);
-	}
-}
-	.write-button:hover {
-		background: rgba(74, 222, 128, 0.26);
-		color: rgb(187, 247, 208);
-	}
-}
+
 .panel-template-select {
     display: block; /* Force display block */
     width: 100%;
@@ -1487,6 +1478,7 @@ export function createFloatingPanelController(options = {}) {
 				}
 				templateSelect.style.display = "block";
 			} else {
+				// If no templates, hide it
 				templateSelect.style.display = "none";
 			}
 		}
