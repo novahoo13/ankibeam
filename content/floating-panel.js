@@ -1459,10 +1459,18 @@ export function createFloatingPanelController(options = {}) {
 		const templateSelect = panel.querySelector(".panel-template-select");
 		const title = panel.querySelector(".panel-title");
 
+		// DEBUG: Log config and templates
+		console.log(
+			LOG_PREFIX,
+			"renderFieldsFromConfig called with config:",
+			config,
+		);
+		const templates = listTemplates(config);
+		console.log(LOG_PREFIX, "Listed templates:", templates);
+
 		if (templateSelect) {
-			const templates = listTemplates(config);
+			templateSelect.innerHTML = "";
 			if (templates && templates.length > 0) {
-				templateSelect.innerHTML = "";
 				templates.forEach((t) => {
 					// Use documentRef from closure scope (it is available)
 					// BUT createFloatingPanelController has documentRef.
@@ -1478,8 +1486,12 @@ export function createFloatingPanelController(options = {}) {
 				}
 				templateSelect.style.display = "block";
 			} else {
-				// If no templates, hide it
-				templateSelect.style.display = "none";
+				// DEBUG: Show placeholder if empty to verify UI exists
+				const opt = documentRef.createElement("option");
+				opt.textContent = "No Templates Found (Debug)";
+				templateSelect.appendChild(opt);
+				templateSelect.style.display = "block";
+				// templateSelect.style.display = "none";
 			}
 		}
 
