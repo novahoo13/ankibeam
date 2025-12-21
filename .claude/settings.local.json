@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "Bash(Where-Object { $_ullName -notmatch 'node_modules' })",
-      "Bash(Select-Object -ExpandProperty FullName)"
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(npm run lint)",
+      "Bash(npm run:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
