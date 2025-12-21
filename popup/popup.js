@@ -8,10 +8,7 @@ import {
 	collectFieldsForWrite,
 	validateFields,
 } from "../utils/field-handler.js";
-import {
-	getPromptConfigForModel,
-	buildPromptFromTemplate,
-} from "../utils/prompt-engine.js";
+
 import {
 	translate,
 	createI18nError,
@@ -59,57 +56,6 @@ let needsReparse = false;
  * 根据用户配置确定要使用的AI模型、字段列表和提示模板
  * @returns {object} 包含模型名、全部字段、选中字段和提示配置的对象
  */
-function getActivePromptSetup() {
-	// 获取当前模板的所有可用字段
-	const allFields = Array.isArray(config?.ankiConfig?.modelFields)
-		? [...config.ankiConfig.modelFields]
-		: [];
-
-	// 获取默认的Anki模板名称
-	let modelName = config?.ankiConfig?.defaultModel || "";
-
-	// 如果没有指定模型，尝试从第一个模板获取模型
-	const templates = config?.templateLibrary?.templates || {};
-	if (!modelName && Object.keys(templates).length > 0) {
-		const firstTemplate = Object.values(templates)[0];
-		modelName = firstTemplate.modelName;
-	}
-
-	// Fallback to legacy prompt templates if absolutely necessary (but cleaner to just return what we have)
-	// 获取特定模型的提示配置和选中的字段
-	// Phase 5: 除非为了兼容极老的配置，否则不再使用 getPromptConfigForModel
-	// 这里保留仅作最后的回退，防止 initializeDynamicFields 出错
-	let selectedFields = [];
-	try {
-		const promptConfig = getPromptConfigForModel(modelName, config);
-		selectedFields = Array.isArray(promptConfig.selectedFields)
-			? promptConfig.selectedFields.filter(
-					(field) => typeof field === "string" && field.trim(),
-			  )
-			: [];
-	} catch (e) {
-		// Ignore legacy config errors
-	}
-
-	// 确保选中的字段存在于全部字段列表中
-	if (selectedFields.length > 0 && allFields.length > 0) {
-		selectedFields = selectedFields.filter((field) =>
-			allFields.includes(field),
-		);
-	}
-
-	// 如果没有选中的字段，则使用全部字段作为默认
-	if (selectedFields.length === 0) {
-		selectedFields = allFields.slice();
-	}
-
-	return {
-		modelName,
-		allFields,
-		selectedFields,
-		promptConfig,
-	};
-}
 
 /**
  * アクティブなテンプレートを取得

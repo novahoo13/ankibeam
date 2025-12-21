@@ -10,10 +10,11 @@ let parseTextWithFallback = null;
 let parseTextWithDynamicFieldsFallback = null;
 let isLegacyMode = null;
 let validateFields = null;
-let getPromptConfigForModel = null;
+
 let addNote = null;
 let translate = null;
 let getActiveTemplate = null;
+let loadFloatingAssistantConfig = null;
 
 /**
  * 获取国际化文本的辅助函数。
@@ -32,10 +33,10 @@ const getText = (key, fallback, substitutions) =>
  */
 function logInfo(message, payload) {
 	if (payload !== undefined) {
-		// console.info(`${LOG_PREFIX} ${message}`, payload);
+		console.info(`${LOG_PREFIX} ${message}`, payload);
 		return;
 	}
-	// console.info(`${LOG_PREFIX} ${message}`);
+	console.info(`${LOG_PREFIX} ${message}`);
 }
 
 /**
@@ -45,10 +46,10 @@ function logInfo(message, payload) {
  */
 function logWarn(message, payload) {
 	if (payload !== undefined) {
-		// console.warn(`${LOG_PREFIX} ${message}`, payload);
+		console.warn(`${LOG_PREFIX} ${message}`, payload);
 		return;
 	}
-	// console.warn(`${LOG_PREFIX} ${message}`);
+	console.warn(`${LOG_PREFIX} ${message}`);
 }
 
 /**
@@ -78,6 +79,7 @@ function logWarn(message, payload) {
 			import(chrome.runtime.getURL("utils/ankiconnect-proxy.js")),
 			import(chrome.runtime.getURL("utils/i18n.js")),
 			import(chrome.runtime.getURL("utils/template-store.js")),
+			import(chrome.runtime.getURL("utils/storage.js")),
 		]);
 
 		// 从加载的模块中解构并赋值函数到顶层变量
@@ -87,10 +89,18 @@ function logWarn(message, payload) {
 		({ parseTextWithFallback, parseTextWithDynamicFieldsFallback } =
 			aiServiceModule);
 		({ isLegacyMode, validateFields } = fieldHandlerModule);
-		({ getPromptConfigForModel } = promptEngineModule);
+
 		({ addNote } = ankiConnectModule);
 		({ translate } = i18nModule);
 		({ getActiveTemplate } = templateStoreModule);
+		// Import loadConfig from storage module
+		let loadConfig;
+		({ loadConfig } = await import(chrome.runtime.getURL("utils/storage.js")));
+
+		// Update helper to use loadConfig (with decryption)
+		loadFloatingAssistantConfig = async function () {
+			return await loadConfig();
+		};
 		// 确保从 templateStoreModule 正确解构，如果上述数组解构不匹配，这里需要调整
 		// 由于 Promise.all 返回数组顺序对应，这里我们需要手动获取最后一个模块
 		// 但上面的解构是 const [..., templateStoreModule] = ...
@@ -125,11 +135,10 @@ function logWarn(message, payload) {
 				if (!change) {
 					return;
 				}
-				// 如果有新值，则应用更新；否则，重新加载整个配置
-				if (Object.prototype.hasOwnProperty.call(change, "newValue")) {
-					controller.applyConfigUpdate(change.newValue);
-					return;
-				}
+				// 即使有新值，我们也应该重新加载配置
+				// 因为 storage 中的数据可能包含加密的 API 密钥
+				// 而 change.newValue 是原始的加密数据，直接使用会导致密钥状态不一致
+				// refreshConfig 会调用 loadConfig，后者负责解密密钥
 				controller.refreshConfig();
 			});
 		}
@@ -241,7 +250,9 @@ function createController(
 						floatingPanel.showError({
 							message:
 								error?.message ??
-								getText("popup_error_generic", "操作失败，请重试"),
+								getText("popup_error_generic", "操作失败，请重试", [
+									"未知错误",
+								]),
 							allowRetry: true,
 						});
 					}
@@ -281,7 +292,9 @@ function createController(
 						floatingPanel.showError({
 							message:
 								error?.message ??
-								getText("popup_error_generic", "操作失败，请重试"),
+								getText("popup_error_generic", "操作失败，请重试", [
+									"未知错误",
+								]),
 							allowRetry: true,
 						});
 					}
@@ -458,40 +471,33 @@ function createController(
 		let result;
 
 		if (isLegacy) {
-			// 旧版模式：只处理 Front/Back 两个字段
-			logInfo("在旧版模式下执行AI解析。");
-			result = await parseTextWithFallback(selectedText);
+			// Legacy mode deprecated - force error or redirect
+			throw new Error(
+				getText(
+					"popup_error_legacy_mode",
+					"旧版模式已弃用，请在设置中创建解析模板",
+				),
+			);
 		} else {
 			// 动态模式：基于当前活动模板
 			const activeTemplate = getActiveTemplate(currentConfig);
 
-			let dynamicFields;
-			let customPrompt = "";
-
-			if (activeTemplate) {
-				// 如果有活动模板，优先使用模板配置
-				dynamicFields = activeTemplate.fields.map((f) => f.name);
-				customPrompt = activeTemplate.prompt;
-				logInfo(`使用模板 "${activeTemplate.name}" 执行AI解析。`, {
-					fields: dynamicFields,
-				});
-			} else {
-				// 回退逻辑 (虽然后续应该尽量避免进入这里)
-				const { modelName, selectedFields, allFields } = getActivePromptSetup();
-				dynamicFields =
-					selectedFields && selectedFields.length > 0
-						? selectedFields
-						: Array.isArray(modelFields) && modelFields.length > 0
-						? modelFields
-						: allFields;
-
-				// 尝试获取旧版 Prompt 配置
-				customPrompt = getPromptConfigForModel(
-					modelName,
-					currentConfig,
-				).customPrompt;
-				logInfo("使用旧版配置执行AI解析。", { fields: dynamicFields });
+			if (!activeTemplate) {
+				throw new Error(
+					getText(
+						"popup_status_no_template",
+						"未选择解析模板，请在选项页面创建或选择模板",
+					),
+				);
 			}
+
+			// 如果有活动模板，优先使用模板配置
+			const dynamicFields = activeTemplate.fields.map((f) => f.name);
+			const customPrompt = activeTemplate.prompt;
+
+			logInfo(`使用模板 "${activeTemplate.name}" 执行AI解析。`, {
+				fields: dynamicFields,
+			});
 
 			if (!dynamicFields || dynamicFields.length === 0) {
 				throw new Error(
@@ -516,50 +522,6 @@ function createController(
 		}
 
 		logInfo("AI解析完成。", result);
-	}
-
-	/**
-	 * 获取当前活动的Prompt设置
-	 * @returns {object} 包含模型名称、所有字段、选定字段和Prompt配置的对象
-	 */
-	function getActivePromptSetup() {
-		const allFields = Array.isArray(currentConfig?.ankiConfig?.modelFields)
-			? [...currentConfig.ankiConfig.modelFields]
-			: [];
-
-		let modelName = currentConfig?.ankiConfig?.defaultModel || "";
-
-		const promptTemplates =
-			currentConfig?.promptTemplates?.promptTemplatesByModel || {};
-		if (!modelName && Object.keys(promptTemplates).length > 0) {
-			modelName = Object.keys(promptTemplates)[0];
-		}
-
-		const promptConfig = getPromptConfigForModel(modelName, currentConfig);
-		let selectedFields = Array.isArray(promptConfig.selectedFields)
-			? promptConfig.selectedFields.filter(
-					(field) => typeof field === "string" && field.trim(),
-			  )
-			: [];
-
-		// 确保选定字段是模型所有字段的子集
-		if (selectedFields.length > 0 && allFields.length > 0) {
-			selectedFields = selectedFields.filter((field) =>
-				allFields.includes(field),
-			);
-		}
-
-		// 如果没有选定字段，则默认使用所有字段
-		if (selectedFields.length === 0) {
-			selectedFields = allFields.slice();
-		}
-
-		return {
-			modelName,
-			allFields,
-			selectedFields,
-			promptConfig,
-		};
 	}
 
 	/**
@@ -615,13 +577,15 @@ function createController(
 					targetFields = activeTemplate.fields.map((f) => f.name);
 					templateAllFields = targetFields; // 模板模式下，目标字段就是所有字段
 				} else {
-					// Fallback for non-template dynamic mode (should be rare now)
-					const { selectedFields, allFields } = getActivePromptSetup();
-					targetFields =
-						selectedFields && selectedFields.length > 0
-							? selectedFields
-							: allFields;
-					templateAllFields = allFields;
+					// No active template in dynamic mode - this should be blocked before write
+					floatingPanel.showError({
+						message: getText(
+							"popup_status_no_template",
+							"未选择解析模板，无法写入",
+						),
+						allowRetry: false,
+					});
+					return;
 				}
 
 				if (!targetFields || targetFields.length === 0) {
@@ -635,7 +599,12 @@ function createController(
 					return;
 				}
 			} else {
-				targetFields = modelFields;
+				// Legacy mode deprecated
+				floatingPanel.showError({
+					message: getText("popup_error_legacy_mode", "旧版模式已弃用"),
+					allowRetry: false,
+				});
+				return;
 			}
 
 			// 第二步：验证字段内容的完整性和有效性
@@ -800,7 +769,9 @@ function createController(
 
 			let errorMessage =
 				error?.message ||
-				getText("popup_error_anki_generic", "Anki操作失败", { DETAIL: "" });
+				getText("popup_error_anki_generic", "Anki操作失败", [
+					error?.message || "",
+				]);
 
 			// 对特定错误进行更友好的提示
 			if (
@@ -852,13 +823,13 @@ function createController(
 }
 
 /**
- * 从chrome.storage.local加载浮动助手的配置
- * @returns {Promise<object>} 规范化后的配置对象
+ * 旧版加载逻辑，已被 bootstrap 中的动态加载替代
+ * @deprecated
  */
-async function loadFloatingAssistantConfig() {
-	const stored = await readStoredConfig();
-	return normalizeConfig(stored);
-}
+// async function loadFloatingAssistantConfig() {
+// 	const stored = await readStoredConfig();
+// 	return normalizeConfig(stored);
+// }
 
 /**
  * 读取存储的原始配置

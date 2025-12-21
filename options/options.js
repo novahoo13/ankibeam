@@ -24,12 +24,7 @@ import {
 	getModelFieldNames,
 } from "../utils/ankiconnect.js";
 import { testConnection as testAi } from "../utils/ai-service.js";
-import {
-	loadPromptForModel,
-	savePromptForModel,
-	getPromptConfigForModel,
-	updatePromptConfigForModel,
-} from "../utils/prompt-engine.js";
+
 import {
 	getAllProviders,
 	getDefaultProviderId,
@@ -204,17 +199,6 @@ const ankiApi = dependencyOverrides.anki ?? {
 };
 
 /**
- * Prompt API 接口
- * @type {Object}
- */
-const promptApi = dependencyOverrides.prompt ?? {
-	loadPromptForModel,
-	savePromptForModel,
-	getPromptConfigForModel,
-	updatePromptConfigForModel,
-};
-
-/**
  * 当前选中的 Anki 模型字段列表
  * @type {Array<string>}
  */
@@ -227,23 +211,7 @@ let currentModelFields = [];
 let currentConfig = {};
 
 /**
- * Prompt 编辑器状态对象
- * @type {Object}
- * @property {string} currentModel - 当前编辑的模型名称
- * @property {string} lastSavedPrompt - 上次保存的 Prompt 内容
- * @property {Array<string>} selectedFields - 已选择的字段列表
- * @property {Object} fieldConfigs - 字段配置对象
- * @property {Array<string>} availableFields - 可用字段列表
- * @property {string} lastGeneratedPrompt - 上次生成的 Prompt 内容
- */
-const promptEditorState = {
-	currentModel: "",
-	lastSavedPrompt: "",
-	selectedFields: [],
-	fieldConfigs: {},
-	availableFields: [],
-	lastGeneratedPrompt: "",
-};
+
 
 /**
  * テンプレート編集器の状態オブジェクト
@@ -914,8 +882,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 		providerSelect.addEventListener("change", handleProviderChange);
 	}
 
-	setupPromptEditor();
-
 	const exportButton = document.getElementById("export-config-btn");
 	if (exportButton) {
 		exportButton.addEventListener("click", handleExportConfiguration);
@@ -1026,7 +992,7 @@ document.addEventListener("DOMContentLoaded", async () => {
  * @param {string} areaName - 存储区域名称
  * @returns {void}
  */
-chrome.storage.onChanged.addListener((changes, areaName) => {
+chrome.storage.onChanged.addListener(async (changes, areaName) => {
 	// 仅监听 local storage
 	if (areaName !== "local") {
 		return;
@@ -1035,6 +1001,19 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 	// 检查是否有 ankiWordAssistantConfig 的变更
 	if (!changes.ankiWordAssistantConfig) {
 		return;
+	}
+
+	// 无论何种变更，都在后台静默刷新 currentConfig，确保后续保存操作基于最新数据
+	// 这样可以防止 Options 页面覆盖其他页面（如悬浮面板）所做的更改
+	try {
+		const freshConfig = await storageApi.loadConfig();
+		// 只更新数据对象，不刷新整个UI，以免打断用户填写
+		currentConfig = freshConfig;
+		// 注意：如果需要，这里也可以选择性更新 actualApiKeys，但需小心避免覆盖用户正在输入的密钥
+		// 目前策略是：handleSave 时会从 actualApiKeys (或输入框) 读取密钥，覆盖 freshConfig 中的密钥
+		// 这是正确的，因为 Options 页面是密钥的"权威来源"
+	} catch (error) {
+		console.error("[options] 同步配置失败:", error);
 	}
 
 	const oldValue = changes.ankiWordAssistantConfig.oldValue;
@@ -1059,555 +1038,6 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 });
 
 /**
- * Prompt 编辑器相关初始化
- * @description 设置 Prompt 编辑器的事件监听器和初始状态
- * @returns {void}
- */
-function setupPromptEditor() {
-	const promptTextarea = document.getElementById("custom-prompt-textarea");
-	const fieldSelectionList = document.getElementById("field-selection-list");
-	const fieldConfigList = document.getElementById("field-config-list");
-	const resetButton = document.getElementById("reset-prompt-btn");
-	if (promptTextarea) {
-		promptTextarea.addEventListener("input", () => {
-			markPromptDirtyFlag();
-		});
-	}
-
-	if (fieldSelectionList) {
-		fieldSelectionList.addEventListener("click", handleFieldSelectionClick);
-	}
-
-	if (fieldConfigList) {
-		fieldConfigList.addEventListener("input", handleFieldConfigInput);
-	}
-
-	if (resetButton) {
-		resetButton.addEventListener("click", handleResetPromptTemplate);
-	}
-
-	hidePromptConfig();
-	markPromptDirtyFlag(false);
-}
-
-/**
- * 处理字段选择点击事件
- * @param {MouseEvent} event - 鼠标点击事件
- * @returns {void}
- */
-function handleFieldSelectionClick(event) {
-	const button = event.target.closest("[data-field-option]");
-	if (!button) {
-		return;
-	}
-
-	const fieldName = button.dataset.fieldOption;
-	if (!fieldName) {
-		return;
-	}
-
-	event.preventDefault();
-	toggleFieldSelection(fieldName);
-}
-
-/**
- * 切换字段的选中状态
- * @param {string} fieldName - 字段名称
- * @returns {void}
- */
-function toggleFieldSelection(fieldName) {
-	if (!fieldName) {
-		return;
-	}
-
-	const availableFields = promptEditorState.availableFields || [];
-	if (!availableFields.includes(fieldName)) {
-		return;
-	}
-
-	const selected = promptEditorState.selectedFields || [];
-	const isSelected = selected.includes(fieldName);
-
-	if (isSelected) {
-		promptEditorState.selectedFields = selected.filter(
-			(field) => field !== fieldName,
-		);
-	} else {
-		promptEditorState.selectedFields = Array.from(
-			new Set([...selected, fieldName]),
-		);
-	}
-
-	const normalizedSelection = (promptEditorState.selectedFields || []).filter(
-		(field) => availableFields.includes(field),
-	);
-
-	promptEditorState.selectedFields = availableFields.filter((field) =>
-		normalizedSelection.includes(field),
-	);
-
-	if (!promptEditorState.fieldConfigs[fieldName]) {
-		promptEditorState.fieldConfigs[fieldName] = {
-			content: "",
-		};
-	}
-
-	renderFieldSelection();
-	renderFieldConfigForm();
-	validateFieldConfigurations(false);
-
-	synchronizeGeneratedPrompt();
-	markPromptDirtyFlag();
-}
-
-/**
- * 处理字段配置输入事件
- * @param {Event} event - 输入事件
- * @returns {void}
- */
-function handleFieldConfigInput(event) {
-	const target = event.target;
-	if (!target || target.tagName !== "TEXTAREA" || !target.dataset.fieldName) {
-		return;
-	}
-
-	const fieldName = target.dataset.fieldName;
-	const role = target.dataset.fieldRole;
-
-	const config = ensureFieldConfig(fieldName);
-
-	if (role === "content") {
-		config.content = target.value;
-	}
-
-	validateFieldConfigurations(false);
-
-	synchronizeGeneratedPrompt();
-	markPromptDirtyFlag();
-}
-
-/**
- * 渲染字段选择区域
- * @param {Array<string>} [fields] - 可选的字段列表
- * @returns {void}
- */
-function renderFieldSelection(fields) {
-	if (Array.isArray(fields)) {
-		promptEditorState.availableFields = [...fields];
-	}
-
-	const selectionList = document.getElementById("field-selection-list");
-	const editorContainer = document.getElementById("prompt-field-editor");
-
-	if (!selectionList || !editorContainer) {
-		return;
-	}
-
-	const availableFields = promptEditorState.availableFields || [];
-
-	const normalizedSelection = (promptEditorState.selectedFields || []).filter(
-		(field) => availableFields.includes(field),
-	);
-	promptEditorState.selectedFields = availableFields.filter((field) =>
-		normalizedSelection.includes(field),
-	);
-
-	Object.keys(promptEditorState.fieldConfigs).forEach((field) => {
-		if (!availableFields.includes(field)) {
-			delete promptEditorState.fieldConfigs[field];
-		}
-	});
-
-	if (availableFields.length === 0) {
-		editorContainer.style.display = "none";
-		selectionList.innerHTML = "";
-		const configList = document.getElementById("field-config-list");
-		if (configList) {
-			configList.innerHTML = "";
-		}
-		setPromptConfigStatus(
-			getText("options_prompt_no_fields", "当前模板未返回任何字段。"),
-			"info",
-		);
-		return;
-	}
-
-	editorContainer.style.display = "block";
-
-	const baseButtonClass =
-		"px-3 py-1 rounded-md border text-xs font-medium transition-colors duration-150";
-
-	selectionList.innerHTML = availableFields
-		.map((field) => {
-			const isSelected = promptEditorState.selectedFields.includes(field);
-			const classes = isSelected
-				? `${baseButtonClass} bg-slate-600 text-white border-slate-600`
-				: `${baseButtonClass} bg-white text-slate-600 border-slate-300 hover:border-slate-500`;
-			return `<button type="button" class="${classes}" data-field-option="${escapeHtml(
-				field,
-			)}" aria-pressed="${isSelected}">${escapeHtml(field)}</button>`;
-		})
-		.join("");
-
-	if (promptEditorState.selectedFields.length === 0) {
-		setPromptConfigStatus(
-			getText(
-				"options_prompt_select_fields",
-				"请选择需要输出的字段，并补全字段内容。",
-			),
-			"info",
-		);
-	}
-}
-
-/**
- * 渲染字段配置表单
- * @description 为每个选中的字段生成配置表单界面
- * @returns {void}
- */
-function renderFieldConfigForm() {
-	const container = document.getElementById("field-config-list");
-	if (!container) {
-		return;
-	}
-
-	const selectedFields = promptEditorState.selectedFields || [];
-	if (selectedFields.length === 0) {
-		const emptyHint = getText(
-			"options_prompt_field_config_hint",
-			"配置生成 AI 输出该字段所需的信息",
-		);
-		container.innerHTML = `<div class="text-xs text-gray-500 border border-dashed border-slate-300 rounded-md p-3 bg-slate-50">${emptyHint}</div>`;
-		return;
-	}
-
-	const fieldLabelText = getText("options_prompt_field_label", "字段内容");
-	const fieldPlaceholderText = getText(
-		"options_prompt_field_placeholder",
-		"描述该字段应包含的内容，例如输出结构、语气等要求",
-	);
-
-	const cardsHtml = selectedFields
-		.map((field) => {
-			const safeField = escapeHtml(field);
-			return `
-        <div class="field-config-item border border-slate-200 rounded-md p-4 bg-white" data-field-config-item="${safeField}">
-          <div class="flex flex-col gap-1">
-            <h5 class="text-sm font-semibold text-slate-700">${safeField}</h5>
-          </div>
-          <div class="mt-3">
-            <label class="block text-xs font-medium text-gray-600 mb-1">${fieldLabelText} <span class="text-red-500">*</span></label>
-            <textarea
-              class="w-full p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-              rows="3"
-              data-field-name="${safeField}"
-              data-field-role="content"
-              placeholder="${fieldPlaceholderText}"
-            ></textarea>
-            <p class="text-xs text-red-600 mt-1" data-field-error></p>
-          </div>
-        </div>
-      `;
-		})
-		.join("");
-
-	container.innerHTML = cardsHtml;
-
-	selectedFields.forEach((field) => {
-		const config = ensureFieldConfig(field);
-		const selector = `[data-field-config-item="${escapeCssSelector(field)}"]`;
-		const card = container.querySelector(selector);
-		if (!card) {
-			return;
-		}
-
-		const contentArea = card.querySelector(
-			'textarea[data-field-role="content"]',
-		);
-
-		if (contentArea) {
-			contentArea.value = config.content || "";
-		}
-	});
-
-	validateFieldConfigurations(false);
-}
-
-/**
- * 确保字段配置对象存在
- * @param {string} fieldName - 字段名称
- * @returns {Object} 字段配置对象
- */
-function ensureFieldConfig(fieldName) {
-	if (!promptEditorState.fieldConfigs[fieldName]) {
-		promptEditorState.fieldConfigs[fieldName] = {
-			content: "",
-		};
-	}
-	return promptEditorState.fieldConfigs[fieldName];
-}
-
-/**
- * 克隆选中字段的配置
- * @param {Array<string>} selectedFields - 选中的字段列表
- * @returns {Object} 克隆的字段配置对象
- */
-function cloneSelectedFieldConfigs(selectedFields) {
-	const result = {};
-	selectedFields.forEach((field) => {
-		const config = ensureFieldConfig(field);
-		result[field] = {
-			content: (config.content || "").trim(),
-		};
-	});
-	return result;
-}
-
-/**
- * 生成默认 Prompt 内容
- * @description 根据选中的字段和配置生成结构化的 Prompt
- * @returns {string} 生成的 Prompt 文本
- */
-function generateDefaultPrompt() {
-	const selectedFields = promptEditorState.selectedFields || [];
-	if (selectedFields.length === 0) {
-		return "";
-	}
-
-	const lines = [];
-	lines.push(
-		getText("options_prompt_rule_intro", "请严格按照下列要求生成输出。"),
-	);
-	lines.push("");
-	lines.push(
-		getText("options_prompt_rule_field_definition", "字段返回内容定义："),
-	);
-
-	selectedFields.forEach((field) => {
-		const config = ensureFieldConfig(field);
-		const content = (config.content || "").trim();
-		const fieldDetail =
-			content ||
-			getText(
-				"options_prompt_rule_field_fallback",
-				"请生成与该字段相关的内容。",
-			);
-		lines.push(`${field}：${fieldDetail}`);
-		lines.push("");
-	});
-
-	lines.push(getText("options_prompt_rule_output_format", "输出格式定义："));
-	lines.push(
-		getText(
-			"options_prompt_rule_output_json",
-			"请按照以下 JSON 结构返回结果，仅包含所列字段：",
-		),
-	);
-	lines.push("{");
-	selectedFields.forEach((field, index) => {
-		const comma = index === selectedFields.length - 1 ? "" : ",";
-		lines.push(
-			getText(
-				"options_prompt_rule_output_line",
-				`  "${field}": "请填入${field}的内容"${comma}`,
-				[field, comma],
-			),
-		);
-	});
-	lines.push("}");
-	lines.push("");
-	lines.push(getText("options_prompt_rule_notes", "注意事项："));
-	lines.push(
-		getText(
-			"options_prompt_rule_note_json_only",
-			"- 仅返回 JSON，不要包含额外解释。",
-		),
-	);
-	lines.push(
-		getText(
-			"options_prompt_rule_note_requirements",
-			"- 确保各字段内容满足上文要求。",
-		),
-	);
-
-	return (
-		lines
-			.join("\n")
-			.replace(/\n{3,}/g, "\n\n")
-			.trim() + "\n"
-	);
-}
-
-/**
- * 同步生成的 Prompt 到编辑器
- * @param {Object} [options={}] - 配置选项
- * @param {boolean} [options.forceUpdate=false] - 是否强制更新
- * @returns {boolean} 是否更新了 Prompt
- */
-function synchronizeGeneratedPrompt(options = {}) {
-	const { forceUpdate = false } = options;
-	const promptTextarea = document.getElementById("custom-prompt-textarea");
-
-	if (!promptTextarea || promptTextarea.disabled) {
-		promptEditorState.lastGeneratedPrompt = generateDefaultPrompt();
-		return false;
-	}
-
-	const generatedPrompt = generateDefaultPrompt();
-	const trimmedGenerated = (generatedPrompt || "").trim();
-	const trimmedCurrent = (promptTextarea.value || "").trim();
-	const trimmedLastGenerated = (
-		promptEditorState.lastGeneratedPrompt || ""
-	).trim();
-
-	const wasAutoGenerated =
-		!trimmedCurrent || trimmedCurrent === trimmedLastGenerated;
-
-	promptEditorState.lastGeneratedPrompt = generatedPrompt;
-
-	if (!trimmedGenerated) {
-		if ((forceUpdate || wasAutoGenerated) && promptTextarea.value) {
-			promptTextarea.value = "";
-			markPromptDirtyFlag();
-			return true;
-		}
-		return false;
-	}
-
-	if (forceUpdate || wasAutoGenerated) {
-		if (trimmedCurrent !== trimmedGenerated) {
-			promptTextarea.value = generatedPrompt;
-			markPromptDirtyFlag();
-			return true;
-		}
-	}
-
-	return false;
-}
-
-/**
- * 设置 Prompt 配置状态消息
- * @param {string} [message=""] - 状态消息
- * @param {string} [level=""] - 消息级别（"error", "success", "info"）
- * @returns {void}
- */
-function setPromptConfigStatus(message = "", level = "") {
-	const statusElement = document.getElementById("prompt-config-status");
-	if (!statusElement) {
-		return;
-	}
-
-	const baseClass = "text-xs mt-1";
-	let colorClass = "text-gray-500";
-
-	if (level === "error") {
-		colorClass = "text-red-600";
-	} else if (level === "success") {
-		colorClass = "text-green-600";
-	} else if (level === "info") {
-		colorClass = "text-gray-500";
-	}
-
-	statusElement.className = `${baseClass} ${colorClass}`;
-	statusElement.textContent = message;
-}
-
-/**
- * 验证字段配置的完整性
- * @param {boolean} [showStatus=false] - 是否显示验证状态消息
- * @returns {Object} 验证结果
- * @returns {boolean} returns.isValid - 是否验证通过
- * @returns {Array<string>} returns.missingFields - 缺失的字段列表
- */
-function validateFieldConfigurations(showStatus = false) {
-	const selectedFields = promptEditorState.selectedFields || [];
-	const configList = document.getElementById("field-config-list");
-	const missingFields = [];
-
-	selectedFields.forEach((field) => {
-		const config = ensureFieldConfig(field);
-		const contentValue = (config.content || "").trim();
-		const selector = `[data-field-config-item="${escapeCssSelector(field)}"]`;
-		const card = configList ? configList.querySelector(selector) : null;
-		const errorLabel = card ? card.querySelector("[data-field-error]") : null;
-
-		if (!contentValue) {
-			missingFields.push(field);
-			if (card) {
-				card.classList.remove("border-slate-200");
-				card.classList.add("border-red-300");
-			}
-			if (errorLabel) {
-				errorLabel.textContent = getText(
-					"options_prompt_error_field_required",
-					"字段内容为必填项",
-				);
-			}
-		} else {
-			if (card) {
-				card.classList.remove("border-red-300");
-				if (!card.classList.contains("border-slate-200")) {
-					card.classList.add("border-slate-200");
-				}
-			}
-			if (errorLabel) {
-				errorLabel.textContent = "";
-			}
-		}
-	});
-
-	if (selectedFields.length === 0) {
-		if (showStatus) {
-			setPromptConfigStatus(
-				getText(
-					"options_prompt_error_select_fields",
-					"请选择至少一个要输出的字段。",
-				),
-				"error",
-			);
-		}
-		return { isValid: false, missingFields };
-	}
-
-	if (missingFields.length > 0) {
-		if (showStatus) {
-			const message =
-				missingFields.length === 1
-					? `字段“${missingFields[0]}”的内容不能为空。`
-					: `以下字段内容不能为空：${missingFields.join("、")}`;
-			setPromptConfigStatus(message, "error");
-		}
-		return { isValid: false, missingFields };
-	}
-
-	if (showStatus) {
-		setPromptConfigStatus(
-			getText("options_prompt_status_ready", "字段配置已就绪。"),
-			"success",
-		);
-		setTimeout(() => {
-			setPromptConfigStatus("", "");
-		}, 1500);
-	} else {
-		setPromptConfigStatus("", "");
-	}
-
-	return { isValid: true, missingFields: [] };
-}
-
-/**
- * 转义 CSS 选择器中的特殊字符
- * @param {string} value - 需要转义的值
- * @returns {string} 转义后的字符串
- */
-function escapeCssSelector(value) {
-	if (window.CSS && typeof window.CSS.escape === "function") {
-		return window.CSS.escape(value);
-	}
-	return value.replace(/([\s!"#$%&'()*+,./:;<=>?@[\]^`{|}~])/g, "$1");
-}
-
-/**
  * 转义 HTML 特殊字符
  * @param {string} value - 需要转义的值
  * @returns {string} 转义后的字符串
@@ -1622,203 +1052,6 @@ function escapeHtml(value) {
 		.replace(/>/g, "&gt;")
 		.replace(/"/g, "&quot;")
 		.replace(/'/g, "&#39;");
-}
-
-/**
- * 处理重置 Prompt 模板操作
- * @description 将模型专用 Prompt 重置为默认生成的值
- * @returns {void}
- */
-function handleResetPromptTemplate() {
-	const promptTextarea = document.getElementById("custom-prompt-textarea");
-	if (!promptTextarea || promptTextarea.disabled) {
-		return;
-	}
-
-	synchronizeGeneratedPrompt({ forceUpdate: true });
-	markPromptDirtyFlag();
-
-	const generatedPrompt = (promptEditorState.lastGeneratedPrompt || "").trim();
-	if (generatedPrompt) {
-		setPromptConfigStatus(
-			getText(
-				"options_prompt_status_generated",
-				"已根据当前字段配置生成默认 Prompt。",
-			),
-			"info",
-		);
-	} else {
-		setPromptConfigStatus(
-			getText(
-				"options_prompt_error_generate_first",
-				"请先选择并配置字段，然后再生成默认 Prompt。",
-			),
-			"info",
-		);
-	}
-}
-
-/**
- * 显示 Prompt 配置 UI
- * @param {string} modelName - 模型名称
- * @param {Array<string>} fields - 字段列表
- * @returns {void}
- */
-function showPromptConfig(modelName, fields) {
-	const editorContainer = document.getElementById("prompt-field-editor");
-	const selectionList = document.getElementById("field-selection-list");
-	const configList = document.getElementById("field-config-list");
-	const promptTextarea = document.getElementById("custom-prompt-textarea");
-	const currentModelLabel = document.getElementById("prompt-current-model");
-	const resetButton = document.getElementById("reset-prompt-btn");
-	const modelHint = document.getElementById("prompt-model-hint");
-
-	if (!editorContainer || !selectionList || !configList || !promptTextarea) {
-		// console.warn('Prompt 配置元素未找到');
-		return;
-	}
-
-	promptEditorState.currentModel = modelName;
-	promptEditorState.availableFields = Array.isArray(fields) ? [...fields] : [];
-
-	const promptConfig = promptApi.getPromptConfigForModel(
-		modelName,
-		currentConfig,
-	);
-	promptEditorState.selectedFields = Array.isArray(promptConfig.selectedFields)
-		? [...promptConfig.selectedFields]
-		: [];
-	promptEditorState.fieldConfigs = {};
-	if (
-		promptConfig.fieldConfigs &&
-		typeof promptConfig.fieldConfigs === "object"
-	) {
-		Object.keys(promptConfig.fieldConfigs).forEach((fieldName) => {
-			const fieldConfig = promptConfig.fieldConfigs[fieldName] || {};
-			promptEditorState.fieldConfigs[fieldName] = {
-				content:
-					typeof fieldConfig.content === "string" ? fieldConfig.content : "",
-			};
-		});
-	}
-
-	const availableFields = promptEditorState.availableFields;
-	promptEditorState.selectedFields = promptEditorState.selectedFields.filter(
-		(field) => availableFields.includes(field),
-	);
-	Object.keys(promptEditorState.fieldConfigs).forEach((field) => {
-		if (!availableFields.includes(field)) {
-			delete promptEditorState.fieldConfigs[field];
-		}
-	});
-
-	if (currentModelLabel) {
-		currentModelLabel.textContent = getText(
-			"options_prompt_current_model_label",
-			`当前模板：${modelName}`,
-			[modelName],
-		);
-	}
-
-	if (modelHint) {
-		modelHint.textContent = getText(
-			"options_prompt_hint_save_usage",
-			"提示：保存设置后将在 popup 中使用此 Prompt。",
-		);
-	}
-
-	renderFieldSelection(availableFields);
-	renderFieldConfigForm();
-
-	promptTextarea.disabled = false;
-	if (resetButton) {
-		resetButton.disabled = false;
-	}
-
-	const storedPrompt =
-		typeof promptConfig.customPrompt === "string"
-			? promptConfig.customPrompt
-			: "";
-	promptTextarea.value = storedPrompt;
-	promptEditorState.lastSavedPrompt = storedPrompt;
-
-	const forceGenerate = !storedPrompt.trim();
-	synchronizeGeneratedPrompt({ forceUpdate: forceGenerate });
-	markPromptDirtyFlag();
-}
-
-/**
- * 隐藏 Prompt 配置 UI
- * @description 重置 Prompt 编辑器状态并隐藏配置界面
- * @returns {void}
- */
-function hidePromptConfig() {
-	const editorContainer = document.getElementById("prompt-field-editor");
-	const selectionList = document.getElementById("field-selection-list");
-	const configList = document.getElementById("field-config-list");
-	const promptTextarea = document.getElementById("custom-prompt-textarea");
-	const currentModelLabel = document.getElementById("prompt-current-model");
-	const resetButton = document.getElementById("reset-prompt-btn");
-	const modelHint = document.getElementById("prompt-model-hint");
-
-	if (!editorContainer || !selectionList || !configList || !promptTextarea) {
-		// console.warn('Prompt 配置元素未找到');
-		return;
-	}
-
-	promptEditorState.currentModel = "";
-	promptEditorState.lastSavedPrompt = "";
-	promptEditorState.selectedFields = [];
-	promptEditorState.fieldConfigs = {};
-	promptEditorState.availableFields = [];
-	promptEditorState.lastGeneratedPrompt = "";
-
-	if (currentModelLabel) {
-		currentModelLabel.textContent = getText(
-			"options_prompt_current_model",
-			"当前模板：未选择",
-		);
-	}
-
-	if (modelHint) {
-		modelHint.textContent =
-			"请在「Anki 连接」面板选择要编辑的模型，随后在这里自定义 Prompt。";
-	}
-
-	editorContainer.style.display = "none";
-	selectionList.innerHTML = "";
-	configList.innerHTML = "";
-	setPromptConfigStatus("", "");
-
-	promptTextarea.value = "";
-	promptTextarea.disabled = true;
-
-	if (resetButton) {
-		resetButton.disabled = true;
-	}
-
-	markPromptDirtyFlag(false);
-}
-
-/**
- * 标记 Prompt 编辑状态
- * @param {boolean} [forced] - 强制显示/隐藏标记
- * @returns {void}
- */
-function markPromptDirtyFlag(forced) {
-	const flag = document.getElementById("prompt-dirty-flag");
-	const promptTextarea = document.getElementById("custom-prompt-textarea");
-	if (!flag || !promptTextarea) {
-		return;
-	}
-
-	if (typeof forced === "boolean") {
-		flag.style.display = forced ? "inline" : "none";
-		return;
-	}
-
-	const isDirty = promptTextarea.value !== promptEditorState.lastSavedPrompt;
-	flag.style.display = isDirty ? "inline" : "none";
 }
 
 /**
@@ -2215,50 +1448,6 @@ async function handleSave() {
 	const textAlign = textAlignSelect ? textAlignSelect.value : "left";
 	const lineHeight = lineHeightSelect ? lineHeightSelect.value : "1.4";
 
-	const isPromptEditorActive =
-		promptEditorState.currentModel &&
-		promptTextarea &&
-		!promptTextarea.disabled;
-
-	if (isPromptEditorActive) {
-		const validation = validateFieldConfigurations(true);
-		if (!validation.isValid) {
-			return;
-		}
-	}
-
-	// 构建新配置对象
-	const existingPromptTemplatesByModel = {};
-	const storedPromptConfigs =
-		currentConfig?.promptTemplates?.promptTemplatesByModel || {};
-	const legacyPromptConfigs =
-		currentConfig?.ankiConfig?.promptTemplatesByModel || {};
-
-	new Set([
-		...Object.keys(storedPromptConfigs),
-		...Object.keys(legacyPromptConfigs),
-	]).forEach((modelName) => {
-		existingPromptTemplatesByModel[modelName] =
-			promptApi.getPromptConfigForModel(modelName, currentConfig);
-	});
-
-	if (promptEditorState.currentModel) {
-		const selectedSnapshot = [...(promptEditorState.selectedFields || [])];
-		const existingConfig = existingPromptTemplatesByModel[
-			promptEditorState.currentModel
-		] || {
-			selectedFields: [],
-			fieldConfigs: {},
-			customPrompt: "",
-		};
-
-		existingPromptTemplatesByModel[promptEditorState.currentModel] = {
-			...existingConfig,
-			selectedFields: selectedSnapshot,
-			fieldConfigs: cloneSelectedFieldConfigs(selectedSnapshot),
-		};
-	}
-
 	const nextConfig = JSON.parse(
 		JSON.stringify(currentConfig ?? storageApi.getDefaultConfig()),
 	);
@@ -2314,7 +1503,7 @@ async function handleSave() {
 
 	nextConfig.promptTemplates = {
 		...(nextConfig.promptTemplates ?? {}),
-		promptTemplatesByModel: existingPromptTemplatesByModel,
+		// Deprecated: promptTemplatesByModel is no longer updated
 	};
 
 	nextConfig.ankiConfig = {
@@ -2354,58 +1543,12 @@ async function handleSave() {
 
 	nextConfig.language = language;
 
-	let promptValueForSelectedModel = null;
-	const selectedModel = defaultModel;
-
-	if (
-		selectedModel &&
-		promptEditorState.currentModel === selectedModel &&
-		promptTextarea &&
-		!promptTextarea.disabled
-	) {
-		const normalizedValue = promptTextarea.value.trim();
-		if (normalizedValue) {
-			if (promptTextarea.value !== normalizedValue) {
-				promptTextarea.value = normalizedValue;
-			}
-			promptApi.savePromptForModel(selectedModel, normalizedValue, nextConfig);
-			promptValueForSelectedModel = normalizedValue;
-		} else {
-			promptApi.updatePromptConfigForModel(
-				selectedModel,
-				{ customPrompt: "" },
-				nextConfig,
-			);
-			promptValueForSelectedModel = "";
-		}
-
-		promptApi.updatePromptConfigForModel(
-			selectedModel,
-			{
-				selectedFields: [...(promptEditorState.selectedFields || [])],
-				fieldConfigs: cloneSelectedFieldConfigs(
-					promptEditorState.selectedFields || [],
-				),
-			},
-			nextConfig,
-		);
-	}
-
 	const languageChanged = currentConfig?.language !== language;
 
 	try {
 		await ensureApiOriginsPermission(models);
 		await storageApi.saveConfig(nextConfig);
 		currentConfig = nextConfig; // 更新本地配置缓存
-
-		if (
-			selectedModel &&
-			promptEditorState.currentModel === selectedModel &&
-			promptValueForSelectedModel !== null
-		) {
-			promptEditorState.lastSavedPrompt = promptValueForSelectedModel;
-			markPromptDirtyFlag(false);
-		}
 
 		updateStatus(
 			"save-status",
@@ -2514,9 +1657,6 @@ async function handleModelChange() {
 
 		container.appendChild(modeDiv);
 		fieldMappingDiv.style.display = "block";
-
-		// 显示 Prompt 配置区域并加载对应模板的 Prompt
-		showPromptConfig(modelName, currentModelFields);
 	} catch (error) {
 		console.error("字段获取失败:", error);
 		document.getElementById("field-mapping").style.display = "none";
@@ -2821,9 +1961,6 @@ function displaySavedModelInfo(modelName, modelFields) {
 
 	container.appendChild(modeDiv);
 	fieldMappingDiv.style.display = "block";
-
-	// 激活 Prompt 配置区域
-	showPromptConfig(modelName, modelFields);
 }
 
 /**

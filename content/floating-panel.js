@@ -587,36 +587,17 @@ export function createFloatingPanelController(options = {}) {
 				setActiveTemplate(currentConfig, newTemplateId, "floating");
 				await saveConfig(currentConfig);
 
-				// Update local state and UI
-				currentFieldMode = "dynamic"; // Assume template mode used
-
-				// Re-build layout
-				const layout = buildFieldLayout(currentConfig);
-				// Clear previous fields
-				fieldContainer.innerHTML = "";
-
-				// Re-render fields
-				if (layout.mode === "dynamic") {
-					renderDynamicFields(layout.fields);
-					emptyNotice.style.display = "none";
-					fieldContainer.style.display = "flex";
-				} else if (layout.mode === "legacy") {
-					// Should typically not happen if we are selecting templates, but for safety
-					renderLegacyFields(layout.fields);
-					emptyNotice.style.display = "none";
-					fieldContainer.style.display = "flex";
+				// If we have a handler and selection, reload everything (re-parse)
+				if (currentSelection && typeof retryHandler === "function") {
+					retryHandler(currentSelection);
 				} else {
-					// Empty
-					emptyNotice.style.display = "block";
-					fieldContainer.style.display = "none";
+					// Fallback: just update the empty fields layout
+					renderFieldsFromConfig(currentConfig);
+					setStatus(STATE_IDLE);
+					if (writeButton) {
+						writeButton.disabled = true;
+					}
 				}
-
-				// Reset status to idle to encourage retry
-				currentState = STATE_IDLE;
-				updateStatus("idle");
-
-				// Disable write button until re-parsed
-				writeButton.disabled = true;
 			} catch (err) {
 				console.error(LOG_PREFIX, "Failed to switch template", err);
 			}
@@ -856,9 +837,12 @@ export function createFloatingPanelController(options = {}) {
 			target.tagName === "INPUT" ||
 			target.tagName === "TEXTAREA" ||
 			target.tagName === "BUTTON" ||
+			target.tagName === "SELECT" ||
+			target.tagName === "OPTION" ||
 			target.closest("button") ||
 			target.closest("input") ||
-			target.closest("textarea");
+			target.closest("textarea") ||
+			target.closest("select");
 
 		if (isInteractive) {
 			return;
@@ -1561,20 +1545,21 @@ export function createFloatingPanelController(options = {}) {
 			return;
 		}
 
-		const entries = Object.entries(values);
-		for (const [fieldName, value] of entries) {
-			const escaped =
-				typeof CSS !== "undefined" && typeof CSS.escape === "function"
-					? CSS.escape(fieldName)
-					: String(fieldName).replace(/[^a-zA-Z0-9_-]/g, "_");
-			const target = fieldContainer.querySelector(
-				`[data-field-name="${escaped}"]`,
-			);
-			if (target) {
-				target.value = String(value ?? "");
-				autoResize(target);
-			}
-		}
+		// Mimic popup.js logic: Iterate over the expected fields (DOM elements)
+		// and pull values from the result. This handles special characters safely
+		// and ensures all fields are addressed.
+		const inputs = fieldContainer.querySelectorAll("textarea[data-field-name]");
+		inputs.forEach((input) => {
+			const fieldName = input.dataset.fieldName;
+			if (!fieldName) return;
+
+			// Use the value from the result, or empty string if missing
+			const value = values[fieldName];
+			// Only update if value is present or explicit empty string
+			// (mimicking popup logic: const value = aiResult[fieldName] || "";)
+			input.value = String(value ?? "");
+			autoResize(input);
+		});
 	}
 
 	/**
