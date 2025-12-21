@@ -44,6 +44,7 @@
 				"utils/prompt-engine.js",
 				"utils/providers.config.js",
 				"utils/storage.js",
+				"utils/template-store.js",
 				"_locales/*/messages.json",
 				"icons/ANKI.svg"
 			],

@@ -367,35 +367,35 @@
 
 **目标**: 确保网页上的悬浮球（Floating Ball）也能读取到当前的`activeTemplate`，并在划词解析时使用正确的 Prompt 和字段配置，保持与 Popup 端体验一致。
 
-**状态**: 🚧 进行中
+**状态**: ✅ 完成
 
 ### 任务分解
 
 #### 4.1 Content Script 逻辑重构 (`content/content-main.js`)
 
-- [ ] **引入 Template Store**: 导入 `getActiveTemplate` 等核心函数。
-- [ ] **重构 `getActivePromptSetup`**:
+- [x] **引入 Template Store**: 导入 `getActiveTemplate` 等核心函数。
+- [x] **重构 `getActivePromptSetup`**:
   - 不再从 `ankiConfig.modelFields` 读取字段。
   - 改为调用 `getActiveTemplate(config)` 获取当前模板。
   - 从模板对象中提取 `fields` 和 `prompt`。
-- [ ] **更新 `handleAIParsing`**:
+- [x] **更新 `handleAIParsing`**:
   - 使用模板中的 `fields` 列表调用 `parseTextWithDynamicFieldsFallback`。
   - 使用模板中的 `prompt` (如有) 作为自定义 Prompt。
-- [ ] **更新写入逻辑 `handleAnkiWrite`**:
+- [x] **更新写入逻辑 `handleAnkiWrite`**:
   - 写入时使用模板中定义的 `deckName` 和 `modelName`。
 
 #### 4.2 Floating Panel UI 适配 (`content/floating-panel.js`)
 
-- [ ] **更新字段布局构建 `buildFieldLayout`**:
+- [x] **更新字段布局构建 `buildFieldLayout`**:
   - 优先使用 `activeTemplate.fields` 来生成界面。
   - 支持字段的 `label` 显示（如果模板定义了）。
   - 保持字段顺序与模板一致。
-- [ ] **空态处理**:
+- [x] **空态处理**:
   - 当未选择模板时，提示用户去设置页配置，或者降级到 Legacy 模式（如果需要保持兼容）。
 
 #### 4.3 状态同步
 
-- [ ] **验证 Storage 监听**:
+- [x] **验证 Storage 监听**:
   - 确保 `chrome.storage.onChanged` 能正确触发 floating panel 的重新渲染 (re-render)。
   - 当用户在 Options 页面切换模板后，已打开的网页上的悬浮球应即时感知并更新。
 
