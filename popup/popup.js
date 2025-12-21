@@ -505,7 +505,7 @@ class ErrorBoundary {
 			this.errorHistory = this.errorHistory.slice(-10);
 		}
 
-		console.error(`[${context}] エラー:`, error);
+		console.error(`[${context}] Error:`, error);
 
 		// 频繁错误保护：如果短时间内错误过多，显示严重错误提示
 		if (this.isFrequentError()) {
