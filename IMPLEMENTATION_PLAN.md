@@ -406,9 +406,38 @@
 
 ---
 
-## 阶段 5: 解析与写入管线全面切换
+## 阶段 5: 解析与写入管线全面切换 & 清理
 
-**状态**: 未开始
+**目标**: 确保系统完全依赖“模板系统”运行，移除对旧版 Prompt 配置的直接依赖（除非作为最后的兜底），清理死代码。
+
+**状态**: 🚧 进行中
+
+### 任务分解
+
+#### 5.1 全局管线审计
+
+- [x] **审计 `popup.js`**: 确认不再使用旧的 `getPromptConfigForModel` 进行解析，除非是极其特殊的 Legacy 回退。
+  - 已修复 `handleAIParsing` 中的 `buildPromptFromTemplate` 重复调用问题。
+  - 已移除 `handleWriteToAnki` 中对旧版 `allFields` 的依赖。
+- [x] **审计 `content-main.js`**: 同上，确保浮动球完全走模板逻辑。
+- [ ] **强制模板模式**: 在系统初始化时，如果检测到没有 Active Template 但有 Legacy 配置，尝试自动迁移或创建默认模板（可选，或仅依赖现有的空态引导）。
+
+#### 5.2 代码清理与弃用
+
+- [ ] **`utils/prompt-engine.js`**: 检查标记为 `@deprecated` 的函数是否仍被核心流程调用。
+  - 现状：仍被 `options.js` (Legacy Tab) 和 `popup.js/content-main.js` (Fallback) 调用。暂时保留。
+- [ ] **配置结构清理**: `utils/storage.js` 中是否还有不必要的旧字段需要清理？
+
+#### 5.3 统一错误处理与体验优化
+
+- [ ] **解析失败处理**: 当模板字段定义与 AI 返回不匹配时的错误提示优化。
+- [ ] **空值处理**: 确保 AI 返回的部分字段为空时，写入 Anki 不会报错（已在 Phase 4 部分处理，需再次确认）。
+
+### 交付文件
+
+- `utils/prompt-engine.js`: 清理后版本（可选）
+- `utils/ai-service.js`: 确保对外接口清晰
+- 验证报告：确认旧版配置在新版代码下如何表现（是否引导迁移）
 
 ---
 
