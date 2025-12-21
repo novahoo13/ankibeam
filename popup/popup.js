@@ -214,49 +214,6 @@ function renderTemplateSelector() {
 		option.selected = template.id === activeTemplateId;
 		templateSelect.appendChild(option);
 	});
-
-	// 更新 tooltip 内容
-	if (activeTemplate) {
-		updateTemplateTooltip(activeTemplate);
-	}
-}
-
-/**
- * テンプレート情報ツールチップの更新
- * Update template info tooltip
- * @description 更新模板信息 tooltip 的显示内容
- * @param {Object} template - 模板对象
- * @returns {void}
- */
-function updateTemplateTooltip(template) {
-	const tooltipContent = document.getElementById("template-tooltip-content");
-	if (!tooltipContent) {
-		return;
-	}
-
-	if (!template) {
-		tooltipContent.innerHTML = `<p data-i18n="popup_template_none">${getText(
-			"popup_template_none",
-			"无可用模板",
-		)}</p>`;
-		return;
-	}
-
-	// 构建 tooltip 内容
-	const deckModelText = getText(
-		"popup_template_hover_deck_model",
-		"牌组: $DECK$ / 模板: $MODEL$",
-		[template.deckName || "-", template.modelName || "-"],
-	);
-
-	const fieldsText = getText("popup_template_hover_fields", "字段: $FIELDS$", [
-		template.fields?.map((f) => f.name).join(", ") || "-",
-	]);
-
-	tooltipContent.innerHTML = `
-    <p>${deckModelText}</p>
-    <p class="mt-1">${fieldsText}</p>
-  `;
 }
 
 /**
@@ -298,9 +255,6 @@ async function handleTemplateChange(templateId) {
 			console.warn(`[popup] Template ${templateId} not found`);
 			return;
 		}
-
-		// 更新 tooltip
-		updateTemplateTooltip(template);
 
 		await initializeDynamicFields();
 		updateUIBasedOnTemplate();
@@ -391,8 +345,6 @@ async function handleStorageChange(change) {
 	if (currentTemplateSelect && newTemplate) {
 		currentTemplateSelect.value = newTemplate.id;
 	}
-
-	updateTemplateTooltip(newTemplate);
 
 	const templateChanged =
 		(previousTemplate?.id || null) !== (newTemplate?.id || null);

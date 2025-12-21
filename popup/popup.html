@@ -14,145 +14,130 @@
   - 模块化JavaScript集成
 -->
 <html>
-  <!-- 设置页面语言为简体中文，支持正确的文本渲染和搜索引擎优化 -->
-  <head>
-    <meta charset="UTF-8" />
-    <!-- UTF-8编码确保中文字符正确显示 -->
-    <title data-i18n="popup_app_title"></title>
-    <!-- 扩展程序标题，显示在浏览器标签页 -->
-    <!-- Tailwind CSS框架 - 提供实用的CSS类用于快速样式开发 -->
-    <link rel="stylesheet" href="../styles/tailwind.min.css" />
-    <!-- 自定义CSS样式 - 扩展Tailwind功能，定义项目特定样式 -->
-    <link rel="stylesheet" href="../styles/custom-classes.css" />
-    <script type="module" src="../utils/i18n.js"></script>
-  </head>
-  <body>
-    <!--
+	<!-- 设置页面语言为简体中文，支持正确的文本渲染和搜索引擎优化 -->
+	<head>
+		<meta charset="UTF-8" />
+		<!-- UTF-8编码确保中文字符正确显示 -->
+		<title data-i18n="popup_app_title"></title>
+		<!-- 扩展程序标题，显示在浏览器标签页 -->
+		<!-- Tailwind CSS框架 - 提供实用的CSS类用于快速样式开发 -->
+		<link rel="stylesheet" href="../styles/tailwind.min.css" />
+		<!-- 自定义CSS样式 - 扩展Tailwind功能，定义项目特定样式 -->
+		<link rel="stylesheet" href="../styles/custom-classes.css" />
+		<script type="module" src="../utils/i18n.js"></script>
+	</head>
+	<body>
+		<!--
       主容器：Chrome扩展程序弹出窗口的根容器
       - w-96: 固定宽度384px（24rem），符合Chrome扩展弹窗标准
       - h-[580px]: 固定高度580px，提供足够的内容显示空间
       - flex flex-col: 垂直弹性布局，便于内容区域自适应
     -->
-    <div class="w-96 bg-white flex flex-col h-[580px]">
-      <!--
+		<div class="w-96 bg-white flex flex-col h-[580px]">
+			<!--
         头部区域：显示应用标题和状态信息
         - bg-slate-800: 深色背景，提供良好的视觉层次
         - p-4: 16px内边距，确保内容不贴边
       -->
-      <header class="bg-slate-800 text-white p-4">
-        <!-- 头部内容容器 - 使用flexbox实现标题和状态信息的两端对齐 -->
-        <div class="flex items-center justify-between">
-          <!--
+			<header class="bg-slate-800 text-white p-4">
+				<!-- 头部内容容器 - 使用flexbox实现标题和状态信息的两端对齐 -->
+				<div class="flex items-center justify-between">
+					<!--
             应用标题
             - data-i18n="appName": 国际化标识符，支持多语言切换
             - text-lg font-semibold: 大号字体和半粗体，突出显示
           -->
-          <h1 class="text-lg font-semibold" data-i18n="popup_app_title"></h1>
+					<h1 class="text-lg font-semibold" data-i18n="popup_app_title"></h1>
 
-          <!--
+					<!--
             状态消息显示区域
             - 用于显示当前操作状态（如：解析中、写入中等）
             - opacity-80: 80%透明度，作为辅助信息不过分抢夺注意力
             - JavaScript动态更新内容
           -->
-          <p
-            id="status-message"
-            class="status-message text-xs text-white opacity-80"
-          ></p>
-        </div>
-      </header>
+					<p
+						id="status-message"
+						class="status-message text-xs text-white opacity-80"></p>
+				</div>
+			</header>
 
-      <!--
+			<!--
         模板选择器区域
         - 显示当前选中的解析模板
         - 支持切换模板并显示模板信息tooltip
         - 在无模板时显示空态提示
       -->
-      <div class="template-selector-section bg-slate-50 border-b border-slate-200 px-3 py-2">
-        <!-- 模板选择器容器 -->
-        <div class="flex items-center gap-2">
-          <!-- 模板选择标签 -->
-          <label for="template-select" class="text-xs font-medium text-gray-700 whitespace-nowrap" data-i18n="popup_template_selector_label">
-          </label>
+			<div
+				class="template-selector-section bg-slate-50 border-b border-slate-200 px-3 py-2">
+				<!-- 模板选择器容器 -->
+				<div class="flex items-center gap-2">
+					<!-- 模板选择标签 -->
+					<label
+						for="template-select"
+						class="text-xs font-medium text-gray-700 whitespace-nowrap"
+						data-i18n="popup_template_selector_label">
+					</label>
 
-          <!-- 模板下拉选择器 -->
-          <select
-            id="template-select"
-            class="flex-1 text-sm px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-          >
-            <option value="" data-i18n="popup_template_loading">加载中...</option>
-          </select>
+					<!-- 模板下拉选择器 -->
+					<select
+						id="template-select"
+						class="flex-1 text-sm px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500">
+						<option value="" data-i18n="popup_template_loading">
+							加载中...
+						</option>
+					</select>
 
-          <!-- 模板信息 tooltip 按钮 -->
-          <div class="relative group">
-            <button
-              type="button"
-              id="template-info-btn"
-              class="p-1 text-gray-500 hover:text-gray-700 focus:outline-none"
-              aria-label="Template info"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-            </button>
+					<!-- 模板信息 tooltip 按钮 -->
+				</div>
 
-            <!-- Tooltip 内容 -->
-            <div
-              id="template-tooltip"
-              class="hidden group-hover:block absolute right-0 top-full mt-1 w-64 bg-slate-900 text-white text-xs rounded-md shadow-lg p-3 z-10"
-            >
-              <div id="template-tooltip-content" class="space-y-1">
-                <p data-i18n="popup_template_loading">加载中...</p>
-              </div>
-            </div>
-          </div>
-        </div>
+				<!-- 模板切换提示条 (默认隐藏) -->
+				<div
+					id="template-change-notice"
+					class="hidden mt-2 text-xs bg-yellow-50 border border-yellow-200 text-yellow-800 px-3 py-2 rounded-md">
+					<span data-i18n="popup_template_change_notice"
+						>模板已切换，请重新解析文本</span
+					>
+				</div>
 
-        <!-- 模板切换提示条 (默认隐藏) -->
-        <div
-          id="template-change-notice"
-          class="hidden mt-2 text-xs bg-yellow-50 border border-yellow-200 text-yellow-800 px-3 py-2 rounded-md"
-        >
-          <span data-i18n="popup_template_change_notice">模板已切换，请重新解析文本</span>
-        </div>
+				<!-- 空态提示 (默认隐藏) -->
+				<div
+					id="template-empty-state"
+					class="hidden mt-2 text-xs bg-blue-50 border border-blue-200 text-blue-800 px-3 py-2 rounded-md">
+					<span data-i18n="popup_template_empty_state">尚未配置模板，</span>
+					<button
+						id="open-options-btn"
+						class="underline hover:text-blue-900 font-medium"
+						data-i18n="popup_template_open_options">
+						前往设置
+					</button>
+				</div>
+			</div>
 
-        <!-- 空态提示 (默认隐藏) -->
-        <div
-          id="template-empty-state"
-          class="hidden mt-2 text-xs bg-blue-50 border border-blue-200 text-blue-800 px-3 py-2 rounded-md"
-        >
-          <span data-i18n="popup_template_empty_state">尚未配置模板，</span>
-          <button
-            id="open-options-btn"
-            class="underline hover:text-blue-900 font-medium"
-            data-i18n="popup_template_open_options"
-          >前往设置</button>
-        </div>
-      </div>
-
-      <!--
+			<!--
         主内容区域
         - flex-grow: 占用剩余空间，实现底部按钮固定效果
         - overflow-y-auto: 内容超出时显示垂直滚动条
         - pt-3 px-3: 顶部和左右内边距12px
         - space-y-3: 子元素间垂直间距12px
       -->
-      <main class="flex-grow overflow-y-auto pt-3 px-3 space-y-3">
-        <!--
+			<main class="flex-grow overflow-y-auto pt-3 px-3 space-y-3">
+				<!--
           文本输入区域
           用户输入待解析的文本内容
         -->
-        <div class="input-section">
-          <!--
+				<div class="input-section">
+					<!--
             输入框标签
             - block: 块级显示，独占一行
             - text-sm font-medium: 小号字体和中等粗细
             - text-gray-700: 深灰色文字，符合Material Design规范
             - mb-2: 底部外边距8px
           -->
-          <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="popup_input_label"></label>
+					<label
+						class="block text-sm font-medium text-gray-700 mb-2"
+						data-i18n="popup_input_label"></label>
 
-          <!--
+					<!--
             多行文本输入框
             - id="text-input": JavaScript操作的目标元素
             - rows="2": 默认显示2行高度
@@ -160,22 +145,21 @@
             - focus:ring-2 focus:ring-slate-500: 聚焦时显示蓝色轮廓
             - JavaScript中实现自动高度调整功能
           -->
-          <textarea
-            id="text-input"
-            rows="2"
-            placeholder=""
-            data-i18n-placeholder="popup_input_placeholder"
-            data-i18n-aria="popup_input_label"
-            class="w-full p-3 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-sm"
-          ></textarea>
-        </div>
+					<textarea
+						id="text-input"
+						rows="2"
+						placeholder=""
+						data-i18n-placeholder="popup_input_placeholder"
+						data-i18n-aria="popup_input_label"
+						class="w-full p-3 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-sm"></textarea>
+				</div>
 
-        <!--
+				<!--
           操作按钮区域
           包含触发AI解析的主要操作按钮
         -->
-        <div class="action-section">
-          <!--
+				<div class="action-section">
+					<!--
             解析按钮
             - id="parse-btn": JavaScript事件绑定目标
             - data-i18n="popup_parse_button": 国际化文本标识
@@ -185,16 +169,14 @@
             - focus:ring-2: 键盘导航时的可访问性支持
             点击后调用JavaScript的handleParse()函数
           -->
-          <button
-            id="parse-btn"
-            data-i18n="popup_parse_button"
-            data-i18n-aria="popup_parse_button"
-            class="w-full bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500"
-          >
-          </button>
-        </div>
+					<button
+						id="parse-btn"
+						data-i18n="popup_parse_button"
+						data-i18n-aria="popup_parse_button"
+						class="w-full bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500"></button>
+				</div>
 
-        <!--
+				<!--
           动态字段显示容器
           功能说明：
           - AI解析完成后，在此区域动态生成字段显示组件
@@ -207,19 +189,19 @@
           - 每个字段包含标签、可编辑文本区域、样式预览
           - 支持HTML格式的富文本内容（加粗、斜体等）
         -->
-        <div id="fields-container" class="result-section space-y-3">
-          <!-- 字段内容完全由JavaScript动态渲染，具体实现见popup.js文件 -->
-        </div>
-      </main>
+				<div id="fields-container" class="result-section space-y-3">
+					<!-- 字段内容完全由JavaScript动态渲染，具体实现见popup.js文件 -->
+				</div>
+			</main>
 
-      <!--
+			<!--
         底部写入区域
         - 固定在弹窗底部，不随内容滚动
         - border-t: 顶部边框，与主内容区域分隔
         - bg-white: 白色背景，保持与主容器一致
       -->
-      <div class="write-section bg-white p-3 border-t">
-        <!--
+			<div class="write-section bg-white p-3 border-t">
+				<!--
           写入Anki按钮
           功能说明：
           - 将解析和编辑后的字段内容写入到Anki桌面版
@@ -234,18 +216,16 @@
           - disabled:opacity-50: 禁用时半透明效果
           - disabled:cursor-not-allowed: 禁用时显示禁止光标
         -->
-        <button
-          id="write-btn"
-            data-i18n="popup_write_button"
-            data-i18n-aria="popup_write_button"
-          disabled
-          class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-        >
-        </button>
-      </div>
-    </div>
+				<button
+					id="write-btn"
+					data-i18n="popup_write_button"
+					data-i18n-aria="popup_write_button"
+					disabled
+					class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"></button>
+			</div>
+		</div>
 
-    <!--
+		<!--
       JavaScript模块加载
       - type="module": ES6模块支持，启用import/export语法
       - src="popup.js": 弹窗的主要业务逻辑文件
@@ -258,6 +238,6 @@
       5. 错误处理和用户反馈
       6. UI状态管理和Loading效果
     -->
-    <script type="module" src="popup.js"></script>
-  </body>
+		<script type="module" src="popup.js"></script>
+	</body>
 </html>
