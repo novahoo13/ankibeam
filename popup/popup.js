@@ -292,7 +292,7 @@ async function handleTemplateChange(templateId) {
 		config = updatedConfig;
 
 		// 获取新模板
-		const template = activeTemplate || getActiveTemplate();
+		const template = getActiveTemplate();
 
 		if (!template) {
 			console.warn(`[popup] Template ${templateId} not found`);
