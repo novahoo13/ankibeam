@@ -189,8 +189,26 @@ function createController(
 		const normalized = normalizeConfig(config);
 		currentConfig = normalized;
 		if (floatingPanel) {
-			// 如果面板已存在，根据新配置重新渲染字段
-			floatingPanel.renderFieldsFromConfig(currentConfig);
+			// 获取面板当前状态
+			const panelState =
+				typeof floatingPanel.getDebugState === "function"
+					? floatingPanel.getDebugState()
+					: null;
+
+			// 只在面板不可见或处于idle状态时才重新渲染字段
+			// 如果面板正在显示解析结果（ready/loading状态），则不要重新渲染，避免丢失用户数据
+			const shouldRerender =
+				!panelState?.visible || panelState.currentState === "idle";
+
+			if (shouldRerender) {
+				// 如果面板已存在，根据新配置重新渲染字段
+				floatingPanel.renderFieldsFromConfig(currentConfig);
+				logInfo("配置更新：重新渲染字段布局");
+			} else {
+				logInfo(
+					"配置更新：面板正在使用中，跳过字段重新渲染以保留用户数据",
+				);
+			}
 		}
 
 		const enabled = Boolean(normalized.ui?.enableFloatingAssistant);
