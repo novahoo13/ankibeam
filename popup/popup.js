@@ -372,17 +372,16 @@ async function handleStorageChange(change) {
 		return;
 	}
 
-	const newConfig = change?.newValue;
-	if (!newConfig) {
-		return;
-	}
-
+	// 获取更新前的状态
 	const previousTemplate = getActiveTemplate();
 	const previousFieldNames = getTemplateFieldNames(previousTemplate);
 	const hadFilledFields = hasFilledFieldValues();
 
+	// 从存储重新完整加载配置（包括解密）
+	const loadedConfig = await loadConfig();
+
 	// 更新配置缓存并刷新下拉
-	config = newConfig;
+	config = loadedConfig;
 	renderTemplateSelector();
 
 	const newTemplate = getActiveTemplate();
