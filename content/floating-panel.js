@@ -15,7 +15,7 @@ const LOG_PREFIX = "[floating-assistant/panel]";
 
 // 定义面板的尺寸和布局相关的常量。
 const PANEL_WIDTH = 360; // 面板宽度
-const PANEL_MAX_HEIGHT = 420; // 面板最大高度
+const PANEL_MAX_HEIGHT = 500; // 面板最大高度
 const PANEL_GAP = 12; // 面板与选中文本之间的间隙
 const PANEL_PADDING = 8; // 面板与视口边缘的内边距
 
@@ -530,17 +530,21 @@ export function createFloatingPanelController(options = {}) {
 		color: rgb(187, 247, 208);
 	}
 }
+	.write-button:hover {
+		background: rgba(74, 222, 128, 0.26);
+		color: rgb(187, 247, 208);
+	}
+}
 .panel-template-select {
-    flex: 1;
-    min-width: 0;
-    height: 24px;
-    margin: 0 8px;
-    padding: 0 4px;
+    width: 100%;
+    height: 28px;
+    margin-bottom: 8px;
+    padding: 0 8px;
     font-size: 13px;
     color: inherit;
     background: transparent;
     border: 1px solid rgba(148, 163, 184, 0.35);
-    border-radius: 4px;
+    border-radius: 6px;
     outline: none;
     cursor: pointer;
 }
@@ -575,10 +579,6 @@ export function createFloatingPanelController(options = {}) {
 			"panel-title",
 			getText("popup_app_title", "Anki Word Assistant"),
 		);
-		// Hide title visually but keep for structure if needed, or just replace functionality
-		// Let's hide the title if we have templates, or keep it if no templates.
-		// Actually, let's make the title smaller or just use the select as the main element in the middle.
-		title.style.display = "none"; // We will show the select instead
 
 		const templateSelect = documentRef.createElement("select");
 		templateSelect.className = "panel-template-select";
@@ -674,7 +674,6 @@ export function createFloatingPanelController(options = {}) {
 		actionsHeader.appendChild(closeButton);
 
 		header.appendChild(title);
-		header.appendChild(templateSelect);
 		header.appendChild(actionsHeader);
 
 		const status = documentRef.createElement("div");
@@ -689,6 +688,19 @@ export function createFloatingPanelController(options = {}) {
 
 		status.appendChild(statusIcon);
 		status.appendChild(statusLabel);
+
+		// Insert template select after header, before status/body
+		// We need a container for it or just append to panel
+		const contentWrapper = documentRef.createElement("div");
+		contentWrapper.className = "panel-content-wrapper";
+		contentWrapper.style.padding = "0 12px 12px";
+		contentWrapper.style.display = "flex";
+		contentWrapper.style.flexDirection = "column";
+		contentWrapper.style.flex = "1";
+		contentWrapper.style.minHeight = "0";
+
+		contentWrapper.appendChild(templateSelect);
+		contentWrapper.appendChild(status);
 
 		const body = documentRef.createElement("div");
 		body.className = "panel-body";
@@ -1470,10 +1482,8 @@ export function createFloatingPanelController(options = {}) {
 					templateSelect.value = active.id;
 				}
 				templateSelect.style.display = "block";
-				if (title) title.style.display = "none";
 			} else {
 				templateSelect.style.display = "none";
-				if (title) title.style.display = "block";
 			}
 		}
 
