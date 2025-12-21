@@ -687,15 +687,6 @@ export function createFloatingPanelController(options = {}) {
 		// Insert template select after header, before status/body
 		// We need a container for it or just append to panel
 		const contentWrapper = documentRef.createElement("div");
-		contentWrapper.className = "panel-content-wrapper";
-		contentWrapper.style.padding = "0 12px 12px";
-		contentWrapper.style.display = "flex";
-		contentWrapper.style.flexDirection = "column";
-		contentWrapper.style.flex = "1";
-		contentWrapper.style.minHeight = "0";
-
-		contentWrapper.appendChild(templateSelect);
-		contentWrapper.appendChild(status);
 
 		const body = documentRef.createElement("div");
 		body.className = "panel-body";
@@ -745,6 +736,7 @@ export function createFloatingPanelController(options = {}) {
 		actionContainer.appendChild(writeButton);
 
 		panel.appendChild(header);
+		panel.appendChild(templateSelect);
 		panel.appendChild(status);
 		panel.appendChild(body);
 		panel.appendChild(actionContainer);
