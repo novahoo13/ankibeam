@@ -301,9 +301,12 @@ export function createFloatingPanelController(options = {}) {
   max-height: min(${PANEL_MAX_HEIGHT}px, calc(100vh - ${PANEL_PADDING * 2}px));
   
   background: rgb(var(--bg-card));
-  border: 1px solid rgba(var(--border-light), 0.8);
-  /* backdrop-filter: blur(16px); Removed for readability */
-  /* -webkit-backdrop-filter: blur(16px); Removed for readability */
+  /* Theme-colored border for better separation on white pages */
+  border: 1px solid rgba(var(--primary-500), 0.4);
+  /* Enhanced shadow with a subtle primary tint ring */
+  box-shadow: 
+    0 0 0 1px rgba(var(--primary-500), 0.1),
+    var(--shadow-float);
   
   color: rgb(var(--text-main));
   border-radius: var(--radius-xl);
