@@ -2,7 +2,7 @@
 // 描述: 该文件负责管理悬浮式AI解析面板的创建、显示、状态管理和用户交互。
 
 import { translate } from "../utils/i18n.js";
-import { isLegacyMode } from "../utils/field-handler.js";
+
 import {
 	getActiveTemplate,
 	listTemplates,
@@ -121,15 +121,7 @@ function resolveSelectedFields(config, allFields) {
  * @returns {{mode: string, fields: Array<string>}} - 字段布局信息。
  */
 function buildFieldLayout(config) {
-	const legacy = isLegacyMode(config);
 	const allFields = normalizeFieldList(config?.ankiConfig?.modelFields ?? []);
-
-	if (legacy) {
-		return {
-			mode: "legacy",
-			fields: allFields,
-		};
-	}
 
 	// Use Template Store Logic
 	const activeTemplate = getActiveTemplate(config);
@@ -200,7 +192,7 @@ export function createFloatingPanelController(options = {}) {
 	let listenersBound = false; // 全局事件监听器是否已绑定
 	let currentSelection = null; // 当前用户选择的文本及位置信息
 	let currentConfig = null; // 当前的应用配置
-	let currentFieldMode = "legacy"; // 当前字段模式（legacy或dynamic）
+	let currentFieldMode = "dynamic"; // 当前字段模式（dynamic）
 	let retryHandler = null; // 重试操作的回调函数
 	let closeHandler = null; // 面板关闭时的回调函数
 	let writeHandler = null; // 写入Anki操作的回调函数
@@ -674,7 +666,7 @@ export function createFloatingPanelController(options = {}) {
 
 		fieldContainer = documentRef.createElement("div");
 		fieldContainer.className = "panel-fields";
-		fieldContainer.setAttribute("data-field-mode", "legacy");
+		fieldContainer.setAttribute("data-field-mode", "dynamic");
 
 		emptyNotice = documentRef.createElement("div");
 		emptyNotice.className = "panel-empty";
@@ -1084,63 +1076,6 @@ export function createFloatingPanelController(options = {}) {
 	}
 
 	/**
-	 * 渲染传统的"正面"和"背面"字段。
-	 */
-	function renderLegacyFields() {
-		if (!fieldContainer) {
-			return;
-		}
-		fieldContainer.innerHTML = "";
-		currentFieldMode = "legacy";
-
-		const groups = [
-			{
-				id: "front-input",
-				tag: "input",
-				labelKey: "cardFront",
-				fallback: "正面",
-				rows: 1,
-			},
-			{
-				id: "back-input",
-				tag: "textarea",
-				labelKey: "cardBack",
-				fallback: "背面",
-				rows: 4,
-			},
-		];
-
-		for (const group of groups) {
-			const wrapperElem = documentRef.createElement("div");
-			wrapperElem.className = "field-group";
-
-			const label = documentRef.createElement("label");
-			label.className = "field-label";
-			label.setAttribute("for", group.id);
-			label.textContent = getText(group.labelKey, `${group.fallback}:`);
-
-			let input;
-			if (group.tag === "textarea") {
-				input = documentRef.createElement("textarea");
-				input.className = "field-textarea";
-				input.rows = group.rows;
-			} else {
-				input = documentRef.createElement("input");
-				input.className = "field-input";
-				input.type = "text";
-			}
-			input.id = group.id;
-
-			wrapperElem.appendChild(label);
-			wrapperElem.appendChild(input);
-
-			fieldContainer.appendChild(wrapperElem);
-		}
-
-		emptyNotice.hidden = true;
-	}
-
-	/**
 	 * 根据配置动态渲染字段。
 	 * @param {Array<string>} fieldNames - 要渲染的字段名称列表。
 	 */
@@ -1214,9 +1149,7 @@ export function createFloatingPanelController(options = {}) {
 			return;
 		}
 		const selector =
-			currentFieldMode === "legacy"
-				? "#front-input, #back-input"
-				: "textarea, input";
+			currentFieldMode === "legacy" ? "textarea, input" : "textarea, input";
 		const firstField = fieldContainer.querySelector(selector);
 		if (firstField && typeof firstField.focus === "function") {
 			firstField.focus();
@@ -1463,20 +1396,13 @@ export function createFloatingPanelController(options = {}) {
 
 		let reasonMessage = null;
 		let result = {
-			mode: "legacy",
+			mode: "dynamic",
 			hasFields: false,
 			message: null,
 		};
 		try {
 			const layout = buildFieldLayout(config ?? {});
-			if (layout.mode === "legacy") {
-				renderLegacyFields();
-				result = {
-					mode: layout.mode,
-					hasFields: true,
-					message: null,
-				};
-			} else if (layout.mode === "dynamic" && layout.fields.length > 0) {
+			if (layout.mode === "dynamic" && layout.fields.length > 0) {
 				renderDynamicFields(layout.fields);
 				result = {
 					mode: layout.mode,
@@ -1528,20 +1454,6 @@ export function createFloatingPanelController(options = {}) {
 			return;
 		}
 		if (!fieldContainer) {
-			return;
-		}
-
-		if (currentFieldMode === "legacy") {
-			const frontValue = values.Front ?? values.front ?? "";
-			const backValue = values.Back ?? values.back ?? "";
-			const frontElem = shadowRoot.getElementById("front-input");
-			const backElem = shadowRoot.getElementById("back-input");
-			if (frontElem) {
-				frontElem.value = String(frontValue ?? "");
-			}
-			if (backElem) {
-				backElem.value = String(backValue ?? "");
-			}
 			return;
 		}
 
@@ -1644,51 +1556,23 @@ export function createFloatingPanelController(options = {}) {
 			throw new Error("字段容器未初始化。");
 		}
 
-		if (currentFieldMode === "legacy") {
-			// 传统模式：正面和背面
-			const frontElem = shadowRoot.getElementById("front-input");
-			const backElem = shadowRoot.getElementById("back-input");
+		// 动态模式
+		const textareas = fieldContainer.querySelectorAll(
+			"textarea[data-field-name]",
+		);
+		textareas.forEach((textarea) => {
+			const fieldName = textarea.getAttribute("data-field-name");
+			if (!fieldName) return;
 
-			const modelFields = currentConfig?.ankiConfig?.modelFields;
-			const frontFieldName = (modelFields && modelFields[0]) || "Front";
-			const backFieldName = (modelFields && modelFields[1]) || "Back";
+			const value = textarea.value?.trim() || "";
+			fields[fieldName] = textarea.value || "";
 
-			const frontValue = frontElem?.value?.trim() || "";
-			const backValue = backElem?.value?.trim() || "";
-
-			fields[frontFieldName] = frontElem?.value || "";
-			fields[backFieldName] = backElem?.value || "";
-
-			if (frontValue) {
-				collectedFields.push(frontFieldName);
+			if (value) {
+				collectedFields.push(fieldName);
 			} else {
-				emptyFields.push(frontFieldName);
+				emptyFields.push(fieldName);
 			}
-
-			if (backValue) {
-				collectedFields.push(backFieldName);
-			} else {
-				emptyFields.push(backFieldName);
-			}
-		} else {
-			// 动态模式
-			const textareas = fieldContainer.querySelectorAll(
-				"textarea[data-field-name]",
-			);
-			textareas.forEach((textarea) => {
-				const fieldName = textarea.getAttribute("data-field-name");
-				if (!fieldName) return;
-
-				const value = textarea.value?.trim() || "";
-				fields[fieldName] = textarea.value || "";
-
-				if (value) {
-					collectedFields.push(fieldName);
-				} else {
-					emptyFields.push(fieldName);
-				}
-			});
-		}
+		});
 
 		return {
 			fields,
@@ -1761,20 +1645,6 @@ export function createFloatingPanelController(options = {}) {
 				"popup_dynamic_fields_missing",
 				"当前未配置可填充的字段，请先在选项页完成字段配置。",
 			);
-		}
-
-		// 更新传统模式的字段标签
-		if (currentFieldMode === "legacy" && fieldContainer) {
-			const frontLabel = fieldContainer.querySelector(
-				'label[for="front-input"]',
-			);
-			if (frontLabel) {
-				frontLabel.textContent = getText("cardFront", "正面:");
-			}
-			const backLabel = fieldContainer.querySelector('label[for="back-input"]');
-			if (backLabel) {
-				backLabel.textContent = getText("cardBack", "背面:");
-			}
 		}
 
 		// 更新动态模式的占位符文本

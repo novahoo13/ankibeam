@@ -8,7 +8,7 @@ const CONFIG_STORAGE_KEY = "ankiWordAssistantConfig";
 // 从模块动态导入的函数，预先声明
 let parseTextWithFallback = null;
 let parseTextWithDynamicFieldsFallback = null;
-let isLegacyMode = null;
+
 let validateFields = null;
 
 let addNote = null;
@@ -88,7 +88,7 @@ function logWarn(message, payload) {
 		const { createFloatingPanelController } = floatingPanelModule;
 		({ parseTextWithFallback, parseTextWithDynamicFieldsFallback } =
 			aiServiceModule);
-		({ isLegacyMode, validateFields } = fieldHandlerModule);
+		({ validateFields } = fieldHandlerModule);
 
 		({ addNote } = ankiConnectModule);
 		({ translate } = i18nModule);
@@ -167,6 +167,7 @@ function createController(
 	let monitoring = false; // 是否正在监视文本选择
 	let currentEnabled = false; // 当前浮动助手是否启用
 	let currentConfig = null; // 当前缓存的配置
+	let pendingConfig = null; // 暂存的配置（当面板忙碌时）
 	let currentSelection = null; // 当前处理的文本选择对象
 
 	/**
@@ -187,7 +188,20 @@ function createController(
 	 */
 	function applyConfig(config) {
 		const normalized = normalizeConfig(config);
-		currentConfig = normalized;
+
+		// 如果是禁用操作，立即执行
+		const newEnabled = Boolean(normalized.ui?.enableFloatingAssistant);
+		if (!newEnabled && currentEnabled) {
+			currentConfig = normalized;
+			currentEnabled = false;
+			pendingConfig = null;
+			stopMonitoring();
+			logInfo("浮动助手已被禁用。");
+			return;
+		}
+
+		// 检查是否需要延迟更新
+		let shouldDefer = false;
 		if (floatingPanel) {
 			// 获取面板当前状态
 			const panelState =
@@ -195,29 +209,36 @@ function createController(
 					? floatingPanel.getDebugState()
 					: null;
 
-			// 只在面板不可见或处于idle状态时才重新渲染字段
-			// 如果面板正在显示解析结果（ready/loading状态），则不要重新渲染，避免丢失用户数据
-			const shouldRerender =
-				!panelState?.visible || panelState.currentState === "idle";
-
-			if (shouldRerender) {
-				// 如果面板已存在，根据新配置重新渲染字段
-				floatingPanel.renderFieldsFromConfig(currentConfig);
-				logInfo("配置更新：重新渲染字段布局");
-			} else {
-				logInfo(
-					"配置更新：面板正在使用中，跳过字段重新渲染以保留用户数据",
-				);
+			// 如果面板可见且不处于空闲状态（例如正在加载或显示结果），则延迟更新
+			// 避免"Zombie Field"问题：UI显示旧字段，逻辑使用新配置
+			const isBusy = panelState?.visible && panelState.currentState !== "idle";
+			if (isBusy) {
+				shouldDefer = true;
 			}
 		}
 
-		const enabled = Boolean(normalized.ui?.enableFloatingAssistant);
-		if (enabled === currentEnabled) {
+		if (shouldDefer) {
+			logInfo("配置更新：面板正在使用中，已暂存配置待面板关闭后应用");
+			pendingConfig = normalized;
+			return;
+		}
+
+		// 立即应用配置
+		pendingConfig = null;
+		currentConfig = normalized;
+
+		if (floatingPanel) {
+			// 如果面板已存在，根据新配置重新渲染字段
+			floatingPanel.renderFieldsFromConfig(currentConfig);
+			logInfo("配置更新：重新渲染字段布局");
+		}
+
+		if (newEnabled === currentEnabled) {
 			return; // 启用状态未改变，无需操作
 		}
-		currentEnabled = enabled;
+		currentEnabled = newEnabled;
 
-		if (!enabled) {
+		if (!newEnabled) {
 			stopMonitoring();
 			logInfo("浮动助手已被禁用。");
 			return;
@@ -320,6 +341,11 @@ function createController(
 				// 设置关闭处理器
 				floatingPanel.setCloseHandler((reason) => {
 					logInfo("解析面板已关闭。", { reason });
+					// 面板关闭后，检查是否有暂存的配置需要应用
+					if (pendingConfig) {
+						logInfo("检测到暂存的配置，正在应用...");
+						applyConfig(pendingConfig);
+					}
 				});
 				// 设置写入Anki处理器
 				floatingPanel.setWriteHandler(async () => {
@@ -484,54 +510,40 @@ function createController(
 		}
 
 		const modelFields = currentConfig?.ankiConfig?.modelFields;
-		const isLegacy = isLegacyMode(currentConfig);
+		// 动态模式：基于当前活动模板
+		const activeTemplate = getActiveTemplate(currentConfig);
 
-		let result;
-
-		if (isLegacy) {
-			// Legacy mode deprecated - force error or redirect
+		if (!activeTemplate) {
 			throw new Error(
 				getText(
-					"popup_error_legacy_mode",
-					"旧版模式已弃用，请在设置中创建解析模板",
+					"popup_status_no_template",
+					"未选择解析模板，请在选项页面创建或选择模板",
 				),
 			);
-		} else {
-			// 动态模式：基于当前活动模板
-			const activeTemplate = getActiveTemplate(currentConfig);
+		}
 
-			if (!activeTemplate) {
-				throw new Error(
-					getText(
-						"popup_status_no_template",
-						"未选择解析模板，请在选项页面创建或选择模板",
-					),
-				);
-			}
+		// 如果有活动模板，优先使用模板配置
+		const dynamicFields = activeTemplate.fields.map((f) => f.name);
+		const customPrompt = activeTemplate.prompt;
 
-			// 如果有活动模板，优先使用模板配置
-			const dynamicFields = activeTemplate.fields.map((f) => f.name);
-			const customPrompt = activeTemplate.prompt;
+		logInfo(`使用模板 "${activeTemplate.name}" 执行AI解析。`, {
+			fields: dynamicFields,
+		});
 
-			logInfo(`使用模板 "${activeTemplate.name}" 执行AI解析。`, {
-				fields: dynamicFields,
-			});
-
-			if (!dynamicFields || dynamicFields.length === 0) {
-				throw new Error(
-					getText(
-						"popup_status_no_fields_parse",
-						"当前模板没有可供解析的字段，请在选项页面完成设置",
-					),
-				);
-			}
-
-			result = await parseTextWithDynamicFieldsFallback(
-				selectedText,
-				dynamicFields,
-				customPrompt,
+		if (!dynamicFields || dynamicFields.length === 0) {
+			throw new Error(
+				getText(
+					"popup_status_no_fields_parse",
+					"当前模板没有可供解析的字段，请在选项页面完成设置",
+				),
 			);
 		}
+
+		result = await parseTextWithDynamicFieldsFallback(
+			selectedText,
+			dynamicFields,
+			customPrompt,
+		);
 
 		// 将AI解析结果应用到面板的字段中
 		if (floatingPanel) {
@@ -581,45 +593,33 @@ function createController(
 				emptyFields: rawCollected.emptyFields,
 			});
 
-			const isLegacyMode = rawCollected.mode === "legacy";
-
-			// 准备字段配置：根据模式确定要写入的字段列表
-			const modelFields = currentConfig?.ankiConfig?.modelFields;
+			// 准备字段配置
 			const activeTemplate = getActiveTemplate(currentConfig);
 
 			let targetFields;
 			let templateAllFields = [];
 
-			if (!isLegacyMode) {
-				if (activeTemplate) {
-					targetFields = activeTemplate.fields.map((f) => f.name);
-					templateAllFields = targetFields; // 模板模式下，目标字段就是所有字段
-				} else {
-					// No active template in dynamic mode - this should be blocked before write
-					floatingPanel.showError({
-						message: getText(
-							"popup_status_no_template",
-							"未选择解析模板，无法写入",
-						),
-						allowRetry: false,
-					});
-					return;
-				}
-
-				if (!targetFields || targetFields.length === 0) {
-					floatingPanel.showError({
-						message: getText(
-							"popup_status_no_fields_write",
-							"当前模板未配置可写入的字段，请在选项页完成设置",
-						),
-						allowRetry: false,
-					});
-					return;
-				}
+			if (activeTemplate) {
+				targetFields = activeTemplate.fields.map((f) => f.name);
+				templateAllFields = targetFields; // 模板模式下，目标字段就是所有字段
 			} else {
-				// Legacy mode deprecated
+				// No active template in dynamic mode - this should be blocked before write
 				floatingPanel.showError({
-					message: getText("popup_error_legacy_mode", "旧版模式已弃用"),
+					message: getText(
+						"popup_status_no_template",
+						"未选择解析模板，无法写入",
+					),
+					allowRetry: false,
+				});
+				return;
+			}
+
+			if (!targetFields || targetFields.length === 0) {
+				floatingPanel.showError({
+					message: getText(
+						"popup_status_no_fields_write",
+						"当前模板未配置可写入的字段，请在选项页完成设置",
+					),
 					allowRetry: false,
 				});
 				return;
@@ -628,7 +628,7 @@ function createController(
 			// 第二步：验证字段内容的完整性和有效性
 			const validation = validateFields(
 				rawCollected.fields,
-				isLegacyMode,
+				false, // Force non-legacy mode
 				rawCollected,
 			);
 
@@ -664,47 +664,23 @@ function createController(
 			// 第三步：应用样式包装到字段内容
 			const fields = {};
 
-			if (isLegacyMode) {
-				// Legacy模式：处理传统的双字段结构（正面/背面）
-				const fieldNames =
-					modelFields && modelFields.length >= 2
-						? modelFields
-						: ["Front", "Back"];
+			// Dynamic模式：处理用户自定义的多字段结构
+			Object.keys(rawCollected.fields).forEach((fieldName) => {
+				const rawValue = rawCollected.fields[fieldName];
 
-				// 应用样式包装并只包含非空字段到最终数据中
-				Object.keys(rawCollected.fields).forEach((fieldName) => {
-					const rawValue = rawCollected.fields[fieldName];
-					if (rawValue && rawValue.trim()) {
-						fields[fieldName] = wrapContentWithStyle(rawValue);
-					}
-				});
-
-				// 确保至少有字段名的键存在
-				if (!(fieldNames[0] in fields)) {
-					fields[fieldNames[0]] = rawCollected.fields[fieldNames[0]] || "";
+				// 基于原始值判断是否有内容，避免HTML标签干扰
+				if (rawValue && rawValue.trim()) {
+					fields[fieldName] = wrapContentWithStyle(rawValue);
 				}
-				if (!(fieldNames[1] in fields)) {
-					fields[fieldNames[1]] = rawCollected.fields[fieldNames[1]] || "";
+			});
+
+			// 为Anki模型的所有字段提供空值，防止缺失字段错误
+			// 在模板模式下，templateAllFields 就是模板定义的所有字段
+			(templateAllFields || []).forEach((fieldName) => {
+				if (!(fieldName in fields)) {
+					fields[fieldName] = "";
 				}
-			} else {
-				// Dynamic模式：处理用户自定义的多字段结构
-				Object.keys(rawCollected.fields).forEach((fieldName) => {
-					const rawValue = rawCollected.fields[fieldName];
-
-					// 基于原始值判断是否有内容，避免HTML标签干扰
-					if (rawValue && rawValue.trim()) {
-						fields[fieldName] = wrapContentWithStyle(rawValue);
-					}
-				});
-
-				// 为Anki模型的所有字段提供空值，防止缺失字段错误
-				// 在模板模式下，templateAllFields 就是模板定义的所有字段
-				(templateAllFields || []).forEach((fieldName) => {
-					if (!(fieldName in fields)) {
-						fields[fieldName] = "";
-					}
-				});
-			}
+			});
 
 			// 最终验证：确保有实际内容可以写入Anki
 			const filledFieldCount = Object.values(fields).filter(

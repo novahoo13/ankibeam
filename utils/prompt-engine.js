@@ -135,7 +135,10 @@ export function validateAIOutput(aiOutput, expectedFields) {
 				expectedFields.includes(field),
 			),
 			hasContent: outputFields.some(
-				(field) => parsed[field] && parsed[field].trim(),
+				(field) =>
+					parsed[field] !== null &&
+					parsed[field] !== undefined &&
+					String(parsed[field]).trim(),
 			),
 		};
 	} catch (error) {
