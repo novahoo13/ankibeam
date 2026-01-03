@@ -1,5 +1,5 @@
-// field-handler.js - 字段处理逻辑抽取模块
-// 提供动态字段映射和向后兼容性处理
+// field-handler.js - 字段処理ロジック抽出モジュール
+// 動的フィールドマッピングを提供
 
 import { translate, createI18nError } from "./i18n.js";
 
@@ -7,30 +7,18 @@ const getText = (key, fallback, substitutions) =>
   translate(key, { fallback, substitutions });
 
 /**
- * 判断是否使用传统模式（两字段以下）
- * @param {object} config - 配置对象
- * @returns {boolean} - 是否为传统模式
- */
-export function isLegacyMode(config) {
-  return !config?.ankiConfig?.modelFields?.length || config.ankiConfig.modelFields.length <= 2;
-}
-
-
-
-/**
- * 从DOM中收集字段值用于写入Anki (增强版本，包含错误处理和验证)
- * @param {string[]} modelFields - 模型字段名数组，为空或长度<=2时使用legacy模式
- * @param {function} [wrapWithStyle] - 可选的样式包装函数
- * @param {Object} [options] - 附加配置
- * @param {boolean} [options.forceDynamic] - true时强制按动态字段处理
- * @returns {object} - 字段收集结果，包含fields对象和统计信息
+ * DOMからフィールド値を収集してAnkiに書き込む（エラーハンドリングと検証を含む拡張版）
+ * @param {string[]} modelFields - モデルフィールド名の配列
+ * @param {function} [wrapWithStyle] - オプションのスタイルラッピング関数
+ * @param {Object} [options] - 追加設定（現在未使用、将来の拡張用）
+ * @returns {object} - フィールド収集結果（fieldsオブジェクトと統計情報を含む）
  */
 export function collectFieldsForWrite(modelFields, wrapWithStyle = null, options = {}) {
   try {
     let fields = {};
     const collectResult = {
       fields: {},
-      mode: null,
+      mode: 'dynamic',
       totalFields: 0,
       collectedFields: 0,
       emptyFields: 0,
@@ -38,56 +26,18 @@ export function collectFieldsForWrite(modelFields, wrapWithStyle = null, options
       errors: []
     };
 
-    const forceDynamic = options?.forceDynamic === true;
-    const isLegacy = !forceDynamic && isLegacyMode({ ankiConfig: { modelFields } });
-    collectResult.mode = isLegacy ? 'legacy' : 'dynamic';
+    // 動的モード：フィールド配列に基づいて収集
+    if (!Array.isArray(modelFields)) {
+      throw createI18nError('field_handler_error_model_fields_invalid', { fallback: 'modelFields必须是数组' });
+    }
 
-    if (isLegacy) {
-      // Legacy模式：使用固定的front/back字段
-      collectResult.totalFields = 2;
+    collectResult.totalFields = modelFields.length;
 
-      const frontElement = document.getElementById('front-input');
-      const backElement = document.getElementById('back-input');
+    modelFields.forEach((fieldName, index) => {
+      const elementId = `field-${index}`;
+      const element = document.getElementById(elementId);
 
-      if (!frontElement) {
-        collectResult.errors.push(
-        getText('field_handler_error_front_not_found', '找不到front-input元素')
-      );
-        collectResult.missingElements.push('front-input');
-      }
-      if (!backElement) {
-        collectResult.errors.push(
-        getText('field_handler_error_back_not_found', '找不到back-input元素')
-      );
-        collectResult.missingElements.push('back-input');
-      }
-
-      const front = frontElement?.value || '';
-      const back = backElement?.value || '';
-
-      // 获取实际的字段名（可能来自配置）
-      const frontFieldName = (modelFields && modelFields[0]) || 'Front';
-      const backFieldName = (modelFields && modelFields[1]) || 'Back';
-
-      fields[frontFieldName] = front;
-      fields[backFieldName] = back;
-
-      collectResult.collectedFields = (front.trim() ? 1 : 0) + (back.trim() ? 1 : 0);
-      collectResult.emptyFields = 2 - collectResult.collectedFields;
-
-    } else {
-      // Dynamic模式：根据字段数组收集
-      if (!Array.isArray(modelFields)) {
-        throw createI18nError('field_handler_error_model_fields_invalid', { fallback: 'modelFields必须是数组' });
-      }
-
-      collectResult.totalFields = modelFields.length;
-
-      modelFields.forEach((fieldName, index) => {
-        const elementId = `field-${index}`;
-        const element = document.getElementById(elementId);
-
-        if (!element) {
+      if (!element) {
         const error = getText(
           "field_handler_error_field_element_missing",
           `找不到字段元素: ${elementId} (${fieldName})`,
@@ -95,21 +45,20 @@ export function collectFieldsForWrite(modelFields, wrapWithStyle = null, options
         );
         collectResult.errors.push(error);
         collectResult.missingElements.push(fieldName);
-          console.warn(error);
-          fields[fieldName] = ''; // 设置为空值
-          return;
-        }
+        console.warn(error);
+        fields[fieldName] = ''; // 空値を設定
+        return;
+      }
 
-        const value = element.value || '';
-        fields[fieldName] = value;
+      const value = element.value || '';
+      fields[fieldName] = value;
 
-        if (value.trim()) {
-          collectResult.collectedFields++;
-        } else {
-          collectResult.emptyFields++;
-        }
-      });
-    }
+      if (value.trim()) {
+        collectResult.collectedFields++;
+      } else {
+        collectResult.emptyFields++;
+      }
+    });
 
     // 应用样式包装
     if (wrapWithStyle && typeof wrapWithStyle === 'function') {
@@ -161,13 +110,13 @@ export function collectFieldsForWrite(modelFields, wrapWithStyle = null, options
 }
 
 /**
- * 验证字段内容是否有效 (增强版本，包含详细验证信息)
- * @param {object} fields - 字段映射对象
- * @param {boolean} isLegacy - 是否为传统模式
- * @param {object} [collectResult] - 可选的收集结果对象，用于更详细的验证
- * @returns {object} - 详细验证结果
+ * フィールド内容の有効性を検証（詳細な検証情報を含む拡張版）
+ * @param {object} fields - フィールドマッピングオブジェクト
+ * @param {boolean} _reserved - 予約パラメータ（後方互換性のため、未使用）
+ * @param {object} [collectResult] - オプションの収集結果オブジェクト（より詳細な検証用）
+ * @returns {object} - 詳細な検証結果
  */
-export function validateFields(fields, isLegacy = false, collectResult = null) {
+export function validateFields(fields, _reserved = false, collectResult = null) {
   const validation = {
     isValid: false,
     message: '',
@@ -187,7 +136,7 @@ export function validateFields(fields, isLegacy = false, collectResult = null) {
   };
 
   try {
-    // 基本参数验证
+    // 基本パラメータ検証
     if (!fields || typeof fields !== "object") {
       validation.errors.push(
         getText(
@@ -216,7 +165,7 @@ export function validateFields(fields, isLegacy = false, collectResult = null) {
       return validation;
     }
 
-    // 如果有收集结果，检查收集过程中的错误
+    // 収集結果がある場合、収集プロセス中のエラーをチェック
     if (collectResult) {
       if (collectResult.errors && collectResult.errors.length > 0) {
         validation.errors.push(...collectResult.errors);
@@ -232,7 +181,7 @@ export function validateFields(fields, isLegacy = false, collectResult = null) {
       }
     }
 
-    // 分析每个字段
+    // 各フィールドを分析
     fieldNames.forEach(fieldName => {
       const value = fields[fieldName];
       const trimmedValue = value ? value.trim() : '';
@@ -241,18 +190,18 @@ export function validateFields(fields, isLegacy = false, collectResult = null) {
         validation.fieldStats.filledFields++;
         validation.details.filledFieldNames.push(fieldName);
 
-        // 检查是否可能是错误格式（比如包含HTML标签但看起来不正常）
+        // 不正なフォーマットの可能性をチェック（HTMLタグが多すぎる場合など）
         if (trimmedValue.includes('<') && trimmedValue.includes('>')) {
           const htmlTagCount = (trimmedValue.match(/</g) || []).length;
           const textLength = trimmedValue.replace(/<[^>]*>/g, '').length;
           if (htmlTagCount > textLength / 10) {
-        validation.warnings.push(
-          getText(
-            "field_handler_error_field_contains_html",
-            `字段"${fieldName}"可能包含过多HTML标签`,
-            [fieldName]
-          )
-        );
+            validation.warnings.push(
+              getText(
+                "field_handler_error_field_contains_html",
+                `字段"${fieldName}"可能包含过多HTML标签`,
+                [fieldName]
+              )
+            );
           }
         }
 
@@ -262,70 +211,28 @@ export function validateFields(fields, isLegacy = false, collectResult = null) {
       }
     });
 
-    // Legacy模式特殊验证
-    if (isLegacy) {
-      const frontKeys = fieldNames.filter(key =>
-        key.toLowerCase().includes('front') || key === 'Front'
+    // 動的モード検証：少なくとも1つのフィールドが必要
+    if (validation.fieldStats.filledFields === 0) {
+      validation.errors.push(
+        getText('field_handler_error_min_field_content', '至少需要填写一个字段内容')
       );
-      const backKeys = fieldNames.filter(key =>
-        key.toLowerCase().includes('back') || key === 'Back'
+    } else if (validation.fieldStats.filledFields < validation.fieldStats.totalFields / 2) {
+      validation.warnings.push(
+        getText(
+          "field_handler_warning_few_fields",
+          `填写字段较少 (${validation.fieldStats.filledFields}/${validation.fieldStats.totalFields})`,
+          [
+            String(validation.fieldStats.filledFields),
+            String(validation.fieldStats.totalFields),
+          ]
+        )
       );
-
-      if (frontKeys.length === 0 && backKeys.length === 0) {
-        // 回退到检查第一和第二个字段
-        if (fieldNames.length >= 2) {
-          const firstField = fields[fieldNames[0]] || '';
-          const secondField = fields[fieldNames[1]] || '';
-
-          if (!firstField.trim() || !secondField.trim()) {
-            validation.errors.push(
-      getText('field_handler_error_legacy_required_fields', 'Legacy模式下前两个字段都必须填写')
-    );
-          }
-        } else {
-          validation.errors.push(
-      getText('field_handler_error_legacy_min_fields', 'Legacy模式需要至少两个字段')
-    );
-        }
-      } else {
-        const frontValue = frontKeys.length > 0 ? (fields[frontKeys[0]] || '') : '';
-        const backValue = backKeys.length > 0 ? (fields[backKeys[0]] || '') : '';
-
-        if (!frontValue.trim()) {
-          validation.errors.push(
-      getText('field_handler_error_fill_front', '请填写正面内容')
-    );
-        }
-        if (!backValue.trim()) {
-          validation.errors.push(
-      getText('field_handler_error_fill_back', '请填写背面内容')
-    );
-        }
-      }
-    } else {
-      // Dynamic模式验证
-      if (validation.fieldStats.filledFields === 0) {
-        validation.errors.push(
-      getText('field_handler_error_min_field_content', '至少需要填写一个字段内容')
-    );
-      } else if (validation.fieldStats.filledFields < validation.fieldStats.totalFields / 2) {
-        validation.warnings.push(
-          getText(
-            "field_handler_warning_few_fields",
-            `填写字段较少 (${validation.fieldStats.filledFields}/${validation.fieldStats.totalFields})`,
-            [
-              String(validation.fieldStats.filledFields),
-              String(validation.fieldStats.totalFields),
-            ]
-          )
-        );
-      }
     }
 
-    // 最终结果判断
+    // 最終結果判定
     validation.isValid = validation.errors.length === 0;
 
-    // 生成消息
+    // メッセージ生成
     if (validation.isValid) {
       if (validation.warnings.length > 0) {
         validation.message = getText(
@@ -341,7 +248,7 @@ export function validateFields(fields, isLegacy = false, collectResult = null) {
         );
       }
     } else {
-      validation.message = validation.errors[0]; // 显示第一个错误
+      validation.message = validation.errors[0]; // 最初のエラーを表示
     }
 
     return validation;

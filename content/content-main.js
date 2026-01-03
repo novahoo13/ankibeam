@@ -9,8 +9,6 @@ const CONFIG_STORAGE_KEY = "ankiWordAssistantConfig";
 let parseTextWithFallback = null;
 let parseTextWithDynamicFieldsFallback = null;
 
-let validateFields = null;
-
 let addNote = null;
 let translate = null;
 let getActiveTemplate = null;
@@ -66,7 +64,6 @@ function logWarn(message, payload) {
 			floatingButtonModule, // 浮动按钮UI
 			floatingPanelModule, // 浮动面板UI
 			aiServiceModule, // AI解析服务
-			fieldHandlerModule, // Anki字段处理
 			promptEngineModule, // Prompt模板引擎
 			ankiConnectModule, // AnkiConnect代理
 			i18nModule, // 多语言支持
@@ -79,7 +76,6 @@ function logWarn(message, payload) {
 			import(chrome.runtime.getURL("content/floating-button.js")),
 			import(chrome.runtime.getURL("content/floating-panel.js")),
 			import(chrome.runtime.getURL("utils/ai-service.js")),
-			import(chrome.runtime.getURL("utils/field-handler.js")),
 			import(chrome.runtime.getURL("utils/prompt-engine.js")),
 			import(chrome.runtime.getURL("utils/ankiconnect-proxy.js")),
 			import(chrome.runtime.getURL("utils/i18n.js")),
@@ -95,7 +91,6 @@ function logWarn(message, payload) {
 		const { createFloatingPanelController } = floatingPanelModule;
 		({ parseTextWithFallback, parseTextWithDynamicFieldsFallback } =
 			aiServiceModule);
-		({ validateFields } = fieldHandlerModule);
 
 		({ addNote } = ankiConnectModule);
 		({ translate } = i18nModule);

@@ -4,10 +4,7 @@
 import { parseTextWithDynamicFieldsFallback } from "../utils/ai-service.js";
 import { addNote, getModelFieldNames } from "../utils/ankiconnect.js";
 import { configService } from "../services/config-service.js";
-import {
-	collectFieldsForWrite,
-	validateFields,
-} from "../utils/field-handler.js";
+import { collectFieldsForWrite } from "../utils/field-handler.js";
 import { writeToAnki } from "../services/anki-service.js";
 import { ErrorBoundary } from "../utils/error-boundary.js";
 

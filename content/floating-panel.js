@@ -1148,9 +1148,7 @@ export function createFloatingPanelController(options = {}) {
 		if (!fieldContainer) {
 			return;
 		}
-		const selector =
-			currentFieldMode === "legacy" ? "textarea, input" : "textarea, input";
-		const firstField = fieldContainer.querySelector(selector);
+		const firstField = fieldContainer.querySelector("textarea, input");
 		if (firstField && typeof firstField.focus === "function") {
 			firstField.focus();
 		} else if (panel) {
