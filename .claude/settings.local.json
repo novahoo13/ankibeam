@@ -9,7 +9,12 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(ls:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(cd:*)",
+      "Bash(cd /Users/zhenshenghe/Documents/Code\\\\ Study/anki-word-assistant && node --check services/anki-service.js 2>&1:*)",
+      "Bash(cd /Users/zhenshenghe/Documents/Code\\\\ Study/anki-word-assistant && node --check popup/popup.js:*)",
+      "Bash(cd /Users/zhenshenghe/Documents/Code\\\\ Study/anki-word-assistant && npm test:*)",
+      "Bash(cd /Users/zhenshenghe/Documents/Code\\\\ Study/anki-word-assistant && node --test utils/template-store.test.js 2>&1:*)"
     ],
     "deny": [],
     "ask": []
