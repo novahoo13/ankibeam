@@ -1784,11 +1784,14 @@ async function handleTestProvider(providerId) {
 
 	const modelName = entry.inputs.modelName.value.trim() || undefined;
 
+	const apiUrl = entry.inputs.apiUrl.value.trim();
+
 	try {
 		const result = await aiServiceApi.testConnection(
 			providerId,
 			apiKey,
 			modelName,
+			apiUrl,
 		);
 		updateStatus(
 			entry.statusEl.id,
