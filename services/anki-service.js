@@ -2,7 +2,7 @@
 // 统一的 Anki 业务逻辑服务
 // 负责处理字段收集、验证、样式包装和写入
 
-import { addNote } from "../utils/ankiconnect.js";
+import { addNote } from "../utils/ankiconnect-proxy.js";
 import { wrapContentWithStyle } from "../utils/formatter.js";
 import { validateFields } from "../utils/field-handler.js";
 import { getActiveTemplate } from "../utils/template-store.js";

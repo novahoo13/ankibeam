@@ -84,7 +84,7 @@ function logWarn(message, payload) {
 			import(chrome.runtime.getURL("utils/ankiconnect-proxy.js")),
 			import(chrome.runtime.getURL("utils/i18n.js")),
 			import(chrome.runtime.getURL("utils/template-store.js")),
-			import(chrome.runtime.getURL("utils/storage.js")),
+			import(chrome.runtime.getURL("services/config-service.js")),
 			import(chrome.runtime.getURL("services/anki-service.js")),
 			import(chrome.runtime.getURL("utils/error-boundary.js")),
 		]);
@@ -101,18 +101,19 @@ function logWarn(message, payload) {
 		({ translate } = i18nModule);
 		({ getActiveTemplate } = templateStoreModule);
 
-		let loadConfig;
-		({ loadConfig } = storageModule);
+		// Initialize ConfigService
+		const { configService } = storageModule; // actually configServiceModule
+		await configService.init();
+
+		// Update helper to use configService.get()
+		loadFloatingAssistantConfig = async function () {
+			return await configService.get();
+		};
 
 		// Assign to global variables
 		({ writeToAnki } = ankiServiceModule);
 		const { ErrorBoundary } = errorBoundaryModule;
 		errorBoundary = new ErrorBoundary();
-
-		// Update helper to use loadConfig (with decryption)
-		loadFloatingAssistantConfig = async function () {
-			return await loadConfig();
-		};
 
 		// 检查当前页面是否是扩展程序不应运行的受限页面（如Chrome商店）
 		if (isRestrictedLocation(window.location, document)) {
@@ -132,24 +133,11 @@ function logWarn(message, payload) {
 		// 加载并应用初始配置
 		await controller.refreshConfig();
 
-		// 监听存储中的配置变化
-		if (chrome?.storage?.onChanged?.addListener) {
-			chrome.storage.onChanged.addListener((changes, areaName) => {
-				// 只关心 local 存储区域的变化
-				if (areaName !== "local") {
-					return;
-				}
-				const change = changes[CONFIG_STORAGE_KEY];
-				if (!change) {
-					return;
-				}
-				// 即使有新值，我们也应该重新加载配置
-				// 因为 storage 中的数据可能包含加密的 API 密钥
-				// 而 change.newValue 是原始的加密数据，直接使用会导致密钥状态不一致
-				// refreshConfig 会调用 loadConfig，后者负责解密密钥
-				controller.refreshConfig();
-			});
-		}
+		// Subscribe to config changes via ConfigService
+		configService.subscribe((newConfig) => {
+			logInfo("配置变更通知已接收，重新加载控制器配置");
+			controller.refreshConfig();
+		});
 
 		// Configure Error Boundary for Content Script UI
 		errorBoundary.setCallbacks({

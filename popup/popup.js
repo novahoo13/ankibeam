@@ -3,7 +3,7 @@
 
 import { parseTextWithDynamicFieldsFallback } from "../utils/ai-service.js";
 import { addNote, getModelFieldNames } from "../utils/ankiconnect.js";
-import { loadConfig, saveConfig } from "../utils/storage.js";
+import { configService } from "../services/config-service.js";
 import {
 	collectFieldsForWrite,
 	validateFields,
@@ -176,22 +176,18 @@ async function handleTemplateChange(templateId) {
 		return;
 	}
 
-	const previousConfig = config;
 	const hadFilledFields = hasFilledFieldValues();
 
 	try {
 		// 标记模板变更由 popup 触发
 		isTemplateChangedByPopup = true;
 
-		// 保存活动模板到 storage
-		const updatedConfig = {
-			...(config || {}),
-			ui: {
-				...(config?.ui || {}),
-			},
-		};
-		setActiveTemplate(updatedConfig, templateId, "popup");
-		await saveConfig(updatedConfig);
+		// 使用 ConfigService 更新配置
+		const updatedConfig = await configService.update((currentConfig) => {
+			const newConfig = { ...currentConfig, ui: { ...currentConfig.ui } };
+			setActiveTemplate(newConfig, templateId, "popup");
+			return newConfig;
+		});
 
 		// 更新本地配置缓存
 		config = updatedConfig;
@@ -223,7 +219,6 @@ async function handleTemplateChange(templateId) {
 
 		console.log(`[popup] Template changed to: ${template.name}`);
 	} catch (error) {
-		config = previousConfig;
 		console.error("[popup] Failed to change template:", error);
 		errorBoundary.handleError(error, "template");
 	} finally {
@@ -262,13 +257,10 @@ function hideReparseNotice() {
 }
 
 /**
- * ストレージ変更処理
- * Handle storage change
- * @description 处理 storage 变更事件，同步模板选择
- * @param {Object} change - storage 变更对象
- * @returns {void}
+ * ConfigService 变更回调
+ * @param {Object} newConfig - 新配置对象
  */
-async function handleStorageChange(change) {
+async function onConfigChanged(newConfig) {
 	// 防止自己触发的变更导致重复渲染
 	if (isTemplateChangedByPopup) {
 		return;
@@ -279,11 +271,8 @@ async function handleStorageChange(change) {
 	const previousFieldNames = getTemplateFieldNames(previousTemplate);
 	const hadFilledFields = hasFilledFieldValues();
 
-	// 从存储重新完整加载配置（包括解密）
-	const loadedConfig = await loadConfig();
-
 	// 更新配置缓存并刷新下拉
-	config = loadedConfig;
+	config = newConfig;
 	renderTemplateSelector();
 
 	const newTemplate = getActiveTemplate();
@@ -451,9 +440,8 @@ document.addEventListener("DOMContentLoaded", async () => {
  */
 async function initialize() {
 	try {
-		// 从chrome.storage加载用户配置，供全局使用
-		config = (await loadConfig()) || {};
-		// console.log(getText("popup_status_config_loaded", "用户配置加载完成:"), config);
+		// 使用 ConfigService 初始化
+		config = await configService.init();
 
 		// 重新本地化页面，确保静态元素使用用户配置的语言
 		localizePage();
@@ -483,12 +471,8 @@ async function initialize() {
 			});
 		}
 
-		// 添加 storage 变更监听器
-		chrome.storage.onChanged.addListener((changes, namespace) => {
-			if (namespace === "local" && changes.ankiWordAssistantConfig) {
-				handleStorageChange(changes.ankiWordAssistantConfig);
-			}
-		});
+		// 订阅 ConfigService 变更
+		configService.subscribe(onConfigChanged);
 
 		// 根据模板渲染字段输入框
 		await initializeDynamicFields();
@@ -534,55 +518,50 @@ async function handleParse() {
 		return;
 	}
 
-	// 检查模板字段
+	// 检查模板是否配置了字段
 	if (templateFields.length === 0) {
 		updateStatus(
-			getText("popup_status_template_no_fields", "当前模板未配置字段"),
+			getText("popup_status_no_fields", "模板未配置字段，请在设置页面添加字段"),
 			"error",
 		);
 		return;
 	}
 
-	// 显示加载状态，禁用按钮防止重复提交
-	setUiLoading(true, getText("popup_status_parsing", "正在进行AI解析..."));
+	// 显示正在解析的状态
+	setUiLoading(true, getText("popup_status_parsing", "正在解析..."));
 
 	try {
-		// 隐藏重新解析提示（如果有）
-		hideReparseNotice();
-
-		// 使用模板的 prompt
-		// 如果 template.prompt 为空或 null，AI服务会自动使用默认模板
-		// 不需要手动调用 buildPromptFromTemplate，因为 parseTextWithDynamicFieldsFallback 会内部处理
+		// 调用 AI 和 容错策略
 		const customPrompt = template.prompt;
-
-		// 执行AI解析
 		const result = await parseTextWithDynamicFieldsFallback(
 			textInput,
 			templateFields,
 			customPrompt,
 		);
 
-		// 将解析结果填充到动态字段中
+		// 填充结果到界面
 		fillDynamicFields(result, templateFields);
 
-		// 解析成功后启用写入按钮，允许用户将内容保存到Anki
-		document.getElementById("write-btn").disabled = false;
-		updateStatus(getText("popup_status_parsed", "解析完成"), "success");
+		updateStatus(getText("popup_status_parse_success", "解析成功"), "success");
+
+		// 启用写入按钮
+		const writeBtn = document.getElementById("write-btn");
+		if (writeBtn) {
+			writeBtn.disabled = false;
+		}
+
+		// 隐藏重新解析提示
+		hideReparseNotice();
 	} catch (error) {
 		await errorBoundary.handleError(error, "parse", {
 			allowRetry: true,
 			retryCallback: () => handleParse(),
 		});
 	} finally {
-		// 无论成功失败都要清除加载状态
 		setUiLoading(false);
 	}
 }
 
-/**
- * Anki写入按钮事件处理器
- * 收集字段内容、验证数据完整性、调用AnkiConnect API创建新卡片
- */
 /**
  * Anki写入按钮事件处理器
  * 收集字段内容、验证数据完整性、调用AnkiConnect API创建新卡片
@@ -796,56 +775,60 @@ function fillDynamicFields(aiResult, fieldNames) {
 			});
 		}
 
-		if (!Array.isArray(fieldNames) || fieldNames.length === 0) {
-			throw createI18nError("popup_status_field_names_invalid", {
-				fallback: "字段名数组为空或无效",
+		const container = document.getElementById("fields-container");
+		if (!container) {
+			throw createI18nError("popup_status_container_missing", {
+				fallback: "找不到字段容器元素",
 			});
 		}
 
+		// 统计变量初始化
 		let filledCount = 0;
 		const filledFields = [];
 		const emptyFields = [];
 		const missingElements = [];
 
+		// 遍历所有定义的字段进行填充
 		fieldNames.forEach((fieldName, index) => {
 			const inputId = `field-${index}`;
 			const element = document.getElementById(inputId);
 
 			if (!element) {
-				// console.warn(getText("popup_field_not_found", `找不到字段元素: ${inputId} (${fieldName})`, [inputId, fieldName]));
 				missingElements.push(fieldName);
 				return;
 			}
 
-			const value = aiResult[fieldName] || "";
-			const trimmedValue = value.trim();
+			// 尝试从AI结果中获取值（不区分大小写）
+			// 优先精确匹配，其次小写匹配
+			let value = aiResult[fieldName] || "";
+			if (!value) {
+				const lowerFieldName = fieldName.toLowerCase();
+				const resultKey = Object.keys(aiResult).find(
+					(k) => k.toLowerCase() === lowerFieldName,
+				);
+				if (resultKey) {
+					value = aiResult[resultKey];
+				}
+			}
 
-			// 设置字段值
+			// 设置值并触发输入事件以更新UI（如自适应高度）
 			element.value = value;
 
-			// 调整文本框高度（如果是自动调整的文本框）
-			if (element.classList.contains("auto-resize-textarea")) {
-				adjustTextareaHeight(element);
-			}
+			// 应用视觉样式
+			applyFieldStatusStyle(element, value);
 
-			// 添加填充状态样式
-			element.classList.remove("filled", "partially-filled", "empty");
-
-			if (trimmedValue) {
+			// 更新统计
+			if (value && value.trim()) {
 				filledCount++;
 				filledFields.push(fieldName);
-				element.classList.add("filled");
 			} else {
 				emptyFields.push(fieldName);
-				element.classList.add("empty");
 			}
 
-			// 添加工具提示
-			element.title = trimmedValue
-				? getText("popup_field_tag_filled", `已填充: ${fieldName}`, [fieldName])
-				: getText("popup_field_tag_pending", `待填充: ${fieldName}`, [
-						fieldName,
-				  ]);
+			// 触发input事件以自适应高度
+			element.dispatchEvent(
+				new Event("input", { bubbles: true, cancelable: true }),
+			);
 		});
 
 		// 生成状态反馈
