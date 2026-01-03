@@ -1,1847 +1,1848 @@
 {
-  "extension_name": {
-    "description": "Chrome 拡張の名称。",
-    "message": "Ankiワードアシスタント"
-  },
-  "extension_description": {
-    "description": "Chrome 拡張の説明文。",
-    "message": "辞書検索結果からAnkiカード作成を支援するAI搭載アシスタントです。"
-  },
-  "ai_service_error_connection_test": {
-    "description": "プロバイダー接続テスト失敗のヒント",
-    "message": "接続テストに失敗しました：$ERROR$",
-    "placeholders": {
-      "ERROR": {
-        "content": "$1",
-        "description": "エラー詳細"
-      }
-    }
-  },
-  "ai_service_error_empty_body": {
-    "description": "プロバイダーの応答に本文が含まれていなかった場合。",
-    "message": "$PROVIDER$ の応答ボディが空です",
-    "placeholders": {
-      "PROVIDER": {
-        "content": "$1",
-        "description": "プロバイダー名"
-      }
-    }
-  },
-  "ai_service_error_empty_response": {
-    "description": "AI の応答が空だった場合のエラー。",
-    "message": "AI の応答ボディが空です"
-  },
-  "ai_service_error_missing_api_key": {
-    "description": "リクエスト時に API キーが不足している場合。",
-    "message": "プロバイダー $PROVIDER$ の API キーが設定されていません",
-    "placeholders": {
-      "PROVIDER": {
-        "content": "$1",
-        "description": "プロバイダー識別子"
-      }
-    }
-  },
-  "ai_service_error_missing_api_key_active": {
-    "description": "使用中のプロバイダーに API キーが設定されていない場合。",
-    "message": "プロバイダー $PROVIDER$ の API キーが設定されていません",
-    "placeholders": {
-      "PROVIDER": {
-        "content": "$1",
-        "description": "プロバイダー識別子"
-      }
-    }
-  },
-  "ai_service_error_missing_api_key_test": {
-    "description": "接続テストでAPIキーが欠落している場合のヒント",
-    "message": "接続テストに失敗しました：APIキーが設定されていません"
-  },
-  "ai_service_error_missing_default_model": {
-    "description": "プロバイダーに既定モデルが設定されていない場合。",
-    "message": "プロバイダー $PROVIDER$ に既定モデル設定がありません",
-    "placeholders": {
-      "PROVIDER": {
-        "content": "$1",
-        "description": "プロバイダー識別子"
-      }
-    }
-  },
-  "ai_service_error_missing_default_model_active": {
-    "description": "使用中のプロバイダーに既定モデルが設定されていない場合。",
-    "message": "プロバイダー $PROVIDER$ に既定モデル設定がありません",
-    "placeholders": {
-      "PROVIDER": {
-        "content": "$1",
-        "description": "プロバイダー識別子"
-      }
-    }
-  },
-  "ai_service_error_missing_default_model_test": {
-    "description": "接続テストでデフォルトモデルが欠落している場合のヒント",
-    "message": "$PROVIDER$ にはデフォルトのモデル設定がありません",
-    "placeholders": {
-      "PROVIDER": {
-        "content": "$1",
-        "description": "プロバイダー名"
-      }
-    }
-  },
-  "ai_service_error_missing_provider_config": {
-    "description": "指定したプロバイダー設定が見つからない場合。",
-    "message": "プロバイダー設定が見つかりません: $PROVIDER$",
-    "placeholders": {
-      "PROVIDER": {
-        "content": "$1",
-        "description": "プロバイダー識別子"
-      }
-    }
-  },
-  "ai_service_error_no_provider_available": {
-    "description": "利用可能なプロバイダーがない場合のエラー。",
-    "message": "AI リクエストに失敗しました: 利用可能なプロバイダーがありません"
-  },
-  "ai_service_error_output_all_empty": {
-    "description": "AIの出力フィールドがすべて空の場合のヒント",
-    "message": "AIの出力フィールドはすべて空です。入力内容を確認するか、再試行してください"
-  },
-  "ai_service_error_output_invalid_fields": {
-    "description": "AIの出力に予期しないフィールドが含まれている場合のヒント",
-    "message": "出力に無効なフィールドが含まれています: $FIELDS$",
-    "placeholders": {
-      "FIELDS": {
-        "content": "$1",
-        "description": "無効なフィールドのリスト"
-      }
-    }
-  },
-  "ai_service_error_parse_fail_message": {
-    "description": "AIの解析が失敗し、エラーオブジェクトが返された場合のヒント",
-    "message": "AIの解析に失敗しました：$ERROR$",
-    "placeholders": {
-      "ERROR": {
-        "content": "$1",
-        "description": "エラーメッセージ"
-      }
-    }
-  },
-  "ai_service_error_parse_fail_unknown": {
-    "description": "AIの解析が失敗し、エラー詳細がない場合のヒント",
-    "message": "AIの解析に失敗しました：不明なエラー"
-  },
-  "ai_service_error_parse_failed": {
-    "description": "プロバイダー応答のパース処理が失敗した場合。",
-    "message": "$PROVIDER$ の応答解析に失敗しました: $ERROR$",
-    "placeholders": {
-      "PROVIDER": {
-        "content": "$1",
-        "description": "プロバイダー名"
-      },
-      "ERROR": {
-        "content": "$2",
-        "description": "エラーメッセージ"
-      }
-    }
-  },
-  "ai_service_error_parse_json": {
-    "description": "AI 応答の JSON 解析に失敗した場合。",
-    "message": "AI の応答を JSON として解析できませんでした"
-  },
-  "ai_service_error_request_failed": {
-    "description": "プロバイダーへのリクエストが失敗した場合のエラー。",
-    "message": "$PROVIDER$ へのリクエストに失敗しました: $ERROR$",
-    "placeholders": {
-      "PROVIDER": {
-        "content": "$1",
-        "description": "プロバイダー名"
-      },
-      "ERROR": {
-        "content": "$2",
-        "description": "エラーメッセージ"
-      }
-    }
-  },
-  "ai_service_error_request_generic": {
-    "description": "一般的な AI リクエスト失敗メッセージ。",
-    "message": "AI リクエストに失敗しました"
-  },
-  "ai_service_error_request_message": {
-    "description": "AIリクエストが失敗し、メッセージ文字列が返された場合のヒント",
-    "message": "$PROVIDER$ のリクエストに失敗しました: $MESSAGE$",
-    "placeholders": {
-      "MESSAGE": {
-        "content": "$2",
-        "description": "エラーメッセージ"
-      },
-      "PROVIDER": {
-        "content": "$1",
-        "description": "プロバイダー名"
-      }
-    }
-  },
-  "ai_service_error_request_with_message": {
-    "description": "すべてのプロバイダーが失敗した際の最終エラーメッセージ。",
-    "message": "AI リクエストに失敗しました: $ERROR$",
-    "placeholders": {
-      "ERROR": {
-        "content": "$1",
-        "description": "最終的なエラーメッセージ"
-      }
-    }
-  },
-  "ai_service_error_unknown_provider": {
-    "description": "指定されたプロバイダー ID が存在しない場合のエラー。",
-    "message": "不明な AI プロバイダーです: $PROVIDER$",
-    "placeholders": {
-      "PROVIDER": {
-        "content": "$1",
-        "description": "プロバイダー識別子"
-      }
-    }
-  },
-  "ai_service_prompt_classic": {
-    "description": "クラシックパーサー用の既定プロンプト指示。",
-    "message": "次の辞書検索結果を Anki カード向けの構造化データに変換してください。\n\"front\" と \"back\" フィールドのみを含む純粋な JSON オブジェクトを返してください。追加の解説やコードフェンスは含めないでください。\nJSON 例:\n{\n  \"front\": \"単語\",\n  \"back\": \"元の整形を保持した辞書検索結果全文\"\n}\n\n入力テキスト:\n---\n$INPUT$\n---",
-    "placeholders": {
-      "INPUT": {
-        "content": "$1",
-        "description": "解析対象のテキスト"
-      }
-    }
-  },
-  "ai_service_status_test_success": {
-    "description": "接続テスト成功の情報",
-    "message": "$PROVIDER$ の接続テストに成功しました",
-    "placeholders": {
-      "PROVIDER": {
-        "content": "$1",
-        "description": "プロバイダー名"
-      }
-    }
-  },
-  "ai_service_warn_missing_input_placeholder": {
-    "description": "カスタムプロンプトに {{INPUT_TEXT}} が欠けている場合の警告。",
-    "message": "カスタムプロンプトに {{INPUT_TEXT}} プレースホルダーがないため、入力テキストを末尾に追加しました。"
-  },
-  "field_handler_error_back_not_found": {
-    "description": "レガシーモードで背面フィールド要素が見つからない場合のヒント",
-    "message": "back-input 要素が見つかりません"
-  },
-  "field_handler_error_field_contains_html": {
-    "description": "フィールドの内容に多くのHTMLが含まれている場合のヒント",
-    "message": "フィールド「$FIELD$」にはHTMLタグが多すぎる可能性があります",
-    "placeholders": {
-      "FIELD": {
-        "content": "$1",
-        "description": "フィールド名"
-      }
-    }
-  },
-  "field_handler_error_field_data_invalid": {
-    "description": "フィールドデータ構造が無効な場合のヒント",
-    "message": "フィールドデータが無効です"
-  },
-  "field_handler_error_field_element_missing": {
-    "description": "フィールドに対応するDOM要素が見つからない場合のヒント",
-    "message": "フィールド要素が見つかりません：$ELEMENT$ ($FIELD$)",
-    "placeholders": {
-      "ELEMENT": {
-        "content": "$1",
-        "description": "フィールドDOM要素ID"
-      },
-      "FIELD": {
-        "content": "$2",
-        "description": "フィールド名"
-      }
-    }
-  },
-  "field_handler_error_field_list_empty": {
-    "description": "フィールドリストが空の場合のヒント",
-    "message": "フィールドリストが空です"
-  },
-  "field_handler_error_field_object_invalid": {
-    "description": "フィールドオブジェクトの検証失敗のヒント",
-    "message": "フィールドオブジェクトが空または無効です"
-  },
-  "field_handler_error_fill_back": {
-    "description": "レガシーモードで背面の内容が欠落している場合のヒント",
-    "message": "背面のコンテンツを記入してください"
-  },
-  "field_handler_error_fill_front": {
-    "description": "レガシーモードで前面の内容が欠落している場合のヒント",
-    "message": "前面のコンテンツを記入してください"
-  },
-  "field_handler_error_front_not_found": {
-    "description": "レガシーモードで前面フィールド要素が見つからない場合のヒント",
-    "message": "front-input 要素が見つかりません"
-  },
-  "field_handler_error_legacy_min_fields": {
-    "description": "レガシーモードでフィールド数が不足している場合のヒント",
-    "message": "レガシーモードには少なくとも2つのフィールドが必要です"
-  },
-  "field_handler_error_legacy_required_fields": {
-    "description": "レガシーモードのフィールド検証のヒント",
-    "message": "レガシーモードでは、最初の2つのフィールドは両方とも入力必須です"
-  },
-  "field_handler_error_min_field_content": {
-    "description": "動的モードで少なくとも1つの項目を入力する必要がある場合のヒント",
-    "message": "少なくとも1つのフィールドコンテンツを入力する必要があります"
-  },
-  "field_handler_error_missing_dom_count": {
-    "description": "フィールドレンダリング時にDOM要素が欠落している場合のヒント",
-    "message": "$COUNT$個のDOM要素がありません",
-    "placeholders": {
-      "COUNT": {
-        "content": "$1",
-        "description": "欠落している要素の数"
-      }
-    }
-  },
-  "field_handler_error_model_fields_invalid": {
-    "description": "モデルフィールドセットが無効な場合のヒント",
-    "message": "modelFields は配列でなければなりません"
-  },
-  "field_handler_error_no_fields_found": {
-    "description": "フィールドセットが見つからない場合のヒント",
-    "message": "フィールドが見つかりませんでした"
-  },
-  "field_handler_error_validation_failed": {
-    "description": "フィールド検証失敗のログプレフィックス",
-    "message": "フィールドの検証に失敗しました:"
-  },
-  "field_handler_error_validation_process": {
-    "description": "フィールド検証プロセスで例外がスローされた場合のヒント",
-    "message": "検証プロセスでエラーが発生しました: $ERROR$",
-    "placeholders": {
-      "ERROR": {
-        "content": "$1",
-        "description": "エラー詳細"
-      }
-    }
-  },
-  "field_handler_error_validation_summary": {
-    "description": "フィールド検証失敗の要約ヒント",
-    "message": "フィールドの検証に失敗しました"
-  },
-  "field_handler_error_wrap_style": {
-    "description": "フィールドのスタイルラッピングが失敗した場合のヒント",
-    "message": "スタイルのラップに失敗しました：$ERROR$",
-    "placeholders": {
-      "ERROR": {
-        "content": "$1",
-        "description": "エラー詳細"
-      }
-    }
-  },
-  "field_handler_status_collect_complete": {
-    "description": "フィールド収集完了のログプレフィックス",
-    "message": "フィールドの収集が完了しました:"
-  },
-  "field_handler_status_collect_failed": {
-    "description": "フィールド収集失敗のログプレフィックス",
-    "message": "フィールドの収集に失敗しました:"
-  },
-  "field_handler_warning_few_fields": {
-    "description": "入力されたフィールド数が少ない場合のヒント",
-    "message": "入力フィールドが少ない ($FILLED$/$TOTAL$)",
-    "placeholders": {
-      "FILLED": {
-        "content": "$1",
-        "description": "入力済み数"
-      },
-      "TOTAL": {
-        "content": "$2",
-        "description": "総フィールド数"
-      }
-    }
-  },
-  "field_handler_warning_fields_filled": {
-    "description": "検証に合格し、入力されたフィールド数を表示するヒント",
-    "message": "検証に合格しました。$COUNT$個のフィールドが入力されました",
-    "placeholders": {
-      "COUNT": {
-        "content": "$1",
-        "description": "入力済みフィールド数"
-      }
-    }
-  },
-  "field_handler_warning_with_count": {
-    "description": "検証に合格したが、警告がある場合のヒント",
-    "message": "検証に合格しましたが、$COUNT$個の警告があります",
-    "placeholders": {
-      "COUNT": {
-        "content": "$1",
-        "description": "警告数"
-      }
-    }
-  },
-  "options_button_export_config": {
-    "description": "設定エクスポートボタンのテキスト",
-    "message": "📤 設定をエクスポート"
-  },
-  "options_button_import_config": {
-    "description": "設定インポートボタンのテキスト",
-    "message": "📥 設定をインポート"
-  },
-  "options_button_reset_config": {
-    "description": "設定リセットボタンのテキスト",
-    "message": "🔄 設定をリセット"
-  },
-  "options_button_save": {
-    "description": "保存ボタンのテキスト",
-    "message": "設定を保存"
-  },
-  "options_button_test_provider": {
-    "description": "プロバイダー接続テストボタンのテキスト",
-    "message": "$PROVIDER$ 接続をテスト",
-    "placeholders": {
-      "PROVIDER": {
-        "content": "$1",
-        "description": "プロバイダー表示名"
-      }
-    }
-  },
-  "options_button_toggle_hide": {
-    "description": "APIキー非表示ボタンのテキスト",
-    "message": "非表示"
-  },
-  "options_button_toggle_show": {
-    "description": "APIキー表示ボタンのテキスト",
-    "message": "表示"
-  },
-  "options_config_loaded": {
-    "description": "オプションページ初期化完了のヒント",
-    "message": "設定が読み込まれました。"
-  },
-  "options_error_deck_select_placeholder": {
-    "description": "デッキドロップダウンのプレースホルダーオプション",
-    "message": "デフォルトのデッキを選択してください"
-  },
-  "options_error_fetch_anki_data": {
-    "description": "Ankiデータ読み取り失敗のヒント",
-    "message": "Ankiデータの読み取り中にエラーが発生しました: $ERROR$",
-    "placeholders": {
-      "ERROR": {
-        "content": "$1",
-        "description": "エラー詳細"
-      }
-    }
-  },
-  "options_error_fetch_decks": {
-    "description": "デッキ読み取り失敗のヒント",
-    "message": "デッキの読み取りに失敗しました: $ERROR$",
-    "placeholders": {
-      "ERROR": {
-        "content": "$1",
-        "description": "エラー詳細"
-      }
-    }
-  },
-  "options_error_fetch_models": {
-    "description": "モデル読み取り失敗のヒント",
-    "message": "モデルの読み取りに失敗しました: $ERROR$",
-    "placeholders": {
-      "ERROR": {
-        "content": "$1",
-        "description": "エラー詳細"
-      }
-    }
-  },
-  "options_error_invalid_api_url": {
-    "description": "APIアドレス形式が間違っている場合のヒント",
-    "message": "APIアドレスの形式が正しくありません"
-  },
-  "options_error_missing_api_key": {
-    "description": "設定保存時にAPIキーが欠落している場合のヒント",
-    "message": "現在のプロバイダーのAPIキーを入力してください"
-  },
-  "options_error_model_select_placeholder": {
-    "description": "モデルドロップダウンのプレースホルダーオプション",
-    "message": "デフォルトのモデルを選択してください"
-  },
-  "options_error_permission_denied": {
-    "description": "オプションの権限要求が失敗した場合のヒント",
-    "message": "$ORIGIN$ へのアクセス許可が得られなかったため、保存はキャンセルされました。",
-    "placeholders": {
-      "ORIGIN": {
-        "content": "$1",
-        "description": "拒否されたドメインパターン"
-      }
-    }
-  },
-  "options_error_provider_test_failed": {
-    "description": "プロバイダー接続テスト失敗のヒント",
-    "message": "テストに失敗しました: $MESSAGE$",
-    "placeholders": {
-      "MESSAGE": {
-        "content": "$1",
-        "description": "失敗理由"
-      }
-    }
-  },
-  "options_error_provider_test_missing_key": {
-    "description": "APIキー未入力で接続テストを実行した場合のヒント",
-    "message": "まずAPIキーを入力してください"
-  },
-  "options_export_status_failed": {
-    "description": "設定エクスポート失敗のヒント",
-    "message": "設定のエクスポートに失敗しました：$ERROR$",
-    "placeholders": {
-      "ERROR": {
-        "content": "$1",
-        "description": "エラーメッセージ"
-      }
-    }
-  },
-  "options_export_status_running": {
-    "description": "設定エクスポート中のヒント",
-    "message": "設定をエクスポートしています..."
-  },
-  "options_export_status_success": {
-    "description": "設定エクスポート成功のヒント",
-    "message": "設定が正常にエクスポートされました"
-  },
-  "options_font_size_large": {
-    "description": "フォントサイズオプション：大",
-    "message": "大 (16px)"
-  },
-  "options_font_size_medium": {
-    "description": "フォントサイズオプション：中",
-    "message": "中 (14px)"
-  },
-  "options_font_size_small": {
-    "description": "フォントサイズオプション：小",
-    "message": "小 (12px)"
-  },
-  "options_font_size_xlarge": {
-    "description": "フォントサイズオプション：特大",
-    "message": "特大 (18px)"
-  },
-  "options_helper_api_docs": {
-    "description": "APIドキュメントリンクのテキスト",
-    "message": "APIドキュメント"
-  },
-  "options_helper_docs_fallback": {
-    "description": "ドキュメントリンクのみ提供する場合に表示されるテキスト",
-    "message": "参考ドキュメント："
-  },
-  "options_helper_docs_separator": {
-    "description": "ヘルプヒントでドキュメントリンクを区切るためのテキスト",
-    "message": " ｜ ドキュメント："
-  },
-  "options_helper_get_api_key": {
-    "description": "ヘルプヒント：APIキーの取得方法の説明",
-    "message": "APIキーを取得："
-  },
-  "options_hint_api_url_default": {
-    "description": "APIアドレスのデフォルト値のヒント",
-    "message": "デフォルト：$URL$",
-    "placeholders": {
-      "URL": {
-        "content": "$1",
-        "description": "デフォルトAPIアドレス"
-      }
-    }
-  },
-  "options_hint_model_common": {
-    "description": "よく使われるモデルをリストアップするヒント",
-    "message": "一般的なモデル：$MODELS$",
-    "placeholders": {
-      "MODELS": {
-        "content": "$1",
-        "description": "一般的なモデルのリスト"
-      }
-    }
-  },
-  "options_hint_test_anki_first": {
-    "description": "ユーザーにまずAnki接続をテストするよう促すヒント",
-    "message": "まずAnki接続をテストしてください"
-  },
-  "options_import_error_format_invalid": {
-    "description": "設定インポート時に構造が無効な場合のヒント",
-    "message": "設定ファイルの形式が正しくありません"
-  },
-  "options_import_error_json_invalid": {
-    "description": "設定インポート時にJSONが無効な場合のヒント",
-    "message": "設定ファイルは有効なJSONではありません"
-  },
-  "options_import_error_missing_ai_config": {
-    "description": "設定インポート時にaiConfigが欠落している場合のヒント",
-    "message": "設定ファイルにaiConfigがありません"
-  },
-  "options_import_status_failed": {
-    "description": "設定インポート失敗のヒント",
-    "message": "設定のインポートに失敗しました：$ERROR$",
-    "placeholders": {
-      "ERROR": {
-        "content": "$1",
-        "description": "エラーメッセージ"
-      }
-    }
-  },
-  "options_import_status_running": {
-    "description": "設定インポート中のヒント",
-    "message": "設定をインポートしています..."
-  },
-  "options_import_status_success": {
-    "description": "設定インポート成功後のヒント",
-    "message": "設定が正常にインポートされました。APIキーを再設定してください"
-  },
-  "options_label_api_url": {
-    "description": "APIアドレス入力ボックスのラベル",
-    "message": "APIアドレス"
-  },
-  "options_label_deck": {
-    "description": "Anki接続パネルのデッキのラベル",
-    "message": "デッキ"
-  },
-  "options_label_field_info": {
-    "description": "Anki接続パネルのフィールド情報エリアのタイトル",
-    "message": "フィールド情報"
-  },
-  "options_label_font_size": {
-    "description": "スタイル設定パネルのフォントサイズのラベル",
-    "message": "フォントサイズ"
-  },
-  "options_label_language": {
-    "description": "システム設定パネルの言語のラベル",
-    "message": "言語"
-  },
-  "options_label_line_height": {
-    "description": "スタイル設定パネルの行の高さのラベル",
-    "message": "行の高さ"
-  },
-  "options_label_model": {
-    "description": "Anki接続パネルのモデルのラベル",
-    "message": "モデル"
-  },
-  "options_label_model_name": {
-    "description": "モデル名入力ボックスのラベル",
-    "message": "モデル名"
-  },
-  "options_label_text_align": {
-    "description": "スタイル設定パネルのテキスト揃えのラベル",
-    "message": "テキストの配置"
-  },
-  "options_language_chinese_simplified": {
-    "description": "言語ドロップダウンの簡体字中国語オプション",
-    "message": "簡体字中国語"
-  },
-  "options_language_follow_browser": {
-    "description": "ブラウザ設定に追従する旨の説明文",
-    "message": "拡張機能の言語はブラウザ設定に追従します。変更する場合はブラウザの表示言語を調整してください。"
-  },
-  "options_language_current_label": {
-    "description": "現在の言語を示すラベル",
-    "message": "現在の言語"
-  },
-  "options_language_chinese_traditional": {
-    "description": "言語ドロップダウンの繁体字中国語オプション",
-    "message": "繁体字中国語"
-  },
-  "options_language_japanese": {
-    "description": "言語ドロップダウンの日本語オプション",
-    "message": "日本語"
-  },
-  "options_language_english": {
-    "description": "言語ドロップダウンの英語オプション",
-    "message": "英語"
-  },
-  "options_line_height_compact": {
-    "description": "行の高さオプション：コンパクト",
-    "message": "コンパクト (1.2)"
-  },
-  "options_line_height_loose": {
-    "description": "行の高さオプション：ゆったり",
-    "message": "ゆったり (1.6)"
-  },
-  "options_line_height_normal": {
-    "description": "行の高さオプション：標準",
-    "message": "標準 (1.4)"
-  },
-  "options_model_fields_heading": {
-    "description": "フィールドマッピング領域のモデルフィールド数タイトル",
-    "message": "モデルフィールド ($COUNT$件):",
-    "placeholders": {
-      "COUNT": {
-        "content": "$1",
-        "description": "モデルに含まれるフィールド数",
-        "example": "4"
-      }
-    }
-  },
-  "options_mode_dynamic_description": {
-    "description": "動的フィールドモードの説明本文",
-    "message": "このテンプレートは複数のフィールドをサポートしており、AIが自動的にすべてのフィールドを埋めます。ポップアップページはフィールド名に基づいて対応する入力エリアをインテリジェントに生成します。"
-  },
-  "options_mode_dynamic_heading": {
-    "description": "動的フィールドモードの説明タイトル",
-    "message": "動的フィールドモード"
-  },
-  "options_mode_legacy_description": {
-    "description": "レガシーモードの説明本文",
-    "message": "このテンプレートのフィールド数が2以下の場合は、従来の前面/背面モードが使用されます。"
-  },
-  "options_mode_legacy_heading": {
-    "description": "レガシーモードの説明タイトル",
-    "message": "互換モード"
-  },
-  "options_page_heading": {
-    "description": "オプションページのメインタイトル",
-    "message": "設定センター"
-  },
-  "options_page_title": {
-    "description": "オプションページの<title>テキスト",
-    "message": "設定"
-  },
-  "options_placeholder_api_url": {
-    "description": "APIアドレス入力ボックスのプレースホルダーヒント",
-    "message": "https://"
-  },
-  "options_placeholder_model_example": {
-    "description": "モデル名入力ボックスのサンプルヒント",
-    "message": "例：$MODEL$",
-    "placeholders": {
-      "MODEL": {
-        "content": "$1",
-        "description": "プロバイダーのデフォルトモデル名"
-      }
-    }
-  },
-  "options_placeholder_model_input": {
-    "description": "モデル名入力ボックスのプレースホルダーヒント",
-    "message": "モデル名を入力"
-  },
-  "options_prompt_config_placeholder": {
-    "description": "プロンプトエディタ設定エリアのプレースホルダーヒント",
-    "message": "フィールドを選択してからフィールドの内容を設定してください。"
-  },
-  "options_prompt_current_model": {
-    "description": "プロンプトパネルでデフォルトで表示される現在のテンプレートのヒント",
-    "message": "現在のテンプレート：未選択"
-  },
-  "options_prompt_current_model_label": {
-    "description": "プロンプトパネルで現在選択されているテンプレートの表示",
-    "message": "現在のテンプレート：$MODEL$",
-    "placeholders": {
-      "MODEL": {
-        "content": "$1",
-        "description": "現在のテンプレート名"
-      }
-    }
-  },
-  "options_prompt_custom_template": {
-    "description": "プロンプトカスタム編集エリアのタイトル",
-    "message": "カスタムプロンプトテンプレート"
-  },
-  "options_prompt_dirty_hint": {
-    "description": "プロンプトテンプレートが変更された後のヒント",
-    "message": "変更済み、保存後に有効になります"
-  },
-  "options_prompt_error_field_empty": {
-    "description": "単一フィールドの内容が空の場合のヒント",
-    "message": "フィールド「$FIELD$」の内容は空にできません。",
-    "placeholders": {
-      "FIELD": {
-        "content": "$1",
-        "description": "フィールド名"
-      }
-    }
-  },
-  "options_prompt_error_field_required": {
-    "description": "プロンプトフィールドの内容が未入力の場合のエラーヒント",
-    "message": "フィールドの内容は必須です"
-  },
-  "options_prompt_error_fields_empty": {
-    "description": "複数のフィールドの内容が空の場合のヒント",
-    "message": "以下のフィールドの内容は空にできません：$FIELDS$",
-    "placeholders": {
-      "FIELDS": {
-        "content": "$1",
-        "description": "セミコロンで区切られたフィールド名のリスト"
-      }
-    }
-  },
-  "options_prompt_error_generate_first": {
-    "description": "デフォルトプロンプト生成前にフィールドが未設定の場合のヒント",
-    "message": "まずフィールドを選択して設定し、その後でデフォルトプロンプトを生成してください。"
-  },
-  "options_prompt_error_select_fields": {
-    "description": "どのフィールドも選択されていない場合のヒント",
-    "message": "出力するフィールドを少なくとも1つ選択してください。"
-  },
-  "options_prompt_field_config": {
-    "description": "プロンプトパネルのフィールド設定エリアのタイトル",
-    "message": "フィールド設定"
-  },
-  "options_prompt_field_config_hint": {
-    "description": "プロンプトパネルのフィールド設定の説明",
-    "message": "AIがこのフィールドを出力するために必要な情報を設定します"
-  },
-  "options_prompt_field_label": {
-    "description": "プロンプトエディタのフィールド内容のラベル",
-    "message": "フィールドの内容"
-  },
-  "options_prompt_field_placeholder": {
-    "description": "プロンプトエディタのフィールド内容入力ボックスのプレースホルダーヒント",
-    "message": "このフィールドに含めるべき内容（出力構造、トーンなど）を記述してください"
-  },
-  "options_prompt_field_select": {
-    "description": "プロンプトパネルのフィールド選択エリアのタイトル",
-    "message": "フィールド選択"
-  },
-  "options_prompt_field_select_hint": {
-    "description": "プロンプトパネルのフィールド選択のヒント",
-    "message": "フィールドをクリックして選択状態を切り替えます"
-  },
-  "options_prompt_generate_default": {
-    "description": "プロンプトパネルのテストボタンのテキスト",
-    "message": "接続をテストしてモデルを更新"
-  },
-  "options_prompt_hint_save_usage": {
-    "description": "プロンプトパネルのヒント：保存後に有効",
-    "message": "ヒント：設定を保存すると、ポップアップでこのプロンプトが使用されます。"
-  },
-  "options_prompt_no_fields": {
-    "description": "プロンプトエディタのヒント：フィールドが返されません",
-    "message": "現在のテンプレートはどのフィールドも返しません。"
-  },
-  "options_prompt_not_found": {
-    "description": "プロンプト関連のDOM要素が見つからない場合の警告",
-    "message": "プロンプト設定要素が見つかりません"
-  },
-  "options_prompt_reset_default": {
-    "description": "プロンプトエリアのリセットボタンのテキスト",
-    "message": "デフォルトテンプレートにリセット"
-  },
-  "options_prompt_rule_field_definition": {
-    "description": "プロンプトルール：フィールド定義のタイトル",
-    "message": "フィールド返却内容の定義："
-  },
-  "options_prompt_rule_field_fallback": {
-    "description": "プロンプトルール：フィールドプレースホルダーのデフォルト説明",
-    "message": "このフィールドに関連する内容を生成してください。"
-  },
-  "options_prompt_rule_intro": {
-    "description": "デフォルトプロンプト生成時のルール説明",
-    "message": "以下の要件に厳密に従って出力を生成してください。"
-  },
-  "options_prompt_rule_note_json_only": {
-    "description": "プロンプトルール：JSONのみを返すヒント",
-    "message": "- JSONのみを返し、追加の説明は含めないでください。"
-  },
-  "options_prompt_rule_note_requirements": {
-    "description": "プロンプトルール：要件を満たすヒント",
-    "message": "- 各フィールドの内容が上記の要件を満たしていることを確認してください。"
-  },
-  "options_prompt_rule_notes": {
-    "description": "プロンプトルール：注意事項のタイトル",
-    "message": "注意事項："
-  },
-  "options_prompt_rule_output_format": {
-    "description": "プロンプトルール：出力形式の定義のタイトル",
-    "message": "出力形式の定義："
-  },
-  "options_prompt_rule_output_json": {
-    "description": "プロンプトルール：JSON出力要件",
-    "message": "以下のJSON構造に従って結果を返し、リストされたフィールドのみを含めてください："
-  },
-  "options_prompt_rule_output_line": {
-    "description": "プロンプトルール：JSONフィールド定義",
-    "message": "  \"$FIELD$\": \"$FIELD$の内容を記入してください\"$SUFFIX$",
-    "placeholders": {
-      "FIELD": {
-        "content": "$1",
-        "description": "フィールド名"
-      },
-      "SUFFIX": {
-        "content": "$2",
-        "description": "カンマまたは空文字列"
-      }
-    }
-  },
-  "options_prompt_select_fields": {
-    "description": "プロンプトエディタのヒント：フィールドを選択するよう促す",
-    "message": "出力が必要なフィールドを選択し、フィールドの内容を補完してください。"
-  },
-  "options_prompt_status_generated": {
-    "description": "デフォルトプロンプト生成後のヒント",
-    "message": "現在のフィールド設定に基づいてデフォルトプロンプトが生成されました。"
-  },
-  "options_prompt_status_ready": {
-    "description": "プロンプトフィールド設定完了のヒント",
-    "message": "フィールド設定が完了しました。"
-  },
-  "options_prompt_template_placeholder": {
-    "description": "カスタムプロンプト編集ボックスのプレースホルダーヒント",
-    "message": "モデルを選択してから対応するプロンプトを作成してください。\n以下のプレースホルダーを含めることをお勧めします：\n- {{INPUT_TEXT}} はユーザー入力を表します\n- {{FIELD_SCHEMA}} はフィールド構造を表します"
-  },
-  "options_reset_confirm": {
-    "description": "設定リセット前の確認ヒント",
-    "message": "すべての設定をリセットしてもよろしいですか？この操作は元に戻せません。"
-  },
-  "options_reset_status_failed": {
-    "description": "設定リセット失敗のヒント",
-    "message": "設定のリセットに失敗しました：$ERROR$",
-    "placeholders": {
-      "ERROR": {
-        "content": "$1",
-        "description": "エラーメッセージ"
-      }
-    }
-  },
-  "options_reset_status_running": {
-    "description": "設定リセット中のヒント",
-    "message": "設定をリセットしています..."
-  },
-  "options_reset_status_success": {
-    "description": "設定リセット成功のヒント",
-    "message": "設定がデフォルト値にリセットされました"
-  },
-  "options_save_status_failed": {
-    "description": "設定保存失敗時のヒント",
-    "message": "保存中にエラーが発生しました：$ERROR$",
-    "placeholders": {
-      "ERROR": {
-        "content": "$1",
-        "description": "エラー詳細"
-      }
-    }
-  },
-  "options_save_status_success": {
-    "description": "設定保存成功後のヒント",
-    "message": "設定が保存されました"
-  },
-  "options_section_choose_provider": {
-    "description": "AIプロバイダー選択セクションのタイトル",
-    "message": "AIプロバイダーを選択"
-  },
-  "options_section_config_management": {
-    "description": "設定管理エリアのタイトル",
-    "message": "設定管理"
-  },
-  "options_section_config_management_hint": {
-    "description": "設定管理エリアの説明文",
-    "message": "設定をエクスポート、インポート、またはリセットします。注意：エクスポートされた設定ファイルには、セキュリティ確保のためAPIキーは含まれません。"
-  },
-  "options_section_prompt_by_model": {
-    "description": "プロンプト設定セクションのタイトル",
-    "message": "テンプレートごとにプロンプトを設定"
-  },
-  "options_section_prompt_instruction": {
-    "description": "プロンプト設定エリアの使用説明",
-    "message": "「Anki接続」パネルで編集したいモデルを選択し、その後ここでプロンプトをカスタマイズしてください。"
-  },
-  "options_section_style_preview": {
-    "description": "スタイルプレビューエリアのタイトル",
-    "message": "スタイルプレビュー"
-  },
-  "options_status_health_error": {
-    "description": "プロバイダーの状態：異常",
-    "message": "異常"
-  },
-  "options_status_health_ok": {
-    "description": "プロバイダーの状態：正常",
-    "message": "正常"
-  },
-  "options_status_health_unknown": {
-    "description": "プロバイダーの状態：不明",
-    "message": "不明"
-  },
-  "options_status_last_checked": {
-    "description": "プロバイダーの最終チェック時間のヒント",
-    "message": "最終チェック：$TIME$",
-    "placeholders": {
-      "TIME": {
-        "content": "$1",
-        "description": "最終チェック時間テキスト"
-      }
-    }
-  },
-  "options_status_not_tested": {
-    "description": "接続状態のデフォルトヒント",
-    "message": "接続はまだテストされていません"
-  },
-  "options_status_prefix": {
-    "description": "プロバイダーの健康状態プレフィックス",
-    "message": "状態：$STATUS$",
-    "placeholders": {
-      "STATUS": {
-        "content": "$1",
-        "description": "プロバイダーの健康状態テキスト"
-      }
-    }
-  },
-  "options_status_provider_test_success": {
-    "description": "プロバイダー接続テスト成功のヒント",
-    "message": "接続テストに成功しました"
-  },
-  "options_status_reason": {
-    "description": "プロバイダー異常の原因のヒント",
-    "message": "原因：$REASON$",
-    "placeholders": {
-      "REASON": {
-        "content": "$1",
-        "description": "異常原因の説明"
-      }
-    }
-  },
-  "options_status_saving": {
-    "description": "設定保存時のステータスヒント",
-    "message": "設定を保存しています..."
-  },
-  "options_style_preview_description": {
-    "description": "スタイルプレビューエリアのサンプルテキスト2行目",
-    "message": "フォント、配置、行の高さをプレビューするために使用されます。"
-  },
-  "options_style_preview_sample": {
-    "description": "スタイルプレビューエリアのサンプルテキスト1行目",
-    "message": "これはサンプルテキストです。"
-  },
-  "options_tab_ai": {
-    "description": "AI設定パネルのタブテキスト",
-    "message": "AI設定"
-  },
-  "options_tab_anki": {
-    "description": "Anki設定パネルのタブテキスト",
-    "message": "Anki接続"
-  },
-  "options_tab_prompt": {
-    "description": "プロンプト設定パネルのタブテキスト",
-    "message": "プロンプト設定"
-  },
-  "options_tab_style": {
-    "description": "UIスタイル設定パネルのタブテキスト",
-    "message": "スタイル設定"
-  },
-  "options_tab_system": {
-    "description": "システム設定パネルのタブテキスト",
-    "message": "システム設定"
-  },
-  "options_tab_template_library": {
-    "description": "解析テンプレートパネルのタブテキスト",
-    "message": "解析テンプレート"
-  },
-  "template_library_empty_title": {
-    "description": "テンプレートライブラリが空の場合のタイトル",
-    "message": "解析テンプレートがありません"
-  },
-  "template_library_empty_description": {
-    "description": "テンプレートライブラリが空の場合の説明",
-    "message": "最初の解析テンプレートを作成して、Ankiカードのスマート管理を開始しましょう"
-  },
-  "template_library_add_button": {
-    "description": "テンプレート追加ボタンのテキスト",
-    "message": "新規テンプレート"
-  },
-  "template_library_title": {
-    "description": "テンプレートライブラリリストのタイトル",
-    "message": "解析テンプレートライブラリ"
-  },
-  "template_form_title_new": {
-    "description": "新規テンプレートフォームのタイトル",
-    "message": "新規解析テンプレート"
-  },
-  "template_form_title_edit": {
-    "description": "テンプレート編集フォームのタイトル",
-    "message": "解析テンプレートを編集"
-  },
-  "template_form_cancel": {
-    "description": "キャンセルボタンのテキスト",
-    "message": "キャンセル"
-  },
-  "template_form_basic_info": {
-    "description": "基本情報セクションのタイトル",
-    "message": "基本情報"
-  },
-  "template_form_name_label": {
-    "description": "テンプレート名のラベル",
-    "message": "テンプレート名"
-  },
-  "template_form_name_placeholder": {
-    "description": "テンプレート名入力ボックスのヒント",
-    "message": "例：英語学習、日本語単語など"
-  },
-  "template_form_description_label": {
-    "description": "テンプレート説明のラベル",
-    "message": "テンプレートの説明"
-  },
-  "template_form_description_placeholder": {
-    "description": "テンプレート説明入力ボックスのヒント",
-    "message": "このテンプレートの用途と特徴を簡単に説明してください"
-  },
-  "template_form_anki_section": {
-    "description": "Anki接続セクションのタイトル",
-    "message": "Anki接続設定"
-  },
-  "template_form_test_anki": {
-    "description": "Anki接続テストボタンのテキスト",
-    "message": "接続をテスト"
-  },
-  "template_form_deck_label": {
-    "description": "デッキのラベル",
-    "message": "対象デッキ"
-  },
-  "template_form_model_label": {
-    "description": "ノートタイプのラベル",
-    "message": "ノートタイプ"
-  },
-  "template_form_fields_available": {
-    "description": "利用可能なフィールドのタイトル",
-    "message": "利用可能なフィールド"
-  },
-  "template_form_fields_section": {
-    "description": "フィールド設定セクションのタイトル",
-    "message": "フィールド設定"
-  },
-  "template_form_field_select": {
-    "description": "フィールド選択のタイトル",
-    "message": "入力するフィールドを選択"
-  },
-  "template_form_field_select_hint": {
-    "description": "フィールド選択のヒント",
-    "message": "フィールドをクリックして選択状態を切り替えます"
-  },
-  "template_form_field_config": {
-    "description": "フィールド設定のタイトル",
-    "message": "フィールド内容を設定"
-  },
-  "template_form_field_config_hint": {
-    "description": "フィールド設定のヒント",
-    "message": "各フィールドに含める内容を記述してください"
-  },
-  "template_form_prompt_section": {
-    "description": "Prompt編集セクションのタイトル",
-    "message": "Prompt設定"
-  },
-  "template_form_generate_prompt": {
-    "description": "Prompt生成ボタンのテキスト",
-    "message": "デフォルトPromptを生成"
-  },
-  "template_form_prompt_label": {
-    "description": "Promptのラベル",
-    "message": "カスタムPrompt"
-  },
-  "template_form_prompt_placeholder": {
-    "description": "Prompt入力ボックスのヒント",
-    "message": "フィールド設定完了後、「デフォルトPromptを生成」ボタンをクリックして自動生成、または手動で編集できます"
-  },
-  "template_form_save": {
-    "description": "保存ボタンのテキスト",
-    "message": "テンプレートを保存"
-  },
-  "options_test_running": {
-    "description": "AnkiまたはAI接続テスト時のヒント",
-    "message": "接続をテストし、データを更新しています..."
-  },
-  "options_test_success_with_version": {
-    "description": "Ankiテスト成功後に表示されるバージョン情報",
-    "message": "接続成功、AnkiConnectバージョン: $VERSION$",
-    "placeholders": {
-      "VERSION": {
-        "content": "$1",
-        "description": "AnkiConnectが返すバージョン番号"
-      }
-    }
-  },
-  "options_test_success_with_refresh": {
-    "description": "Ankiテスト成功後、データが更新された時のヒント",
-    "message": "接続成功、データが更新されました"
-  },
-  "popup_template_selector_label": {
-    "description": "Popup テンプレートセレクターラベル",
-    "message": "テンプレートを選択:"
-  },
-  "popup_template_loading": {
-    "description": "テンプレート読み込み中",
-    "message": "読み込み中..."
-  },
-  "popup_template_none": {
-    "description": "利用可能なテンプレートがありません",
-    "message": "利用可能なテンプレートがありません"
-  },
-  "popup_template_empty_state": {
-    "description": "テンプレート未設定のヒント",
-    "message": "テンプレートが設定されていません。"
-  },
-  "popup_template_open_options": {
-    "description": "設定画面へボタンテキスト",
-    "message": "設定画面へ"
-  },
-  "popup_template_change_notice": {
-    "description": "テンプレート切り替えヒント",
-    "message": "テンプレートが切り替わりました。テキストを再解析してください"
-  },
-  "popup_template_hover_deck_model": {
-    "description": "テンプレート tooltip のデッキとモデル情報",
-    "message": "デッキ: $DECK$ / モデル: $MODEL$",
-    "placeholders": {
-      "DECK": {
-        "content": "$1",
-        "description": "デッキ名"
-      },
-      "MODEL": {
-        "content": "$2",
-        "description": "モデル名"
-      }
-    }
-  },
-  "popup_template_hover_fields": {
-    "description": "テンプレート tooltip のフィールドリスト",
-    "message": "フィールド: $FIELDS$",
-    "placeholders": {
-      "FIELDS": {
-        "content": "$1",
-        "description": "フィールドリスト"
-      }
-    }
-  },
-  "popup_status_no_template": {
-    "description": "テンプレートなしエラーヒント",
-    "message": "まず設定画面で解析テンプレートを作成してください"
-  },
-  "popup_status_template_no_fields": {
-    "description": "テンプレートにフィールドがないエラーヒント",
-    "message": "現在のテンプレートにフィールドが設定されていません"
-  },
-  "popup_template_empty_hint": {
-    "description": "解析ボタン無効時のヒント",
-    "message": "まず設定画面でテンプレートを作成してください"
-  },
-  "options_text_align_center": {
-    "description": "テキスト配置オプション：中央揃え",
-    "message": "中央揃え"
-  },
-  "options_text_align_left": {
-    "description": "テキスト配置オプション：左揃え",
-    "message": "左揃え"
-  },
-  "options_text_align_right": {
-    "description": "テキスト配置オプション：右揃え",
-    "message": "右揃え"
-  },
-  "options_warning_permission_declined": {
-    "description": "権限要求が拒否された場合のログヒント",
-    "message": "ドメイン権限要求が拒否されました：$ERROR$",
-    "placeholders": {
-      "ERROR": {
-        "content": "$1",
-        "description": "エラー詳細"
-      }
-    }
-  },
-  "popup_app_title": {
-    "description": "ポップアップページのタイトル、<title>とヘッダータイトルに使用",
-    "message": "Anki単語アシスタント"
-  },
-  "popup_confirm_reload": {
-    "description": "重大なエラー後のリフレッシュヒント",
-    "message": "$MESSAGE$\n\nOKをクリックしてページをリフレッシュし、キャンセルして使用を続行します",
-    "placeholders": {
-      "MESSAGE": {
-        "content": "$1",
-        "description": "前のエラーヒント"
-      }
-    }
-  },
-  "popup_confirm_retry": {
-    "description": "エラー後に再試行するかどうかの確認ダイアログ",
-    "message": "$MESSAGE$\n\nすぐに再試行しますか？",
-    "placeholders": {
-      "MESSAGE": {
-        "content": "$1",
-        "description": "前のエラーヒント"
-      }
-    }
-  },
-  "popup_dynamic_field_placeholder": {
-    "description": "動的フィールドtextareaのプレースホルダーヒント",
-    "message": "AIがこのフィールドを自動的に埋めます..."
-  },
-  "popup_dynamic_fields_missing": {
-    "description": "動的フィールドが空の場合にコンテナ内に表示されるヒント",
-    "message": "現在、入力可能なフィールドが設定されていません。まずオプションページでフィールド設定を完了してください。"
-  },
-  "popup_dynamic_fill_complete": {
-    "description": "動的フィールド入力完了時のヒントプレフィックス",
-    "message": "動的フィールドの入力が完了しました:"
-  },
-  "popup_dynamic_fill_error": {
-    "description": "動的フィールド入力エラーのヒントプレフィックス",
-    "message": "動的フィールドの入力中にエラーが発生しました:"
-  },
-  "popup_error_ai_config": {
-    "description": "AIサービスの認証情報が欠落または間違っている場合のヒント",
-    "message": "AIサービスの設定エラー、設定ページのAPIキーを確認してください"
-  },
-  "popup_error_ai_field_mismatch": {
-    "description": "AIが返すフィールドが期待と異なる場合のヒント",
-    "message": "AIの出力フィールドが一致しません。テンプレート設定を確認してください"
-  },
-  "popup_error_ai_format_retry": {
-    "description": "AIが返す形式が異常な場合の再試行ヒント",
-    "message": "AIの解析形式エラー、自動的に再試行しています..."
-  },
-  "popup_error_ai_generic": {
-    "description": "AI解析失敗の一般的なヒント、簡潔なエラー情報を含む",
-    "message": "AI解析に失敗しました: $DETAIL$",
-    "placeholders": {
-      "DETAIL": {
-        "content": "$1",
-        "description": "簡潔なエラー説明"
-      }
-    }
-  },
-  "popup_error_ai_quota": {
-    "description": "AIサービスのクォータが尽きた場合のヒント",
-    "message": "AIサービスのクォータが不足しています。アカウントの状態を確認するか、サービスプロバイダーを変更してください"
-  },
-  "popup_error_anki_deck_missing": {
-    "description": "デッキが存在しない場合のヒント",
-    "message": "指定されたデッキが存在しません。設定を確認してください"
-  },
-  "popup_error_anki_duplicate": {
-    "description": "書き込み時に重複した内容がある場合のヒント",
-    "message": "カードの内容が重複しています。修正してから再試行してください"
-  },
-  "popup_error_anki_generic": {
-    "description": "Anki操作失敗の一般的なヒント、簡潔なエラー情報を含む",
-    "message": "Anki操作に失敗しました: $DETAIL$",
-    "placeholders": {
-      "DETAIL": {
-        "content": "$1",
-        "description": "簡潔なエラー説明"
-      }
-    }
-  },
-  "popup_error_anki_launch": {
-    "description": "Ankiが起動していないか、プラグインがない場合のヒント",
-    "message": "Ankiを起動し、AnkiConnectプラグインがインストールされていることを確認してください"
-  },
-  "popup_error_anki_model_missing": {
-    "description": "テンプレートが存在しない場合のヒント",
-    "message": "指定されたテンプレートが存在しません。設定を確認してください"
-  },
-  "popup_error_config_load": {
-    "description": "ユーザー設定の読み込みに失敗した場合にデフォルト設定を使用するヒント",
-    "message": "設定の読み込みに異常があり、デフォルト設定が使用されました"
-  },
-  "popup_error_dom_missing": {
-    "description": "重要なDOM要素が見つからない場合のヒント",
-    "message": "ページ要素が見つかりません。ページをリフレッシュして再試行してください"
-  },
-  "popup_error_field_empty": {
-    "description": "書き込み前にどのフィールドも入力されていない場合のヒント",
-    "message": "少なくとも1つのフィールドの内容を入力してください"
-  },
-  "popup_error_field_generic": {
-    "description": "フィールド処理関連エラーの一般的なヒント",
-    "message": "フィールド処理エラー: $DETAIL$",
-    "placeholders": {
-      "DETAIL": {
-        "content": "$1",
-        "description": "簡潔なエラー説明"
-      }
-    }
-  },
-  "popup_error_generic": {
-    "description": "未分類エラーの一般的なヒント",
-    "message": "操作に失敗しました: $DETAIL$",
-    "placeholders": {
-      "DETAIL": {
-        "content": "$1",
-        "description": "簡潔なエラー説明"
-      }
-    }
-  },
-  "popup_error_network": {
-    "description": "ネットワーク異常時のヒント",
-    "message": "ネットワーク接続に失敗しました。ネットワークを確認してから再試行してください"
-  },
-  "popup_error_rate_limit": {
-    "description": "頻繁なエラー時にユーザーにリフレッシュまたはネットワーク確認を促すヒント",
-    "message": "頻繁なエラーが検出されました。ページをリフレッシュするか、ネットワーク接続を確認することをお勧めします"
-  },
-  "popup_field_all_empty_warning": {
-    "description": "すべてのフィールドが空の場合の警告",
-    "message": "警告：すべてのフィールドが空です。AIの解析結果を確認してください"
-  },
-  "popup_field_empty_count": {
-    "description": "空のフィールド数を表示するヒント",
-    "message": "($COUNT$個のフィールドが空です)",
-    "placeholders": {
-      "COUNT": {
-        "content": "$1",
-        "description": "空のフィールド数"
-      }
-    }
-  },
-  "popup_field_fill_failed": {
-    "description": "フィールド入力失敗の詳細なヒント",
-    "message": "フィールドの入力に失敗しました: $DETAIL$",
-    "placeholders": {
-      "DETAIL": {
-        "content": "$1",
-        "description": "エラー詳細"
-      }
-    }
-  },
-  "popup_field_missing_dom_prefix": {
-    "description": "欠落しているDOM要素リストのプレフィックス",
-    "message": "欠落しているDOM要素:"
-  },
-  "popup_field_missing_dom_summary": {
-    "description": "欠落しているDOM要素数の要約",
-    "message": "[$COUNT$個の要素が欠落しています]",
-    "placeholders": {
-      "COUNT": {
-        "content": "$1",
-        "description": "欠落している要素の数"
-      }
-    }
-  },
-  "popup_field_not_found": {
-    "description": "動的フィールドに対応するDOM要素が見つからない場合のヒント",
-    "message": "フィールド要素が見つかりません: $ID$ ($LABEL$)",
-    "placeholders": {
-      "ID": {
-        "content": "$1",
-        "description": "フィールド要素ID"
-      },
-      "LABEL": {
-        "content": "$2",
-        "description": "フィールドラベル名"
-      }
-    }
-  },
-  "popup_field_preview": {
-    "description": "フィールドプレビュー内容のプレフィックス",
-    "message": "入力済み: $VALUE$",
-    "placeholders": {
-      "VALUE": {
-        "content": "$1",
-        "description": "切り捨てられたフィールド内容"
-      }
-    }
-  },
-  "popup_field_progress": {
-    "description": "フィールド入力の進捗情報",
-    "message": "$FILLED$/$TOTAL$個のフィールドが入力されました",
-    "placeholders": {
-      "FILLED": {
-        "content": "$1",
-        "description": "入力済みフィールド数"
-      },
-      "TOTAL": {
-        "content": "$2",
-        "description": "フィールド総数"
-      }
-    }
-  },
-  "popup_field_tag_filled": {
-    "description": "フィールドチップの入力済み状態のテキスト",
-    "message": "入力済み: $FIELD$",
-    "placeholders": {
-      "FIELD": {
-        "content": "$1",
-        "description": "フィールド名"
-      }
-    }
-  },
-  "popup_field_tag_pending": {
-    "description": "フィールドチップの未入力状態のテキスト",
-    "message": "未入力: $FIELD$",
-    "placeholders": {
-      "FIELD": {
-        "content": "$1",
-        "description": "フィールド名"
-      }
-    }
-  },
-  "popup_field_tag_pending_label": {
-    "description": "フィールドチップの未入力状態のラベル",
-    "message": "未入力"
-  },
-  "popup_hint_anki_connection": {
-    "description": "Anki書き込み失敗の接続原因のヒント",
-    "message": "Ankiの操作失敗は接続の問題かもしれません"
-  },
-  "popup_hint_parse_network": {
-    "description": "解析失敗のネットワーク原因のヒント",
-    "message": "解析の失敗は一時的なネットワークの問題かもしれません"
-  },
-  "popup_hint_retry_general": {
-    "description": "一般的な失敗時の再試行ヒント",
-    "message": "操作の失敗は一時的な問題かもしれません"
-  },
-  "popup_input_label": {
-    "description": "ポップアップテキスト入力エリアのラベル",
-    "message": "テキストを入力"
-  },
-  "popup_input_placeholder": {
-    "description": "ポップアップテキスト入力ボックスのプレースホルダーヒント",
-    "message": "テキストを貼り付けるか入力してください..."
-  },
-  "popup_parse_button": {
-    "description": "AI解析をトリガーするボタンのテキスト",
-    "message": "解析"
-  },
-  "popup_retry_hint_anki": {
-    "description": "Anki失敗の追加ヒント",
-    "message": "Ankiの操作失敗は接続の問題かもしれません"
-  },
-  "popup_retry_hint_generic": {
-    "description": "一般的な失敗の追加ヒント",
-    "message": "操作の失敗は一時的な問題かもしれません"
-  },
-  "popup_retry_hint_parse": {
-    "description": "解析失敗の追加ヒント",
-    "message": "解析の失敗は一時的なネットワークの問題かもしれません"
-  },
-  "popup_status_collect_complete": {
-    "description": "フィールド収集成功時のヒントプレフィックス",
-    "message": "フィールドの収集が完了しました:"
-  },
-  "popup_status_collect_error": {
-    "description": "フィールド収集段階のエラーヒント",
-    "message": "フィールドの収集に失敗しました：$DETAIL$",
-    "placeholders": {
-      "DETAIL": {
-        "content": "$1",
-        "description": "エラー詳細リスト"
-      }
-    }
-  },
-  "popup_status_collect_failed": {
-    "description": "フィールド収集失敗時のヒントプレフィックス",
-    "message": "フィールドの収集に失敗しました:"
-  },
-  "popup_status_config_loaded": {
-    "description": "ユーザー設定読み込み完了時のヒントプレフィックス",
-    "message": "ユーザー設定が読み込まれました:"
-  },
-  "popup_status_field_names_invalid": {
-    "description": "動的フィールド名が無効な場合のヒント",
-    "message": "フィールド名配列が空または無効です"
-  },
-  "popup_status_legacy_fallback_failed": {
-    "description": "レガシーへのフォールバック失敗時のヒント",
-    "message": "レガシーモードへのフォールバックも失敗しました: $DETAIL$",
-    "placeholders": {
-      "DETAIL": {
-        "content": "$1",
-        "description": "エラー詳細"
-      }
-    }
-  },
-  "popup_status_no_configured_fields": {
-    "description": "どの段階でもフィールド設定が検出されない場合のヒント",
-    "message": "現在のテンプレートにはフィールドが設定されていません。オプションページで設定を完了してください。"
-  },
-  "popup_status_no_fields_parse": {
-    "description": "解析時にフィールド設定が検出されない場合",
-    "message": "現在のテンプレートには解析可能なフィールドが設定されていません。オプションページで設定を完了してください。"
-  },
-  "popup_status_no_fields_write": {
-    "description": "書き込み時にフィールド設定が検出されない場合",
-    "message": "現在のテンプレートには書き込み可能なフィールドが設定されていません。オプションページで設定を完了してください。"
-  },
-  "popup_status_no_fillable_fields": {
-    "description": "書き込み前にどのフィールドも収集されなかった場合のヒント",
-    "message": "書き込み可能なフィールドの内容がありません"
-  },
-  "popup_status_parse_result_empty": {
-    "description": "AIが返す結果が空または形式が無効な場合のヒント",
-    "message": "AIの解析結果が空か、形式が無効です"
-  },
-  "popup_status_input_required": {
-    "description": "popup ステータスバー: 入力未指定時のエラーメッセージ",
-    "message": "解析するテキストを入力してください"
-  },
-  "popup_status_parsed": {
-    "description": "ポップアップステータスバー：解析完了",
-    "message": "解析完了"
-  },
-  "popup_status_parsing": {
-    "description": "ポップアップステータスバー：解析中",
-    "message": "AI解析を実行中..."
-  },
-  "popup_status_prompt_input": {
-    "description": "ポップアップステータスバー：ユーザー入力待ち",
-    "message": "解析するテキストを入力してください"
-  },
-  "popup_status_ready": {
-    "description": "ポップアップステータスバー：初期化完了",
-    "message": "準備完了"
-  },
-  "popup_status_ready_to_write": {
-    "description": "書き込み前のヒントプレフィックス",
-    "message": "Ankiに書き込む準備ができました:"
-  },
-  "popup_status_style_error": {
-    "description": "スタイルラッピング段階のエラーヒント",
-    "message": "スタイルラッピングに失敗しました: $DETAIL$",
-    "placeholders": {
-      "DETAIL": {
-        "content": "$1",
-        "description": "エラー詳細"
-      }
-    }
-  },
-  "popup_status_validation_continue": {
-    "description": "フィールド検証は合格したが警告がある場合のヒント",
-    "message": "$MESSAGE$、書き込みを続行します...",
-    "placeholders": {
-      "MESSAGE": {
-        "content": "$1",
-        "description": "検証警告メッセージ"
-      }
-    }
-  },
-  "popup_status_validation_failed": {
-    "description": "フィールド検証失敗時のヒントプレフィックス",
-    "message": "フィールドの検証に失敗しました:"
-  },
-  "popup_status_validation_warning_header": {
-    "description": "フィールド検証警告のタイトル",
-    "message": "フィールド検証の警告:"
-  },
-  "popup_status_write_success": {
-    "description": "書き込み完了後のヒント",
-    "message": "書き込みに成功しました"
-  },
-  "popup_status_writing": {
-    "description": "ポップアップステータスバー：書き込み中",
-    "message": "Ankiに書き込み中..."
-  },
-  "popup_warning_prefix": {
-    "description": "警告詳細を連結するためのプレフィックス",
-    "message": "警告: $DETAIL$",
-    "placeholders": {
-      "DETAIL": {
-        "content": "$1",
-        "description": "警告テキスト"
-      }
-    }
-  },
-  "popup_write_button": {
-    "description": "Ankiへの書き込みをトリガーするボタンのテキスト",
-    "message": "Ankiに書き込む"
-  },
-  "prompt_engine_custom_template_header": {
-    "description": "動的プロンプトテンプレート生成時のヘッダー",
-    "message": "$TEMPLATE$\n-------------------------------\n以下は今回の入力内容です：$INPUT$",
-    "placeholders": {
-      "INPUT": {
-        "content": "$2",
-        "description": "ユーザー入力テキスト"
-      },
-      "TEMPLATE": {
-        "content": "$1",
-        "description": "カスタムプロンプトテンプレート"
-      }
-    }
-  },
-  "prompt_engine_default_header": {
-    "description": "デフォルト総合プロンプトのヘッダー説明",
-    "message": "# 役割: 専門単語検索アシスタント\n\n以下のタスクを完了してください：\n1. 単語/フレーズを検索: \"{{INPUT_TEXT}}\"\n2. 詳細な解析情報を生成\n3. 以下のJSON形式で出力：\n{{FIELD_SCHEMA}}\n\n要件：\n- 純粋なJSON形式で出力し、説明文は含めないでください\n- 単語/フレーズの特性に応じて、対応するフィールドを埋めてください\n- 適用できないフィールドは出力しなくてもかまいません"
-  },
-  "prompt_engine_error_json_parse": {
-    "description": "プロンプト生成結果のJSON解析失敗時のヒント",
-    "message": "JSONの解析に失敗しました: $ERROR$",
-    "placeholders": {
-      "ERROR": {
-        "content": "$1",
-        "description": "エラー詳細"
-      }
-    }
-  },
-  "prompt_engine_field_prompt": {
-    "description": "フィールド説明生成時のテンプレート",
-    "message": "$FIELD$関連の内容",
-    "placeholders": {
-      "FIELD": {
-        "content": "$1",
-        "description": "フィールド名"
-      }
-    }
-  },
-  "prompt_engine_schema_word": {
-    "description": "フィールドschema: 単語そのものの説明",
-    "message": "単語そのもの"
-  },
-  "prompt_engine_schema_reading": {
-    "description": "フィールドschema: 読みの説明",
-    "message": "読み / 発音記号"
-  },
-  "prompt_engine_schema_meaning": {
-    "description": "フィールドschema: 意味の説明",
-    "message": "意味と解説"
-  },
-  "prompt_engine_requirements_body": {
-    "description": "動的プロンプト要件の説明",
-    "message": "\n\n要件:\n- 有効なJSON形式で出力\n- フィールドのみ使用可能: $FIELDS$\n- 部分的な出力も可能ですが、フィールド名は正確でなければなりません",
-    "placeholders": {
-      "FIELDS": {
-        "content": "$1",
-        "description": "許可されたフィールドのリスト"
-      }
-    }
-  },
-  "storage_error_api_key_decrypt": {
-    "description": "APIキーの復号失敗のログヒントプレフィックス",
-    "message": "[storage] $PROVIDER$ のAPIキーの復号に失敗しました:",
-    "placeholders": {
-      "PROVIDER": {
-        "content": "$1",
-        "description": "プロバイダーID"
-      }
-    }
-  },
-  "storage_error_api_key_decrypt_reset": {
-    "description": "APIキーの復号に失敗し、空文字列にフォールバックした場合のヒント",
-    "message": "[storage] $PROVIDER$ のAPIキーの復号に失敗したため、空文字列に初期化されました。",
-    "placeholders": {
-      "PROVIDER": {
-        "content": "$1",
-        "description": "プロバイダーID"
-      }
-    }
-  },
-  "storage_error_loading_config": {
-    "description": "設定読み込み失敗のログプレフィックス",
-    "message": "設定の読み込み中にエラーが発生しました:"
-  },
-  "storage_info_migrating_config": {
-    "description": "旧バージョンの設定が検出された場合のヒント",
-    "message": "旧バージョンの設定が検出されました。スキーマを更新しています。"
-  },
-  "storage_info_migration_done": {
-    "description": "設定移行完了のヒント",
-    "message": "設定の移行が完了しました。"
-  },
-  "storage_info_missing_config": {
-    "description": "保存された設定が見つからない場合のヒント",
-    "message": "保存された設定が見つかりません。デフォルト値を返します。"
-  },
-  "storage_warning_missing_salt": {
-    "description": "暗号化ソルトが欠落している場合のログヒント",
-    "message": "[storage] $PROVIDER$ の暗号化ソルトが見つからなかったため、デフォルトのプロバイダーを使用します。",
-    "placeholders": {
-      "PROVIDER": {
-        "content": "$1",
-        "description": "プロバイダーID"
-      }
-    }
-  },
-  "ai_service_connection_test_failed_with_reason": {
-    "description": "接続テストが理由付きで失敗した場合。",
-    "message": "接続テストに失敗しました: $ERROR$",
-    "placeholders": {
-      "ERROR": {
-        "content": "$1",
-        "description": "失敗理由"
-      }
-    }
-  },
-  "ai_service_connection_test_failed_missing_key": {
-    "description": "API キー未設定のため接続テストが失敗した場合。",
-    "message": "接続テストに失敗しました: API キーが設定されていません"
-  },
-  "ai_service_connection_test_success": {
-    "description": "接続テストが成功したときに表示。",
-    "message": "$PROVIDER$ の接続テストに成功しました",
-    "placeholders": {
-      "PROVIDER": {
-        "content": "$1",
-        "description": "プロバイダー名"
-      }
-    }
-  },
-  "options_permission_request_error": {
-    "description": "権限要求が拒否された際のエラーメッセージ。",
-    "message": "オリジン $ORIGIN$ の権限リクエストに失敗しました。",
-    "placeholders": {
-      "ORIGIN": {
-        "content": "$1",
-        "description": "オリジン URL パターン"
-      }
-    }
-  },
-  "options_provider_custom_url_hint": {
-    "description": "プロバイダー設定でのカスタム URL ヒント。",
-    "message": "現在の URL: $URL$",
-    "placeholders": {
-      "URL": {
-        "content": "$1",
-        "description": "設定済み URL"
-      }
-    }
-  },
-  "options_provider_test_button": {
-    "description": "プロバイダー接続テストボタンのラベル。",
-    "message": "$PROVIDER$ との接続をテスト",
-    "placeholders": {
-      "PROVIDER": {
-        "content": "$1",
-        "description": "プロバイダー名"
-      }
-    }
-  },
-  "floating_panel_close_label": {
-    "description": "フローティングアシスタントパネルの閉じるボタン用ラベル。",
-    "message": "パネルを閉じる"
-  },
-  "floating_panel_retry_label": {
-    "description": "フローティングアシスタントパネル内の再試行ボタンラベル。",
-    "message": "再試行"
-  },
-  "floating_panel_write_label": {
-    "description": "フローティングアシスタントパネル内の書き込みボタンラベル。",
-    "message": "Ankiに書き込む"
-  },
-  "floating_panel_pin_label": {
-    "description": "フローティングアシスタントパネル内のピン留めボタンラベル。",
-    "message": "パネルをピン留め"
-  },
-  "floating_panel_unpin_label": {
-    "description": "フローティングアシスタントパネル内のピン留め解除ボタンラベル。",
-    "message": "ピン留めを解除"
-  },
-  "cardFront": {
-    "description": "Legacy モード表面フィールドラベル。",
-    "message": "表面:"
-  },
-  "cardBack": {
-    "description": "Legacy モード裏面フィールドラベル。",
-    "message": "裏面:"
-  },
-  "options_provider_test_status_error": {
-    "description": "プロバイダー接続テストが失敗した際のステータスメッセージ。",
-    "message": "テストに失敗しました: $ERROR$",
-    "placeholders": {
-      "ERROR": {
-        "content": "$1",
-        "description": "エラーメッセージ"
-      }
-    }
-  },
-  "options_default_deck_placeholder": {
-    "description": "既定デッキ選択のプレースホルダー。",
-    "message": "既定のデッキを選択"
-  },
-  "options_default_model_placeholder": {
-    "description": "既定モデル選択のプレースホルダー。",
-    "message": "既定のモデルを選択"
-  },
-  "options_ui_floating_assistant_label": {
-    "description": "フローティングアシスタント機能のラベル。",
-    "message": "フローティングアシスタント"
-  },
-  "options_ui_floating_assistant_enable": {
-    "description": "フローティングアシスタント有効化のチェックボックスラベル。",
-    "message": "フローティングアシスタントを有効にする"
-  },
-  "options_ui_floating_assistant_description": {
-    "description": "フローティングアシスタント機能の説明文。",
-    "message": "ウェブページでテキストを選択すると、フローティングボタンが自動的に表示されます。クリックするとすぐに解析してAnkiカードを作成できます。互換性の問題がある場合は、この機能を無効にすることができます。"
-  }
+	"extension_name": {
+		"description": "Chrome 拡張の名称。",
+		"message": "Ankiワードアシスタント"
+	},
+	"extension_description": {
+		"description": "Chrome 拡張の説明文。",
+		"message": "辞書検索結果からAnkiカード作成を支援するAI搭載アシスタントです。"
+	},
+	"ai_service_error_connection_test": {
+		"description": "プロバイダー接続テスト失敗のヒント",
+		"message": "接続テストに失敗しました：$ERROR$",
+		"placeholders": {
+			"ERROR": {
+				"content": "$1",
+				"description": "エラー詳細"
+			}
+		}
+	},
+	"ai_service_error_empty_body": {
+		"description": "プロバイダーの応答に本文が含まれていなかった場合。",
+		"message": "$PROVIDER$ の応答ボディが空です",
+		"placeholders": {
+			"PROVIDER": {
+				"content": "$1",
+				"description": "プロバイダー名"
+			}
+		}
+	},
+	"ai_service_error_empty_response": {
+		"description": "AI の応答が空だった場合のエラー。",
+		"message": "AI の応答ボディが空です"
+	},
+	"ai_service_error_missing_api_key": {
+		"description": "リクエスト時に API キーが不足している場合。",
+		"message": "プロバイダー $PROVIDER$ の API キーが設定されていません",
+		"placeholders": {
+			"PROVIDER": {
+				"content": "$1",
+				"description": "プロバイダー識別子"
+			}
+		}
+	},
+	"ai_service_error_missing_api_key_active": {
+		"description": "使用中のプロバイダーに API キーが設定されていない場合。",
+		"message": "プロバイダー $PROVIDER$ の API キーが設定されていません",
+		"placeholders": {
+			"PROVIDER": {
+				"content": "$1",
+				"description": "プロバイダー識別子"
+			}
+		}
+	},
+	"ai_service_error_missing_api_key_test": {
+		"description": "接続テストでAPIキーが欠落している場合のヒント",
+		"message": "接続テストに失敗しました：APIキーが設定されていません"
+	},
+	"ai_service_error_missing_default_model": {
+		"description": "プロバイダーに既定モデルが設定されていない場合。",
+		"message": "プロバイダー $PROVIDER$ に既定モデル設定がありません",
+		"placeholders": {
+			"PROVIDER": {
+				"content": "$1",
+				"description": "プロバイダー識別子"
+			}
+		}
+	},
+	"ai_service_error_missing_default_model_active": {
+		"description": "使用中のプロバイダーに既定モデルが設定されていない場合。",
+		"message": "プロバイダー $PROVIDER$ に既定モデル設定がありません",
+		"placeholders": {
+			"PROVIDER": {
+				"content": "$1",
+				"description": "プロバイダー識別子"
+			}
+		}
+	},
+	"ai_service_error_missing_default_model_test": {
+		"description": "接続テストでデフォルトモデルが欠落している場合のヒント",
+		"message": "$PROVIDER$ にはデフォルトのモデル設定がありません",
+		"placeholders": {
+			"PROVIDER": {
+				"content": "$1",
+				"description": "プロバイダー名"
+			}
+		}
+	},
+	"ai_service_error_missing_provider_config": {
+		"description": "指定したプロバイダー設定が見つからない場合。",
+		"message": "プロバイダー設定が見つかりません: $PROVIDER$",
+		"placeholders": {
+			"PROVIDER": {
+				"content": "$1",
+				"description": "プロバイダー識別子"
+			}
+		}
+	},
+	"ai_service_error_no_provider_available": {
+		"description": "利用可能なプロバイダーがない場合のエラー。",
+		"message": "AI リクエストに失敗しました: 利用可能なプロバイダーがありません"
+	},
+	"ai_service_error_output_all_empty": {
+		"description": "AIの出力フィールドがすべて空の場合のヒント",
+		"message": "AIの出力フィールドはすべて空です。入力内容を確認するか、再試行してください"
+	},
+	"ai_service_error_output_invalid_fields": {
+		"description": "AIの出力に予期しないフィールドが含まれている場合のヒント",
+		"message": "出力に無効なフィールドが含まれています: $FIELDS$",
+		"placeholders": {
+			"FIELDS": {
+				"content": "$1",
+				"description": "無効なフィールドのリスト"
+			}
+		}
+	},
+	"ai_service_error_parse_fail_message": {
+		"description": "AIの解析が失敗し、エラーオブジェクトが返された場合のヒント",
+		"message": "AIの解析に失敗しました：$ERROR$",
+		"placeholders": {
+			"ERROR": {
+				"content": "$1",
+				"description": "エラーメッセージ"
+			}
+		}
+	},
+	"ai_service_error_parse_fail_unknown": {
+		"description": "AIの解析が失敗し、エラー詳細がない場合のヒント",
+		"message": "AIの解析に失敗しました：不明なエラー"
+	},
+	"ai_service_error_parse_failed": {
+		"description": "プロバイダー応答のパース処理が失敗した場合。",
+		"message": "$PROVIDER$ の応答解析に失敗しました: $ERROR$",
+		"placeholders": {
+			"PROVIDER": {
+				"content": "$1",
+				"description": "プロバイダー名"
+			},
+			"ERROR": {
+				"content": "$2",
+				"description": "エラーメッセージ"
+			}
+		}
+	},
+	"ai_service_error_parse_json": {
+		"description": "AI 応答の JSON 解析に失敗した場合。",
+		"message": "AI の応答を JSON として解析できませんでした"
+	},
+	"ai_service_error_request_failed": {
+		"description": "プロバイダーへのリクエストが失敗した場合のエラー。",
+		"message": "$PROVIDER$ へのリクエストに失敗しました: $ERROR$",
+		"placeholders": {
+			"PROVIDER": {
+				"content": "$1",
+				"description": "プロバイダー名"
+			},
+			"ERROR": {
+				"content": "$2",
+				"description": "エラーメッセージ"
+			}
+		}
+	},
+	"ai_service_error_request_generic": {
+		"description": "一般的な AI リクエスト失敗メッセージ。",
+		"message": "AI リクエストに失敗しました"
+	},
+	"ai_service_error_request_message": {
+		"description": "AIリクエストが失敗し、メッセージ文字列が返された場合のヒント",
+		"message": "$PROVIDER$ のリクエストに失敗しました: $MESSAGE$",
+		"placeholders": {
+			"MESSAGE": {
+				"content": "$2",
+				"description": "エラーメッセージ"
+			},
+			"PROVIDER": {
+				"content": "$1",
+				"description": "プロバイダー名"
+			}
+		}
+	},
+	"ai_service_error_request_with_message": {
+		"description": "すべてのプロバイダーが失敗した際の最終エラーメッセージ。",
+		"message": "AI リクエストに失敗しました: $ERROR$",
+		"placeholders": {
+			"ERROR": {
+				"content": "$1",
+				"description": "最終的なエラーメッセージ"
+			}
+		}
+	},
+	"ai_service_error_unknown_provider": {
+		"description": "指定されたプロバイダー ID が存在しない場合のエラー。",
+		"message": "不明な AI プロバイダーです: $PROVIDER$",
+		"placeholders": {
+			"PROVIDER": {
+				"content": "$1",
+				"description": "プロバイダー識別子"
+			}
+		}
+	},
+	"ai_service_prompt_classic": {
+		"description": "クラシックパーサー用の既定プロンプト指示。",
+		"message": "次の辞書検索結果を Anki カード向けの構造化データに変換してください。\n\"front\" と \"back\" フィールドのみを含む純粋な JSON オブジェクトを返してください。追加の解説やコードフェンスは含めないでください。\nJSON 例:\n{\n  \"front\": \"単語\",\n  \"back\": \"元の整形を保持した辞書検索結果全文\"\n}\n\n入力テキスト:\n---\n$INPUT$\n---",
+		"placeholders": {
+			"INPUT": {
+				"content": "$1",
+				"description": "解析対象のテキスト"
+			}
+		}
+	},
+	"ai_service_status_test_success": {
+		"description": "接続テスト成功の情報",
+		"message": "$PROVIDER$ の接続テストに成功しました",
+		"placeholders": {
+			"PROVIDER": {
+				"content": "$1",
+				"description": "プロバイダー名"
+			}
+		}
+	},
+	"ai_service_warn_missing_input_placeholder": {
+		"description": "カスタムプロンプトに {{INPUT_TEXT}} が欠けている場合の警告。",
+		"message": "カスタムプロンプトに {{INPUT_TEXT}} プレースホルダーがないため、入力テキストを末尾に追加しました。"
+	},
+	"field_handler_error_back_not_found": {
+		"description": "レガシーモードで背面フィールド要素が見つからない場合のヒント",
+		"message": "back-input 要素が見つかりません"
+	},
+	"field_handler_error_field_contains_html": {
+		"description": "フィールドの内容に多くのHTMLが含まれている場合のヒント",
+		"message": "フィールド「$FIELD$」にはHTMLタグが多すぎる可能性があります",
+		"placeholders": {
+			"FIELD": {
+				"content": "$1",
+				"description": "フィールド名"
+			}
+		}
+	},
+	"field_handler_error_field_data_invalid": {
+		"description": "フィールドデータ構造が無効な場合のヒント",
+		"message": "フィールドデータが無効です"
+	},
+	"field_handler_error_field_element_missing": {
+		"description": "フィールドに対応するDOM要素が見つからない場合のヒント",
+		"message": "フィールド要素が見つかりません：$ELEMENT$ ($FIELD$)",
+		"placeholders": {
+			"ELEMENT": {
+				"content": "$1",
+				"description": "フィールドDOM要素ID"
+			},
+			"FIELD": {
+				"content": "$2",
+				"description": "フィールド名"
+			}
+		}
+	},
+	"field_handler_error_field_list_empty": {
+		"description": "フィールドリストが空の場合のヒント",
+		"message": "フィールドリストが空です"
+	},
+	"field_handler_error_field_object_invalid": {
+		"description": "フィールドオブジェクトの検証失敗のヒント",
+		"message": "フィールドオブジェクトが空または無効です"
+	},
+	"field_handler_error_fill_back": {
+		"description": "レガシーモードで背面の内容が欠落している場合のヒント",
+		"message": "背面のコンテンツを記入してください"
+	},
+	"field_handler_error_fill_front": {
+		"description": "レガシーモードで前面の内容が欠落している場合のヒント",
+		"message": "前面のコンテンツを記入してください"
+	},
+	"field_handler_error_front_not_found": {
+		"description": "レガシーモードで前面フィールド要素が見つからない場合のヒント",
+		"message": "front-input 要素が見つかりません"
+	},
+	"field_handler_error_legacy_min_fields": {
+		"description": "レガシーモードでフィールド数が不足している場合のヒント",
+		"message": "レガシーモードには少なくとも2つのフィールドが必要です"
+	},
+	"field_handler_error_legacy_required_fields": {
+		"description": "レガシーモードのフィールド検証のヒント",
+		"message": "レガシーモードでは、最初の2つのフィールドは両方とも入力必須です"
+	},
+	"field_handler_error_min_field_content": {
+		"description": "動的モードで少なくとも1つの項目を入力する必要がある場合のヒント",
+		"message": "少なくとも1つのフィールドコンテンツを入力する必要があります"
+	},
+	"field_handler_error_missing_dom_count": {
+		"description": "フィールドレンダリング時にDOM要素が欠落している場合のヒント",
+		"message": "$COUNT$個のDOM要素がありません",
+		"placeholders": {
+			"COUNT": {
+				"content": "$1",
+				"description": "欠落している要素の数"
+			}
+		}
+	},
+	"field_handler_error_model_fields_invalid": {
+		"description": "モデルフィールドセットが無効な場合のヒント",
+		"message": "modelFields は配列でなければなりません"
+	},
+	"field_handler_error_no_fields_found": {
+		"description": "フィールドセットが見つからない場合のヒント",
+		"message": "フィールドが見つかりませんでした"
+	},
+	"field_handler_error_validation_failed": {
+		"description": "フィールド検証失敗のログプレフィックス",
+		"message": "フィールドの検証に失敗しました:"
+	},
+	"field_handler_error_validation_process": {
+		"description": "フィールド検証プロセスで例外がスローされた場合のヒント",
+		"message": "検証プロセスでエラーが発生しました: $ERROR$",
+		"placeholders": {
+			"ERROR": {
+				"content": "$1",
+				"description": "エラー詳細"
+			}
+		}
+	},
+	"field_handler_error_validation_summary": {
+		"description": "フィールド検証失敗の要約ヒント",
+		"message": "フィールドの検証に失敗しました"
+	},
+	"field_handler_error_wrap_style": {
+		"description": "フィールドのスタイルラッピングが失敗した場合のヒント",
+		"message": "スタイルのラップに失敗しました：$ERROR$",
+		"placeholders": {
+			"ERROR": {
+				"content": "$1",
+				"description": "エラー詳細"
+			}
+		}
+	},
+	"field_handler_status_collect_complete": {
+		"description": "フィールド収集完了のログプレフィックス",
+		"message": "フィールドの収集が完了しました:"
+	},
+	"field_handler_status_collect_failed": {
+		"description": "フィールド収集失敗のログプレフィックス",
+		"message": "フィールドの収集に失敗しました:"
+	},
+	"field_handler_warning_few_fields": {
+		"description": "入力されたフィールド数が少ない場合のヒント",
+		"message": "入力フィールドが少ない ($FILLED$/$TOTAL$)",
+		"placeholders": {
+			"FILLED": {
+				"content": "$1",
+				"description": "入力済み数"
+			},
+			"TOTAL": {
+				"content": "$2",
+				"description": "総フィールド数"
+			}
+		}
+	},
+	"field_handler_warning_fields_filled": {
+		"description": "検証に合格し、入力されたフィールド数を表示するヒント",
+		"message": "検証に合格しました。$COUNT$個のフィールドが入力されました",
+		"placeholders": {
+			"COUNT": {
+				"content": "$1",
+				"description": "入力済みフィールド数"
+			}
+		}
+	},
+	"field_handler_warning_with_count": {
+		"description": "検証に合格したが、警告がある場合のヒント",
+		"message": "検証に合格しましたが、$COUNT$個の警告があります",
+		"placeholders": {
+			"COUNT": {
+				"content": "$1",
+				"description": "警告数"
+			}
+		}
+	},
+	"options_button_export_config": {
+		"description": "設定エクスポートボタンのテキスト",
+		"message": "📤 設定をエクスポート"
+	},
+	"options_button_import_config": {
+		"description": "設定インポートボタンのテキスト",
+		"message": "📥 設定をインポート"
+	},
+	"options_button_reset_config": {
+		"description": "設定リセットボタンのテキスト",
+		"message": "🔄 設定をリセット"
+	},
+	"options_button_save": {
+		"description": "保存ボタンのテキスト",
+		"message": "設定を保存"
+	},
+	"options_button_test_provider": {
+		"description": "プロバイダー接続テストボタンのテキスト",
+		"message": "$PROVIDER$ 接続をテスト",
+		"placeholders": {
+			"PROVIDER": {
+				"content": "$1",
+				"description": "プロバイダー表示名"
+			}
+		}
+	},
+	"options_button_toggle_hide": {
+		"description": "APIキー非表示ボタンのテキスト",
+		"message": "非表示"
+	},
+	"options_button_toggle_show": {
+		"description": "APIキー表示ボタンのテキスト",
+		"message": "表示"
+	},
+	"options_config_loaded": {
+		"description": "オプションページ初期化完了のヒント",
+		"message": "設定が読み込まれました。"
+	},
+	"options_error_deck_select_placeholder": {
+		"description": "デッキドロップダウンのプレースホルダーオプション",
+		"message": "デフォルトのデッキを選択してください"
+	},
+	"options_error_fetch_anki_data": {
+		"description": "Ankiデータ読み取り失敗のヒント",
+		"message": "Ankiデータの読み取り中にエラーが発生しました: $ERROR$",
+		"placeholders": {
+			"ERROR": {
+				"content": "$1",
+				"description": "エラー詳細"
+			}
+		}
+	},
+	"options_error_fetch_decks": {
+		"description": "デッキ読み取り失敗のヒント",
+		"message": "デッキの読み取りに失敗しました: $ERROR$",
+		"placeholders": {
+			"ERROR": {
+				"content": "$1",
+				"description": "エラー詳細"
+			}
+		}
+	},
+	"options_error_fetch_models": {
+		"description": "モデル読み取り失敗のヒント",
+		"message": "モデルの読み取りに失敗しました: $ERROR$",
+		"placeholders": {
+			"ERROR": {
+				"content": "$1",
+				"description": "エラー詳細"
+			}
+		}
+	},
+	"options_error_invalid_api_url": {
+		"description": "APIアドレス形式が間違っている場合のヒント",
+		"message": "APIアドレスの形式が正しくありません"
+	},
+	"options_error_missing_api_key": {
+		"description": "設定保存時にAPIキーが欠落している場合のヒント",
+		"message": "現在のプロバイダーのAPIキーを入力してください"
+	},
+	"options_error_model_select_placeholder": {
+		"description": "モデルドロップダウンのプレースホルダーオプション",
+		"message": "デフォルトのモデルを選択してください"
+	},
+	"options_error_permission_denied": {
+		"description": "オプションの権限要求が失敗した場合のヒント",
+		"message": "$ORIGIN$ へのアクセス許可が得られなかったため、保存はキャンセルされました。",
+		"placeholders": {
+			"ORIGIN": {
+				"content": "$1",
+				"description": "拒否されたドメインパターン"
+			}
+		}
+	},
+	"options_error_provider_test_failed": {
+		"description": "プロバイダー接続テスト失敗のヒント",
+		"message": "テストに失敗しました: $MESSAGE$",
+		"placeholders": {
+			"MESSAGE": {
+				"content": "$1",
+				"description": "失敗理由"
+			}
+		}
+	},
+	"options_error_provider_test_missing_key": {
+		"description": "APIキー未入力で接続テストを実行した場合のヒント",
+		"message": "まずAPIキーを入力してください"
+	},
+	"options_export_status_failed": {
+		"description": "設定エクスポート失敗のヒント",
+		"message": "設定のエクスポートに失敗しました：$ERROR$",
+		"placeholders": {
+			"ERROR": {
+				"content": "$1",
+				"description": "エラーメッセージ"
+			}
+		}
+	},
+	"options_export_status_running": {
+		"description": "設定エクスポート中のヒント",
+		"message": "設定をエクスポートしています..."
+	},
+	"options_export_status_success": {
+		"description": "設定エクスポート成功のヒント",
+		"message": "設定が正常にエクスポートされました"
+	},
+	"options_font_size_large": {
+		"description": "フォントサイズオプション：大",
+		"message": "大 (16px)"
+	},
+	"options_font_size_medium": {
+		"description": "フォントサイズオプション：中",
+		"message": "中 (14px)"
+	},
+	"options_font_size_small": {
+		"description": "フォントサイズオプション：小",
+		"message": "小 (12px)"
+	},
+	"options_font_size_xlarge": {
+		"description": "フォントサイズオプション：特大",
+		"message": "特大 (18px)"
+	},
+	"options_helper_api_docs": {
+		"description": "APIドキュメントリンクのテキスト",
+		"message": "APIドキュメント"
+	},
+	"options_helper_docs_fallback": {
+		"description": "ドキュメントリンクのみ提供する場合に表示されるテキスト",
+		"message": "参考ドキュメント："
+	},
+	"options_helper_docs_separator": {
+		"description": "ヘルプヒントでドキュメントリンクを区切るためのテキスト",
+		"message": " ｜ ドキュメント："
+	},
+	"options_helper_get_api_key": {
+		"description": "ヘルプヒント：APIキーの取得方法の説明",
+		"message": "APIキーを取得："
+	},
+	"options_hint_api_url_default": {
+		"description": "APIアドレスのデフォルト値のヒント",
+		"message": "デフォルト：$URL$",
+		"placeholders": {
+			"URL": {
+				"content": "$1",
+				"description": "デフォルトAPIアドレス"
+			}
+		}
+	},
+	"options_hint_model_common": {
+		"description": "よく使われるモデルをリストアップするヒント",
+		"message": "一般的なモデル：$MODELS$",
+		"placeholders": {
+			"MODELS": {
+				"content": "$1",
+				"description": "一般的なモデルのリスト"
+			}
+		}
+	},
+	"options_hint_test_anki_first": {
+		"description": "ユーザーにまずAnki接続をテストするよう促すヒント",
+		"message": "まずAnki接続をテストしてください"
+	},
+	"options_import_error_format_invalid": {
+		"description": "設定インポート時に構造が無効な場合のヒント",
+		"message": "設定ファイルの形式が正しくありません"
+	},
+	"options_import_error_json_invalid": {
+		"description": "設定インポート時にJSONが無効な場合のヒント",
+		"message": "設定ファイルは有効なJSONではありません"
+	},
+	"options_import_error_missing_ai_config": {
+		"description": "設定インポート時にaiConfigが欠落している場合のヒント",
+		"message": "設定ファイルにaiConfigがありません"
+	},
+	"options_import_status_failed": {
+		"description": "設定インポート失敗のヒント",
+		"message": "設定のインポートに失敗しました：$ERROR$",
+		"placeholders": {
+			"ERROR": {
+				"content": "$1",
+				"description": "エラーメッセージ"
+			}
+		}
+	},
+	"options_import_status_running": {
+		"description": "設定インポート中のヒント",
+		"message": "設定をインポートしています..."
+	},
+	"options_import_status_success": {
+		"description": "設定インポート成功後のヒント",
+		"message": "設定が正常にインポートされました。APIキーを再設定してください"
+	},
+	"options_label_api_url": {
+		"description": "APIアドレス入力ボックスのラベル",
+		"message": "APIアドレス"
+	},
+	"options_label_deck": {
+		"description": "Anki接続パネルのデッキのラベル",
+		"message": "デッキ"
+	},
+	"options_label_field_info": {
+		"description": "Anki接続パネルのフィールド情報エリアのタイトル",
+		"message": "フィールド情報"
+	},
+	"options_label_font_size": {
+		"description": "スタイル設定パネルのフォントサイズのラベル",
+		"message": "フォントサイズ"
+	},
+	"options_label_language": {
+		"description": "システム設定パネルの言語のラベル",
+		"message": "言語"
+	},
+	"options_label_line_height": {
+		"description": "スタイル設定パネルの行の高さのラベル",
+		"message": "行の高さ"
+	},
+	"options_label_model": {
+		"description": "Anki接続パネルのモデルのラベル",
+		"message": "モデル"
+	},
+	"options_label_model_name": {
+		"description": "モデル名入力ボックスのラベル",
+		"message": "モデル名"
+	},
+	"options_label_text_align": {
+		"description": "スタイル設定パネルのテキスト揃えのラベル",
+		"message": "テキストの配置"
+	},
+	"options_language_chinese_simplified": {
+		"description": "言語ドロップダウンの簡体字中国語オプション",
+		"message": "簡体字中国語"
+	},
+	"options_language_follow_browser": {
+		"description": "ブラウザ設定に追従する旨の説明文",
+		"message": "拡張機能の言語はブラウザ設定に追従します。変更する場合はブラウザの表示言語を調整してください。"
+	},
+	"options_language_current_label": {
+		"description": "現在の言語を示すラベル",
+		"message": "現在の言語"
+	},
+	"options_language_chinese_traditional": {
+		"description": "言語ドロップダウンの繁体字中国語オプション",
+		"message": "繁体字中国語"
+	},
+	"options_language_japanese": {
+		"description": "言語ドロップダウンの日本語オプション",
+		"message": "日本語"
+	},
+	"options_language_english": {
+		"description": "言語ドロップダウンの英語オプション",
+		"message": "英語"
+	},
+	"options_line_height_compact": {
+		"description": "行の高さオプション：コンパクト",
+		"message": "コンパクト (1.2)"
+	},
+	"options_line_height_loose": {
+		"description": "行の高さオプション：ゆったり",
+		"message": "ゆったり (1.6)"
+	},
+	"options_line_height_normal": {
+		"description": "行の高さオプション：標準",
+		"message": "標準 (1.4)"
+	},
+	"options_model_fields_heading": {
+		"description": "フィールドマッピング領域のモデルフィールド数タイトル",
+		"message": "モデルフィールド ($COUNT$件):",
+		"placeholders": {
+			"COUNT": {
+				"content": "$1",
+				"description": "モデルに含まれるフィールド数",
+				"example": "4"
+			}
+		}
+	},
+	"options_mode_dynamic_description": {
+		"description": "動的フィールドモードの説明本文",
+		"message": "このテンプレートは複数のフィールドをサポートしており、AIが自動的にすべてのフィールドを埋めます。ポップアップページはフィールド名に基づいて対応する入力エリアをインテリジェントに生成します。"
+	},
+	"options_mode_dynamic_heading": {
+		"description": "動的フィールドモードの説明タイトル",
+		"message": "動的フィールドモード"
+	},
+	"options_mode_legacy_description": {
+		"description": "レガシーモードの説明本文",
+		"message": "このテンプレートのフィールド数が2以下の場合は、従来の前面/背面モードが使用されます。"
+	},
+	"options_mode_legacy_heading": {
+		"description": "レガシーモードの説明タイトル",
+		"message": "互換モード"
+	},
+	"options_page_heading": {
+		"description": "オプションページのメインタイトル",
+		"message": "設定センター"
+	},
+	"options_page_title": {
+		"description": "オプションページの<title>テキスト",
+		"message": "設定"
+	},
+	"options_placeholder_api_url": {
+		"description": "APIアドレス入力ボックスのプレースホルダーヒント",
+		"message": "https://"
+	},
+	"options_placeholder_model_example": {
+		"description": "モデル名入力ボックスのサンプルヒント",
+		"message": "例：$MODEL$",
+		"placeholders": {
+			"MODEL": {
+				"content": "$1",
+				"description": "プロバイダーのデフォルトモデル名",
+				"example": "gpt-5.2"
+			}
+		}
+	},
+	"options_placeholder_model_input": {
+		"description": "モデル名入力ボックスのプレースホルダーヒント",
+		"message": "モデル名を入力"
+	},
+	"options_prompt_config_placeholder": {
+		"description": "プロンプトエディタ設定エリアのプレースホルダーヒント",
+		"message": "フィールドを選択してからフィールドの内容を設定してください。"
+	},
+	"options_prompt_current_model": {
+		"description": "プロンプトパネルでデフォルトで表示される現在のテンプレートのヒント",
+		"message": "現在のテンプレート：未選択"
+	},
+	"options_prompt_current_model_label": {
+		"description": "プロンプトパネルで現在選択されているテンプレートの表示",
+		"message": "現在のテンプレート：$MODEL$",
+		"placeholders": {
+			"MODEL": {
+				"content": "$1",
+				"description": "現在のテンプレート名"
+			}
+		}
+	},
+	"options_prompt_custom_template": {
+		"description": "プロンプトカスタム編集エリアのタイトル",
+		"message": "カスタムプロンプトテンプレート"
+	},
+	"options_prompt_dirty_hint": {
+		"description": "プロンプトテンプレートが変更された後のヒント",
+		"message": "変更済み、保存後に有効になります"
+	},
+	"options_prompt_error_field_empty": {
+		"description": "単一フィールドの内容が空の場合のヒント",
+		"message": "フィールド「$FIELD$」の内容は空にできません。",
+		"placeholders": {
+			"FIELD": {
+				"content": "$1",
+				"description": "フィールド名"
+			}
+		}
+	},
+	"options_prompt_error_field_required": {
+		"description": "プロンプトフィールドの内容が未入力の場合のエラーヒント",
+		"message": "フィールドの内容は必須です"
+	},
+	"options_prompt_error_fields_empty": {
+		"description": "複数のフィールドの内容が空の場合のヒント",
+		"message": "以下のフィールドの内容は空にできません：$FIELDS$",
+		"placeholders": {
+			"FIELDS": {
+				"content": "$1",
+				"description": "セミコロンで区切られたフィールド名のリスト"
+			}
+		}
+	},
+	"options_prompt_error_generate_first": {
+		"description": "デフォルトプロンプト生成前にフィールドが未設定の場合のヒント",
+		"message": "まずフィールドを選択して設定し、その後でデフォルトプロンプトを生成してください。"
+	},
+	"options_prompt_error_select_fields": {
+		"description": "どのフィールドも選択されていない場合のヒント",
+		"message": "出力するフィールドを少なくとも1つ選択してください。"
+	},
+	"options_prompt_field_config": {
+		"description": "プロンプトパネルのフィールド設定エリアのタイトル",
+		"message": "フィールド設定"
+	},
+	"options_prompt_field_config_hint": {
+		"description": "プロンプトパネルのフィールド設定の説明",
+		"message": "AIがこのフィールドを出力するために必要な情報を設定します"
+	},
+	"options_prompt_field_label": {
+		"description": "プロンプトエディタのフィールド内容のラベル",
+		"message": "フィールドの内容"
+	},
+	"options_prompt_field_placeholder": {
+		"description": "プロンプトエディタのフィールド内容入力ボックスのプレースホルダーヒント",
+		"message": "このフィールドに含めるべき内容（出力構造、トーンなど）を記述してください"
+	},
+	"options_prompt_field_select": {
+		"description": "プロンプトパネルのフィールド選択エリアのタイトル",
+		"message": "フィールド選択"
+	},
+	"options_prompt_field_select_hint": {
+		"description": "プロンプトパネルのフィールド選択のヒント",
+		"message": "フィールドをクリックして選択状態を切り替えます"
+	},
+	"options_prompt_generate_default": {
+		"description": "プロンプトパネルのテストボタンのテキスト",
+		"message": "接続をテストしてモデルを更新"
+	},
+	"options_prompt_hint_save_usage": {
+		"description": "プロンプトパネルのヒント：保存後に有効",
+		"message": "ヒント：設定を保存すると、ポップアップでこのプロンプトが使用されます。"
+	},
+	"options_prompt_no_fields": {
+		"description": "プロンプトエディタのヒント：フィールドが返されません",
+		"message": "現在のテンプレートはどのフィールドも返しません。"
+	},
+	"options_prompt_not_found": {
+		"description": "プロンプト関連のDOM要素が見つからない場合の警告",
+		"message": "プロンプト設定要素が見つかりません"
+	},
+	"options_prompt_reset_default": {
+		"description": "プロンプトエリアのリセットボタンのテキスト",
+		"message": "デフォルトテンプレートにリセット"
+	},
+	"options_prompt_rule_field_definition": {
+		"description": "プロンプトルール：フィールド定義のタイトル",
+		"message": "フィールド返却内容の定義："
+	},
+	"options_prompt_rule_field_fallback": {
+		"description": "プロンプトルール：フィールドプレースホルダーのデフォルト説明",
+		"message": "このフィールドに関連する内容を生成してください。"
+	},
+	"options_prompt_rule_intro": {
+		"description": "デフォルトプロンプト生成時のルール説明",
+		"message": "以下の要件に厳密に従って出力を生成してください。"
+	},
+	"options_prompt_rule_note_json_only": {
+		"description": "プロンプトルール：JSONのみを返すヒント",
+		"message": "- JSONのみを返し、追加の説明は含めないでください。"
+	},
+	"options_prompt_rule_note_requirements": {
+		"description": "プロンプトルール：要件を満たすヒント",
+		"message": "- 各フィールドの内容が上記の要件を満たしていることを確認してください。"
+	},
+	"options_prompt_rule_notes": {
+		"description": "プロンプトルール：注意事項のタイトル",
+		"message": "注意事項："
+	},
+	"options_prompt_rule_output_format": {
+		"description": "プロンプトルール：出力形式の定義のタイトル",
+		"message": "出力形式の定義："
+	},
+	"options_prompt_rule_output_json": {
+		"description": "プロンプトルール：JSON出力要件",
+		"message": "以下のJSON構造に従って結果を返し、リストされたフィールドのみを含めてください："
+	},
+	"options_prompt_rule_output_line": {
+		"description": "プロンプトルール：JSONフィールド定義",
+		"message": "  \"$FIELD$\": \"$FIELD$の内容を記入してください\"$SUFFIX$",
+		"placeholders": {
+			"FIELD": {
+				"content": "$1",
+				"description": "フィールド名"
+			},
+			"SUFFIX": {
+				"content": "$2",
+				"description": "カンマまたは空文字列"
+			}
+		}
+	},
+	"options_prompt_select_fields": {
+		"description": "プロンプトエディタのヒント：フィールドを選択するよう促す",
+		"message": "出力が必要なフィールドを選択し、フィールドの内容を補完してください。"
+	},
+	"options_prompt_status_generated": {
+		"description": "デフォルトプロンプト生成後のヒント",
+		"message": "現在のフィールド設定に基づいてデフォルトプロンプトが生成されました。"
+	},
+	"options_prompt_status_ready": {
+		"description": "プロンプトフィールド設定完了のヒント",
+		"message": "フィールド設定が完了しました。"
+	},
+	"options_prompt_template_placeholder": {
+		"description": "カスタムプロンプト編集ボックスのプレースホルダーヒント",
+		"message": "モデルを選択してから対応するプロンプトを作成してください。\n以下のプレースホルダーを含めることをお勧めします：\n- {{INPUT_TEXT}} はユーザー入力を表します\n- {{FIELD_SCHEMA}} はフィールド構造を表します"
+	},
+	"options_reset_confirm": {
+		"description": "設定リセット前の確認ヒント",
+		"message": "すべての設定をリセットしてもよろしいですか？この操作は元に戻せません。"
+	},
+	"options_reset_status_failed": {
+		"description": "設定リセット失敗のヒント",
+		"message": "設定のリセットに失敗しました：$ERROR$",
+		"placeholders": {
+			"ERROR": {
+				"content": "$1",
+				"description": "エラーメッセージ"
+			}
+		}
+	},
+	"options_reset_status_running": {
+		"description": "設定リセット中のヒント",
+		"message": "設定をリセットしています..."
+	},
+	"options_reset_status_success": {
+		"description": "設定リセット成功のヒント",
+		"message": "設定がデフォルト値にリセットされました"
+	},
+	"options_save_status_failed": {
+		"description": "設定保存失敗時のヒント",
+		"message": "保存中にエラーが発生しました：$ERROR$",
+		"placeholders": {
+			"ERROR": {
+				"content": "$1",
+				"description": "エラー詳細"
+			}
+		}
+	},
+	"options_save_status_success": {
+		"description": "設定保存成功後のヒント",
+		"message": "設定が保存されました"
+	},
+	"options_section_choose_provider": {
+		"description": "AIプロバイダー選択セクションのタイトル",
+		"message": "AIプロバイダーを選択"
+	},
+	"options_section_config_management": {
+		"description": "設定管理エリアのタイトル",
+		"message": "設定管理"
+	},
+	"options_section_config_management_hint": {
+		"description": "設定管理エリアの説明文",
+		"message": "設定をエクスポート、インポート、またはリセットします。注意：エクスポートされた設定ファイルには、セキュリティ確保のためAPIキーは含まれません。"
+	},
+	"options_section_prompt_by_model": {
+		"description": "プロンプト設定セクションのタイトル",
+		"message": "テンプレートごとにプロンプトを設定"
+	},
+	"options_section_prompt_instruction": {
+		"description": "プロンプト設定エリアの使用説明",
+		"message": "「Anki接続」パネルで編集したいモデルを選択し、その後ここでプロンプトをカスタマイズしてください。"
+	},
+	"options_section_style_preview": {
+		"description": "スタイルプレビューエリアのタイトル",
+		"message": "スタイルプレビュー"
+	},
+	"options_status_health_error": {
+		"description": "プロバイダーの状態：異常",
+		"message": "異常"
+	},
+	"options_status_health_ok": {
+		"description": "プロバイダーの状態：正常",
+		"message": "正常"
+	},
+	"options_status_health_unknown": {
+		"description": "プロバイダーの状態：不明",
+		"message": "不明"
+	},
+	"options_status_last_checked": {
+		"description": "プロバイダーの最終チェック時間のヒント",
+		"message": "最終チェック：$TIME$",
+		"placeholders": {
+			"TIME": {
+				"content": "$1",
+				"description": "最終チェック時間テキスト"
+			}
+		}
+	},
+	"options_status_not_tested": {
+		"description": "接続状態のデフォルトヒント",
+		"message": "接続はまだテストされていません"
+	},
+	"options_status_prefix": {
+		"description": "プロバイダーの健康状態プレフィックス",
+		"message": "状態：$STATUS$",
+		"placeholders": {
+			"STATUS": {
+				"content": "$1",
+				"description": "プロバイダーの健康状態テキスト"
+			}
+		}
+	},
+	"options_status_provider_test_success": {
+		"description": "プロバイダー接続テスト成功のヒント",
+		"message": "接続テストに成功しました"
+	},
+	"options_status_reason": {
+		"description": "プロバイダー異常の原因のヒント",
+		"message": "原因：$REASON$",
+		"placeholders": {
+			"REASON": {
+				"content": "$1",
+				"description": "異常原因の説明"
+			}
+		}
+	},
+	"options_status_saving": {
+		"description": "設定保存時のステータスヒント",
+		"message": "設定を保存しています..."
+	},
+	"options_style_preview_description": {
+		"description": "スタイルプレビューエリアのサンプルテキスト2行目",
+		"message": "フォント、配置、行の高さをプレビューするために使用されます。"
+	},
+	"options_style_preview_sample": {
+		"description": "スタイルプレビューエリアのサンプルテキスト1行目",
+		"message": "これはサンプルテキストです。"
+	},
+	"options_tab_ai": {
+		"description": "AI設定パネルのタブテキスト",
+		"message": "AI設定"
+	},
+	"options_tab_anki": {
+		"description": "Anki設定パネルのタブテキスト",
+		"message": "Anki接続"
+	},
+	"options_tab_prompt": {
+		"description": "プロンプト設定パネルのタブテキスト",
+		"message": "プロンプト設定"
+	},
+	"options_tab_style": {
+		"description": "UIスタイル設定パネルのタブテキスト",
+		"message": "スタイル設定"
+	},
+	"options_tab_system": {
+		"description": "システム設定パネルのタブテキスト",
+		"message": "システム設定"
+	},
+	"options_tab_template_library": {
+		"description": "解析テンプレートパネルのタブテキスト",
+		"message": "解析テンプレート"
+	},
+	"template_library_empty_title": {
+		"description": "テンプレートライブラリが空の場合のタイトル",
+		"message": "解析テンプレートがありません"
+	},
+	"template_library_empty_description": {
+		"description": "テンプレートライブラリが空の場合の説明",
+		"message": "最初の解析テンプレートを作成して、Ankiカードのスマート管理を開始しましょう"
+	},
+	"template_library_add_button": {
+		"description": "テンプレート追加ボタンのテキスト",
+		"message": "新規テンプレート"
+	},
+	"template_library_title": {
+		"description": "テンプレートライブラリリストのタイトル",
+		"message": "解析テンプレートライブラリ"
+	},
+	"template_form_title_new": {
+		"description": "新規テンプレートフォームのタイトル",
+		"message": "新規解析テンプレート"
+	},
+	"template_form_title_edit": {
+		"description": "テンプレート編集フォームのタイトル",
+		"message": "解析テンプレートを編集"
+	},
+	"template_form_cancel": {
+		"description": "キャンセルボタンのテキスト",
+		"message": "キャンセル"
+	},
+	"template_form_basic_info": {
+		"description": "基本情報セクションのタイトル",
+		"message": "基本情報"
+	},
+	"template_form_name_label": {
+		"description": "テンプレート名のラベル",
+		"message": "テンプレート名"
+	},
+	"template_form_name_placeholder": {
+		"description": "テンプレート名入力ボックスのヒント",
+		"message": "例：英語学習、日本語単語など"
+	},
+	"template_form_description_label": {
+		"description": "テンプレート説明のラベル",
+		"message": "テンプレートの説明"
+	},
+	"template_form_description_placeholder": {
+		"description": "テンプレート説明入力ボックスのヒント",
+		"message": "このテンプレートの用途と特徴を簡単に説明してください"
+	},
+	"template_form_anki_section": {
+		"description": "Anki接続セクションのタイトル",
+		"message": "Anki接続設定"
+	},
+	"template_form_test_anki": {
+		"description": "Anki接続テストボタンのテキスト",
+		"message": "接続をテスト"
+	},
+	"template_form_deck_label": {
+		"description": "デッキのラベル",
+		"message": "対象デッキ"
+	},
+	"template_form_model_label": {
+		"description": "ノートタイプのラベル",
+		"message": "ノートタイプ"
+	},
+	"template_form_fields_available": {
+		"description": "利用可能なフィールドのタイトル",
+		"message": "利用可能なフィールド"
+	},
+	"template_form_fields_section": {
+		"description": "フィールド設定セクションのタイトル",
+		"message": "フィールド設定"
+	},
+	"template_form_field_select": {
+		"description": "フィールド選択のタイトル",
+		"message": "入力するフィールドを選択"
+	},
+	"template_form_field_select_hint": {
+		"description": "フィールド選択のヒント",
+		"message": "フィールドをクリックして選択状態を切り替えます"
+	},
+	"template_form_field_config": {
+		"description": "フィールド設定のタイトル",
+		"message": "フィールド内容を設定"
+	},
+	"template_form_field_config_hint": {
+		"description": "フィールド設定のヒント",
+		"message": "各フィールドに含める内容を記述してください"
+	},
+	"template_form_prompt_section": {
+		"description": "Prompt編集セクションのタイトル",
+		"message": "Prompt設定"
+	},
+	"template_form_generate_prompt": {
+		"description": "Prompt生成ボタンのテキスト",
+		"message": "デフォルトPromptを生成"
+	},
+	"template_form_prompt_label": {
+		"description": "Promptのラベル",
+		"message": "カスタムPrompt"
+	},
+	"template_form_prompt_placeholder": {
+		"description": "Prompt入力ボックスのヒント",
+		"message": "フィールド設定完了後、「デフォルトPromptを生成」ボタンをクリックして自動生成、または手動で編集できます"
+	},
+	"template_form_save": {
+		"description": "保存ボタンのテキスト",
+		"message": "テンプレートを保存"
+	},
+	"options_test_running": {
+		"description": "AnkiまたはAI接続テスト時のヒント",
+		"message": "接続をテストし、データを更新しています..."
+	},
+	"options_test_success_with_version": {
+		"description": "Ankiテスト成功後に表示されるバージョン情報",
+		"message": "接続成功、AnkiConnectバージョン: $VERSION$",
+		"placeholders": {
+			"VERSION": {
+				"content": "$1",
+				"description": "AnkiConnectが返すバージョン番号"
+			}
+		}
+	},
+	"options_test_success_with_refresh": {
+		"description": "Ankiテスト成功後、データが更新された時のヒント",
+		"message": "接続成功、データが更新されました"
+	},
+	"popup_template_selector_label": {
+		"description": "Popup テンプレートセレクターラベル",
+		"message": "テンプレートを選択:"
+	},
+	"popup_template_loading": {
+		"description": "テンプレート読み込み中",
+		"message": "読み込み中..."
+	},
+	"popup_template_none": {
+		"description": "利用可能なテンプレートがありません",
+		"message": "利用可能なテンプレートがありません"
+	},
+	"popup_template_empty_state": {
+		"description": "テンプレート未設定のヒント",
+		"message": "テンプレートが設定されていません。"
+	},
+	"popup_template_open_options": {
+		"description": "設定画面へボタンテキスト",
+		"message": "設定画面へ"
+	},
+	"popup_template_change_notice": {
+		"description": "テンプレート切り替えヒント",
+		"message": "テンプレートが切り替わりました。テキストを再解析してください"
+	},
+	"popup_template_hover_deck_model": {
+		"description": "テンプレート tooltip のデッキとモデル情報",
+		"message": "デッキ: $DECK$ / モデル: $MODEL$",
+		"placeholders": {
+			"DECK": {
+				"content": "$1",
+				"description": "デッキ名"
+			},
+			"MODEL": {
+				"content": "$2",
+				"description": "モデル名"
+			}
+		}
+	},
+	"popup_template_hover_fields": {
+		"description": "テンプレート tooltip のフィールドリスト",
+		"message": "フィールド: $FIELDS$",
+		"placeholders": {
+			"FIELDS": {
+				"content": "$1",
+				"description": "フィールドリスト"
+			}
+		}
+	},
+	"popup_status_no_template": {
+		"description": "テンプレートなしエラーヒント",
+		"message": "まず設定画面で解析テンプレートを作成してください"
+	},
+	"popup_status_template_no_fields": {
+		"description": "テンプレートにフィールドがないエラーヒント",
+		"message": "現在のテンプレートにフィールドが設定されていません"
+	},
+	"popup_template_empty_hint": {
+		"description": "解析ボタン無効時のヒント",
+		"message": "まず設定画面でテンプレートを作成してください"
+	},
+	"options_text_align_center": {
+		"description": "テキスト配置オプション：中央揃え",
+		"message": "中央揃え"
+	},
+	"options_text_align_left": {
+		"description": "テキスト配置オプション：左揃え",
+		"message": "左揃え"
+	},
+	"options_text_align_right": {
+		"description": "テキスト配置オプション：右揃え",
+		"message": "右揃え"
+	},
+	"options_warning_permission_declined": {
+		"description": "権限要求が拒否された場合のログヒント",
+		"message": "ドメイン権限要求が拒否されました：$ERROR$",
+		"placeholders": {
+			"ERROR": {
+				"content": "$1",
+				"description": "エラー詳細"
+			}
+		}
+	},
+	"popup_app_title": {
+		"description": "ポップアップページのタイトル、<title>とヘッダータイトルに使用",
+		"message": "Anki単語アシスタント"
+	},
+	"popup_confirm_reload": {
+		"description": "重大なエラー後のリフレッシュヒント",
+		"message": "$MESSAGE$\n\nOKをクリックしてページをリフレッシュし、キャンセルして使用を続行します",
+		"placeholders": {
+			"MESSAGE": {
+				"content": "$1",
+				"description": "前のエラーヒント"
+			}
+		}
+	},
+	"popup_confirm_retry": {
+		"description": "エラー後に再試行するかどうかの確認ダイアログ",
+		"message": "$MESSAGE$\n\nすぐに再試行しますか？",
+		"placeholders": {
+			"MESSAGE": {
+				"content": "$1",
+				"description": "前のエラーヒント"
+			}
+		}
+	},
+	"popup_dynamic_field_placeholder": {
+		"description": "動的フィールドtextareaのプレースホルダーヒント",
+		"message": "AIがこのフィールドを自動的に埋めます..."
+	},
+	"popup_dynamic_fields_missing": {
+		"description": "動的フィールドが空の場合にコンテナ内に表示されるヒント",
+		"message": "現在、入力可能なフィールドが設定されていません。まずオプションページでフィールド設定を完了してください。"
+	},
+	"popup_dynamic_fill_complete": {
+		"description": "動的フィールド入力完了時のヒントプレフィックス",
+		"message": "動的フィールドの入力が完了しました:"
+	},
+	"popup_dynamic_fill_error": {
+		"description": "動的フィールド入力エラーのヒントプレフィックス",
+		"message": "動的フィールドの入力中にエラーが発生しました:"
+	},
+	"popup_error_ai_config": {
+		"description": "AIサービスの認証情報が欠落または間違っている場合のヒント",
+		"message": "AIサービスの設定エラー、設定ページのAPIキーを確認してください"
+	},
+	"popup_error_ai_field_mismatch": {
+		"description": "AIが返すフィールドが期待と異なる場合のヒント",
+		"message": "AIの出力フィールドが一致しません。テンプレート設定を確認してください"
+	},
+	"popup_error_ai_format_retry": {
+		"description": "AIが返す形式が異常な場合の再試行ヒント",
+		"message": "AIの解析形式エラー、自動的に再試行しています..."
+	},
+	"popup_error_ai_generic": {
+		"description": "AI解析失敗の一般的なヒント、簡潔なエラー情報を含む",
+		"message": "AI解析に失敗しました: $DETAIL$",
+		"placeholders": {
+			"DETAIL": {
+				"content": "$1",
+				"description": "簡潔なエラー説明"
+			}
+		}
+	},
+	"popup_error_ai_quota": {
+		"description": "AIサービスのクォータが尽きた場合のヒント",
+		"message": "AIサービスのクォータが不足しています。アカウントの状態を確認するか、サービスプロバイダーを変更してください"
+	},
+	"popup_error_anki_deck_missing": {
+		"description": "デッキが存在しない場合のヒント",
+		"message": "指定されたデッキが存在しません。設定を確認してください"
+	},
+	"popup_error_anki_duplicate": {
+		"description": "書き込み時に重複した内容がある場合のヒント",
+		"message": "カードの内容が重複しています。修正してから再試行してください"
+	},
+	"popup_error_anki_generic": {
+		"description": "Anki操作失敗の一般的なヒント、簡潔なエラー情報を含む",
+		"message": "Anki操作に失敗しました: $DETAIL$",
+		"placeholders": {
+			"DETAIL": {
+				"content": "$1",
+				"description": "簡潔なエラー説明"
+			}
+		}
+	},
+	"popup_error_anki_launch": {
+		"description": "Ankiが起動していないか、プラグインがない場合のヒント",
+		"message": "Ankiを起動し、AnkiConnectプラグインがインストールされていることを確認してください"
+	},
+	"popup_error_anki_model_missing": {
+		"description": "テンプレートが存在しない場合のヒント",
+		"message": "指定されたテンプレートが存在しません。設定を確認してください"
+	},
+	"popup_error_config_load": {
+		"description": "ユーザー設定の読み込みに失敗した場合にデフォルト設定を使用するヒント",
+		"message": "設定の読み込みに異常があり、デフォルト設定が使用されました"
+	},
+	"popup_error_dom_missing": {
+		"description": "重要なDOM要素が見つからない場合のヒント",
+		"message": "ページ要素が見つかりません。ページをリフレッシュして再試行してください"
+	},
+	"popup_error_field_empty": {
+		"description": "書き込み前にどのフィールドも入力されていない場合のヒント",
+		"message": "少なくとも1つのフィールドの内容を入力してください"
+	},
+	"popup_error_field_generic": {
+		"description": "フィールド処理関連エラーの一般的なヒント",
+		"message": "フィールド処理エラー: $DETAIL$",
+		"placeholders": {
+			"DETAIL": {
+				"content": "$1",
+				"description": "簡潔なエラー説明"
+			}
+		}
+	},
+	"popup_error_generic": {
+		"description": "未分類エラーの一般的なヒント",
+		"message": "操作に失敗しました: $DETAIL$",
+		"placeholders": {
+			"DETAIL": {
+				"content": "$1",
+				"description": "簡潔なエラー説明"
+			}
+		}
+	},
+	"popup_error_network": {
+		"description": "ネットワーク異常時のヒント",
+		"message": "ネットワーク接続に失敗しました。ネットワークを確認してから再試行してください"
+	},
+	"popup_error_rate_limit": {
+		"description": "頻繁なエラー時にユーザーにリフレッシュまたはネットワーク確認を促すヒント",
+		"message": "頻繁なエラーが検出されました。ページをリフレッシュするか、ネットワーク接続を確認することをお勧めします"
+	},
+	"popup_field_all_empty_warning": {
+		"description": "すべてのフィールドが空の場合の警告",
+		"message": "警告：すべてのフィールドが空です。AIの解析結果を確認してください"
+	},
+	"popup_field_empty_count": {
+		"description": "空のフィールド数を表示するヒント",
+		"message": "($COUNT$個のフィールドが空です)",
+		"placeholders": {
+			"COUNT": {
+				"content": "$1",
+				"description": "空のフィールド数"
+			}
+		}
+	},
+	"popup_field_fill_failed": {
+		"description": "フィールド入力失敗の詳細なヒント",
+		"message": "フィールドの入力に失敗しました: $DETAIL$",
+		"placeholders": {
+			"DETAIL": {
+				"content": "$1",
+				"description": "エラー詳細"
+			}
+		}
+	},
+	"popup_field_missing_dom_prefix": {
+		"description": "欠落しているDOM要素リストのプレフィックス",
+		"message": "欠落しているDOM要素:"
+	},
+	"popup_field_missing_dom_summary": {
+		"description": "欠落しているDOM要素数の要約",
+		"message": "[$COUNT$個の要素が欠落しています]",
+		"placeholders": {
+			"COUNT": {
+				"content": "$1",
+				"description": "欠落している要素の数"
+			}
+		}
+	},
+	"popup_field_not_found": {
+		"description": "動的フィールドに対応するDOM要素が見つからない場合のヒント",
+		"message": "フィールド要素が見つかりません: $ID$ ($LABEL$)",
+		"placeholders": {
+			"ID": {
+				"content": "$1",
+				"description": "フィールド要素ID"
+			},
+			"LABEL": {
+				"content": "$2",
+				"description": "フィールドラベル名"
+			}
+		}
+	},
+	"popup_field_preview": {
+		"description": "フィールドプレビュー内容のプレフィックス",
+		"message": "入力済み: $VALUE$",
+		"placeholders": {
+			"VALUE": {
+				"content": "$1",
+				"description": "切り捨てられたフィールド内容"
+			}
+		}
+	},
+	"popup_field_progress": {
+		"description": "フィールド入力の進捗情報",
+		"message": "$FILLED$/$TOTAL$個のフィールドが入力されました",
+		"placeholders": {
+			"FILLED": {
+				"content": "$1",
+				"description": "入力済みフィールド数"
+			},
+			"TOTAL": {
+				"content": "$2",
+				"description": "フィールド総数"
+			}
+		}
+	},
+	"popup_field_tag_filled": {
+		"description": "フィールドチップの入力済み状態のテキスト",
+		"message": "入力済み: $FIELD$",
+		"placeholders": {
+			"FIELD": {
+				"content": "$1",
+				"description": "フィールド名"
+			}
+		}
+	},
+	"popup_field_tag_pending": {
+		"description": "フィールドチップの未入力状態のテキスト",
+		"message": "未入力: $FIELD$",
+		"placeholders": {
+			"FIELD": {
+				"content": "$1",
+				"description": "フィールド名"
+			}
+		}
+	},
+	"popup_field_tag_pending_label": {
+		"description": "フィールドチップの未入力状態のラベル",
+		"message": "未入力"
+	},
+	"popup_hint_anki_connection": {
+		"description": "Anki書き込み失敗の接続原因のヒント",
+		"message": "Ankiの操作失敗は接続の問題かもしれません"
+	},
+	"popup_hint_parse_network": {
+		"description": "解析失敗のネットワーク原因のヒント",
+		"message": "解析の失敗は一時的なネットワークの問題かもしれません"
+	},
+	"popup_hint_retry_general": {
+		"description": "一般的な失敗時の再試行ヒント",
+		"message": "操作の失敗は一時的な問題かもしれません"
+	},
+	"popup_input_label": {
+		"description": "ポップアップテキスト入力エリアのラベル",
+		"message": "テキストを入力"
+	},
+	"popup_input_placeholder": {
+		"description": "ポップアップテキスト入力ボックスのプレースホルダーヒント",
+		"message": "テキストを貼り付けるか入力してください..."
+	},
+	"popup_parse_button": {
+		"description": "AI解析をトリガーするボタンのテキスト",
+		"message": "解析"
+	},
+	"popup_retry_hint_anki": {
+		"description": "Anki失敗の追加ヒント",
+		"message": "Ankiの操作失敗は接続の問題かもしれません"
+	},
+	"popup_retry_hint_generic": {
+		"description": "一般的な失敗の追加ヒント",
+		"message": "操作の失敗は一時的な問題かもしれません"
+	},
+	"popup_retry_hint_parse": {
+		"description": "解析失敗の追加ヒント",
+		"message": "解析の失敗は一時的なネットワークの問題かもしれません"
+	},
+	"popup_status_collect_complete": {
+		"description": "フィールド収集成功時のヒントプレフィックス",
+		"message": "フィールドの収集が完了しました:"
+	},
+	"popup_status_collect_error": {
+		"description": "フィールド収集段階のエラーヒント",
+		"message": "フィールドの収集に失敗しました：$DETAIL$",
+		"placeholders": {
+			"DETAIL": {
+				"content": "$1",
+				"description": "エラー詳細リスト"
+			}
+		}
+	},
+	"popup_status_collect_failed": {
+		"description": "フィールド収集失敗時のヒントプレフィックス",
+		"message": "フィールドの収集に失敗しました:"
+	},
+	"popup_status_config_loaded": {
+		"description": "ユーザー設定読み込み完了時のヒントプレフィックス",
+		"message": "ユーザー設定が読み込まれました:"
+	},
+	"popup_status_field_names_invalid": {
+		"description": "動的フィールド名が無効な場合のヒント",
+		"message": "フィールド名配列が空または無効です"
+	},
+	"popup_status_legacy_fallback_failed": {
+		"description": "レガシーへのフォールバック失敗時のヒント",
+		"message": "レガシーモードへのフォールバックも失敗しました: $DETAIL$",
+		"placeholders": {
+			"DETAIL": {
+				"content": "$1",
+				"description": "エラー詳細"
+			}
+		}
+	},
+	"popup_status_no_configured_fields": {
+		"description": "どの段階でもフィールド設定が検出されない場合のヒント",
+		"message": "現在のテンプレートにはフィールドが設定されていません。オプションページで設定を完了してください。"
+	},
+	"popup_status_no_fields_parse": {
+		"description": "解析時にフィールド設定が検出されない場合",
+		"message": "現在のテンプレートには解析可能なフィールドが設定されていません。オプションページで設定を完了してください。"
+	},
+	"popup_status_no_fields_write": {
+		"description": "書き込み時にフィールド設定が検出されない場合",
+		"message": "現在のテンプレートには書き込み可能なフィールドが設定されていません。オプションページで設定を完了してください。"
+	},
+	"popup_status_no_fillable_fields": {
+		"description": "書き込み前にどのフィールドも収集されなかった場合のヒント",
+		"message": "書き込み可能なフィールドの内容がありません"
+	},
+	"popup_status_parse_result_empty": {
+		"description": "AIが返す結果が空または形式が無効な場合のヒント",
+		"message": "AIの解析結果が空か、形式が無効です"
+	},
+	"popup_status_input_required": {
+		"description": "popup ステータスバー: 入力未指定時のエラーメッセージ",
+		"message": "解析するテキストを入力してください"
+	},
+	"popup_status_parsed": {
+		"description": "ポップアップステータスバー：解析完了",
+		"message": "解析完了"
+	},
+	"popup_status_parsing": {
+		"description": "ポップアップステータスバー：解析中",
+		"message": "AI解析を実行中..."
+	},
+	"popup_status_prompt_input": {
+		"description": "ポップアップステータスバー：ユーザー入力待ち",
+		"message": "解析するテキストを入力してください"
+	},
+	"popup_status_ready": {
+		"description": "ポップアップステータスバー：初期化完了",
+		"message": "準備完了"
+	},
+	"popup_status_ready_to_write": {
+		"description": "書き込み前のヒントプレフィックス",
+		"message": "Ankiに書き込む準備ができました:"
+	},
+	"popup_status_style_error": {
+		"description": "スタイルラッピング段階のエラーヒント",
+		"message": "スタイルラッピングに失敗しました: $DETAIL$",
+		"placeholders": {
+			"DETAIL": {
+				"content": "$1",
+				"description": "エラー詳細"
+			}
+		}
+	},
+	"popup_status_validation_continue": {
+		"description": "フィールド検証は合格したが警告がある場合のヒント",
+		"message": "$MESSAGE$、書き込みを続行します...",
+		"placeholders": {
+			"MESSAGE": {
+				"content": "$1",
+				"description": "検証警告メッセージ"
+			}
+		}
+	},
+	"popup_status_validation_failed": {
+		"description": "フィールド検証失敗時のヒントプレフィックス",
+		"message": "フィールドの検証に失敗しました:"
+	},
+	"popup_status_validation_warning_header": {
+		"description": "フィールド検証警告のタイトル",
+		"message": "フィールド検証の警告:"
+	},
+	"popup_status_write_success": {
+		"description": "書き込み完了後のヒント",
+		"message": "書き込みに成功しました"
+	},
+	"popup_status_writing": {
+		"description": "ポップアップステータスバー：書き込み中",
+		"message": "Ankiに書き込み中..."
+	},
+	"popup_warning_prefix": {
+		"description": "警告詳細を連結するためのプレフィックス",
+		"message": "警告: $DETAIL$",
+		"placeholders": {
+			"DETAIL": {
+				"content": "$1",
+				"description": "警告テキスト"
+			}
+		}
+	},
+	"popup_write_button": {
+		"description": "Ankiへの書き込みをトリガーするボタンのテキスト",
+		"message": "Ankiに書き込む"
+	},
+	"prompt_engine_custom_template_header": {
+		"description": "動的プロンプトテンプレート生成時のヘッダー",
+		"message": "$TEMPLATE$\n-------------------------------\n以下は今回の入力内容です：$INPUT$",
+		"placeholders": {
+			"INPUT": {
+				"content": "$2",
+				"description": "ユーザー入力テキスト"
+			},
+			"TEMPLATE": {
+				"content": "$1",
+				"description": "カスタムプロンプトテンプレート"
+			}
+		}
+	},
+	"prompt_engine_default_header": {
+		"description": "デフォルト総合プロンプトのヘッダー説明",
+		"message": "# 役割: 専門単語検索アシスタント\n\n以下のタスクを完了してください：\n1. 単語/フレーズを検索: \"{{INPUT_TEXT}}\"\n2. 詳細な解析情報を生成\n3. 以下のJSON形式で出力：\n{{FIELD_SCHEMA}}\n\n要件：\n- 純粋なJSON形式で出力し、説明文は含めないでください\n- 単語/フレーズの特性に応じて、対応するフィールドを埋めてください\n- 適用できないフィールドは出力しなくてもかまいません"
+	},
+	"prompt_engine_error_json_parse": {
+		"description": "プロンプト生成結果のJSON解析失敗時のヒント",
+		"message": "JSONの解析に失敗しました: $ERROR$",
+		"placeholders": {
+			"ERROR": {
+				"content": "$1",
+				"description": "エラー詳細"
+			}
+		}
+	},
+	"prompt_engine_field_prompt": {
+		"description": "フィールド説明生成時のテンプレート",
+		"message": "$FIELD$関連の内容",
+		"placeholders": {
+			"FIELD": {
+				"content": "$1",
+				"description": "フィールド名"
+			}
+		}
+	},
+	"prompt_engine_schema_word": {
+		"description": "フィールドschema: 単語そのものの説明",
+		"message": "単語そのもの"
+	},
+	"prompt_engine_schema_reading": {
+		"description": "フィールドschema: 読みの説明",
+		"message": "読み / 発音記号"
+	},
+	"prompt_engine_schema_meaning": {
+		"description": "フィールドschema: 意味の説明",
+		"message": "意味と解説"
+	},
+	"prompt_engine_requirements_body": {
+		"description": "動的プロンプト要件の説明",
+		"message": "\n\n要件:\n- 有効なJSON形式で出力\n- フィールドのみ使用可能: $FIELDS$\n- 部分的な出力も可能ですが、フィールド名は正確でなければなりません",
+		"placeholders": {
+			"FIELDS": {
+				"content": "$1",
+				"description": "許可されたフィールドのリスト"
+			}
+		}
+	},
+	"storage_error_api_key_decrypt": {
+		"description": "APIキーの復号失敗のログヒントプレフィックス",
+		"message": "[storage] $PROVIDER$ のAPIキーの復号に失敗しました:",
+		"placeholders": {
+			"PROVIDER": {
+				"content": "$1",
+				"description": "プロバイダーID"
+			}
+		}
+	},
+	"storage_error_api_key_decrypt_reset": {
+		"description": "APIキーの復号に失敗し、空文字列にフォールバックした場合のヒント",
+		"message": "[storage] $PROVIDER$ のAPIキーの復号に失敗したため、空文字列に初期化されました。",
+		"placeholders": {
+			"PROVIDER": {
+				"content": "$1",
+				"description": "プロバイダーID"
+			}
+		}
+	},
+	"storage_error_loading_config": {
+		"description": "設定読み込み失敗のログプレフィックス",
+		"message": "設定の読み込み中にエラーが発生しました:"
+	},
+	"storage_info_migrating_config": {
+		"description": "旧バージョンの設定が検出された場合のヒント",
+		"message": "旧バージョンの設定が検出されました。スキーマを更新しています。"
+	},
+	"storage_info_migration_done": {
+		"description": "設定移行完了のヒント",
+		"message": "設定の移行が完了しました。"
+	},
+	"storage_info_missing_config": {
+		"description": "保存された設定が見つからない場合のヒント",
+		"message": "保存された設定が見つかりません。デフォルト値を返します。"
+	},
+	"storage_warning_missing_salt": {
+		"description": "暗号化ソルトが欠落している場合のログヒント",
+		"message": "[storage] $PROVIDER$ の暗号化ソルトが見つからなかったため、デフォルトのプロバイダーを使用します。",
+		"placeholders": {
+			"PROVIDER": {
+				"content": "$1",
+				"description": "プロバイダーID"
+			}
+		}
+	},
+	"ai_service_connection_test_failed_with_reason": {
+		"description": "接続テストが理由付きで失敗した場合。",
+		"message": "接続テストに失敗しました: $ERROR$",
+		"placeholders": {
+			"ERROR": {
+				"content": "$1",
+				"description": "失敗理由"
+			}
+		}
+	},
+	"ai_service_connection_test_failed_missing_key": {
+		"description": "API キー未設定のため接続テストが失敗した場合。",
+		"message": "接続テストに失敗しました: API キーが設定されていません"
+	},
+	"ai_service_connection_test_success": {
+		"description": "接続テストが成功したときに表示。",
+		"message": "$PROVIDER$ の接続テストに成功しました",
+		"placeholders": {
+			"PROVIDER": {
+				"content": "$1",
+				"description": "プロバイダー名"
+			}
+		}
+	},
+	"options_permission_request_error": {
+		"description": "権限要求が拒否された際のエラーメッセージ。",
+		"message": "オリジン $ORIGIN$ の権限リクエストに失敗しました。",
+		"placeholders": {
+			"ORIGIN": {
+				"content": "$1",
+				"description": "オリジン URL パターン"
+			}
+		}
+	},
+	"options_provider_custom_url_hint": {
+		"description": "プロバイダー設定でのカスタム URL ヒント。",
+		"message": "現在の URL: $URL$",
+		"placeholders": {
+			"URL": {
+				"content": "$1",
+				"description": "設定済み URL"
+			}
+		}
+	},
+	"options_provider_test_button": {
+		"description": "プロバイダー接続テストボタンのラベル。",
+		"message": "$PROVIDER$ との接続をテスト",
+		"placeholders": {
+			"PROVIDER": {
+				"content": "$1",
+				"description": "プロバイダー名"
+			}
+		}
+	},
+	"floating_panel_close_label": {
+		"description": "フローティングアシスタントパネルの閉じるボタン用ラベル。",
+		"message": "パネルを閉じる"
+	},
+	"floating_panel_retry_label": {
+		"description": "フローティングアシスタントパネル内の再試行ボタンラベル。",
+		"message": "再試行"
+	},
+	"floating_panel_write_label": {
+		"description": "フローティングアシスタントパネル内の書き込みボタンラベル。",
+		"message": "Ankiに書き込む"
+	},
+	"floating_panel_pin_label": {
+		"description": "フローティングアシスタントパネル内のピン留めボタンラベル。",
+		"message": "パネルをピン留め"
+	},
+	"floating_panel_unpin_label": {
+		"description": "フローティングアシスタントパネル内のピン留め解除ボタンラベル。",
+		"message": "ピン留めを解除"
+	},
+	"cardFront": {
+		"description": "Legacy モード表面フィールドラベル。",
+		"message": "表面:"
+	},
+	"cardBack": {
+		"description": "Legacy モード裏面フィールドラベル。",
+		"message": "裏面:"
+	},
+	"options_provider_test_status_error": {
+		"description": "プロバイダー接続テストが失敗した際のステータスメッセージ。",
+		"message": "テストに失敗しました: $ERROR$",
+		"placeholders": {
+			"ERROR": {
+				"content": "$1",
+				"description": "エラーメッセージ"
+			}
+		}
+	},
+	"options_default_deck_placeholder": {
+		"description": "既定デッキ選択のプレースホルダー。",
+		"message": "既定のデッキを選択"
+	},
+	"options_default_model_placeholder": {
+		"description": "既定モデル選択のプレースホルダー。",
+		"message": "既定のモデルを選択"
+	},
+	"options_ui_floating_assistant_label": {
+		"description": "フローティングアシスタント機能のラベル。",
+		"message": "フローティングアシスタント"
+	},
+	"options_ui_floating_assistant_enable": {
+		"description": "フローティングアシスタント有効化のチェックボックスラベル。",
+		"message": "フローティングアシスタントを有効にする"
+	},
+	"options_ui_floating_assistant_description": {
+		"description": "フローティングアシスタント機能の説明文。",
+		"message": "ウェブページでテキストを選択すると、フローティングボタンが自動的に表示されます。クリックするとすぐに解析してAnkiカードを作成できます。互換性の問題がある場合は、この機能を無効にすることができます。"
+	}
 }

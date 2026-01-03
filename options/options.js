@@ -2592,7 +2592,7 @@ async function handleDeleteTemplate(templateId) {
 		}
 
 		// 確認ダイアログを表示 / Show confirmation dialog
-		getText(
+		const confirmMessage = getText(
 			"template_card_delete_confirm",
 			"确定要删除这个模板吗？此操作不可撤销。",
 			[template.name],
