@@ -743,7 +743,7 @@
 			"MODEL": {
 				"content": "$1",
 				"description": "Provider's default model name",
-				"example": "gpt-4o-mini"
+				"example": "gpt-5.2"
 			}
 		}
 	},

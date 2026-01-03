@@ -743,7 +743,7 @@
 			"MODEL": {
 				"content": "$1",
 				"description": "提供商默认模型名称",
-				"example": "gpt-4o-mini"
+				"example": "gpt-5.2"
 			}
 		}
 	},
