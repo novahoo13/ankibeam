@@ -8,6 +8,8 @@ import {
 	collectFieldsForWrite,
 	validateFields,
 } from "../utils/field-handler.js";
+import { writeToAnki } from "../services/anki-service.js";
+import { ErrorBoundary } from "../utils/error-boundary.js";
 
 import {
 	translate,
@@ -359,393 +361,82 @@ function updateUIBasedOnTemplate() {
 }
 
 /**
- * 错误边界管理器
- * 负责全局错误处理、用户友好提示和错误恢复机制
- * 提供频繁错误检测、自动重试和UI状态恢复功能
+ * UI状态恢复
+ *确保按钮状态和加载提示回到正常状态
  */
-class ErrorBoundary {
-	constructor() {
-		this.errorCount = 0; // 错误总计数
-		this.lastErrorTime = 0; // 最后一次错误时间戳
-		this.errorHistory = []; // 错误历史记录
-		this.maxErrors = 5; // 最大错误阈值
-		this.resetInterval = 30000; // 错误计数重置间隔（30秒）
-	}
+function resetUIState() {
+	// 重新启用操作按钮，确保用户可以继续使用
+	const parseBtn = document.getElementById("parse-btn");
+	const writeBtn = document.getElementById("write-btn");
 
-	/**
-	 * 统一错误处理入口
-	 * 记录错误、生成用户友好提示、提供重试机制
-	 * @param {Error} error - 捕获的错误对象
-	 * @param {string} context - 错误发生的业务上下文（如'parse'、'anki'、'config'等）
-	 * @param {object} options - 处理选项（是否允许重试、重试回调等）
-	 */
-	async handleError(error, context = "unknown", options = {}) {
-		this.errorCount++;
-		this.lastErrorTime = Date.now();
+	if (parseBtn) parseBtn.disabled = false;
+	if (writeBtn) writeBtn.disabled = false;
 
-		const timestamp = new Date().toISOString();
-		const userMessage = this.getUserFriendlyMessage(error, context);
-		const errorType = this.getErrorType(error, context);
+	// 清除加载动画和禁用状态
+	setUiLoading(false);
+}
 
-		// 记录错误到历史列表中，包含完整的上下文信息
-		this.errorHistory.push({
-			error: error.message,
-			context,
-			userMessage,
-			detail: typeof error.detail === "string" ? error.detail : null,
-			timestamp,
-			stack: error.stack,
-		});
+/**
+ * 重试选项提示
+ */
+function showRetryPrompt(context, retryCallback) {
+	if (!retryCallback) return;
 
-		// 限制错误历史数量，避免内存泄漏
-		if (this.errorHistory.length > 10) {
-			this.errorHistory = this.errorHistory.slice(-10);
-		}
-
-		console.error(`[${context}] Error:`, error);
-
-		// 频繁错误保护：如果短时间内错误过多，显示严重错误提示
-		if (this.isFrequentError()) {
-			this.showCriticalError(
-				getText(
-					"popup_error_rate_limit",
-					"检测到频繁错误，建议刷新页面或检查网络连接",
-				),
+	let retryMessage = "";
+	switch (context) {
+		case "parse":
+		case "ai":
+			retryMessage = getText(
+				"popup_hint_parse_network",
+				"解析失败可能是临时网络问题",
 			);
-			return;
-		}
-
-		// 在UI中显示错误消息
-		updateStatus(userMessage, errorType);
-
-		// 重置UI到可用状态，确保用户可以继续操作
-		this.resetUIState();
-
-		// 对于可恢复的错误，延迟提供重试选项
-		if (options.allowRetry && this.isRetryableError(error, context)) {
-			setTimeout(() => {
-				this.showRetryOption(context, options.retryCallback);
-			}, 2000);
-		}
-	}
-
-	/**
-	 * 频繁错误检测
-	 * 统计指定时间窗口内的错误数量，判断是否超过阈值
-	 * @returns {boolean} 是否为频繁错误
-	 */
-	isFrequentError() {
-		const recentErrors = this.errorHistory.filter(
-			(e) => Date.now() - new Date(e.timestamp).getTime() < this.resetInterval,
-		);
-		return recentErrors.length >= this.maxErrors;
-	}
-
-	/**
-	 * 错误消息本地化处理
-	 * 将技术错误转换为用户友好的中文提示
-	 * @param {Error} error - 原始错误对象
-	 * @param {string} context - 错误业务上下文
-	 * @returns {string} 用户友好的错误消息
-	 */
-	getUserFriendlyMessage(error, context) {
-		const message = error.message || error.toString();
-
-		// 识别并处理网络连接问题
-		if (this.isNetworkError(error)) {
-			return getText("popup_error_network", "网络连接失败，请检查网络后重试");
-		}
-
-		// AI解析服务相关错误的详细分类处理
-		if (context === "parse" || context === "ai") {
-			if (message.includes("API Key")) {
-				return getText(
-					"popup_error_ai_config",
-					"AI服务配置错误，请检查设置页面的API Key",
-				);
-			}
-			if (message.includes("quota") || message.includes("limit")) {
-				return getText(
-					"popup_error_ai_quota",
-					"AI服务额度不足，请检查账户状态或更换服务商",
-				);
-			}
-			if (message.includes("JSON解析失败")) {
-				return getText(
-					"popup_error_ai_format_retry",
-					"AI解析格式错误，正在自动重试...",
-				);
-			}
-			if (message.includes("输出包含无效字段")) {
-				return getText(
-					"popup_error_ai_field_mismatch",
-					"AI输出字段不匹配，请检查模板配置",
-				);
-			}
-			const simplified = this.simplifyErrorMessage(message);
-			return getText("popup_error_ai_generic", `AI解析失败: ${simplified}`, [
-				simplified,
-			]);
-		}
-
-		// AnkiConnect连接和操作相关错误处理
-		if (context === "anki") {
-			if (message.includes("Failed to fetch") || message.includes("未启动")) {
-				return getText(
-					"popup_error_anki_launch",
-					"请启动Anki并确保AnkiConnect插件已安装",
-				);
-			}
-			if (message.includes("duplicate") || message.includes("重复")) {
-				return getText(
-					"popup_error_anki_duplicate",
-					"卡片内容重复，请修改后重试",
-				);
-			}
-			if (message.includes("deck") && message.includes("not found")) {
-				return getText(
-					"popup_error_anki_deck_missing",
-					"指定的牌组不存在，请检查配置",
-				);
-			}
-			if (message.includes("model") && message.includes("not found")) {
-				return getText(
-					"popup_error_anki_model_missing",
-					"指定的模板不存在，请检查配置",
-				);
-			}
-			const simplifiedAnki = this.simplifyErrorMessage(message);
-			return getText(
-				"popup_error_anki_generic",
-				`Anki操作失败: ${simplifiedAnki}`,
-				[simplifiedAnki],
+			break;
+		case "anki":
+			retryMessage = getText(
+				"popup_hint_anki_connection",
+				"Anki操作失败可能是连接问题",
 			);
-		}
-
-		// 用户配置加载失败的处理
-		if (context === "config") {
-			return getText(
-				"popup_error_config_fallback",
-				"配置加载异常，已使用默认配置",
+			break;
+		default:
+			retryMessage = getText(
+				"popup_hint_retry_general",
+				"操作失败可能是临时问题",
 			);
-		}
-
-		// UI字段操作和验证相关错误
-		if (context === "fields") {
-			if (message.includes("找不到")) {
-				return getText(
-					"popup_error_dom_missing",
-					"页面元素缺失，请刷新页面重试",
-				);
-			}
-			if (message.includes("字段为空")) {
-				return getText("popup_error_field_minimum", "请至少填写一个字段内容");
-			}
-			const simplifiedField = this.simplifyErrorMessage(message);
-			return getText(
-				"popup_error_field_generic",
-				`字段处理错误: ${simplifiedField}`,
-				[simplifiedField],
-			);
-		}
-
-		// 未分类错误的通用处理
-		const simplifiedGeneric = this.simplifyErrorMessage(message);
-		return getText("popup_error_generic", `操作失败: ${simplifiedGeneric}`, [
-			simplifiedGeneric,
-		]);
 	}
 
-	/**
-	 * 错误消息简化处理
-	 * 移除技术性前缀，截断过长内容，提高可读性
-	 * @param {string} message - 原始错误消息
-	 * @returns {string} 简化后的错误消息
-	 */
-	simplifyErrorMessage(message) {
-		// 移除JavaScript错误类型前缀，提高用户可读性
-		message = message.replace(/^(Error:|TypeError:|ReferenceError:)\s*/i, "");
+	const retryPrompt = getText(
+		"popup_confirm_retry",
+		`${retryMessage}\n\n是否立即重试？`,
+		[retryMessage],
+	);
 
-		// 限制错误消息长度，避免UI显示问题
-		if (message.length > 100) {
-			message = message.substring(0, 100) + "...";
-		}
-
-		return message;
+	if (confirm(retryPrompt)) {
+		retryCallback();
 	}
+}
 
-	/**
-	 * 错误严重程度分类
-	 * 根据错误类型和上下文确定UI显示样式
-	 * @param {Error} error - 错误对象
-	 * @param {string} context - 错误上下文
-	 * @returns {string} 错误类型（'error', 'warning'）
-	 */
-	getErrorType(error, context) {
-		if (this.isNetworkError(error)) {
-			return "warning";
-		}
+// 全局错误边界实例
+const errorBoundary = new ErrorBoundary();
 
-		if (context === "parse" && error.message.includes("JSON解析失败")) {
-			return "warning"; // JSON错误通常可以重试
-		}
-
-		if (context === "anki" && error.message.includes("重复")) {
-			return "warning"; // 重复内容不是严重错误
-		}
-
-		return "error";
-	}
-
-	/**
-	 * 网络错误识别
-	 * 通过关键词匹配识别网络相关问题
-	 * @param {Error} error - 错误对象
-	 * @returns {boolean} 是否为网络错误
-	 */
-	isNetworkError(error) {
-		const message = error.message.toLowerCase();
-		return (
-			message.includes("fetch") ||
-			message.includes("network") ||
-			message.includes("timeout") ||
-			message.includes("connection")
-		);
-	}
-
-	/**
-	 * 可重试错误判断
-	 * 确定哪些错误类型适合提供重试选项
-	 * @param {Error} error - 错误对象
-	 * @param {string} context - 错误上下文
-	 * @returns {boolean} 是否可以重试
-	 */
-	isRetryableError(error, context) {
-		if (this.isNetworkError(error)) return true;
-
-		if (context === "parse" && error.message.includes("JSON解析失败")) {
-			return true;
-		}
-
-		if (context === "anki" && error.message.includes("timeout")) {
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * UI状态恢复
-	 * 确保按钮状态和加载提示回到正常状态
-	 */
-	resetUIState() {
-		// 重新启用操作按钮，确保用户可以继续使用
-		const parseBtn = document.getElementById("parse-btn");
-		const writeBtn = document.getElementById("write-btn");
-
-		if (parseBtn) parseBtn.disabled = false;
-		if (writeBtn) writeBtn.disabled = false;
-
-		// 清除加载动画和禁用状态
-		setUiLoading(false);
-	}
-
-	/**
-	 * 重试选项提示
-	 * 通过确认对话框询问用户是否重试操作
-	 * @param {string} context - 错误上下文
-	 * @param {Function} retryCallback - 重试时执行的回调函数
-	 */
-	showRetryOption(context, retryCallback) {
-		if (!retryCallback) return;
-
-		const retryMessage = this.getRetryMessage(context);
-		const retryPrompt = getText(
-			"popup_confirm_retry",
-			`${retryMessage}\n\n是否立即重试？`,
-			[retryMessage],
-		);
-		if (confirm(retryPrompt)) {
-			retryCallback();
-		}
-	}
-
-	/**
-	 * 重试消息生成
-	 * 根据不同的业务上下文生成适当的重试提示
-	 * @param {string} context - 错误上下文
-	 * @returns {string} 重试提示消息
-	 */
-	getRetryMessage(context) {
-		switch (context) {
-			case "parse":
-			case "ai":
-				return getText(
-					"popup_hint_parse_network",
-					"解析失败可能是临时网络问题",
-				);
-			case "anki":
-				return getText(
-					"popup_hint_anki_connection",
-					"Anki操作失败可能是连接问题",
-				);
-			default:
-				return getText("popup_hint_retry_general", "操作失败可能是临时问题");
-		}
-	}
-
-	/**
-	 * 严重错误处理
-	 * 显示严重错误提示并询问是否刷新页面
-	 * @param {string} message - 错误消息
-	 */
-	showCriticalError(message) {
-		updateStatus(message, "error");
-
-		// 延迟显示页面刷新建议，给用户思考时间
+// 配置错误边界回调
+errorBoundary.setCallbacks({
+	onUpdateStatus: (msg, type) => updateStatus(msg, type),
+	onResetUI: resetUIState,
+	onShowRetry: showRetryPrompt,
+	onCriticalError: (msg) => {
+		updateStatus(msg, "error");
 		setTimeout(() => {
 			const reloadPrompt = getText(
 				"popup_confirm_reload",
-				`${message}\n\n点击确定刷新页面，取消继续使用`,
-				[message],
+				`${msg}\n\n点击确定刷新页面，取消继续使用`,
+				[msg],
 			);
 			if (confirm(reloadPrompt)) {
 				window.location.reload();
 			}
 		}, 1000);
-	}
-
-	/**
-	 * 错误统计数据
-	 * 用于调试和监控错误发生频率
-	 * @returns {object} 包含各种错误统计的对象
-	 */
-	getErrorStats() {
-		const recentErrors = this.errorHistory.filter(
-			(e) => Date.now() - new Date(e.timestamp).getTime() < this.resetInterval,
-		);
-
-		return {
-			totalErrors: this.errorHistory.length,
-			recentErrors: recentErrors.length,
-			lastErrorTime: this.lastErrorTime,
-			errorRate: recentErrors.length / (this.resetInterval / 1000),
-		};
-	}
-
-	/**
-	 * 错误历史清理
-	 * 重置所有错误统计数据
-	 */
-	clearErrorHistory() {
-		this.errorHistory = [];
-		this.errorCount = 0;
-		this.lastErrorTime = 0;
-	}
-}
-
-// 全局错误边界实例，处理整个弹出窗口的错误
-const errorBoundary = new ErrorBoundary();
+	},
+});
 
 // DOM加载完成后启动应用初始化
 document.addEventListener("DOMContentLoaded", async () => {
@@ -892,34 +583,32 @@ async function handleParse() {
  * Anki写入按钮事件处理器
  * 收集字段内容、验证数据完整性、调用AnkiConnect API创建新卡片
  */
+/**
+ * Anki写入按钮事件处理器
+ * 收集字段内容、验证数据完整性、调用AnkiConnect API创建新卡片
+ */
 async function handleWriteToAnki() {
 	// 显示写入中状态，禁用按钮防止重复提交
 	setUiLoading(true, getText("popup_status_writing", "正在写入 Anki..."));
 	document.getElementById("write-btn").disabled = true;
 
 	try {
-		// 准备字段配置：仅支持模板定义的字段
 		const activeTemplate = getActiveTemplate();
-		const templateFieldNames = getTemplateFieldNames(activeTemplate);
-
 		if (!activeTemplate) {
 			throw createI18nError("popup_status_no_template", {
 				fallback: "请先选择解析模板",
 			});
 		}
 
+		const templateFieldNames = getTemplateFieldNames(activeTemplate);
 		if (templateFieldNames.length === 0) {
 			throw createI18nError("popup_status_no_fields_write", {
 				fallback: "当前模板未配置可写入的字段，请在选项页完成设置。",
 			});
 		}
 
-		// 确定最终要处理的字段列表
-		// 仅使用模板中定义的字段，AnkiConnect 会自动处理缺失字段（视为空）
-		const targetFields = templateFieldNames;
-
-		// 第一步：收集字段原始内容用于验证（不带HTML样式）
-		const rawCollectResult = collectFieldsForWrite(targetFields, null, {
+		// 第一步：收集字段原始内容
+		const rawCollectResult = collectFieldsForWrite(templateFieldNames, null, {
 			forceDynamic: true,
 		});
 
@@ -933,123 +622,23 @@ async function handleWriteToAnki() {
 			);
 		}
 
-		// 第二步：验证字段内容的完整性和有效性
-		const validation = validateFields(
-			rawCollectResult.fields,
-			false,
-			rawCollectResult,
-		);
-
-		// 验证失败时显示详细错误信息并终止写入
-		if (!validation.isValid) {
-			let errorMessage = validation.message;
-			if (validation.warnings.length > 0) {
-				const warningsText = validation.warnings.join(", ");
-				errorMessage += `\n${getText(
-					"popup_warning_prefix",
-					`警告: ${warningsText}`,
-					[warningsText],
-				)}`;
-			}
-			throw createDetailedError(
-				"popup_status_validation_failed",
-				"字段验证失败:",
-				errorMessage,
-			);
-		}
-
-		// 处理验证警告：显示提示但不阻止写入操作
-		if (validation.warnings.length > 0) {
-			// console.warn(getText("popup_status_validation_warning_header", "字段验证警告:"), validation.warnings);
-			updateStatus(
-				getText(
-					"popup_status_validation_continue",
-					`${validation.message}，继续写入...`,
-					[validation.message],
-				),
-				"warning",
-			);
-			await new Promise((resolve) => setTimeout(resolve, 1000));
-		}
-
-		// 第三步：收集带HTML样式包装的字段内容用于实际写入
-		const styledCollectResult = collectFieldsForWrite(
-			targetFields,
-			wrapContentWithStyle,
-			{ forceDynamic: true },
-		);
-
-		// 样式包装过程的错误检查
-		if (styledCollectResult.error) {
-			const styleErrorDetail = styledCollectResult.errors.join(", ");
-			throw createDetailedError(
-				"popup_status_style_error",
-				"样式包装失败:",
-				styleErrorDetail,
-			);
-		}
-
-		// 第四步：构建Anki API所需的字段数据结构
-		const fields = {};
-
-		// 构建字段值：严格按照模板定义
-		Object.keys(styledCollectResult.fields).forEach((fieldName) => {
-			const rawValue = rawCollectResult.fields[fieldName];
-			const styledValue = styledCollectResult.fields[fieldName];
-
-			if (rawValue && rawValue.trim()) {
-				fields[fieldName] = styledValue;
-			}
+		// 调用 Service
+		const result = await writeToAnki({
+			rawFields: rawCollectResult.fields,
+			config: config,
+			activeTemplate: activeTemplate,
+			onWarning: async (warningMessage) => {
+				updateStatus(
+					getText(
+						"popup_status_validation_continue",
+						`${warningMessage}，继续写入...`,
+						[warningMessage],
+					),
+					"warning",
+				);
+				await new Promise((resolve) => setTimeout(resolve, 1000));
+			},
 		});
-
-		// 构建Anki模型
-		// AnkiConnect 允许省略字段（视为空），因此不需要手动填充空值
-
-		// 最终验证：确保有实际内容可以写入Anki
-		const filledFieldCount = Object.values(fields).filter(
-			(value) => typeof value === "string" && value.trim(),
-		).length;
-		const payloadFieldCount = Object.keys(fields).length;
-		if (filledFieldCount === 0) {
-			throw createI18nError("popup_status_no_fillable_fields", {
-				fallback: "没有可写入的字段内容",
-			});
-		}
-
-		// 从配置中获取Anki卡片的基本属性
-		// 优先使用模板的配置，fallback 到全局配置
-		const template = getActiveTemplate();
-		const deckName =
-			template?.deckName || config?.ankiConfig?.defaultDeck || "Default";
-		const modelName =
-			template?.modelName || config?.ankiConfig?.defaultModel || "Basic";
-		const tags = config?.ankiConfig?.defaultTags || [];
-
-		// 构建AnkiConnect API所需的完整笔记数据
-		const noteData = {
-			deckName: deckName,
-			modelName: modelName,
-			fields: fields,
-			tags: tags,
-		};
-
-		// 记录写入操作的详细信息用于调试
-		// console.log(getText("popup_status_ready_to_write", "准备写入Anki:"), {
-		//   mode: "dynamic",
-		//   totalFields: rawCollectResult.totalFields,
-		//   collectedFields: rawCollectResult.collectedFields,
-		//   finalFields: filledFieldCount,
-		//   payloadFields: payloadFieldCount,
-		//   validation: validation.isValid,
-		//   warnings: validation.warnings.length,
-		//   noteData,
-		// });
-
-		// 调用AnkiConnect API执行实际写入操作
-		const result = await addNote(noteData);
-		if (result.error) {
-			throw new Error(result.error);
-		}
 
 		// 显示成功消息并触发自定义事件
 		updateStatus(getText("popup_status_write_success", "写入成功"), "success");
@@ -1057,8 +646,8 @@ async function handleWriteToAnki() {
 		// 发布写入成功事件，供其他模块监听
 		const event = new CustomEvent("ankiWriteSuccess", {
 			detail: {
-				noteId: result.result,
-				fieldsCount: filledFieldCount,
+				noteId: result.noteId,
+				fieldsCount: result.fieldsCount,
 				mode: "dynamic",
 			},
 		});
@@ -1354,26 +943,6 @@ function setUiLoading(isLoading, message = "") {
 		updateStatus(message, "loading");
 	}
 	// 如果是结束loading且没有消息，不更新状态，保留现有消息
-}
-
-/**
- * 内容样式包装器
- * 将纯文本内容转换为带样式的HTML，用于在Anki中显示
- * @param {string} content - 原始文本内容
- * @returns {string} 包装后的HTML字符串
- */
-function wrapContentWithStyle(content) {
-	// 从配置中获取样式
-	const styleConfig = config?.styleConfig || {};
-	const fontSize = styleConfig.fontSize || "14px";
-	const textAlign = styleConfig.textAlign || "left";
-	const lineHeight = styleConfig.lineHeight || "1.4";
-
-	// 将换行符转换成 <br>
-	const contentWithBreaks = content.replace(/\n/g, "<br>");
-
-	// 包装后返回
-	return `<div style="font-size: ${fontSize}; text-align: ${textAlign}; line-height: ${lineHeight};">${contentWithBreaks}</div>`;
 }
 
 /**

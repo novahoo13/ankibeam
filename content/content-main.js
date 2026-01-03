@@ -15,6 +15,8 @@ let addNote = null;
 let translate = null;
 let getActiveTemplate = null;
 let loadFloatingAssistantConfig = null;
+let writeToAnki = null;
+let errorBoundary = null;
 
 /**
  * 获取国际化文本的辅助函数。
@@ -69,6 +71,9 @@ function logWarn(message, payload) {
 			ankiConnectModule, // AnkiConnect代理
 			i18nModule, // 多语言支持
 			templateStoreModule, // 模板存储
+			storageModule, // 存储模块
+			ankiServiceModule, // Anki服务
+			errorBoundaryModule, // 错误边界
 		] = await Promise.all([
 			import(chrome.runtime.getURL("content/selection.js")),
 			import(chrome.runtime.getURL("content/floating-button.js")),
@@ -80,6 +85,8 @@ function logWarn(message, payload) {
 			import(chrome.runtime.getURL("utils/i18n.js")),
 			import(chrome.runtime.getURL("utils/template-store.js")),
 			import(chrome.runtime.getURL("utils/storage.js")),
+			import(chrome.runtime.getURL("services/anki-service.js")),
+			import(chrome.runtime.getURL("utils/error-boundary.js")),
 		]);
 
 		// 从加载的模块中解构并赋值函数到顶层变量
@@ -93,18 +100,19 @@ function logWarn(message, payload) {
 		({ addNote } = ankiConnectModule);
 		({ translate } = i18nModule);
 		({ getActiveTemplate } = templateStoreModule);
-		// Import loadConfig from storage module
+
 		let loadConfig;
-		({ loadConfig } = await import(chrome.runtime.getURL("utils/storage.js")));
+		({ loadConfig } = storageModule);
+
+		// Assign to global variables
+		({ writeToAnki } = ankiServiceModule);
+		const { ErrorBoundary } = errorBoundaryModule;
+		errorBoundary = new ErrorBoundary();
 
 		// Update helper to use loadConfig (with decryption)
 		loadFloatingAssistantConfig = async function () {
 			return await loadConfig();
 		};
-		// 确保从 templateStoreModule 正确解构，如果上述数组解构不匹配，这里需要调整
-		// 由于 Promise.all 返回数组顺序对应，这里我们需要手动获取最后一个模块
-		// 但上面的解构是 const [..., templateStoreModule] = ...
-		// 所以我们需要更新 Promise.all 的解构部分
 
 		// 检查当前页面是否是扩展程序不应运行的受限页面（如Chrome商店）
 		if (isRestrictedLocation(window.location, document)) {
@@ -142,6 +150,16 @@ function logWarn(message, payload) {
 				controller.refreshConfig();
 			});
 		}
+
+		// Configure Error Boundary for Content Script UI
+		errorBoundary.setCallbacks({
+			onUpdateStatus: (msg, type) => {
+				logInfo(`[Status:${type}] ${msg}`);
+			},
+			onShowRetry: (context, callback) => {
+				logInfo("Retry available for: " + context);
+			},
+		});
 	} catch (error) {
 		console.error(`${LOG_PREFIX} 内容脚本初始化失败。`, error);
 	}
@@ -555,29 +573,12 @@ function createController(
 	}
 
 	/**
-	 * 内容样式包装器
-	 * 将纯文本内容转换为带样式的HTML，用于在Anki中显示
-	 * 与popup.js的wrapContentWithStyle保持一致
-	 * @param {string} content - 原始文本内容
-	 * @returns {string} 包装后的HTML字符串
-	 */
-	function wrapContentWithStyle(content) {
-		// 从配置中获取样式
-		const styleConfig = currentConfig?.styleConfig || {};
-		const fontSize = styleConfig.fontSize || "14px";
-		const textAlign = styleConfig.textAlign || "left";
-		const lineHeight = styleConfig.lineHeight || "1.4";
-
-		// 将换行符转换成 <br>
-		const contentWithBreaks = content.replace(/\n/g, "<br>");
-
-		// 包装后返回
-		return `<div style="font-size: ${fontSize}; text-align: ${textAlign}; line-height: ${lineHeight};">${contentWithBreaks}</div>`;
-	}
-
-	/**
 	 * 处理将笔记写入Anki的逻辑
 	 * 与popup.js的handleWriteToAnki保持完全一致的处理流程
+	 */
+	/**
+	 * 处理将笔记写入Anki的逻辑
+	 * 使用 Service 层统一逻辑
 	 */
 	async function handleAnkiWrite() {
 		if (!floatingPanel) {
@@ -585,226 +586,50 @@ function createController(
 		}
 
 		try {
-			// 第一步：从面板收集字段原始内容用于验证（不带HTML样式）
+			// 从面板收集字段原始内容
 			const rawCollected = floatingPanel.collectFields();
-			logInfo("字段收集完成（原始内容）", {
-				mode: rawCollected.mode,
-				collectedFields: rawCollected.collectedFields,
-				emptyFields: rawCollected.emptyFields,
+			logInfo("字段收集完成", {
+				fields: Object.keys(rawCollected.fields),
 			});
 
-			// 准备字段配置
-			const activeTemplate = getActiveTemplate(currentConfig);
-
-			let targetFields;
-			let templateAllFields = [];
-
-			if (activeTemplate) {
-				targetFields = activeTemplate.fields.map((f) => f.name);
-				templateAllFields = targetFields; // 模板模式下，目标字段就是所有字段
-			} else {
-				// No active template in dynamic mode - this should be blocked before write
-				floatingPanel.showError({
-					message: getText(
-						"popup_status_no_template",
-						"未选择解析模板，无法写入",
-					),
-					allowRetry: false,
-				});
-				return;
-			}
-
-			if (!targetFields || targetFields.length === 0) {
-				floatingPanel.showError({
-					message: getText(
-						"popup_status_no_fields_write",
-						"当前模板未配置可写入的字段，请在选项页完成设置",
-					),
-					allowRetry: false,
-				});
-				return;
-			}
-
-			// 第二步：验证字段内容的完整性和有效性
-			const validation = validateFields(
-				rawCollected.fields,
-				false, // Force non-legacy mode
-				rawCollected,
-			);
-
-			// 验证失败时显示详细错误信息并终止写入
-			if (!validation.isValid) {
-				let errorMessage = validation.message;
-				if (validation.warnings.length > 0) {
-					const warningsText = validation.warnings.join(", ");
-					errorMessage += `\n警告: ${warningsText}`;
-				}
-				floatingPanel.showError({
-					message: errorMessage,
-					allowRetry: false,
-				});
-				return;
-			}
-
-			// 处理验证警告：显示提示但不阻止写入操作
-			if (validation.warnings.length > 0) {
-				logWarn("字段验证警告:", validation.warnings);
-				floatingPanel.showLoading(currentSelection, {
-					message: getText(
-						"popup_status_validation_continue",
-						"验证通过但有警告，继续写入...",
-						{
-							MESSAGE: validation.message,
-						},
-					),
-				});
-				await new Promise((resolve) => setTimeout(resolve, 1000));
-			}
-
-			// 第三步：应用样式包装到字段内容
-			const fields = {};
-
-			// Dynamic模式：处理用户自定义的多字段结构
-			Object.keys(rawCollected.fields).forEach((fieldName) => {
-				const rawValue = rawCollected.fields[fieldName];
-
-				// 基于原始值判断是否有内容，避免HTML标签干扰
-				if (rawValue && rawValue.trim()) {
-					fields[fieldName] = wrapContentWithStyle(rawValue);
-				}
-			});
-
-			// 为Anki模型的所有字段提供空值，防止缺失字段错误
-			// 在模板模式下，templateAllFields 就是模板定义的所有字段
-			(templateAllFields || []).forEach((fieldName) => {
-				if (!(fieldName in fields)) {
-					fields[fieldName] = "";
-				}
-			});
-
-			// 最终验证：确保有实际内容可以写入Anki
-			const filledFieldCount = Object.values(fields).filter(
-				(value) => typeof value === "string" && value.trim(),
-			).length;
-			const payloadFieldCount = Object.keys(fields).length;
-
-			if (filledFieldCount === 0) {
-				floatingPanel.showError({
-					message: getText(
-						"popup_status_no_fillable_fields",
-						"没有可写入的字段内容",
-					),
-					allowRetry: false,
-				});
-				return;
-			}
-
-			// 显示写入状态
 			floatingPanel.showLoading(currentSelection, {
 				message: getText("popup_status_writing", "正在写入 Anki..."),
 			});
 
-			// 从配置中获取Anki卡片的基本属性
-			// 优先从模板获取，否则回退到默认配置
-			let deckName, modelName;
-
-			if (activeTemplate) {
-				deckName = activeTemplate.deckName;
-				modelName = activeTemplate.modelName;
-			} else {
-				deckName = currentConfig?.ankiConfig?.defaultDeck || "Default";
-				modelName = currentConfig?.ankiConfig?.defaultModel || "Basic";
-			}
-
-			const tags = currentConfig?.ankiConfig?.defaultTags || [];
-
-			// 构建AnkiConnect API所需的完整笔记数据
-			const noteData = {
-				deckName: deckName,
-				modelName: modelName,
-				fields: fields,
-				tags: tags,
-			};
-
-			// 记录写入操作的详细信息用于调试
-			logInfo("准备写入Anki:", {
-				mode: isLegacyMode ? "legacy" : "dynamic",
-				totalFields: rawCollected.collectedFields || payloadFieldCount,
-				collectedFields: rawCollected.collectedFields,
-				finalFields: filledFieldCount,
-				payloadFields: payloadFieldCount,
-				validation: validation.isValid,
-				warnings: validation.warnings.length,
-				noteData,
+			// 调用 Service
+			const result = await writeToAnki({
+				rawFields: rawCollected.fields,
+				config: currentConfig,
+				onWarning: async (warningMessage) => {
+					logWarn("写入警告", warningMessage);
+					floatingPanel.showLoading(currentSelection, {
+						message: getText(
+							"popup_status_validation_continue",
+							"验证通过但有警告，继续写入...",
+							{ MESSAGE: warningMessage },
+						),
+					});
+					await new Promise((resolve) => setTimeout(resolve, 1000));
+				},
 			});
-
-			// 调用 AnkiConnect API执行实际写入操作
-			const result = await addNote(noteData);
-
-			if (result.error) {
-				throw new Error(result.error);
-			}
 
 			// 成功
 			floatingPanel.showReady({
 				message: getText("popup_status_write_success", "写入成功"),
 			});
 
-			// 标记写入成功，以便点击面板外部时自动关闭
 			floatingPanel.markWriteSuccess();
 
-			logInfo("Anki写入成功", {
-				noteId: result.result,
-				fieldsCount: filledFieldCount,
-				mode: isLegacyMode ? "legacy" : "dynamic",
-			});
+			logInfo("Anki写入成功", result);
 		} catch (error) {
 			logWarn("Anki写入失败", error);
 
-			let errorMessage =
-				error?.message ||
-				getText("popup_error_anki_generic", "Anki操作失败", [
-					error?.message || "",
-				]);
-
-			// 对特定错误进行更友好的提示
-			if (
-				errorMessage.includes("fetch") ||
-				errorMessage.includes("Failed to fetch")
-			) {
-				errorMessage = getText(
-					"popup_error_anki_launch",
-					"请确认Anki已启动，并且AnkiConnect插件已安装",
-				);
-			} else if (
-				errorMessage.includes("duplicate") ||
-				errorMessage.includes("重复")
-			) {
-				errorMessage = getText(
-					"popup_error_anki_duplicate",
-					"卡片内容重复，请修改后重试",
-				);
-			} else if (
-				errorMessage.includes("deck") &&
-				errorMessage.includes("not found")
-			) {
-				errorMessage = getText(
-					"popup_error_anki_deck_missing",
-					"指定的牌组不存在，请检查配置",
-				);
-			} else if (
-				errorMessage.includes("model") &&
-				errorMessage.includes("not found")
-			) {
-				errorMessage = getText(
-					"popup_error_anki_model_missing",
-					"指定的模板不存在，请检查配置",
-				);
-			}
+			// 使用 ErrorBoundary 处理消息
+			const userMessage = errorBoundary.getUserFriendlyMessage(error, "anki");
 
 			floatingPanel.showError({
-				message: errorMessage,
-				allowRetry: false,
+				message: userMessage,
+				allowRetry: errorBoundary.isRetryableError(error, "anki"),
 			});
 		}
 	}
