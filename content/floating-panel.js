@@ -1288,27 +1288,38 @@ export function createFloatingPanelController(options = {}) {
 	}
 
 	/**
-	 * 销毁面板和控制器，清理所有DOM和事件监听器。
+	 * Destroy the panel and controller, cleaning up all DOM elements and event listeners.
+	 * This prevents memory leaks by ensuring all references are properly released.
 	 */
 	function destroy() {
 		if (destroyed) {
 			return;
 		}
 		destroyed = true;
+
+		// Unbind global viewport and click-outside listeners
 		unbindGlobalListeners();
+
+		// Clean up shadow root keydown listener
 		if (shadowRoot) {
 			shadowRoot.removeEventListener("keydown", handleKeyDown, true);
 		}
+
+		// Clean up panel drag listener
 		if (panel) {
 			panel.removeEventListener("mousedown", handlePanelMouseDown);
 		}
-		// 清理拖动监听器（如果存在）
+
+		// Clean up active drag listeners (in case destroy is called during drag)
 		documentRef.removeEventListener("mousemove", handlePanelMouseMove, true);
 		documentRef.removeEventListener("mouseup", handlePanelMouseUp, true);
+
+		// Remove host element from DOM
 		if (host?.isConnected) {
 			host.remove();
 		}
-		// 清理所有引用
+
+		// Nullify all references to allow garbage collection
 		host = null;
 		shadowRoot = null;
 		wrapper = null;
@@ -1319,12 +1330,22 @@ export function createFloatingPanelController(options = {}) {
 		emptyNotice = null;
 		actionContainer = null;
 		retryButton = null;
+		writeButton = null;
 		pinButton = null;
+
+		// Reset state variables
 		currentState = STATE_IDLE;
 		visible = false;
 		currentSelection = null;
+		currentConfig = null;
 		isPinned = false;
 		isDragging = false;
+		writeSuccess = false;
+
+		// Clear handler references
+		retryHandler = null;
+		closeHandler = null;
+		writeHandler = null;
 	}
 
 	/**

@@ -876,13 +876,13 @@ async function runDynamicParsing(
 }
 
 /**
- * 使用动态字段和集成提示来解析文本。
+ * Parse text using dynamic fields and integrated prompts.
  * @export
- * @param {string} inputText - 输入文本。
- * @param {string[]} fieldNames - 需要解析的字段名数组。
- * @param {string} customTemplate - 自定义提示模板。
- * @param {number} [maxRetries=2] - 最大重试次数。
- * @returns {Promise<object>} 解析后的数据对象。
+ * @param {string} inputText - The input text to parse.
+ * @param {string[]} fieldNames - Array of field names to extract.
+ * @param {string} customTemplate - Custom prompt template.
+ * @param {number} [maxRetries=2] - Maximum retry attempts.
+ * @returns {Promise<object>} Parsed data object.
  */
 export async function parseTextWithDynamicFields(
 	inputText,
@@ -893,20 +893,5 @@ export async function parseTextWithDynamicFields(
 	return runDynamicParsing(inputText, fieldNames, customTemplate, maxRetries);
 }
 
-/**
- * `parseTextWithDynamicFields` 的备用导出，功能相同。
- * @export
- * @param {string} inputText - 输入文本。
- * @param {string[]} fieldNames - 需要解析的字段名数组。
- * @param {string} customTemplate - 自定义提示模板。
- * @param {number} [maxRetries=2] - 最大重试次数。
- * @returns {Promise<object>} 解析后的数据对象。
- */
-export async function parseTextWithDynamicFieldsFallback(
-	inputText,
-	fieldNames,
-	customTemplate,
-	maxRetries = 2,
-) {
-	return runDynamicParsing(inputText, fieldNames, customTemplate, maxRetries);
-}
+// Alias export for backward compatibility (same as parseTextWithDynamicFields)
+export { parseTextWithDynamicFields as parseTextWithDynamicFieldsFallback };
