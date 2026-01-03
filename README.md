@@ -58,21 +58,21 @@
 1. 访问 [Google AI Studio](https://makersuite.google.com/app/apikey)
 2. 创建 API Key
 3. 在扩展设置中填入 API Key
-4. 默认模型：`gemini-2.0-flash`
+4. 默认模型：`gemini-2.5-flash`
 
 #### OpenAI GPT
 
 1. 访问 [OpenAI Platform](https://platform.openai.com/api-keys)
 2. 创建 API Key
 3. 在扩展设置中填入 API Key
-4. 默认模型：`gpt-4o-mini`
+4. 默认模型：`gpt-5.2`
 
 #### Anthropic Claude
 
 1. 访问 [Anthropic Console](https://console.anthropic.com/)
 2. 创建 API Key
 3. 在扩展设置中填入 API Key
-4. 默认模型：`claude-3-5-haiku-latest`
+4. 默认模型：`claude-sonnet-4-5`
 
 > **提示**：可配置多个服务商作为备用，当主服务商请求失败时会自动切换。
 
@@ -102,13 +102,13 @@
 
 对于一个典型的单词卡片模板，可以配置如下字段：
 
-| 字段名 | 说明 | 示例输出 |
-|--------|------|----------|
-| Word | 单词本身 | vocabulary |
-| Reading | 音标/发音 | /vəˈkæbjəleri/ |
-| Meaning | 释义 | 词汇，词汇表 |
-| Example | 例句 | Build your vocabulary by reading. |
-| Etymology | 词源 | 来自拉丁语 vocabulum |
+| 字段名    | 说明      | 示例输出                          |
+| --------- | --------- | --------------------------------- |
+| Word      | 单词本身  | vocabulary                        |
+| Reading   | 音标/发音 | /vəˈkæbjəleri/                    |
+| Meaning   | 释义      | 词汇，词汇表                      |
+| Example   | 例句      | Build your vocabulary by reading. |
+| Etymology | 词源      | 来自拉丁语 vocabulum              |
 
 #### 自定义 Prompt
 
