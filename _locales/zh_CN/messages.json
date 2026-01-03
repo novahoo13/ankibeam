@@ -1594,7 +1594,7 @@
 	},
 	"popup_status_legacy_fallback_failed": {
 		"description": "Legacy 回退失败时的提示",
-		"message": "回退到legacy模式也失败: $DETAIL$",
+		"message": "回退到 Legacy 模式也失败: $DETAIL$",
 		"placeholders": {
 			"DETAIL": {
 				"content": "$1",

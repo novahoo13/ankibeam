@@ -1525,7 +1525,7 @@
 	},
 	"popup_status_legacy_fallback_failed": {
 		"description": "Legacy 回退失敗時的提示",
-		"message": "回退到legacy模式也失敗: $DETAIL$",
+		"message": "回退到 Legacy 模式也失敗: $DETAIL$",
 		"placeholders": {
 			"DETAIL": {
 				"content": "$1",
@@ -1666,8 +1666,8 @@
 		}
 	},
 	"prompt_engine_schema_word": {
-		"description": "欄位schema：單詞本身的提示說明",
-		"message": "單詞本身"
+		"description": "欄位schema：單字本身的提示說明",
+		"message": "單字本身"
 	},
 	"prompt_engine_schema_reading": {
 		"description": "欄位schema：讀音提示說明",
