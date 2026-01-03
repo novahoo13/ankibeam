@@ -91,6 +91,19 @@ export async function getModelNames() {
 }
 
 /**
+ * 获取所有模板的名称和ID映射
+ * @returns {Promise<{result: Object, error: null}|{result: null, error: string}>}
+ */
+export async function getModelNamesAndIds() {
+  try {
+    const response = await invoke('modelNamesAndIds');
+    return { result: response.result, error: null };
+  } catch (e) {
+    return { result: null, error: e.message };
+  }
+}
+
+/**
  * 获取特定模板的字段名称
  * @param {string} modelName - 模板名称
  * @returns {Promise<{result: string[], error: null}|{result: null, error: string}>}

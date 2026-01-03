@@ -1,195 +1,172 @@
 <!DOCTYPE html>
 <!--
-  Anki单词助手 - Chrome扩展程序弹出窗口界面
-  功能说明：
-  - 提供用户输入文本的界面
-  - 调用AI服务解析文本内容
-  - 动态显示解析后的字段内容
-  - 支持将解析结果写入Anki卡片
-
-  技术特点：
-  - 使用Tailwind CSS框架进行样式设计
-  - 支持国际化（i18n）文本显示
-  - 响应式布局适配不同屏幕尺寸
-  - 模块化JavaScript集成
+  Anki Word Assistant - Modern UI
 -->
 <html>
-  <!-- 设置页面语言为简体中文，支持正确的文本渲染和搜索引擎优化 -->
-  <head>
-    <meta charset="UTF-8" />
-    <!-- UTF-8编码确保中文字符正确显示 -->
-    <title data-i18n="popup_app_title"></title>
-    <!-- 扩展程序标题，显示在浏览器标签页 -->
-    <!-- Tailwind CSS框架 - 提供实用的CSS类用于快速样式开发 -->
-    <link rel="stylesheet" href="../styles/tailwind.min.css" />
-    <!-- 自定义CSS样式 - 扩展Tailwind功能，定义项目特定样式 -->
-    <link rel="stylesheet" href="../styles/custom-classes.css" />
-    <script type="module" src="../utils/i18n.js"></script>
-  </head>
-  <body>
-    <!--
-      主容器：Chrome扩展程序弹出窗口的根容器
-      - w-96: 固定宽度384px（24rem），符合Chrome扩展弹窗标准
-      - h-[580px]: 固定高度580px，提供足够的内容显示空间
-      - flex flex-col: 垂直弹性布局，便于内容区域自适应
-    -->
-    <div class="w-96 bg-white flex flex-col h-[580px]">
-      <!--
-        头部区域：显示应用标题和状态信息
-        - bg-slate-800: 深色背景，提供良好的视觉层次
-        - p-4: 16px内边距，确保内容不贴边
-      -->
-      <header class="bg-slate-800 text-white p-4">
-        <!-- 头部内容容器 - 使用flexbox实现标题和状态信息的两端对齐 -->
-        <div class="flex items-center justify-between">
-          <!--
-            应用标题
-            - data-i18n="appName": 国际化标识符，支持多语言切换
-            - text-lg font-semibold: 大号字体和半粗体，突出显示
-          -->
-          <h1 class="text-lg font-semibold" data-i18n="popup_app_title"></h1>
+	<head>
+		<meta charset="UTF-8" />
+		<title data-i18n="popup_app_title"></title>
+		<link rel="stylesheet" href="../styles/tailwind.min.css" />
+		<link rel="stylesheet" href="../styles/custom-classes.css" />
+		<script type="module" src="../utils/i18n.js"></script>
+		<style>
+			/* Extra custom styles for scrollbar hiding/styling if needed */
+			::-webkit-scrollbar {
+				width: 6px;
+				height: 6px;
+			}
+			::-webkit-scrollbar-track {
+				background: transparent;
+			}
+			::-webkit-scrollbar-thumb {
+				background: rgba(148, 163, 184, 0.4);
+				border-radius: 99px;
+			}
+			::-webkit-scrollbar-thumb:hover {
+				background: rgba(148, 163, 184, 0.6);
+			}
+		</style>
+	</head>
+	<body class="bg-page text-main font-sans antialiased overflow-hidden">
+		<!-- Main Container -->
+		<div class="w-96 h-[580px] flex flex-col relative">
+			<!-- Header: Glassy & Clean -->
+			<header
+				class="flex-none px-5 py-4 bg-page/90 backdrop-blur-md border-b border-white/10 z-10 flex items-center justify-between sticky top-0 shadow-sm">
+				<h1
+					class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400"
+					data-i18n="popup_app_title">
+					Anki Assistant
+				</h1>
+				<!-- Status Indicator -->
+				<div class="flex items-center space-x-2">
+					<p
+						id="status-message"
+						class="text-xs font-medium text-secondary truncate max-w-[120px] transition-colors duration-300"></p>
+					<div
+						id="status-dot"
+						class="w-2 h-2 rounded-full bg-slate-300 transition-colors duration-300"></div>
+				</div>
+			</header>
 
-          <!--
-            状态消息显示区域
-            - 用于显示当前操作状态（如：解析中、写入中等）
-            - opacity-80: 80%透明度，作为辅助信息不过分抢夺注意力
-            - JavaScript动态更新内容
-          -->
-          <p
-            id="status-message"
-            class="status-message text-xs text-white opacity-80"
-          ></p>
-        </div>
-      </header>
+			<!-- Template Selector Section -->
+			<div
+				class="flex-none px-4 py-3 bg-page/50 border-b border-border-light/50">
+				<div
+					class="bg-card/60 rounded-lg p-1 flex items-center shadow-subtle border border-border-light group focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+					<label
+						for="template-select"
+						class="pl-3 pr-2 text-xs font-semibold text-secondary whitespace-nowrap"
+						data-i18n="popup_template_selector_label"></label>
+					<select
+						id="template-select"
+						class="flex-1 bg-transparent text-sm text-main py-1.5 focus:outline-none cursor-pointer appearance-none">
+						<option value="" data-i18n="popup_template_loading">
+							Loading...
+						</option>
+					</select>
+					<div class="pr-2 pointer-events-none text-tertiary">
+						<svg
+							class="w-4 h-4"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M19 9l-7 7-7-7"></path>
+						</svg>
+					</div>
+				</div>
 
-      <!--
-        主内容区域
-        - flex-grow: 占用剩余空间，实现底部按钮固定效果
-        - overflow-y-auto: 内容超出时显示垂直滚动条
-        - pt-3 px-3: 顶部和左右内边距12px
-        - space-y-3: 子元素间垂直间距12px
-      -->
-      <main class="flex-grow overflow-y-auto pt-3 px-3 space-y-3">
-        <!--
-          文本输入区域
-          用户输入待解析的文本内容
-        -->
-        <div class="input-section">
-          <!--
-            输入框标签
-            - block: 块级显示，独占一行
-            - text-sm font-medium: 小号字体和中等粗细
-            - text-gray-700: 深灰色文字，符合Material Design规范
-            - mb-2: 底部外边距8px
-          -->
-          <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="popup_input_label"></label>
+				<!-- Notifications -->
+				<div
+					id="template-change-notice"
+					class="hidden mt-2 p-2.5 rounded-lg bg-yellow-50/80 border border-yellow-200/50 text-yellow-700 text-xs flex items-start gap-2 backdrop-blur-sm animate-fade-in">
+					<svg
+						class="w-4 h-4 flex-shrink-0 mt-0.5 text-yellow-500"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke="currentColor">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+					</svg>
+					<span data-i18n="popup_template_change_notice"
+						>Template changed, please re-parse.</span
+					>
+				</div>
 
-          <!--
-            多行文本输入框
-            - id="text-input": JavaScript操作的目标元素
-            - rows="2": 默认显示2行高度
-            - resize-none: 禁用用户手动调整大小
-            - focus:ring-2 focus:ring-slate-500: 聚焦时显示蓝色轮廓
-            - JavaScript中实现自动高度调整功能
-          -->
-          <textarea
-            id="text-input"
-            rows="2"
-            placeholder=""
-            data-i18n-placeholder="popup_input_placeholder"
-            data-i18n-aria="popup_input_label"
-            class="w-full p-3 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-sm"
-          ></textarea>
-        </div>
+				<div
+					id="template-empty-state"
+					class="hidden mt-2 p-3 rounded-lg bg-blue-50/80 border border-blue-100 text-blue-700 text-xs flex items-center justify-between backdrop-blur-sm animate-fade-in">
+					<span data-i18n="popup_template_empty_state"
+						>No template configured.</span
+					>
+					<button
+						id="open-options-btn"
+						class="text-xs px-2 py-1 bg-white rounded shadow-sm hover:shadow text-blue-600 font-semibold transition-all"
+						data-i18n="popup_template_open_options">
+						Settings
+					</button>
+				</div>
+			</div>
 
-        <!--
-          操作按钮区域
-          包含触发AI解析的主要操作按钮
-        -->
-        <div class="action-section">
-          <!--
-            解析按钮
-            - id="parse-btn": JavaScript事件绑定目标
-            - data-i18n="popup_parse_button": 国际化文本标识
-            - w-full: 按钮占满容器宽度
-            - bg-slate-600 hover:bg-slate-700: 背景色和悬停效果
-            - transition duration-200: 200ms过渡动画，提升用户体验
-            - focus:ring-2: 键盘导航时的可访问性支持
-            点击后调用JavaScript的handleParse()函数
-          -->
-          <button
-            id="parse-btn"
-            data-i18n="popup_parse_button"
-            data-i18n-aria="popup_parse_button"
-            class="w-full bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500"
-          >
-          </button>
-        </div>
+			<!-- Main Content Area -->
+			<main class="flex-grow overflow-y-auto px-4 py-4 space-y-5 scroll-smooth">
+				<!-- Input Section -->
+				<div class="input-section group">
+					<div class="flex justify-between items-center mb-2">
+						<label
+							class="text-xs font-bold text-secondary uppercase tracking-wider"
+							data-i18n="popup_input_label"></label>
+						<!-- Perhaps a character count or clear button could go here later -->
+					</div>
+					<div class="relative">
+						<textarea
+							id="text-input"
+							rows="2"
+							data-i18n-placeholder="popup_input_placeholder"
+							data-i18n-aria="popup_input_label"
+							class="w-full p-3 bg-card border border-border-light rounded-xl shadow-subtle resize-none text-sm leading-relaxed text-main placeholder-tertiary focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary-400 transition-all duration-200 ease-out min-h-[80px]"></textarea>
 
-        <!--
-          动态字段显示容器
-          功能说明：
-          - AI解析完成后，在此区域动态生成字段显示组件
-          - 支持Legacy模式（固定字段）和Dynamic模式（自定义字段）
-          - 字段包括：单词、音标、释义、例句、词根等
-          - 用户可以编辑字段内容，修改后的内容将写入Anki
+						<!-- Parse Button (Floating overlapping or just below with nice spacing) -->
+						<!-- We keep it separate as per original structure but styling it better -->
+					</div>
+				</div>
 
-          技术实现：
-          - JavaScript通过DOM操作动态创建字段元素
-          - 每个字段包含标签、可编辑文本区域、样式预览
-          - 支持HTML格式的富文本内容（加粗、斜体等）
-        -->
-        <div id="fields-container" class="result-section space-y-3">
-          <!-- 字段内容完全由JavaScript动态渲染，具体实现见popup.js文件 -->
-        </div>
-      </main>
+				<!-- Parse Action -->
+				<div class="action-section">
+					<button
+						id="parse-btn"
+						data-i18n="popup_parse_button"
+						data-i18n-aria="popup_parse_button"
+						class="w-full py-2.5 px-4 bg-white border border-border-light text-secondary font-semibold rounded-xl shadow-sm hover:bg-primary-50 hover:text-primary-700 hover:border-primary-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all duration-200 flex items-center justify-center gap-2">
+						<!-- Icon can be added via CSS or innerHTML if script allows, but keeping text for safety -->
+					</button>
+				</div>
 
-      <!--
-        底部写入区域
-        - 固定在弹窗底部，不随内容滚动
-        - border-t: 顶部边框，与主内容区域分隔
-        - bg-white: 白色背景，保持与主容器一致
-      -->
-      <div class="write-section bg-white p-3 border-t">
-        <!--
-          写入Anki按钮
-          功能说明：
-          - 将解析和编辑后的字段内容写入到Anki桌面版
-          - 通过AnkiConnect插件与Anki通信
-          - 按钮默认禁用，解析完成后才会启用
+				<!-- Results Section -->
+				<div id="fields-container" class="space-y-4 pb-4">
+					<!-- Dynamic Content -->
+				</div>
+			</main>
 
-          样式特点：
-          - id="write-btn": JavaScript操作目标
-          - data-i18n="popup_write_button": 国际化文本标识
-          - disabled: 初始状态禁用，防止在没有内容时误操作
-          - bg-emerald-600: 绿色背景，表示确认/提交操作
-          - disabled:opacity-50: 禁用时半透明效果
-          - disabled:cursor-not-allowed: 禁用时显示禁止光标
-        -->
-        <button
-          id="write-btn"
-            data-i18n="popup_write_button"
-            data-i18n-aria="popup_write_button"
-          disabled
-          class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-        >
-        </button>
-      </div>
-    </div>
+			<!-- Footer / Write Section -->
+			<div
+				class="flex-none p-4 bg-white/80 backdrop-blur-xl border-t border-border-light z-20">
+				<button
+					id="write-btn"
+					data-i18n="popup_write_button"
+					data-i18n-aria="popup_write_button"
+					disabled
+					class="w-full py-3 px-4 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/30 hover:bg-primary-600 hover:shadow-primary/40 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:bg-slate-300 disabled:text-slate-500 disabled:hover:translate-y-0 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2"></button>
+			</div>
+		</div>
 
-    <!--
-      JavaScript模块加载
-      - type="module": ES6模块支持，启用import/export语法
-      - src="popup.js": 弹窗的主要业务逻辑文件
-
-      popup.js文件包含的主要功能：
-      1. 事件监听器绑定（解析按钮、写入按钮等）
-      2. AI服务调用（Google Gemini、OpenAI GPT、Anthropic Claude）
-      3. 动态字段渲染和管理
-      4. AnkiConnect通信
-      5. 错误处理和用户反馈
-      6. UI状态管理和Loading效果
-    -->
-    <script type="module" src="popup.js"></script>
-  </body>
+		<script type="module" src="popup.js"></script>
+	</body>
 </html>

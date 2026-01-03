@@ -1,906 +1,783 @@
 <!DOCTYPE html>
 <!--
-  Anki单词助手 - 设置页面 (Options Page)
-  功能说明：
-  - 配置AI服务提供商（Google Gemini、OpenAI GPT、Anthropic Claude）
-  - 自定义Prompt模板和字段配置
-  - 设置Anki连接和卡片模板
-  - 系统设置（语言、配置导入导出）
-  - 界面样式自定义（字体大小、对齐、行高）
-
-  技术特点：
-  - 多标签页界面设计，便于功能分类管理
-  - 响应式布局，适配不同屏幕尺寸
-  - CSS动画效果提升用户体验
-  - 表单验证和实时反馈
-  - 配置数据持久化存储
+  Anki Word Assistant - Modern Options Page
 -->
 <html>
-  <!-- 设置页面语言为简体中文 -->
-  <head>
-    <meta charset="UTF-8" />
-    <!-- UTF-8编码支持中文显示 -->
-    <title data-i18n="options_page_title"></title>
-    <!-- Chrome扩展设置页面标题 -->
-    <!-- Tailwind CSS框架 - 提供丰富的实用CSS类 -->
-    <link rel="stylesheet" href="../styles/tailwind.min.css" />
-    <!-- 自定义CSS样式 - 扩展和覆盖默认样式 -->
-    <link rel="stylesheet" href="../styles/custom-classes.css" />
-    <!-- 视口设置 - 支持响应式布局在移动设备上 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!--
-      内嵌CSS样式定义
-      主要用于标签页切换动画和交互效果
-    -->
-    <style>
-      /* 标签内容切换样式定义 */
-      .tab-content {
-        display: none; /* 默认隐藏所有标签内容 */
-        animation: fadeIn 0.3s ease-in-out; /* 显示时的渐入动画效果 */
-      }
-      .tab-content.active {
-        display: block; /* 激活状态时显示内容 */
-      }
+	<head>
+		<meta charset="UTF-8" />
+		<title data-i18n="options_page_title"></title>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="stylesheet" href="../styles/tailwind.min.css" />
+		<link rel="stylesheet" href="../styles/custom-classes.css" />
+		<script type="module" src="../utils/i18n.js"></script>
+		<style>
+			/* Custom Scrollbar for Main Area */
+			main::-webkit-scrollbar {
+				width: 8px;
+			}
+			main::-webkit-scrollbar-track {
+				background: transparent;
+			}
+			main::-webkit-scrollbar-thumb {
+				background-color: rgba(148, 163, 184, 0.3);
+				border-radius: 99px;
+				border: 2px solid transparent;
+				background-clip: content-box;
+			}
+			main::-webkit-scrollbar-thumb:hover {
+				background-color: rgba(148, 163, 184, 0.5);
+			}
 
-      /* 渐入动画定义 - 提供平滑的内容切换效果 */
-      @keyframes fadeIn {
-        from {
-          opacity: 0; /* 从完全透明开始 */
-          transform: translateY(10px); /* 从向下10px位置开始 */
-        }
-        to {
-          opacity: 1; /* 到完全不透明 */
-          transform: translateY(0); /* 到原始位置 */
-        }
-      }
+			/* Animations */
+			.tab-content {
+				display: none;
+				opacity: 0;
+				transform: translateY(10px);
+				transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+			}
+			.tab-content.active {
+				display: block;
+				opacity: 1;
+				transform: translateY(0);
+			}
 
-      /* 标签按钮样式优化 */
-      .settings-tab-btn {
-        position: relative; /* 相对定位，用于伪元素定位 */
-        transition: all 0.2s ease-in-out; /* 所有样式变化的过渡效果 */
-      }
+			/* Sidebar Button Active State */
+			.settings-tab-btn.active {
+				background-color: rgb(var(--primary-500)); /* Primary Color */
+				color: white;
+				box-shadow: 0 4px 6px -1px rgba(var(--primary-500), 0.3),
+					0 2px 4px -2px rgba(var(--primary-500), 0.1);
+			}
+			.settings-tab-btn.active svg {
+				color: white;
+			}
+		</style>
+	</head>
+	<body
+		class="bg-page text-main font-sans antialiased min-h-screen flex items-center justify-center p-4 md:p-8">
+		<!-- Card Container -->
+		<div
+			class="w-full max-w-6xl bg-white/80 backdrop-blur-xl rounded-3xl shadow-float border border-white/40 flex flex-col md:flex-row overflow-hidden h-[85vh]">
+			<!-- Sidebar Navigation -->
+			<aside
+				class="md:w-64 bg-slate-50/50 border-b md:border-b-0 md:border-r border-border-light flex flex-col flex-none z-10">
+				<!-- Header -->
+				<div class="p-6 pb-2">
+					<h1
+						class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400"
+						data-i18n="options_page_heading">
+						Settings
+					</h1>
+					<p class="text-xs text-tertiary mt-1 font-medium">
+						Anki Word Assistant
+					</p>
+				</div>
 
-      /* 按钮获得焦点时的可访问性样式 */
-      .settings-tab-btn:focus {
-        outline: none; /* 移除浏览器默认的焦点轮廓 */
-        box-shadow: 0 0 0 2px rgba(71, 85, 105, 0.2); /* 自定义焦点阴影效果 */
-      }
+				<!-- Nav Links -->
+				<nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto" role="tablist">
+					<button
+						role="tab"
+						aria-selected="true"
+						aria-controls="ai-config"
+						data-tab="ai-config"
+						data-i18n-aria="options_tab_ai"
+						class="settings-tab-btn w-full flex items-center space-x-3 px-4 py-3 text-sm font-semibold text-secondary rounded-xl hover:bg-white hover:text-primary-600 hover:shadow-sm transition-all duration-200 active group">
+						<svg
+							class="w-5 h-5 text-tertiary group-hover:text-primary-500 transition-colors"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+						</svg>
+						<span data-i18n="options_tab_ai">AI Provider</span>
+					</button>
 
-      /* 激活标签按钮的样式 */
-      .settings-tab-btn.active {
-        background-color: rgb(248, 250, 252); /* 浅灰色背景 */
-        color: rgb(71, 85, 105); /* 深灰色文字 */
-        border-bottom-color: rgb(71, 85, 105); /* 底部边框高亮 */
-      }
-    </style>
-    <script type="module" src="../utils/i18n.js"></script>
-  </head>
-  <body>
-    <!--
-      页面主容器
-      - min-h-screen: 最小高度为屏幕高度，确保内容充满屏幕
-      - bg-gray-50: 浅灰色背景，提供柔和的视觉效果
-    -->
-    <div class="min-h-screen bg-gray-50">
-      <!--
-        内容区域容器
-        - container mx-auto: 居中对齐的响应式容器
-        - px-4 py-8: 水平和垂直内边距
-        - max-w-2xl: 限制最大宽度为672px，保证阅读体验
-      -->
-      <div class="container mx-auto px-4 py-8 max-w-2xl">
-        <!--
-          主内容卡片
-          - bg-white: 白色背景，与页面背景形成对比
-          - rounded-lg: 大圆角，现代化设计风格
-          - shadow-md: 中等阴影效果，增加层次感
-          - p-6: 24px内边距，确保内容与边界有适当间距
-        -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-          <!--
-            页面主标题
-            - text-3xl font-bold: 大号字体和粗体，突出页面主题
-            - text-gray-900: 深灰色文字，高对比度
-            - mb-8 text-center: 底部外边距和居中对齐
-          -->
-          <h1 class="text-3xl font-bold text-gray-900 mb-8 text-center" data-i18n="options_page_heading"></h1>
+					<button
+						role="tab"
+						aria-selected="false"
+						aria-controls="template-library"
+						data-tab="template-library"
+						data-i18n-aria="options_tab_template_library"
+						class="settings-tab-btn w-full flex items-center space-x-3 px-4 py-3 text-sm font-semibold text-secondary rounded-xl hover:bg-white hover:text-primary-600 hover:shadow-sm transition-all duration-200 group">
+						<svg
+							class="w-5 h-5 text-tertiary group-hover:text-primary-500 transition-colors"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+						</svg>
+						<span data-i18n="options_tab_template_library">Templates</span>
+					</button>
 
-          <!--
-            标签页导航栏
-            包含5个主要功能区域的导航按钮
-            - flex space-x-1: 水平布局，按钮间间4px间距
-            - mb-6: 底部外边距24px
-            - border-b border-gray-200: 底部边框分割线
-            - role="tablist": 可访问性属性，标识为标签列表
-          -->
-          <nav
-            class="flex space-x-1 mb-6 border-b border-gray-200"
-            role="tablist"
-          >
-            <!--
-              AI配置标签按钮 - 默认激活状态
-              功能：配置Google Gemini、OpenAI GPT、Anthropic Claude三种 AI服务
-              - role="tab": 可访问性属性，标识为标签
-              - aria-selected="true": 默认选中状态
-              - data-tab="ai-config": JavaScript事件处理标识符
-              - active类: 激活状态样式
-            -->
-            <button
-              role="tab"
-              aria-selected="true"
-              aria-controls="ai-config-panel"
-              class="settings-tab-btn flex items-center px-3 py-2 text-xs font-medium text-slate-600 bg-slate-50 border-b-2 border-slate-500 hover:bg-slate-100 transition-colors duration-200 active"
-              data-tab="ai-config"
-              data-i18n-aria="options_tab_ai"
-            >
-              <!-- AI电灯SVG图标 - 表示AI智能功能 -->
-              <svg
-                class="w-3 h-3 mr-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                ></path>
-              </svg>
-              <span data-i18n="options_tab_ai"></span>
-            </button>
+					<!-- Style Config -->
+					<button
+						role="tab"
+						aria-selected="false"
+						aria-controls="style-config"
+						data-tab="style-config"
+						data-i18n-aria="options_tab_style"
+						class="settings-tab-btn w-full flex items-center space-x-3 px-4 py-3 text-sm font-semibold text-secondary rounded-xl hover:bg-white hover:text-primary-600 hover:shadow-sm transition-all duration-200 group">
+						<svg
+							class="w-5 h-5 text-tertiary group-hover:text-primary-500 transition-colors"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z"></path>
+						</svg>
+						<span data-i18n="options_tab_style">Appearance</span>
+					</button>
 
-            <!--
-              Anki连接标签按钮
-              功能：AnkiConnect配置和卡片模板管理
-              - 测试Anki桌面版连接状态
-              - 选择默认牌组和卡片模板
-              - 显示可用的字段信息
-            -->
-            <button
-              role="tab"
-              aria-selected="false"
-              aria-controls="anki-config-panel"
-              class="settings-tab-btn flex items-center px-3 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent hover:border-gray-300 transition-colors duration-200"
-              data-tab="anki-config"
-              data-i18n-aria="options_tab_anki"
-            >
-              <!-- 书本SVG图标 - 表示Anki学习卡片功能 -->
-              <svg
-                class="w-3 h-3 mr-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                ></path>
-              </svg>
-              <span data-i18n="options_tab_anki"></span>
-            </button>
-            <!--
-              Prompt配置标签按钮
-              功能：自定义AI Prompt模板和字段配置
-              - 用户可以根据不同的Anki模板自定义Prompt
-              - 支持字段映射和动态配置
-            -->
-            <button
-              role="tab"
-              aria-selected="false"
-              aria-controls="prompt-config-panel"
-              class="settings-tab-btn flex items-center px-3 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent hover:border-gray-300 transition-colors duration-200"
-              data-tab="prompt-config"
-              data-i18n-aria="options_tab_prompt"
-            >
-              <!-- 编辑SVG图标 - 表示Prompt编辑功能 -->
-              <svg
-                class="w-3 h-3 mr-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                ></path>
-              </svg>
-              <span data-i18n="options_tab_prompt"></span>
-            </button>
+					<button
+						role="tab"
+						aria-selected="false"
+						aria-controls="system-config"
+						data-tab="system-config"
+						data-i18n-aria="options_tab_system"
+						class="settings-tab-btn w-full flex items-center space-x-3 px-4 py-3 text-sm font-semibold text-secondary rounded-xl hover:bg-white hover:text-primary-600 hover:shadow-sm transition-all duration-200 group">
+						<svg
+							class="w-5 h-5 text-tertiary group-hover:text-primary-500 transition-colors"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+						</svg>
+						<span data-i18n="options_tab_system">System</span>
+					</button>
+				</nav>
 
-            <!--
-              样式设置标签按钮
-              功能：界面显示样式自定义
-              - 字体大小设置（12px-18px）
-              - 文本对齐方式（左对齐/居中/右对齐）
-              - 行高设置（1.2-1.6）
-              - 实时预览效果
-            -->
-            <button
-              role="tab"
-              aria-selected="false"
-              aria-controls="style-config-panel"
-              class="settings-tab-btn flex items-center px-3 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent hover:border-gray-300 transition-colors duration-200"
-              data-tab="style-config"
-              data-i18n-aria="options_tab_style"
-            >
-              <!-- 板式SVG图标 - 表示样式设计功能 -->
-              <svg
-                class="w-3 h-3 mr-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z"
-                ></path>
-              </svg>
-              <span data-i18n="options_tab_style"></span>
-            </button>
+				<!-- Global Save Button (Mobile/Tablet usually, but here fixed at bottom of sidebar or main content? Let's keep it in main content footer) -->
+			</aside>
 
-            <!--
-              系统设置标签按钮
-              功能：通用系统参数配置
-              - 语言设置（目前仅支持简体中文）
-              - 配置数据导入/导出/重置功能
-              - 系统级别的设置选项
-            -->
-            <button
-              role="tab"
-              aria-selected="false"
-              aria-controls="system-config-panel"
-              class="settings-tab-btn flex items-center px-3 py-2 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent hover:border-gray-300 transition-colors duration-200"
-              data-tab="system-config"
-              data-i18n-aria="options_tab_system"
-            >
-              <!-- 齿轮SVG图标 - 表示系统配置功能 -->
-              <svg
-                class="w-3 h-3 mr-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                ></path>
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                ></path>
-              </svg>
-              <span data-i18n="options_tab_system"></span>
-            </button>
-          </nav>
+			<!-- Main Content (Scrollable) -->
+			<main class="flex-1 bg-white/50 relative overflow-y-auto">
+				<div class="max-w-4xl mx-auto p-8 pb-24">
+					<!-- Tab: AI Config -->
+					<div id="ai-config" class="tab-content active" role="tabpanel">
+						<h2
+							class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-700 to-slate-500 mb-6 flex items-center">
+							<span data-i18n="options_section_choose_provider"
+								>AI Configuration</span
+							>
+						</h2>
 
-          <!--
-            标签页内容容器
-            包含所有标签面板的实际内容
-            JavaScript通过切换CSS类来控制显示/隐藏状态
-          -->
-          <div class="settings-tab-content">
-            <!--
-              AI配置面板 - 默认激活状态
-              功能说明：
-              1. AI服务提供商选择和切换
-              2. 各提供商的API Key配置
-              3. 模型名称和API地址自定义
-              4. 连接测试和状态显示
-              - active类: 默认显示该面板
-              - role="tabpanel": 可访问性标识
-            -->
-            <div
-              id="ai-config"
-              class="tab-content active"
-              role="tabpanel"
-              aria-labelledby="ai-config-tab"
-            >
-              <div class="space-y-6">
-                <!-- 子元素间垂直间距24px -->
-                <!--
-                  AI提供商选择下拉框
-                  用户可以在Google Gemini、OpenAI GPT、Anthropic Claude之间切换
-                  JavaScript监听此下拉框的变化事件，动态显示/隐藏对应配置区域
-                -->
-                <div class="mb-6">
-                  <label
-                    for="ai-provider"
-                    class="block text-sm font-medium text-gray-700 mb-2"
-                    data-i18n="options_section_choose_provider"></label
-                  >
-                  <select
-                    id="ai-provider"
-                    class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-                  ></select>
-                </div>
+						<div
+							class="bg-card rounded-2xl shadow-card p-6 border border-border-light space-y-6 transform transition-all hover:shadow-lg">
+							<div class="space-y-2">
+								<label
+									for="ai-provider"
+									class="block text-xs font-bold uppercase tracking-wider text-secondary"
+									data-i18n="options_section_choose_provider"></label>
+								<div class="relative">
+									<select
+										id="ai-provider"
+										class="w-full p-3 bg-page border border-border-light rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary-400 focus:outline-none transition-all appearance-none"></select>
+									<div
+										class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-tertiary">
+										<svg
+											class="w-4 h-4"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24">
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M19 9l-7 7-7-7"></path>
+										</svg>
+									</div>
+								</div>
+							</div>
 
-                <div
-                  id="provider-config-container"
-                  class="provider-config-list space-y-6"
-                  data-role="provider-config-list"
-                ></div>
-              </div>
-            </div>
+							<div
+								id="provider-config-container"
+								class="space-y-6"
+								data-role="provider-config-list">
+								<!-- Dynamic Provider Configs -->
+							</div>
+						</div>
+					</div>
 
-            <!--
-              Prompt配置面板
-              功能说明：
-              1. 按Anki模板配置AI Prompt
-              2. 字段选择和配置
-              3. 自定义Prompt模板编辑
-              4. 支持动态字段映射
-              5. 模板重置和修改状态追踪
-              - 默认隐藏，点击标签显示
-            -->
-            <div
-              id="prompt-config"
-              class="tab-content"
-              role="tabpanel"
-              aria-labelledby="prompt-config-tab"
-            >
-              <div class="space-y-8">
-                <!-- 子区域间垂直间距32px -->
-                <!--
-                  Prompt配置编辑器主区域
-                  提供可视化的Prompt编辑界面
-                  - shadow-sm: 轻微阴影效果
-                  - prompt-config-editor: 自定义CSS类标识符
-                -->
-                <section
-                  class="bg-slate-50 border border-slate-200 rounded-md p-5 shadow-sm prompt-config-editor"
-                >
-                  <!--
-                    Prompt配置头部信息
-                    - 响应式布局：桌面端水平排列，移动端垂直排列
-                    - 显示当前选中的Anki模板名称
-                    - 提供操作指导信息
-                  -->
-                  <div
-                    class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4"
-                  >
-                    <div>
-                      <h3 class="text-lg font-semibold text-gray-800" data-i18n="options_section_prompt_by_model">
-                        
-                      </h3>
-                      <!-- 操作提示信息 -->
-                      <p id="prompt-model-hint" class="text-sm text-gray-600" data-i18n="options_section_prompt_instruction"></p>
-                    </div>
-                    <!-- 当前模板状态显示 -->
-                    <span
-                      id="prompt-current-model"
-                      class="text-sm text-slate-600 bg-white border border-slate-200 rounded-md px-3 py-1"
-                      data-i18n="options_prompt_current_model"></span
-                    >
-                  </div>
+					<!-- Tab: Template Library -->
+					<div id="template-library" class="tab-content" role="tabpanel">
+						<div id="template-list-view" data-view="template-list">
+							<!-- Empty State -->
+							<div
+								id="template-empty-state"
+								class="flex flex-col items-center justify-center py-20 bg-card rounded-2xl border border-dashed border-border-hover"
+								style="display: none">
+								<div
+									class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+									<svg
+										class="w-8 h-8 text-slate-400"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor">
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											stroke-width="2"
+											d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+									</svg>
+								</div>
+								<h3
+									class="text-lg font-semibold text-main mb-1"
+									data-i18n="template_library_empty_title">
+									No Templates
+								</h3>
+								<p
+									class="text-sm text-secondary mb-6"
+									data-i18n="template_library_empty_description">
+									Get started by creating your first template.
+								</p>
+								<button
+									type="button"
+									id="add-template-btn-empty"
+									class="btn-primary-lg shadow-lg hover:shadow-primary/30 transform hover:-translate-y-0.5 transition-all text-white bg-primary px-6 py-2.5 rounded-xl font-medium flex items-center gap-2"
+									data-i18n="template_library_add_button">
+									<span>+ Create Template</span>
+								</button>
+							</div>
 
-                  <!--
-                    字段配置编辑区域
-                    功能：
-                    1. 字段选择：显示当前模板的所有字段，支持多选
-                    2. 字段配置：为每个字段配置Prompt描述
-                    3. 状态显示：实时显示配置状态和验证结果
-                    - 默认隐藏，选择模板后显示
-                  -->
-                  <!-- 字段配置编辑区域 - 初始状态隐藏 -->
-                  <div
-                    id="prompt-field-editor"
-                    class="bg-white border border-slate-200 rounded-md p-4 space-y-4"
-                    style="display: none"
-                  >
-                    <!--
-                      字段选择区域
-                      用户可以选择哪些字段需要AI生成内容
-                    -->
-                    <div>
-                      <div class="flex items-center justify-between">
-                        <h4 class="text-sm font-medium text-gray-700" data-i18n="options_prompt_field_select">
-                          
-                        </h4>
-                        <!-- 操作提示 -->
-                        <span class="text-xs text-gray-500"
-                        data-i18n="options_prompt_field_select_hint"></span
-                        >
-                      </div>
-                      <!-- 字段选择按钮列表 - JavaScript动态生成 -->
-                      <div
-                        id="field-selection-list"
-                        class="flex flex-wrap gap-2 mt-3"
-                      ></div>
-                    </div>
-                    <!--
-                      字段配置区域
-                      为每个选中的字段配置生成描述
-                    -->
-                    <div>
-                      <div class="flex items-center justify-between">
-                        <h4 class="text-sm font-medium text-gray-700" data-i18n="options_prompt_field_config">
-                          
-                        </h4>
-                        <!-- 功能说明 -->
-                        <span class="text-xs text-gray-500"
-                        data-i18n="options_prompt_field_config_hint"></span
-                        >
-                      </div>
-                      <!-- 字段配置表单列表 - JavaScript动态生成 -->
-                      <div id="field-config-list" class="mt-3 space-y-4"></div>
-                    </div>
-                    <!-- 配置状态信息 -->
-                    <p
-                      id="prompt-config-status"
-                      class="text-xs text-gray-500"
-                    ></p>
-                  </div>
+							<!-- Template List -->
+							<div id="template-list-container">
+								<div class="flex items-center justify-between mb-8">
+									<h2
+										class="text-2xl font-bold text-main"
+										data-i18n="template_library_title">
+										Templates
+									</h2>
+									<button
+										type="button"
+										id="add-template-btn"
+										class="bg-primary hover:bg-primary-600 text-white shadow-md hover:shadow-lg transition-all px-4 py-2 rounded-xl font-medium flex items-center text-sm gap-2">
+										<svg
+											class="w-4 h-4"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke="currentColor">
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M12 4v16m8-8H4" />
+										</svg>
+										<span data-i18n="template_library_add_button">Add New</span>
+									</button>
+								</div>
+								<!-- Cards Grid -->
+								<div
+									id="template-cards-grid"
+									class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
+							</div>
+						</div>
 
-                  <!--
-                    自定义Prompt模板编辑区域
-                    功能：
-                    - 大型文本区域编辑Prompt内容
-                    - font-mono: 等宽字体，便于代码和模板编辑
-                    - 支持占位符语法（{{INPUT_TEXT}}、{{FIELD_SCHEMA}}）
-                    - 初始状态禁用，选择模板后启用
-                  -->
-                  <div class="form-group mt-4">
-                    <label
-                      for="custom-prompt-textarea"
-                      class="block text-sm font-medium text-gray-700 mb-2"
-                      data-i18n="options_prompt_custom_template"></label
-                    >
-                    <!-- Prompt模板编辑文本区域 - 12行高度，提供足够的编辑空间 -->
-                    <textarea
-                      id="custom-prompt-textarea"
-                      rows="12"
-                      class="w-full p-3 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 font-mono text-sm"
-                      placeholder=""
-                      data-i18n-placeholder="options_prompt_template_placeholder"
-                      disabled
-                    ></textarea>
-                  </div>
+						<!-- Template Form View (Hidden by default) -->
+						<div
+							id="template-form-view"
+							data-view="template-form"
+							style="display: none">
+							<div class="flex items-center justify-between mb-6">
+								<div class="flex items-center gap-3">
+									<button
+										type="button"
+										id="template-form-cancel"
+										class="p-2 rounded-lg hover:bg-slate-100 text-secondary transition-colors">
+										<svg
+											class="w-5 h-5"
+											fill="none"
+											stroke="currentColor"
+											viewBox="0 0 24 24">
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+										</svg>
+									</button>
+									<h2
+										id="template-form-title"
+										class="text-2xl font-bold text-main"
+										data-i18n="template_form_title_new">
+										New Template
+									</h2>
+								</div>
+							</div>
 
-                  <!--
-                    Prompt模板操作按钮区域
-                    - reset-prompt-btn: 重置按钮，恢复到默认模板
-                    - prompt-dirty-flag: 修改状态标识，提醒用户保存
-                  -->
-                  <div class="flex items-center gap-3 mt-3">
-                    <!-- 重置模板按钮 -->
-                    <button
-                      type="button"
-                      id="reset-prompt-btn"
-                      class="bg-slate-500 hover:bg-slate-600 text-white font-medium py-2 px-4 rounded-md transition disabled:opacity-50"
-                      disabled
-                      data-i18n="options_prompt_reset_default">
-                      
-                    </button>
-                    <!-- 修改状态提示 - 默认隐藏 -->
-                    <span
-                      id="prompt-dirty-flag"
-                      class="text-xs text-slate-500"
-                      style="display: none"
-                      data-i18n="options_prompt_dirty_hint"></span
-                    >
-                  </div>
-                </section>
-              </div>
-            </div>
-            <!--
-              Anki连接配置面板
-              功能说明：
-              1. AnkiConnect连接测试和状态检查
-              2. 牌组选择和管理
-              3. Anki模板选择和配置
-              4. 字段信息显示和映射
-              5. 实时同步Anki数据
-              - 默认隐藏，点击标签显示
-            -->
-            <div
-              id="anki-config"
-              class="tab-content"
-              role="tabpanel"
-              aria-labelledby="anki-config-tab"
-            >
-              <div class="space-y-6">
-                <!-- 区域间垂直间距24px -->
-                <!--
-                  Anki连接测试区域
-                  - 检测AnkiConnect是否正常运行
-                  - 自动获取可用的牌组和模板列表
-                  - 实时显示连接状态和错误信息
-                -->
-                <div class="mb-4">
-                  <div class="flex items-center gap-4">
-                    <!-- AnkiConnect连接测试按钮 -->
-                    <button
-                      id="test-anki-btn"
-                      class="bg-slate-600 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-md transition"
-                      data-i18n="options_prompt_generate_default">
-                      
-                    </button>
-                    <!-- Anki连接状态显示区域 -->
-                    <p
-                      id="anki-status"
-                      class="text-sm text-gray-600 flex-1"
-                    ></p>
-                  </div>
-                </div>
+							<div class="space-y-6">
+								<!-- Basic Info -->
+								<section
+									class="bg-card rounded-2xl shadow-sm border border-border-light p-6 space-y-5">
+									<h3
+										class="text-sm font-bold uppercase tracking-wider text-secondary border-b border-border-light pb-2 mb-4"
+										data-i18n="template_form_basic_info">
+										Basic Info
+									</h3>
+									<div class="grid gap-5">
+										<div>
+											<label
+												for="template-name"
+												class="block text-sm font-medium text-main mb-1.5"
+												><span data-i18n="template_form_name_label">Name</span>
+												<span class="text-red-500">*</span></label
+											>
+											<input
+												type="text"
+												id="template-name"
+												class="w-full p-3 bg-page border border-border-light rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary-400 focus:outline-none transition-all"
+												data-i18n-placeholder="template_form_name_placeholder" />
+										</div>
+										<div>
+											<label
+												for="template-description"
+												class="block text-sm font-medium text-main mb-1.5"
+												><span data-i18n="template_form_description_label"
+													>Description</span
+												>
+												<span class="text-red-500">*</span></label
+											>
+											<textarea
+												id="template-description"
+												rows="3"
+												class="w-full p-3 bg-page border border-border-light rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary-400 focus:outline-none transition-all resize-none"
+												data-i18n-placeholder="template_form_description_placeholder"></textarea>
+										</div>
+									</div>
+								</section>
 
-                <!--
-                  牌组和模板选择区域
-                  - 响应式网格布局：桌面端2列，移动端1列
-                  - 牌组：Anki中的学习卡片集合
-                  - 模板：定义卡片的字段结构和样式
-                -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  <!-- 默认牌组选择 -->
-                  <div>
-                    <label
-                      for="default-deck"
-                      class="block text-sm font-medium text-gray-700 mb-2"
-                      data-i18n="options_label_deck"></label
-                    >
-                    <!-- 牌组下拉选择框 - JavaScript动态填充 -->
-                    <select
-                      id="default-deck"
-                      class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-                    >
-                      <option value="" data-i18n="options_hint_test_anki_first"></option>
-                    </select>
-                  </div>
+								<!-- Anki Config -->
+								<section
+									class="bg-card rounded-2xl shadow-sm border border-border-light p-6 space-y-5">
+									<div
+										class="flex items-center justify-between border-b border-border-light pb-2 mb-4">
+										<h3
+											class="text-sm font-bold uppercase tracking-wider text-secondary"
+											data-i18n="template_form_anki_section">
+											Anki Connection
+										</h3>
+										<button
+											type="button"
+											id="template-test-anki-btn"
+											class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium transition-colors"
+											data-i18n="template_form_test_anki">
+											Test Connection
+										</button>
+									</div>
+									<p
+										id="template-anki-status"
+										class="text-sm text-secondary"></p>
 
-                  <!-- Anki模板选择 -->
-                  <div>
-                    <label
-                      for="default-model"
-                      class="block text-sm font-medium text-gray-700 mb-2"
-                      data-i18n="options_label_model"></label
-                    >
-                    <!-- 模板下拉选择框 - JavaScript动态填充 -->
-                    <select
-                      id="default-model"
-                      class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-                    >
-                      <option value="" data-i18n="options_hint_test_anki_first"></option>
-                    </select>
-                  </div>
-                </div>
+									<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+										<div>
+											<label
+												for="template-deck"
+												class="block text-sm font-medium text-main mb-1.5"
+												><span data-i18n="template_form_deck_label">Deck</span>
+												<span class="text-red-500">*</span></label
+											>
+											<select
+												id="template-deck"
+												class="w-full p-3 bg-page border border-border-light rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary-400 focus:outline-none transition-all appearance-none">
+												<option
+													value=""
+													data-i18n="options_hint_test_anki_first"></option>
+											</select>
+										</div>
+										<div>
+											<label
+												for="template-model"
+												class="block text-sm font-medium text-main mb-1.5"
+												><span data-i18n="template_form_model_label"
+													>Note Type</span
+												>
+												<span class="text-red-500">*</span></label
+											>
+											<select
+												id="template-model"
+												class="w-full p-3 bg-page border border-border-light rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary-400 focus:outline-none transition-all appearance-none">
+												<option
+													value=""
+													data-i18n="options_hint_test_anki_first"></option>
+											</select>
+										</div>
+									</div>
 
-                <!--
-                  字段映射信息显示区域
-                  功能：
-                  - 显示当前选中模板的所有字段
-                  - 字段类型和属性信息显示
-                  - 为Prompt配置提供参考信息
-                  - 默认隐藏，选择模板后显示
-                -->
-                <div id="field-mapping" class="mb-4" style="display: none">
-                  <h3 class="text-lg font-semibold text-gray-700 mb-3" data-i18n="options_label_field_info">
-                    
-                  </h3>
-                  <!--
-                    字段列表容器
-                    - JavaScript动态生成字段信息卡片
-                    - 显示字段名称、类型、是否必填等信息
-                  -->
-                  <div
-                    class="field-mapping-container bg-gray-50 border border-gray-200 rounded-md p-4"
-                  >
-                    <!-- 运行时由JavaScript动态填入字段列表 -->
-                  </div>
-                </div>
-              </div>
-            </div>
+									<div
+										id="template-field-mapping"
+										class="mt-4 pt-4 border-t border-border-light"
+										style="display: none">
+										<h4
+											class="text-sm font-semibold text-main mb-3"
+											data-i18n="template_form_fields_available">
+											Available Fields
+										</h4>
+										<div
+											id="template-field-mapping-container"
+											class="bg-page/50 border border-border-light rounded-xl p-4 text-sm"></div>
+									</div>
+								</section>
 
-            <!--
-              系统配置面板
-              功能说明：
-              1. 多语言设置（目前仅支持中文）
-              2. 配置数据导入/导出功能
-              3. 系统设置重置功能
-              4. 数据备份和恢复
-              - 默认隐藏，点击标签显示
-            -->
-            <div
-              id="system-config"
-              class="tab-content"
-              role="tabpanel"
-              aria-labelledby="system-config-tab"
-            >
-              <div class="space-y-6">
-                <!-- 区域间垂直间距24px -->
-                <!--
-                  悬浮球助手功能开关区域
-                  - 控制悬浮球功能的启用/禁用
-                  - 提供功能说明文案
-                  - 配置变更后立即生效
-                -->
-                <div class="mb-6">
-                  <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="options_ui_floating_assistant_label">
-                    悬浮球助手
-                  </label>
-                  <div class="bg-slate-50 border border-slate-200 rounded-md p-4">
-                    <div class="flex items-center justify-between mb-2">
-                      <div class="flex items-center">
-                        <input
-                          type="checkbox"
-                          id="enable-floating-assistant"
-                          class="w-4 h-4 text-slate-600 bg-gray-100 border-gray-300 rounded focus:ring-slate-500 focus:ring-2"
-                        />
-                        <label
-                          for="enable-floating-assistant"
-                          class="ml-2 text-sm font-medium text-gray-700 cursor-pointer"
-                          data-i18n="options_ui_floating_assistant_enable"
-                        >
-                          启用悬浮球助手
-                        </label>
-                      </div>
-                    </div>
-                    <p class="text-xs text-gray-600" data-i18n="options_ui_floating_assistant_description">
-                      在网页中选中文本后，自动显示悬浮球按钮，点击即可快速解析并创建 Anki 卡片。若遇到兼容问题可关闭此功能。
-                    </p>
-                  </div>
-                </div>
+								<!-- Fields Section -->
+								<section
+									id="template-fields-section"
+									class="bg-card rounded-2xl shadow-sm border border-border-light p-6 space-y-5"
+									style="display: none">
+									<h3
+										class="text-sm font-bold uppercase tracking-wider text-secondary border-b border-border-light pb-2 mb-4"
+										data-i18n="template_form_fields_section">
+										Fields Configuration
+									</h3>
+									<div>
+										<div class="flex items-center justify-between mb-3">
+											<h4
+												class="text-sm font-medium text-main"
+												data-i18n="template_form_field_select">
+												Select Fields
+											</h4>
+											<span
+												class="text-xs text-secondary"
+												data-i18n="template_form_field_select_hint"></span>
+										</div>
+										<div
+											id="template-field-selection-list"
+											class="flex flex-wrap gap-2"></div>
+									</div>
+									<div>
+										<div class="flex items-center justify-between mb-3">
+											<h4
+												class="text-sm font-medium text-main"
+												data-i18n="template_form_field_config">
+												Configure Prompts
+											</h4>
+											<span
+												class="text-xs text-secondary"
+												data-i18n="template_form_field_config_hint"></span>
+										</div>
+										<div
+											id="template-field-config-list"
+											class="space-y-4"></div>
+									</div>
+									<div class="flex justify-end pt-4">
+										<button
+											type="button"
+											id="template-generate-prompt-btn"
+											class="bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-black transition-colors"
+											data-i18n="template_form_generate_prompt">
+											Generate Prompt
+										</button>
+									</div>
+								</section>
 
-                <!--
-                  语言设置区域
-                  - 目前仅支持简体中文
-                  - 预留多语言功能扩展接口
-                  - 未来可能支持英文、日语等
-                -->
-                <div class="mb-4">
-                  <label
-                    for="language-select"
-                    class="block text-sm font-medium text-gray-700 mb-2"
-                    data-i18n="options_label_language"></label
-                  >
-                  <!-- 语言选择下拉框 -->
-                  <p
-                    id="language-browser-notice"
-                    class="text-sm text-gray-600"
-                    data-i18n="options_language_follow_browser"
-                  ></p>
-                  <p class="mt-2 text-sm text-gray-600">
-                    <span data-i18n="options_language_current_label"></span>
-                    <span id="current-language-name" class="font-semibold"></span>
-                  </p>
-                  <select
-                    id="language-select"
-                    class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-                  >
-                    <option value="zh-CN" data-i18n="options_language_chinese_simplified"></option>
-                    <option value="zh-TW" data-i18n="options_language_chinese_traditional"></option>
-                    <option value="ja-JP" data-i18n="options_language_japanese"></option>
-                    <option value="en-US" data-i18n="options_language_english"></option>
-                  </select>
-                </div>
+								<!-- Prompt Section -->
+								<section
+									id="template-prompt-section"
+									class="bg-card rounded-2xl shadow-sm border border-border-light p-6 space-y-5"
+									style="display: none">
+									<h3
+										class="text-sm font-bold uppercase tracking-wider text-secondary border-b border-border-light pb-2 mb-4"
+										data-i18n="template_form_prompt_section">
+										Final Prompt
+									</h3>
+									<div>
+										<label
+											for="template-prompt"
+											class="block text-sm font-medium text-main mb-1.5"
+											><span data-i18n="template_form_prompt_label"
+												>System Prompt</span
+											>
+											<span class="text-red-500">*</span></label
+										>
+										<textarea
+											id="template-prompt"
+											rows="12"
+											class="w-full p-4 bg-slate-50 border border-border-light rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary-400 focus:outline-none transition-all font-mono text-sm leading-relaxed"
+											data-i18n-placeholder="template_form_prompt_placeholder"></textarea>
+									</div>
+								</section>
 
-                <!--
-                  配置管理区域
-                  功能说明：
-                  1. 导出配置：将当前设置保存为JSON文件
-                  2. 导入配置：从文件恢复之前的设置
-                  3. 重置配置：清除所有设置，恢复到默认状态
-                  安全特性：导出时自动过滤API密钥等敏感信息
-                -->
-                <section
-                  class="p-6 bg-gray-50 border border-gray-200 rounded-md"
-                >
-                  <h3 class="text-lg font-semibold text-gray-800 mb-4" data-i18n="options_section_config_management">
-                    
-                  </h3>
-                  <!-- 功能说明和安全提示 -->
-                  <p class="text-sm text-gray-600 mb-4" data-i18n="options_section_config_management_hint"></p>
+								<!-- Bottom Actions -->
+								<div class="flex items-center justify-end gap-3 pt-6 pb-12">
+									<button
+										type="button"
+										id="template-form-cancel-bottom"
+										class="px-6 py-2.5 rounded-xl border border-border-light text-secondary font-medium hover:bg-slate-50 transition-colors"
+										data-i18n="template_form_cancel">
+										Cancel
+									</button>
+									<button
+										type="button"
+										id="template-form-save"
+										class="px-6 py-2.5 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/30 hover:bg-primary-600 hover:scale-[1.02] transition-all"
+										data-i18n="template_form_save">
+										Save Template
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
 
-                  <!--
-                    配置管理操作按钮组
-                    - 响应式布局：小屏幕垂直排列，大屏幕水平排列
-                    - 按钮颜色区分：蓝色导出、绿色导入、红色重置
-                  -->
-                  <div class="flex flex-col sm:flex-row gap-3">
-                    <!-- 配置导出按钮 -->
-                    <button
-                      type="button"
-                      id="export-config-btn"
-                      class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-200"
-                      data-i18n="options_button_export_config">
-                      
-                    </button>
+					<!-- Tab: Style Config -->
+					<div id="style-config" class="tab-content" role="tabpanel">
+						<h2
+							class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-700 to-slate-500 mb-6 flex items-center">
+							<span data-i18n="options_section_style_preview">Appearance</span>
+						</h2>
 
-                    <!-- 配置导入区域 -->
-                    <div class="flex items-center">
-                      <!-- 隐藏的文件选择输入框 -->
-                      <!-- 隐藏的文件输入框 - 仅接受JSON格式文件 -->
-                      <input
-                        type="file"
-                        id="import-config-input"
-                        accept=".json"
-                        class="hidden"
-                      />
-                      <!-- 配置导入触发按钮 -->
-                      <button
-                        type="button"
-                        id="import-config-btn"
-                        class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition duration-200"
-                        data-i18n="options_button_import_config">
-                        
-                      </button>
-                    </div>
+						<div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+							<div
+								class="bg-card p-5 rounded-xl border border-border-light shadow-sm">
+								<label
+									for="font-size-select"
+									class="block text-xs font-bold uppercase tracking-wider text-secondary mb-2"
+									data-i18n="options_label_font_size"
+									>Font Size</label
+								>
+								<select
+									id="font-size-select"
+									class="w-full p-2.5 bg-page border border-border-light rounded-lg text-sm focus:ring-primary/20">
+									<option value="12px" data-i18n="options_font_size_small">
+										Small
+									</option>
+									<option value="14px" data-i18n="options_font_size_medium">
+										Medium
+									</option>
+									<option value="16px" data-i18n="options_font_size_large">
+										Large
+									</option>
+									<option value="18px" data-i18n="options_font_size_xlarge">
+										Extra Large
+									</option>
+								</select>
+							</div>
+							<div
+								class="bg-card p-5 rounded-xl border border-border-light shadow-sm">
+								<label
+									for="text-align-select"
+									class="block text-xs font-bold uppercase tracking-wider text-secondary mb-2"
+									data-i18n="options_label_text_align"
+									>Align</label
+								>
+								<select
+									id="text-align-select"
+									class="w-full p-2.5 bg-page border border-border-light rounded-lg text-sm focus:ring-primary/20">
+									<option value="left" data-i18n="options_text_align_left">
+										Left
+									</option>
+									<option value="center" data-i18n="options_text_align_center">
+										Center
+									</option>
+									<option value="right" data-i18n="options_text_align_right">
+										Right
+									</option>
+								</select>
+							</div>
+							<div
+								class="bg-card p-5 rounded-xl border border-border-light shadow-sm">
+								<label
+									for="line-height-select"
+									class="block text-xs font-bold uppercase tracking-wider text-secondary mb-2"
+									data-i18n="options_label_line_height"
+									>Line Height</label
+								>
+								<select
+									id="line-height-select"
+									class="w-full p-2.5 bg-page border border-border-light rounded-lg text-sm focus:ring-primary/20">
+									<option value="1.2" data-i18n="options_line_height_compact">
+										Compact
+									</option>
+									<option value="1.4" data-i18n="options_line_height_normal">
+										Normal
+									</option>
+									<option value="1.6" data-i18n="options_line_height_loose">
+										Loose
+									</option>
+								</select>
+							</div>
+						</div>
 
-                    <!-- 配置重置按钮 - 需要二次确认 -->
-                    <button
-                      type="button"
-                      id="reset-config-btn"
-                      class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition duration-200"
-                      data-i18n="options_button_reset_config">
-                      
-                    </button>
-                  </div>
+						<div
+							class="bg-card rounded-2xl border border-border-light shadow-card p-8">
+							<h3
+								class="text-sm font-bold uppercase tracking-wider text-secondary border-b border-border-light pb-2 mb-4"
+								data-i18n="options_section_style_preview">
+								Preview
+							</h3>
+							<div
+								id="style-preview"
+								class="p-6 bg-page rounded-xl border border-border-light transition-all">
+								<div id="preview-content">
+									<p
+										data-i18n="options_style_preview_sample"
+										class="mb-2 font-bold">
+										The quick brown fox jumps over the lazy dog.
+									</p>
+									<p data-i18n="options_style_preview_description">
+										This is how your text will look like in the popup window.
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
 
-                  <!-- 配置管理操作状态显示 -->
-                  <div class="mt-3">
-                    <p
-                      id="config-management-status"
-                      class="text-sm text-gray-600"
-                    ></p>
-                  </div>
-                </section>
-              </div>
-            </div>
+					<!-- Tab: System Config -->
+					<div id="system-config" class="tab-content" role="tabpanel">
+						<h2
+							class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-700 to-slate-500 mb-6 flex items-center">
+							<span data-i18n="options_section_config_management">System</span>
+						</h2>
 
-            <!--
-              样式配置面板
-              功能说明：
-              1. 字体大小调整（12px-18px选项）
-              2. 文本对齐方式（左对齐/居中/右对齐）
-              3. 行高设置（1.2-1.6范围）
-              4. 实时预览效果
-              5. 应用到弹窗界面的样式设置
-              - 默认隐藏，点击标签显示
-            -->
-            <div
-              id="style-config"
-              class="tab-content"
-              role="tabpanel"
-              aria-labelledby="style-config-tab"
-            >
-              <div class="space-y-6">
-                <!-- 区域间垂直间距24px -->
-                <!--
-                  样式设置控制面板
-                  - 3列响应式网格布局：桌面端3列，平板和手机1列
-                  - 每个设置项都提供直观的选项和说明
-                -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <!-- 字体大小设置 -->
-                  <div>
-                    <label
-                      for="font-size-select"
-                      class="block text-sm font-medium text-gray-700 mb-2"
-                      data-i18n="options_label_font_size"></label
-                    >
-                    <select
-                      id="font-size-select"
-                      class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-                    >
-                      <option value="12px" data-i18n="options_font_size_small"></option>
-                      <option value="14px" data-i18n="options_font_size_medium"></option>
-                      <option value="16px" data-i18n="options_font_size_large"></option>
-                      <option value="18px" data-i18n="options_font_size_xlarge"></option>
-                    </select>
-                  </div>
-                  <!-- 文本对齐设置 -->
-                  <div>
-                    <label
-                      for="text-align-select"
-                      class="block text-sm font-medium text-gray-700 mb-2"
-                      data-i18n="options_label_text_align"></label
-                    >
-                    <select
-                      id="text-align-select"
-                      class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-                    >
-                      <option value="left" data-i18n="options_text_align_left"></option>
-                      <option value="center" data-i18n="options_text_align_center"></option>
-                      <option value="right" data-i18n="options_text_align_right"></option>
-                    </select>
-                  </div>
-                  <!-- 行高设置 -->
-                  <div>
-                    <label
-                      for="line-height-select"
-                      class="block text-sm font-medium text-gray-700 mb-2"
-                      data-i18n="options_label_line_height"></label
-                    >
-                    <select
-                      id="line-height-select"
-                      class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
-                    >
-                      <option value="1.2" data-i18n="options_line_height_compact"></option>
-                      <option value="1.4" data-i18n="options_line_height_normal"></option>
-                      <option value="1.6" data-i18n="options_line_height_loose"></option>
-                    </select>
-                  </div>
-                </div>
-                <!--
-                  样式预览区域
-                  功能：
-                  - 实时显示字体大小、对齐、行高的效果
-                  - 用户可以直观看到设置变化对文本的影响
-                  - JavaScript实时更新预览效果
-                -->
-                <div class="mb-4">
-                  <label class="block text-sm font-medium text-gray-700 mb-2"
-                  data-i18n="options_section_style_preview"></label
-                  >
-                  <!-- 预览效果显示区域 -->
-                  <div
-                    id="style-preview"
-                    class="border border-gray-300 rounded-md p-4 bg-gray-50"
-                  >
-                    <!-- 示例文本内容 - JavaScript实时应用样式 -->
-                    <div id="preview-content">
-                      <p data-i18n="options_style_preview_sample"></p>
-                      <p data-i18n="options_style_preview_description"></p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+						<div class="space-y-6">
+							<!-- Floating Assistant -->
+							<div
+								class="bg-card p-6 rounded-2xl border border-border-light shadow-sm flex items-start justify-between">
+								<div>
+									<div class="flex items-center gap-2 mb-1">
+										<h3
+											class="font-bold text-main"
+											data-i18n="options_ui_floating_assistant_label">
+											Floating Assistant
+										</h3>
+									</div>
+									<p
+										class="text-sm text-secondary"
+										data-i18n="options_ui_floating_assistant_description">
+										Show floating button when text is selected.
+									</p>
+								</div>
+								<div class="flex items-center h-8">
+									<input
+										type="checkbox"
+										id="enable-floating-assistant"
+										class="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary/40" />
+								</div>
+							</div>
 
-          <!--
-            页面底部区域
-            - 全局保存按钮和状态显示
-            - border-t: 顶部边框分隔线
-            - mt-8 pt-6: 顶部外边距和内边距
-            - 响应式布局：手机端全宽，桌面端自适应宽度
-          -->
-          <footer class="mt-8 pt-6 border-t border-gray-200">
-            <div class="flex flex-col items-center space-y-3">
-              <!--
-                全局保存设置按钮
-                - 保存所有标签页的配置修改
-                - JavaScript监听点击事件，批量保存数据
-                - 保存成功后更新状态显示
-              -->
-              <button
-                id="save-btn"
-                class="bg-slate-700 hover:bg-slate-800 text-white font-semibold py-3 px-8 rounded-md transition duration-200 w-full md:w-auto"
-                data-i18n="options_button_save">
-                
-              </button>
-              <!-- 保存状态信息显示 - JavaScript动态更新 -->
-              <p id="save-status" class="text-sm text-gray-600"></p>
-            </div>
-          </footer>
-        </div>
-      </div>
-    </div>
+							<!-- Language -->
+							<div
+								class="bg-card p-6 rounded-2xl border border-border-light shadow-sm">
+								<label
+									for="language-select"
+									class="block text-sm font-bold text-main mb-2"
+									data-i18n="options_label_language"
+									>Language</label
+								>
+								<p
+									id="language-browser-notice"
+									class="text-xs text-tertiary mb-3"></p>
+								<select
+									id="language-select"
+									class="w-full p-3 bg-page border border-border-light rounded-xl focus:ring-2 focus:ring-primary/20">
+									<option
+										value="zh-CN"
+										data-i18n="options_language_chinese_simplified">
+										Chinese (Simplified)
+									</option>
+									<option
+										value="zh-TW"
+										data-i18n="options_language_chinese_traditional">
+										Chinese (Traditional)
+									</option>
+									<option value="ja-JP" data-i18n="options_language_japanese">
+										Japanese
+									</option>
+									<option value="en-US" data-i18n="options_language_english">
+										English
+									</option>
+								</select>
+							</div>
 
-    <!--
-      JavaScript模块加载
-      - type="module": ES6模块支持，启用import/export语法
-      - src="options.js": 设置页面的主要业务逻辑文件
+							<!-- Config Management -->
+							<div
+								class="bg-card p-6 rounded-2xl border border-border-light shadow-sm">
+								<h3
+									class="font-bold text-main mb-2"
+									data-i18n="options_section_config_management">
+									Data Management
+								</h3>
+								<p
+									class="text-sm text-secondary mb-5"
+									data-i18n="options_section_config_management_hint">
+									Export or import your configuration.
+								</p>
 
-      options.js文件包含的主要功能：
-      1. 标签页切换逻辑和动画效果
-      2. AI提供商配置和测试连接
-      3. Prompt模板编辑和字段配置
-      4. AnkiConnect集成和数据同步
-      5. 配置数据的存储、加载、导入导出
-      6. 样式设置的实时预览和应用
-      7. 表单验证和用户反馈
-      8. API密钥的安全处理和显示控制
-    -->
-    <script type="module" src="options.js"></script>
-  </body>
+								<div class="flex flex-wrap gap-3">
+									<button
+										type="button"
+										id="export-config-btn"
+										class="px-4 py-2 bg-blue-50 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
+										data-i18n="options_button_export_config">
+										Export Config
+									</button>
+
+									<div class="relative">
+										<input
+											type="file"
+											id="import-config-input"
+											accept=".json"
+											class="hidden" />
+										<button
+											type="button"
+											id="import-config-btn"
+											class="px-4 py-2 bg-green-50 text-green-600 font-semibold rounded-lg hover:bg-green-100 transition-colors border border-green-200"
+											data-i18n="options_button_import_config">
+											Import Config
+										</button>
+									</div>
+
+									<button
+										type="button"
+										id="reset-config-btn"
+										class="px-4 py-2 bg-red-50 text-red-600 font-semibold rounded-lg hover:bg-red-100 transition-colors border border-red-200 ml-auto"
+										data-i18n="options_button_reset_config">
+										Reset All
+									</button>
+								</div>
+								<p
+									id="config-management-status"
+									class="text-sm text-secondary mt-3"></p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</main>
+
+			<!-- Global Save Button Footer (Fixed at bottom right of main content area provided above via padding, but let's make it sticky) -->
+			<div
+				class="absolute bottom-0 right-0 left-0 md:left-64 bg-white/80 backdrop-blur-md border-t border-border-light p-4 flex items-center justify-between z-20">
+				<div class="flex-1 px-4">
+					<p
+						id="save-status"
+						class="text-sm text-primary font-medium animate-pulse"></p>
+				</div>
+				<button
+					id="save-btn"
+					class="px-8 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/30 hover:bg-primary-600 hover:-translate-y-0.5 active:translate-y-0 transition-all"
+					data-i18n="options_button_save">
+					Save Changes
+				</button>
+			</div>
+		</div>
+
+		<script type="module" src="options.js"></script>
+	</body>
 </html>

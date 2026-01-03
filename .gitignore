@@ -31,9 +31,9 @@ coverage/
 *.tmp
 ~$*
 
-#
-AGENTS.md
- 
+# Archive (completed documentation)
+archive/
+
 # Additional ignores (safe additions)
 # Local AI/assistant settings
 .claude/

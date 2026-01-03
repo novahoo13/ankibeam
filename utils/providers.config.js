@@ -19,7 +19,7 @@
  * @private
  */
 const GOOGLE_SALT = new Uint8Array([
-  18, 24, 193, 131, 8, 11, 20, 153, 22, 163, 3, 19, 84, 134, 103, 174,
+	18, 24, 193, 131, 8, 11, 20, 153, 22, 163, 3, 19, 84, 134, 103, 174,
 ]);
 
 /**
@@ -28,7 +28,7 @@ const GOOGLE_SALT = new Uint8Array([
  * @private
  */
 const OPENAI_SALT = new Uint8Array([
-  45, 67, 89, 12, 34, 56, 78, 90, 123, 145, 167, 189, 211, 233, 255, 21,
+	45, 67, 89, 12, 34, 56, 78, 90, 123, 145, 167, 189, 211, 233, 255, 21,
 ]);
 
 /**
@@ -37,7 +37,7 @@ const OPENAI_SALT = new Uint8Array([
  * @private
  */
 const ANTHROPIC_SALT = new Uint8Array([
-  98, 76, 54, 32, 10, 87, 65, 43, 21, 99, 77, 55, 33, 11, 89, 67,
+	98, 76, 54, 32, 10, 87, 65, 43, 21, 99, 77, 55, 33, 11, 89, 67,
 ]);
 
 /**
@@ -47,7 +47,7 @@ const ANTHROPIC_SALT = new Uint8Array([
  * @private
  */
 const BASE_HOST_PERMISSIONS = Object.freeze([
-  "http://127.0.0.1:8765/*", // Anki Connect 默认地址
+	"http://127.0.0.1:8765/*", // Anki Connect 默认地址
 ]);
 
 /**
@@ -75,9 +75,9 @@ const FALLBACK_ORDER = Object.freeze(["google", "openai", "anthropic"]);
  * @property {number} backoffFactor - 指数退避因子(每次重试延迟时间 = baseDelayMs * backoffFactor^attemptCount)
  */
 export const DEFAULT_RETRY_POLICY = Object.freeze({
-  maxAttempts: 3,
-  baseDelayMs: 200,
-  backoffFactor: 2,
+	maxAttempts: 3,
+	baseDelayMs: 200,
+	backoffFactor: 2,
 });
 
 /**
@@ -91,11 +91,11 @@ export const DEFAULT_RETRY_POLICY = Object.freeze({
  * @property {number} options.temperature - 温度参数(0 表示确定性输出)
  */
 export const DEFAULT_HEALTH_CHECK = Object.freeze({
-  prompt: "これは接続テストです。短い応答を返してください。",
-  options: Object.freeze({
-    maxTokens: 16,
-    temperature: 0,
-  }),
+	prompt: "これは接続テストです。短い応答を返してください。",
+	options: Object.freeze({
+		maxTokens: 16,
+		temperature: 0,
+	}),
 });
 
 /**
@@ -110,7 +110,7 @@ export const DEFAULT_HEALTH_CHECK = Object.freeze({
  * normalizeBaseUrl("https://api.example.com")  // => "https://api.example.com"
  */
 function normalizeBaseUrl(baseUrl) {
-  return baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+	return baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
 }
 
 /**
@@ -126,10 +126,10 @@ function normalizeBaseUrl(baseUrl) {
  * ensureLeadingSlash("")          // => ""
  */
 function ensureLeadingSlash(path) {
-  if (!path) {
-    return "";
-  }
-  return path.startsWith("/") ? path : `/${path}`;
+	if (!path) {
+		return "";
+	}
+	return path.startsWith("/") ? path : `/${path}`;
 }
 
 /**
@@ -140,398 +140,399 @@ function ensureLeadingSlash(path) {
  * @private
  */
 const PROVIDERS = Object.freeze([
-  /**
-   * Google Gemini 提供商配置
-   * @type {Object}
-   */
-  Object.freeze({
-    /** @type {string} 提供商唯一标识符 */
-    id: "google",
-    /** @type {string} 提供商显示名称 */
-    label: "Google Gemini",
-    /** @type {string} 兼容模式标识 */
-    compatMode: "google-generative",
-    /** @type {string} 默认使用的模型 */
-    defaultModel: "gemini-2.5-flash-lite",
-    /** @type {string} 用于健康检查的测试模型 */
-    testModel: "gemini-2.5-flash-lite",
-    /** @type {Array<string>} 支持的模型列表 */
-    supportedModels: [
-      "gemini-2.5-pro",
-      "gemini-2.5-flash",
-      "gemini-2.5-flash-lite",
-    ],
-    /**
-     * API 配置
-     * @type {Object}
-     */
-    api: {
-      /** @type {string} API 基础 URL */
-      baseUrl: normalizeBaseUrl(
-        "https://generativelanguage.googleapis.com/v1beta"
-      ),
-      /**
-       * 构建 API 路径
-       * @param {Object} context - 上下文对象
-       * @param {string} context.modelName - 模型名称
-       * @returns {string} API 路径
-       */
-      pathBuilder: ({ modelName }) => `/models/${modelName}:generateContent`,
-      /**
-       * 构建请求头
-       * @param {Object} context - 上下文对象
-       * @param {string} context.apiKey - API 密钥
-       * @returns {Object} 请求头对象
-       */
-      headers: ({ apiKey }) => ({
-        "Content-Type": "application/json",
-        "x-goog-api-key": apiKey,
-      }),
-      /**
-       * 构建请求负载(payload)
-       * @param {Object} context - 上下文对象
-       * @param {string} context.prompt - 用户提示词
-       * @param {Object} [context.options={}] - 可选配置
-       * @returns {Object} 请求负载对象
-       */
-      payloadBuilder: ({ prompt, options = {} }) => {
-        // 生成配置默认值
-        const generationDefaults = {
-          temperature: options.temperature ?? 0.3, // 温度参数:控制输出随机性
-          maxOutputTokens: options.maxTokens ?? 2000, // 最大输出令牌数
-          topP: 0.8, // 核采样参数
-          topK: 10, // Top-K 采样参数
-        };
+	/**
+	 * Google Gemini 提供商配置
+	 * @type {Object}
+	 */
+	Object.freeze({
+		/** @type {string} 提供商唯一标识符 */
+		id: "google",
+		/** @type {string} 提供商显示名称 */
+		label: "Google Gemini",
+		/** @type {string} 兼容模式标识 */
+		compatMode: "google-generative",
+		/** @type {string} 默认使用的模型 */
+		defaultModel: "gemini-2.5-flash",
+		/** @type {string} 用于健康检查的测试模型 */
+		testModel: "gemini-2.5-flash-lite",
+		/** @type {Array<string>} 支持的模型列表 */
+		supportedModels: [
+			"gemini-2.5-pro",
+			"gemini-2.5-flash",
+			"gemini-2.5-flash-lite",
+		],
+		/**
+		 * API 配置
+		 * @type {Object}
+		 */
+		api: {
+			/** @type {string} API 基础 URL */
+			baseUrl: normalizeBaseUrl(
+				"https://generativelanguage.googleapis.com/v1beta",
+			),
+			/**
+			 * 构建 API 路径
+			 * @param {Object} context - 上下文对象
+			 * @param {string} context.modelName - 模型名称
+			 * @returns {string} API 路径
+			 */
+			pathBuilder: ({ modelName }) => `/models/${modelName}:generateContent`,
+			/**
+			 * 构建请求头
+			 * @param {Object} context - 上下文对象
+			 * @param {string} context.apiKey - API 密钥
+			 * @returns {Object} 请求头对象
+			 */
+			headers: ({ apiKey }) => ({
+				"Content-Type": "application/json",
+				"x-goog-api-key": apiKey,
+			}),
+			/**
+			 * 构建请求负载(payload)
+			 * @param {Object} context - 上下文对象
+			 * @param {string} context.prompt - 用户提示词
+			 * @param {Object} [context.options={}] - 可选配置
+			 * @returns {Object} 请求负载对象
+			 */
+			payloadBuilder: ({ prompt, options = {} }) => {
+				// 生成配置默认值
+				const generationDefaults = {
+					temperature: options.temperature ?? 0.3, // 温度参数:控制输出随机性
+					maxOutputTokens: options.maxTokens ?? 2000, // 最大输出令牌数
+					topP: 0.8, // 核采样参数
+					topK: 10, // Top-K 采样参数
+				};
 
-        const payload = {
-          // 内容数组:可使用自定义内容或默认文本提示
-          contents: options.contents ?? [
-            {
-              parts: [
-                {
-                  text: prompt,
-                },
-              ],
-            },
-          ],
-          // 生成配置:合并默认值和自定义配置
-          generationConfig: {
-            ...generationDefaults,
-            ...(options.generationConfig ?? {}),
-          },
-        };
+				const payload = {
+					// 内容数组:可使用自定义内容或默认文本提示
+					contents: options.contents ?? [
+						{
+							parts: [
+								{
+									text: prompt,
+								},
+							],
+						},
+					],
+					// 生成配置:合并默认值和自定义配置
+					generationConfig: {
+						...generationDefaults,
+						...(options.generationConfig ?? {}),
+					},
+				};
 
-        // 可选:添加系统指令
-        if (options.systemInstruction) {
-          payload.systemInstruction = options.systemInstruction;
-        }
+				// 可选:添加系统指令
+				if (options.systemInstruction) {
+					payload.systemInstruction = options.systemInstruction;
+				}
 
-        // 可选:添加安全设置
-        if (options.safetySettings) {
-          payload.safetySettings = options.safetySettings;
-        }
+				// 可选:添加安全设置
+				if (options.safetySettings) {
+					payload.safetySettings = options.safetySettings;
+				}
 
-        // 可选:合并额外的负载字段
-        if (options.extraPayload) {
-          Object.assign(payload, options.extraPayload);
-        }
+				// 可选:合并额外的负载字段
+				if (options.extraPayload) {
+					Object.assign(payload, options.extraPayload);
+				}
 
-        return payload;
-      },
-      /**
-       * 解析 API 响应,提取文本内容
-       * @param {Object} context - 上下文对象
-       * @param {Object} context.data - API 响应数据
-       * @returns {string} 提取的文本内容,如果没有内容则返回空字符串
-       */
-      responseParser: ({ data }) => {
-        const candidate = data?.candidates?.[0];
-        if (!candidate) {
-          return "";
-        }
+				return payload;
+			},
+			/**
+			 * 解析 API 响应,提取文本内容
+			 * @param {Object} context - 上下文对象
+			 * @param {Object} context.data - API 响应数据
+			 * @returns {string} 提取的文本内容,如果没有内容则返回空字符串
+			 */
+			responseParser: ({ data }) => {
+				const candidate = data?.candidates?.[0];
+				if (!candidate) {
+					return "";
+				}
 
-        // 尝试从标准格式提取文本
-        if (candidate.content?.parts?.length) {
-          const part = candidate.content.parts.find(
-            (item) => typeof item?.text === "string"
-          );
-          if (part?.text) {
-            return part.text;
-          }
-        }
+				// 尝试从标准格式提取文本
+				if (candidate.content?.parts?.length) {
+					const part = candidate.content.parts.find(
+						(item) => typeof item?.text === "string",
+					);
+					if (part?.text) {
+						return part.text;
+					}
+				}
 
-        // 尝试从旧版格式提取文本
-        if (candidate.content?.length) {
-          const legacyPart = candidate.content.find(
-            (item) => typeof item?.text === "string"
-          );
-          if (legacyPart?.text) {
-            return legacyPart.text;
-          }
-        }
+				// 尝试从旧版格式提取文本
+				if (candidate.content?.length) {
+					const legacyPart = candidate.content.find(
+						(item) => typeof item?.text === "string",
+					);
+					if (legacyPart?.text) {
+						return legacyPart.text;
+					}
+				}
 
-        return "";
-      },
-    },
-    /** @type {Uint8Array} API 密钥加密使用的盐值 */
-    encryptionSalt: GOOGLE_SALT,
-    /** @type {Array<string>} 需要的主机权限(用于 manifest) */
-    hostPermissions: Object.freeze([
-      "https://generativelanguage.googleapis.com/*",
-    ]),
-    /**
-     * UI 相关配置
-     * @type {Object}
-     */
-    ui: Object.freeze({
-      /** @type {string} API 密钥输入框的标签 */
-      apiKeyLabel: "Google API Key",
-      /** @type {string} API 密钥输入框的占位符 */
-      apiKeyPlaceholder: "AIza...",
-      /** @type {string} API 文档链接 */
-      docsUrl: "https://ai.google.dev/gemini-api/docs",
-      /** @type {string} API 密钥管理面板链接 */
-      dashboardUrl: "https://aistudio.google.com/app/apikey",
-    }),
-    /**
-     * 运行时配置
-     * @type {Object}
-     */
-    runtime: Object.freeze({
-      /** @type {Object} 重试策略 */
-      retryPolicy: DEFAULT_RETRY_POLICY,
-      /** @type {Object} 健康检查配置 */
-      healthCheck: DEFAULT_HEALTH_CHECK,
-    }),
-  }),
-  /**
-   * OpenAI GPT 提供商配置
-   * @type {Object}
-   */
-  Object.freeze({
-    /** @type {string} 提供商唯一标识符 */
-    id: "openai",
-    /** @type {string} 提供商显示名称 */
-    label: "OpenAI GPT",
-    /** @type {string} 兼容模式标识 */
-    compatMode: "openai-compatible",
-    /** @type {string} 默认使用的模型 */
-    defaultModel: "gpt-4o",
-    /** @type {string} 用于健康检查的测试模型 */
-    testModel: "gpt-4o-mini",
-    /** @type {Array<string>} 支持的模型列表 */
-    supportedModels: ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-5"],
-    /**
-     * API 配置
-     * @type {Object}
-     */
-    api: {
-      /** @type {string} API 基础 URL */
-      baseUrl: normalizeBaseUrl("https://api.openai.com/v1"),
-      /**
-       * 构建 API 路径
-       * @returns {string} API 路径
-       */
-      pathBuilder: () => "/chat/completions",
-      /**
-       * 构建请求头
-       * @param {Object} context - 上下文对象
-       * @param {string} context.apiKey - API 密钥
-       * @returns {Object} 请求头对象
-       */
-      headers: ({ apiKey }) => ({
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      }),
-      /**
-       * 构建请求负载(payload)
-       * @param {Object} context - 上下文对象
-       * @param {string} context.modelName - 模型名称
-       * @param {string} context.prompt - 用户提示词
-       * @param {Object} [context.options={}] - 可选配置
-       * @returns {Object} 请求负载对象
-       */
-      payloadBuilder: ({ modelName, prompt, options = {} }) => {
-        const payload = {
-          model: modelName, // 使用的模型名称
-          // 消息数组:可使用自定义消息或默认用户消息
-          messages: options.messages ?? [
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          temperature: options.temperature ?? 0.3, // 温度参数:控制输出随机性
-          max_tokens: options.maxTokens ?? 2000, // 最大令牌数
-        };
+				return "";
+			},
+		},
+		/** @type {Uint8Array} API 密钥加密使用的盐值 */
+		encryptionSalt: GOOGLE_SALT,
+		/** @type {Array<string>} 需要的主机权限(用于 manifest) */
+		hostPermissions: Object.freeze([
+			"https://generativelanguage.googleapis.com/*",
+		]),
+		/**
+		 * UI 相关配置
+		 * @type {Object}
+		 */
+		ui: Object.freeze({
+			/** @type {string} API 密钥输入框的标签 */
+			apiKeyLabel: "Google API Key",
+			/** @type {string} API 密钥输入框的占位符 */
+			apiKeyPlaceholder: "AIza...",
+			/** @type {string} API 文档链接 */
+			docsUrl: "https://ai.google.dev/gemini-api/docs",
+			/** @type {string} API 密钥管理面板链接 */
+			dashboardUrl: "https://aistudio.google.com/app/apikey",
+		}),
+		/**
+		 * 运行时配置
+		 * @type {Object}
+		 */
+		runtime: Object.freeze({
+			/** @type {Object} 重试策略 */
+			retryPolicy: DEFAULT_RETRY_POLICY,
+			/** @type {Object} 健康检查配置 */
+			healthCheck: DEFAULT_HEALTH_CHECK,
+		}),
+	}),
+	/**
+	 * OpenAI GPT 提供商配置
+	 * @type {Object}
+	 */
+	Object.freeze({
+		/** @type {string} 提供商唯一标识符 */
+		id: "openai",
+		/** @type {string} 提供商显示名称 */
+		label: "OpenAI GPT",
+		/** @type {string} 兼容模式标识 */
+		compatMode: "openai-compatible",
+		/** @type {string} 默认使用的模型 */
+		defaultModel: "gpt-5.2",
+		/** @type {string} 用于健康检查的测试模型 */
+		testModel: "gpt-5-mini",
+		/** @type {Array<string>} 支持的模型列表 */
+		supportedModels: ["gpt-5.2", "gpt-5-mini", "gpt-4o", "gpt-4o-mini"],
+		/**
+		 * API 配置
+		 * @type {Object}
+		 */
+		api: {
+			/** @type {string} API 基础 URL */
+			baseUrl: normalizeBaseUrl("https://api.openai.com/v1"),
+			/**
+			 * 构建 API 路径
+			 * @returns {string} API 路径
+			 */
+			pathBuilder: () => "/chat/completions",
+			/**
+			 * 构建请求头
+			 * @param {Object} context - 上下文对象
+			 * @param {string} context.apiKey - API 密钥
+			 * @returns {Object} 请求头对象
+			 */
+			headers: ({ apiKey }) => ({
+				"Content-Type": "application/json",
+				"Authorization": `Bearer ${apiKey}`,
+			}),
+			/**
+			 * 构建请求负载(payload)
+			 * @param {Object} context - 上下文对象
+			 * @param {string} context.modelName - 模型名称
+			 * @param {string} context.prompt - 用户提示词
+			 * @param {Object} [context.options={}] - 可选配置
+			 * @returns {Object} 请求负载对象
+			 */
+			payloadBuilder: ({ modelName, prompt, options = {} }) => {
+				const payload = {
+					model: modelName, // 使用的模型名称
+					// 消息数组:可使用自定义消息或默认用户消息
+					messages: options.messages ?? [
+						{
+							role: "user",
+							content: prompt,
+						},
+					],
+					temperature: options.temperature ?? 0.3, // 温度参数:控制输出随机性
+					max_tokens: options.maxTokens ?? 2000, // 最大令牌数
+				};
 
-        // 可选:添加响应格式设置
-        if (options.responseFormat) {
-          payload.response_format = options.responseFormat;
-        }
+				// 可选:添加响应格式设置
+				if (options.responseFormat) {
+					payload.response_format = options.responseFormat;
+				}
 
-        // 可选:合并额外的负载字段
-        if (options.extraPayload) {
-          Object.assign(payload, options.extraPayload);
-        }
+				// 可选:合并额外的负载字段
+				if (options.extraPayload) {
+					Object.assign(payload, options.extraPayload);
+				}
 
-        return payload;
-      },
-      /**
-       * 解析 API 响应,提取文本内容
-       * @param {Object} context - 上下文对象
-       * @param {Object} context.data - API 响应数据
-       * @returns {string} 提取的文本内容,如果没有内容则返回空字符串
-       */
-      responseParser: ({ data }) => data?.choices?.[0]?.message?.content ?? "",
-    },
-    /** @type {Uint8Array} API 密钥加密使用的盐值 */
-    encryptionSalt: OPENAI_SALT,
-    /** @type {Array<string>} 需要的主机权限(用于 manifest) */
-    hostPermissions: Object.freeze(["https://api.openai.com/*"]),
-    /**
-     * UI 相关配置
-     * @type {Object}
-     */
-    ui: Object.freeze({
-      /** @type {string} API 密钥输入框的标签 */
-      apiKeyLabel: "OpenAI API Key",
-      /** @type {string} API 密钥输入框的占位符 */
-      apiKeyPlaceholder: "sk-...",
-      /** @type {string} API 文档链接 */
-      docsUrl: "https://platform.openai.com/docs/api-reference",
-      /** @type {string} API 密钥管理面板链接 */
-      dashboardUrl: "https://platform.openai.com/api-keys",
-    }),
-    /**
-     * 运行时配置
-     * @type {Object}
-     */
-    runtime: Object.freeze({
-      /** @type {Object} 重试策略 */
-      retryPolicy: DEFAULT_RETRY_POLICY,
-      /** @type {Object} 健康检查配置 */
-      healthCheck: DEFAULT_HEALTH_CHECK,
-    }),
-  }),
-  /**
-   * Anthropic Claude 提供商配置
-   * @type {Object}
-   */
-  Object.freeze({
-    /** @type {string} 提供商唯一标识符 */
-    id: "anthropic",
-    /** @type {string} 提供商显示名称 */
-    label: "Anthropic Claude",
-    /** @type {string} 兼容模式标识 */
-    compatMode: "anthropic-messages",
-    /** @type {string} 默认使用的模型 */
-    defaultModel: "claude-3-7-sonnet-all",
-    /** @type {string} 用于健康检查的测试模型 */
-    testModel: "claude-3-7-sonnet-all",
-    /** @type {Array<string>} 支持的模型列表 */
-    supportedModels: [
-      "claude-3-7-sonnet-all",
-      "claude-sonnet-4-all",
-      "claude-opus-4-all",
-    ],
-    /**
-     * API 配置
-     * @type {Object}
-     */
-    api: {
-      /** @type {string} API 基础 URL */
-      baseUrl: normalizeBaseUrl("https://api.anthropic.com/v1"),
-      /**
-       * 构建 API 路径
-       * @returns {string} API 路径
-       */
-      pathBuilder: () => "/messages",
-      /**
-       * 构建请求头
-       * @param {Object} context - 上下文对象
-       * @param {string} context.apiKey - API 密钥
-       * @returns {Object} 请求头对象
-       */
-      headers: ({ apiKey }) => ({
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01", // Anthropic API 版本号
-      }),
-      /**
-       * 构建请求负载(payload)
-       * @param {Object} context - 上下文对象
-       * @param {string} context.modelName - 模型名称
-       * @param {string} context.prompt - 用户提示词
-       * @param {Object} [context.options={}] - 可选配置
-       * @returns {Object} 请求负载对象
-       */
-      payloadBuilder: ({ modelName, prompt, options = {} }) => {
-        const payload = {
-          model: modelName, // 使用的模型名称
-          max_tokens: options.maxTokens ?? 2000, // 最大令牌数
-          temperature: options.temperature ?? 0.3, // 温度参数:控制输出随机性
-          // 消息数组:可使用自定义消息或默认用户消息
-          messages: options.messages ?? [
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-        };
+				return payload;
+			},
+			/**
+			 * 解析 API 响应,提取文本内容
+			 * @param {Object} context - 上下文对象
+			 * @param {Object} context.data - API 响应数据
+			 * @returns {string} 提取的文本内容,如果没有内容则返回空字符串
+			 */
+			responseParser: ({ data }) => data?.choices?.[0]?.message?.content ?? "",
+		},
+		/** @type {Uint8Array} API 密钥加密使用的盐值 */
+		encryptionSalt: OPENAI_SALT,
+		/** @type {Array<string>} 需要的主机权限(用于 manifest) */
+		hostPermissions: Object.freeze(["https://api.openai.com/*"]),
+		/**
+		 * UI 相关配置
+		 * @type {Object}
+		 */
+		ui: Object.freeze({
+			/** @type {string} API 密钥输入框的标签 */
+			apiKeyLabel: "OpenAI API Key",
+			/** @type {string} API 密钥输入框的占位符 */
+			apiKeyPlaceholder: "sk-...",
+			/** @type {string} API 文档链接 */
+			docsUrl: "https://platform.openai.com/docs/api-reference",
+			/** @type {string} API 密钥管理面板链接 */
+			dashboardUrl: "https://platform.openai.com/api-keys",
+		}),
+		/**
+		 * 运行时配置
+		 * @type {Object}
+		 */
+		runtime: Object.freeze({
+			/** @type {Object} 重试策略 */
+			retryPolicy: DEFAULT_RETRY_POLICY,
+			/** @type {Object} 健康检查配置 */
+			healthCheck: DEFAULT_HEALTH_CHECK,
+		}),
+	}),
+	/**
+	 * Anthropic Claude 提供商配置
+	 * @type {Object}
+	 */
+	Object.freeze({
+		/** @type {string} 提供商唯一标识符 */
+		id: "anthropic",
+		/** @type {string} 提供商显示名称 */
+		label: "Anthropic Claude",
+		/** @type {string} 兼容模式标识 */
+		compatMode: "anthropic-messages",
+		/** @type {string} 默认使用的模型 */
+		defaultModel: "claude-sonnet-4-5",
+		/** @type {string} 用于健康检查的测试模型 */
+		testModel: "claude-haiku-4-5",
+		/** @type {Array<string>} 支持的模型列表 */
+		supportedModels: [
+			"claude-sonnet-4-5",
+			"claude-opus-4-5",
+			"claude-haiku-4-5",
+		],
+		/**
+		 * API 配置
+		 * @type {Object}
+		 */
+		api: {
+			/** @type {string} API 基础 URL */
+			baseUrl: normalizeBaseUrl("https://api.anthropic.com/v1"),
+			/**
+			 * 构建 API 路径
+			 * @returns {string} API 路径
+			 */
+			pathBuilder: () => "/messages",
+			/**
+			 * 构建请求头
+			 * @param {Object} context - 上下文对象
+			 * @param {string} context.apiKey - API 密钥
+			 * @returns {Object} 请求头对象
+			 */
+			headers: ({ apiKey }) => ({
+				"Content-Type": "application/json",
+				"x-api-key": apiKey,
+				"anthropic-dangerous-direct-browser-access": "true", // 允许浏览器直接访问
+				"anthropic-version": "2023-06-01", // Anthropic API 版本号
+			}),
+			/**
+			 * 构建请求负载(payload)
+			 * @param {Object} context - 上下文对象
+			 * @param {string} context.modelName - 模型名称
+			 * @param {string} context.prompt - 用户提示词
+			 * @param {Object} [context.options={}] - 可选配置
+			 * @returns {Object} 请求负载对象
+			 */
+			payloadBuilder: ({ modelName, prompt, options = {} }) => {
+				const payload = {
+					model: modelName, // 使用的模型名称
+					max_tokens: options.maxTokens ?? 2000, // 最大令牌数
+					temperature: options.temperature ?? 0.3, // 温度参数:控制输出随机性
+					// 消息数组:可使用自定义消息或默认用户消息
+					messages: options.messages ?? [
+						{
+							role: "user",
+							content: prompt,
+						},
+					],
+				};
 
-        // 可选:添加系统提示
-        if (options.system) {
-          payload.system = options.system;
-        }
+				// 可选:添加系统提示
+				if (options.system) {
+					payload.system = options.system;
+				}
 
-        // 可选:合并额外的负载字段
-        if (options.extraPayload) {
-          Object.assign(payload, options.extraPayload);
-        }
+				// 可选:合并额外的负载字段
+				if (options.extraPayload) {
+					Object.assign(payload, options.extraPayload);
+				}
 
-        return payload;
-      },
-      /**
-       * 解析 API 响应,提取文本内容
-       * @param {Object} context - 上下文对象
-       * @param {Object} context.data - API 响应数据
-       * @returns {string} 提取的文本内容,如果没有内容则返回空字符串
-       */
-      responseParser: ({ data }) =>
-        data?.content?.[0]?.text ?? // 首先尝试从第一个内容块获取文本
-        data?.content?.find((item) => typeof item?.text === "string")?.text ?? // 否则查找第一个包含文本的内容块
-        "",
-    },
-    /** @type {Uint8Array} API 密钥加密使用的盐值 */
-    encryptionSalt: ANTHROPIC_SALT,
-    /** @type {Array<string>} 需要的主机权限(用于 manifest) */
-    hostPermissions: Object.freeze(["https://api.anthropic.com/*"]),
-    /**
-     * UI 相关配置
-     * @type {Object}
-     */
-    ui: Object.freeze({
-      /** @type {string} API 密钥输入框的标签 */
-      apiKeyLabel: "Anthropic API Key",
-      /** @type {string} API 密钥输入框的占位符 */
-      apiKeyPlaceholder: "sk-ant-...",
-      /** @type {string} API 文档链接 */
-      docsUrl: "https://docs.anthropic.com/claude/reference/messages_post",
-      /** @type {string} API 密钥管理面板链接 */
-      dashboardUrl: "https://console.anthropic.com/settings/keys",
-    }),
-    /**
-     * 运行时配置
-     * @type {Object}
-     */
-    runtime: Object.freeze({
-      /** @type {Object} 重试策略 */
-      retryPolicy: DEFAULT_RETRY_POLICY,
-      /** @type {Object} 健康检查配置 */
-      healthCheck: DEFAULT_HEALTH_CHECK,
-    }),
-  }),
+				return payload;
+			},
+			/**
+			 * 解析 API 响应,提取文本内容
+			 * @param {Object} context - 上下文对象
+			 * @param {Object} context.data - API 响应数据
+			 * @returns {string} 提取的文本内容,如果没有内容则返回空字符串
+			 */
+			responseParser: ({ data }) =>
+				data?.content?.[0]?.text ?? // 首先尝试从第一个内容块获取文本
+				data?.content?.find((item) => typeof item?.text === "string")?.text ?? // 否则查找第一个包含文本的内容块
+				"",
+		},
+		/** @type {Uint8Array} API 密钥加密使用的盐值 */
+		encryptionSalt: ANTHROPIC_SALT,
+		/** @type {Array<string>} 需要的主机权限(用于 manifest) */
+		hostPermissions: Object.freeze(["https://api.anthropic.com/*"]),
+		/**
+		 * UI 相关配置
+		 * @type {Object}
+		 */
+		ui: Object.freeze({
+			/** @type {string} API 密钥输入框的标签 */
+			apiKeyLabel: "Anthropic API Key",
+			/** @type {string} API 密钥输入框的占位符 */
+			apiKeyPlaceholder: "sk-ant-...",
+			/** @type {string} API 文档链接 */
+			docsUrl: "https://docs.anthropic.com/claude/reference/messages_post",
+			/** @type {string} API 密钥管理面板链接 */
+			dashboardUrl: "https://console.anthropic.com/settings/keys",
+		}),
+		/**
+		 * 运行时配置
+		 * @type {Object}
+		 */
+		runtime: Object.freeze({
+			/** @type {Object} 重试策略 */
+			retryPolicy: DEFAULT_RETRY_POLICY,
+			/** @type {Object} 健康检查配置 */
+			healthCheck: DEFAULT_HEALTH_CHECK,
+		}),
+	}),
 ]);
 
 /**
@@ -541,7 +542,7 @@ const PROVIDERS = Object.freeze([
  * @private
  */
 const PROVIDER_INDEX = new Map(
-  PROVIDERS.map((provider) => [provider.id, provider])
+	PROVIDERS.map((provider) => [provider.id, provider]),
 );
 
 /**
@@ -553,7 +554,7 @@ const PROVIDER_INDEX = new Map(
  * console.log(providers.map(p => p.id)); // ["google", "openai", "anthropic"]
  */
 export function getAllProviders() {
-  return PROVIDERS;
+	return PROVIDERS;
 }
 
 /**
@@ -569,7 +570,7 @@ export function getAllProviders() {
  * console.log(unknown); // null
  */
 export function getProviderById(providerId) {
-  return PROVIDER_INDEX.get(providerId) ?? null;
+	return PROVIDER_INDEX.get(providerId) ?? null;
 }
 
 /**
@@ -581,7 +582,7 @@ export function getProviderById(providerId) {
  * console.log(defaultId); // "google"
  */
 export function getDefaultProviderId() {
-  return DEFAULT_PROVIDER_ID;
+	return DEFAULT_PROVIDER_ID;
 }
 
 /**
@@ -593,7 +594,7 @@ export function getDefaultProviderId() {
  * console.log(fallback); // ["google", "openai", "anthropic"]
  */
 export function getFallbackOrder() {
-  return FALLBACK_ORDER;
+	return FALLBACK_ORDER;
 }
 
 /**
@@ -611,20 +612,20 @@ export function getFallbackOrder() {
  * // ]
  */
 export function getAllManifestHostPermissions() {
-  const permissions = new Set(BASE_HOST_PERMISSIONS);
-  for (const provider of PROVIDERS) {
-    // 验证 hostPermissions 是否为数组
-    if (!Array.isArray(provider.hostPermissions)) {
-      continue;
-    }
-    // 添加每个有效的主机权限
-    for (const origin of provider.hostPermissions) {
-      if (typeof origin === "string" && origin.trim()) {
-        permissions.add(origin.trim());
-      }
-    }
-  }
-  return Array.from(permissions).sort();
+	const permissions = new Set(BASE_HOST_PERMISSIONS);
+	for (const provider of PROVIDERS) {
+		// 验证 hostPermissions 是否为数组
+		if (!Array.isArray(provider.hostPermissions)) {
+			continue;
+		}
+		// 添加每个有效的主机权限
+		for (const origin of provider.hostPermissions) {
+			if (typeof origin === "string" && origin.trim()) {
+				permissions.add(origin.trim());
+			}
+		}
+	}
+	return Array.from(permissions).sort();
 }
 
 /**
@@ -659,58 +660,58 @@ export function getAllManifestHostPermissions() {
  * const text = config.responseParser({ data });
  */
 export function buildRequestConfig(providerConfig, context) {
-  const apiConfig = providerConfig.api;
+	const apiConfig = providerConfig.api;
 
-  // 构建 API 路径
-  const path = ensureLeadingSlash(apiConfig.pathBuilder(context));
+	// 构建 API 路径
+	const path = ensureLeadingSlash(apiConfig.pathBuilder(context));
 
-  // 确定基础 URL(优先使用覆盖的 URL)
-  const baseUrl = context.overrideBaseUrl
-    ? normalizeBaseUrl(context.overrideBaseUrl)
-    : apiConfig.baseUrl;
+	// 确定基础 URL(优先使用覆盖的 URL)
+	const baseUrl = context.overrideBaseUrl
+		? normalizeBaseUrl(context.overrideBaseUrl)
+		: apiConfig.baseUrl;
 
-  // 构建完整 URL
-  const url = `${baseUrl}${path}`;
+	// 构建完整 URL
+	const url = `${baseUrl}${path}`;
 
-  // 构建请求头
-  const headers = apiConfig.headers(context) ?? {};
+	// 构建请求头
+	const headers = apiConfig.headers(context) ?? {};
 
-  // 构建请求负载
-  const payload = apiConfig.payloadBuilder(context);
+	// 构建请求负载
+	const payload = apiConfig.payloadBuilder(context);
 
-  // 初始化 fetch 配置
-  const init = {
-    method: apiConfig.method ?? "POST", // 默认使用 POST 方法
-    headers: { ...headers },
-  };
+	// 初始化 fetch 配置
+	const init = {
+		method: apiConfig.method ?? "POST", // 默认使用 POST 方法
+		headers: { ...headers },
+	};
 
-  // 添加请求体(如果有负载)
-  if (payload !== undefined) {
-    init.body = typeof payload === "string" ? payload : JSON.stringify(payload);
-  }
+	// 添加请求体(如果有负载)
+	if (payload !== undefined) {
+		init.body = typeof payload === "string" ? payload : JSON.stringify(payload);
+	}
 
-  // 合并自定义 fetch 选项
-  if (context.options?.fetchOptions) {
-    const { fetchOptions } = context.options;
-    const extra = { ...fetchOptions };
+	// 合并自定义 fetch 选项
+	if (context.options?.fetchOptions) {
+		const { fetchOptions } = context.options;
+		const extra = { ...fetchOptions };
 
-    // 特殊处理请求头:合并而不是覆盖
-    if (extra.headers) {
-      init.headers = {
-        ...init.headers,
-        ...extra.headers,
-      };
-      delete extra.headers;
-    }
+		// 特殊处理请求头:合并而不是覆盖
+		if (extra.headers) {
+			init.headers = {
+				...init.headers,
+				...extra.headers,
+			};
+			delete extra.headers;
+		}
 
-    // 合并其他选项
-    Object.assign(init, extra);
-  }
+		// 合并其他选项
+		Object.assign(init, extra);
+	}
 
-  return {
-    url,
-    init,
-    responseParser: apiConfig.responseParser,
-    errorParser: apiConfig.errorParser,
-  };
+	return {
+		url,
+		init,
+		responseParser: apiConfig.responseParser,
+		errorParser: apiConfig.errorParser,
+	};
 }

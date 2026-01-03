@@ -44,6 +44,11 @@
 				"utils/prompt-engine.js",
 				"utils/providers.config.js",
 				"utils/storage.js",
+				"utils/template-store.js",
+				"utils/error-boundary.js",
+				"utils/formatter.js",
+				"services/anki-service.js",
+				"services/config-service.js",
 				"_locales/*/messages.json",
 				"icons/ANKI.svg"
 			],

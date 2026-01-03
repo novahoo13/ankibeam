@@ -1,204 +1,221 @@
 # Anki Word Assistant
 
-一款功能强大的浏览器扩展，利用AI技术帮助你快速创建Anki记忆卡片。支持文本解析、智能字段映射和自动化卡片生成。
+一款 AI 驱动的 Chrome 扩展程序，帮助用户快速创建 Anki 单词卡片。支持多种 AI 服务商，可自定义解析模板，让单词学习更高效。
 
 ## 功能特性
 
-### 🤖 AI 智能解析
-- 支持多种AI服务：Google Gemini / OpenAI GPT / Anthropic Claude
-- 智能文本解析和结构化输出
-- 自定义Prompt模板，灵活配置输出格式
+### 核心功能
 
-### 🎯 动态字段映射
-- 智能字段映射系统，自动匹配Anki模型字段
-- 支持动态字段配置和实时预览
-- 灵活的字段处理引擎
+- **AI 智能解析**：输入单词或短语，AI 自动生成释义、例句、词根等丰富内容
+- **浮动助手**：在任意网页选中文本，一键调用 AI 解析并写入 Anki
+- **自定义模板**：灵活配置输出字段，适配不同的 Anki 卡片模板
+- **多 AI 服务商支持**：
+  - Google Gemini
+  - OpenAI GPT
+  - Anthropic Claude
+- **自动故障转移**：主服务商不可用时，自动切换到备用服务商
 
-### 📝 Anki 深度集成
-- AnkiConnect 无缝集成
-- 自动检测和选择牌组/模型
-- 支持模型字段查看和验证
-- 实时连接状态检测
+### 使用方式
 
-### ⚙️ 用户体验优化
-- 直观的界面设计和样式自定义
-- 多语言支持（中英文）
-- 实时预览和即时反馈
+1. **Popup 弹窗模式**：点击扩展图标，输入文本进行解析
+2. **浮动面板模式**：在网页中选中文本，点击浮动按钮快速解析
 
-## 安装与加载扩展
+### 多语言支持
 
-1. 打包前先构建 CSS（见下方“构建与开发”）
-2. 打开 Chrome 扩展管理页 `chrome://extensions`
-3. 开启右上角“开发者模式”
-4. 选择“加载已解压的扩展程序”，并选择本仓库目录
+- English (en)
+- 简体中文 (zh_CN)
+- 繁體中文 (zh_TW)
+- 日本語 (ja)
 
-## 构建与开发
+## 安装要求
 
-本项目采用现代化的前端工程配置，使用 Tailwind CSS 按需构建优化样式文件大小。
+### 前置条件
 
-### 环境要求
-- Node.js 16+ （推荐使用 LTS 版本）
-- npm 或 yarn
+1. **Anki 桌面版**：[下载 Anki](https://apps.ankiweb.net/)
+2. **AnkiConnect 插件**：在 Anki 中安装 AnkiConnect 插件
+   - 打开 Anki → 工具 → 插件 → 获取插件
+   - 输入插件代码：`2055492159`
+   - 重启 Anki
 
-### 快速开始
+### 安装扩展
 
-1. **克隆项目**
-   ```bash
-   git clone [repository-url]
-   cd anki-word-assistant
-   ```
+1. 下载本项目代码
+2. 打开 Chrome，访问 `chrome://extensions/`
+3. 开启「开发者模式」
+4. 点击「加载已解压的扩展程序」
+5. 选择项目文件夹
 
-2. **安装依赖**
-   ```bash
-   npm install
-   ```
+## 配置指南
 
-3. **构建样式文件**
-   ```bash
-   npm run css:build
-   ```
+安装完成后，右键点击扩展图标 → 选项，进入设置页面。
 
-4. **开发模式（自动监听文件变更）**
-   ```bash
-   npm run dev
-   ```
+### 1. AI 服务配置
 
-### 构建说明
+选择一个或多个 AI 服务商并配置 API Key：
 
-- **生产构建**: `npm run css:build` - 生成压缩后的 CSS 文件
-- **开发模式**: `npm run dev` - 监听文件变更，自动重建样式
-- **样式系统**: Tailwind CSS 按需构建，仅包含实际使用的样式类
+#### Google Gemini（推荐）
 
-### 何时需要重建样式
+1. 访问 [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. 创建 API Key
+3. 在扩展设置中填入 API Key
+4. 默认模型：`gemini-2.5-flash`
 
-✅ **需要重建的情况：**
-- 添加或删除 Tailwind 类名（包括响应式和状态变体）
-- 修改 `tailwind.config.js` 配置
-- 更新 `styles/input.css` 入口文件
-- 新增页面或脚本文件
+#### OpenAI GPT
 
-❌ **不需要重建的情况：**
-- 修改自定义 CSS 样式（`styles/` 目录下的其他文件）
-- 更改内联样式或文本内容
-- 运行时动态切换已存在的类名
+1. 访问 [OpenAI Platform](https://platform.openai.com/api-keys)
+2. 创建 API Key
+3. 在扩展设置中填入 API Key
+4. 默认模型：`gpt-5.2`
 
-## 项目架构
+#### Anthropic Claude
+
+1. 访问 [Anthropic Console](https://console.anthropic.com/)
+2. 创建 API Key
+3. 在扩展设置中填入 API Key
+4. 默认模型：`claude-sonnet-4-5`
+
+> **提示**：可配置多个服务商作为备用，当主服务商请求失败时会自动切换。
+
+### 2. Anki 连接配置
+
+1. 确保 Anki 桌面版正在运行
+2. 确保 AnkiConnect 插件已安装并启用
+3. 在设置页面点击「测试连接」验证配置
+
+**默认连接地址**：`http://127.0.0.1:8765`
+
+### 3. 解析模板配置
+
+模板定义了 AI 解析的输出字段和 Anki 卡片的映射关系。
+
+#### 创建模板
+
+1. 进入「模板管理」标签页
+2. 点击「新建模板」
+3. 配置以下内容：
+   - **模板名称**：便于识别的名称
+   - **目标牌组**：Anki 中的目标牌组
+   - **笔记类型**：Anki 中的笔记模板
+   - **字段映射**：配置需要填充的字段
+
+#### 字段配置示例
+
+对于一个典型的单词卡片模板，可以配置如下字段：
+
+| 字段名    | 说明      | 示例输出                          |
+| --------- | --------- | --------------------------------- |
+| Word      | 单词本身  | vocabulary                        |
+| Reading   | 音标/发音 | /vəˈkæbjəleri/                    |
+| Meaning   | 释义      | 词汇，词汇表                      |
+| Example   | 例句      | Build your vocabulary by reading. |
+| Etymology | 词源      | 来自拉丁语 vocabulum              |
+
+#### 自定义 Prompt
+
+可以为每个模板配置自定义的 AI 提示词，控制输出内容和格式。
+
+### 4. 样式配置（可选）
+
+自定义写入 Anki 的内容样式：
+
+- **字体大小**：默认 14px
+- **文本对齐**：左对齐 / 居中 / 右对齐
+- **行高**：默认 1.4
+
+### 5. 界面配置
+
+- **启用浮动助手**：开启/关闭网页内的浮动助手功能
+- **界面语言**：选择扩展程序的显示语言
+
+## 使用方法
+
+### 方式一：Popup 弹窗
+
+1. 点击 Chrome 工具栏中的扩展图标
+2. 在输入框中输入要查询的单词或短语
+3. 点击「解析」按钮
+4. 查看并编辑 AI 生成的内容
+5. 点击「写入 Anki」保存卡片
+
+### 方式二：浮动助手
+
+1. 在任意网页中选中一段文本
+2. 点击弹出的浮动按钮
+3. 在浮动面板中查看解析结果
+4. 点击「写入」保存到 Anki
+
+## 项目结构
 
 ```
 anki-word-assistant/
-├── manifest.json                 # 扩展配置清单
-├── popup/                        # 弹窗界面
-│   ├── popup.html               # 主界面HTML
-│   └── popup.js                 # 主界面逻辑
-├── options/                      # 设置页面
-│   ├── options.html             # 设置页面HTML
-│   └── options.js               # 设置页面逻辑
-├── utils/                        # 核心功能模块
-│   ├── ai-service.js            # AI服务集成
-│   ├── ankiconnect.js           # AnkiConnect API
-│   ├── field-handler.js         # 字段处理引擎
-│   ├── prompt-engine.js         # Prompt模板引擎
-│   ├── storage.js               # 数据存储管理
-│   └── i18n.js                  # 国际化支持
-├── styles/                       # 样式文件
-│   ├── input.css                # Tailwind 构建入口
-│   └── tailwind.min.css         # 构建后的样式文件
-├── icons/                        # 扩展图标
-├── _locales/                     # 多语言文件
-├── docs/                         # 项目文档
-├── tailwind.config.js           # Tailwind 配置
-├── package.json                 # 项目依赖配置
-└── README.md                    # 项目说明文档
+├── background/          # 后台服务脚本
+├── content/             # 内容脚本（浮动助手）
+├── popup/               # 弹窗界面
+├── options/             # 设置页面
+├── services/            # 业务服务层
+│   ├── anki-service.js      # Anki 写入服务
+│   └── config-service.js    # 配置管理服务
+├── utils/               # 工具模块
+│   ├── ai-service.js        # AI 服务调用
+│   ├── providers.config.js  # AI 服务商配置
+│   ├── storage.js           # 存储管理
+│   ├── template-store.js    # 模板管理
+│   └── ...
+├── _locales/            # 多语言资源
+└── manifest.json        # 扩展清单
 ```
-
-### 核心模块说明
-
-- **ai-service.js**: 统一的AI服务接口，支持多种AI提供商
-- **field-handler.js**: 智能字段映射和处理系统
-- **prompt-engine.js**: 灵活的Prompt模板管理引擎
-- **ankiconnect.js**: AnkiConnect API封装，提供完整的Anki集成功能
-
-## 使用指南
-
-### 初次配置
-1. 安装并启动 Anki
-2. 安装 AnkiConnect 插件
-3. 在扩展设置页面配置 AI 服务（选择提供商并输入 API 密钥）
-4. 测试 AnkiConnect 连接
-5. 选择目标牌组和模型
-
-### 创建卡片
-1. 在任意网页选中文本
-2. 点击扩展图标打开弹窗
-3. 查看 AI 解析结果和字段映射
-4. 根据需要调整内容
-5. 点击"添加到 Anki"创建卡片
-
-### 自定义 OpenAI 兼容供应商
-1. 打开扩展的“设置中心”，在“AI 配置”标签中选中 OpenAI GPT 面板。
-2. 填写 OpenAI 兼容服务提供的 API Key，并将“API 地址”替换为自定义端点（如 `https://proxy.example.com/v1`）。
-3. 点击“保存设置”，浏览器会弹出新的域名访问权限提示；必须确认授权后才能成功保存配置。
-4. 授权完成后使用“测试连接”按钮验证新端点是否可用，并根据需要调整默认模型或 Prompt 模板。
-5. 若需恢复官方端点，清空或还原“API 地址”字段，保存后即可撤销额外域名的访问权限。
-
-## 国际化维护
-
-- **自动化测试**：执行 `node --test "tests/**/*.test.js"` 验证 i18n API 和 Prompt 模板快照。
-- **手动检查**：按照 `docs/internationalization-stage6.md` 的步骤在四种语言与回退场景下巡检 popup/options 界面。
-- **翻译流程**：新增键值时同步更新四种语言的 `messages.json`、补充 `description`/`placeholders`，并在评审前重跑测试。
 
 ## 常见问题
 
-**Q: 为什么不使用 CDN 版本的 Tailwind CSS？**
-A: 浏览器扩展需要避免外部依赖，本项目采用离线按需构建，既保证了安全性又优化了文件大小。
+### Q: 无法连接到 Anki？
 
-**Q: 修改了样式类名但不生效？**
-A: 请运行 `npm run css:build` 重新构建样式文件，或在开发时使用 `npm run dev` 自动监听变更。
+1. 确保 Anki 桌面版正在运行
+2. 确保 AnkiConnect 插件已安装（插件代码：2055492159）
+3. 重启 Anki 后重试
 
-**Q: AnkiConnect 连接失败怎么办？**
-A: 确保 Anki 正在运行且已安装 AnkiConnect 插件，检查端口 8765 是否被占用。
+### Q: AI 解析失败？
 
-**Q: AI 解析结果不准确？**
-A: 可以在设置页面自定义 Prompt 模板，调整 AI 的解析规则和输出格式。
+1. 检查 API Key 是否正确配置
+2. 确认 API Key 有足够的配额
+3. 尝试切换到其他 AI 服务商
 
-## 权限说明
-- 默认请求的 `host_permissions`：`http://127.0.0.1:8765/*`、`https://generativelanguage.googleapis.com/*`、`https://api.openai.com/*`、`https://api.anthropic.com/*`，用于访问 AnkiConnect 与三大官方供应商。
-- 可选的 `optional_host_permissions`：`https://*/*`、`http://localhost/*`、`http://127.0.0.1/*`，仅在保存自定义 OpenAI 兼容端点或本地代理时弹出授权提示。
-- 当检测到新的域名时，扩展会在保存前请求一次性授权；如果拒绝，配置不会被保存，可修改地址后再次尝试。
-- 所有权限判断都在本地浏览器完成，不会上传任何 API Key 或调用数据。
+### Q: 浮动助手没有出现？
 
-## 技术栈
+1. 检查设置中是否启用了「浮动助手」
+2. 刷新网页后重试
+3. 某些特殊页面（如 Chrome 内置页面）不支持内容脚本
 
-- **前端框架**: Vanilla JavaScript (ES6+)
-- **样式系统**: Tailwind CSS v3.4+
-- **构建工具**: Tailwind CLI
-- **AI 集成**: Google Gemini / OpenAI GPT / Anthropic Claude
-- **数据存储**: Chrome Extension Storage API
-- **国际化**: Chrome Extension i18n API
+## 隐私说明
 
-## 贡献指南
+- 所有 API Key 使用加密存储在本地
+- 查询内容仅发送到您配置的 AI 服务商
+- 扩展不收集任何用户数据
 
-欢迎提交 Issue 和 Pull Request！
+## 开发相关
 
-### 开发流程
-1. Fork 本仓库
-2. 创建特性分支：`git checkout -b feature/your-feature`
-3. 提交更改：`git commit -m 'Add some feature'`
-4. 推送到分支：`git push origin feature/your-feature`
-5. 提交 Pull Request
+### 技术栈
 
-### 代码规范
-- 使用 ES6+ 语法
-- 遵循现有的代码风格和命名约定
-- 添加必要的注释和文档
-- 确保新功能有对应的错误处理
+- Chrome Extension Manifest V3
+- ES6 Modules
+- Tailwind CSS
 
-## 版本历史
+### 本地开发
 
-- **v1.0**: 基础功能实现，支持基本的AI解析和Anki集成
-- **2025-10-10**: 完成 AI 供应商重构 Stage 5，加入 Manifest 权限校验与自定义 OpenAI 兼容域名授权流程
-- **当前开发版**: 优化字段映射系统，增强用户体验
+```bash
+# 安装依赖
+npm install
+
+# 监听 CSS 变更
+npm run css:watch
+
+# 运行测试
+npm test
+```
 
 ## 许可证
 
-本项目采用 [MIT 许可证](LICENSE)。
+MIT License
+
+## 反馈与支持
+
+如有问题或建议，请提交 [Issue](https://github.com/novahoo13/anki-word-assistant/issues)。
