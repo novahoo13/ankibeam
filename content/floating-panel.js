@@ -1215,26 +1215,20 @@ export function createFloatingPanelController(options = {}) {
 
 		currentSelection = selection ?? null;
 
-		// First, make host visible but keep wrapper invisible (opacity 0)
 		host.style.display = "block";
 		host.style.pointerEvents = "auto";
-
-		// Update position BEFORE making wrapper visible to avoid sliding animation
-		// from old position to new position
-		updatePosition(selection?.rect);
-
-		// Now make the panel visible (triggers fade-in animation)
 		wrapper.dataset.visible = "true";
 		visible = true;
 
-		// Delay binding global listeners to prevent the click that opened
-		// the panel from propagating to the listener
+		// 为了防止打开面板的点击事件传播到全局监听器，
+		// 将监听器的绑定延迟到下一个微任务。
 		windowRef.setTimeout(() => {
 			if (visible) {
 				bindGlobalListeners();
 			}
 		}, 0);
 
+		updatePosition(selection?.rect);
 		panel.focus();
 	}
 
@@ -1294,38 +1288,27 @@ export function createFloatingPanelController(options = {}) {
 	}
 
 	/**
-	 * Destroy the panel and controller, cleaning up all DOM elements and event listeners.
-	 * This prevents memory leaks by ensuring all references are properly released.
+	 * 销毁面板和控制器，清理所有DOM和事件监听器。
 	 */
 	function destroy() {
 		if (destroyed) {
 			return;
 		}
 		destroyed = true;
-
-		// Unbind global viewport and click-outside listeners
 		unbindGlobalListeners();
-
-		// Clean up shadow root keydown listener
 		if (shadowRoot) {
 			shadowRoot.removeEventListener("keydown", handleKeyDown, true);
 		}
-
-		// Clean up panel drag listener
 		if (panel) {
 			panel.removeEventListener("mousedown", handlePanelMouseDown);
 		}
-
-		// Clean up active drag listeners (in case destroy is called during drag)
+		// 清理拖动监听器（如果存在）
 		documentRef.removeEventListener("mousemove", handlePanelMouseMove, true);
 		documentRef.removeEventListener("mouseup", handlePanelMouseUp, true);
-
-		// Remove host element from DOM
 		if (host?.isConnected) {
 			host.remove();
 		}
-
-		// Nullify all references to allow garbage collection
+		// 清理所有引用
 		host = null;
 		shadowRoot = null;
 		wrapper = null;
@@ -1336,22 +1319,12 @@ export function createFloatingPanelController(options = {}) {
 		emptyNotice = null;
 		actionContainer = null;
 		retryButton = null;
-		writeButton = null;
 		pinButton = null;
-
-		// Reset state variables
 		currentState = STATE_IDLE;
 		visible = false;
 		currentSelection = null;
-		currentConfig = null;
 		isPinned = false;
 		isDragging = false;
-		writeSuccess = false;
-
-		// Clear handler references
-		retryHandler = null;
-		closeHandler = null;
-		writeHandler = null;
 	}
 
 	/**
