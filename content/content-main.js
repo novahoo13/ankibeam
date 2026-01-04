@@ -7,7 +7,6 @@ const LOG_PREFIX = "[floating-assistant]";
 // Module functions loaded dynamically
 let parseTextWithFallback = null;
 let parseTextWithDynamicFieldsFallback = null;
-let normalizeUserConfig = null;
 
 let addNote = null;
 let translate = null;
@@ -71,7 +70,6 @@ function logWarn(message, payload) {
 			storageModule, // Storage module (ConfigService)
 			ankiServiceModule, // Anki service
 			errorBoundaryModule, // Error boundary
-			configNormalizerModule, // Config normalizer
 		] = await Promise.all([
 			import(chrome.runtime.getURL("content/selection.js")),
 			import(chrome.runtime.getURL("content/floating-button.js")),
@@ -84,7 +82,6 @@ function logWarn(message, payload) {
 			import(chrome.runtime.getURL("services/config-service.js")),
 			import(chrome.runtime.getURL("services/anki-service.js")),
 			import(chrome.runtime.getURL("utils/error-boundary.js")),
-			import(chrome.runtime.getURL("utils/config-normalizer.js")),
 		]);
 
 		// Extract and assign functions from loaded modules to top-level variables
@@ -97,7 +94,6 @@ function logWarn(message, payload) {
 		({ addNote } = ankiConnectModule);
 		({ translate } = i18nModule);
 		({ getActiveTemplate } = templateStoreModule);
-		({ normalizeUserConfig } = configNormalizerModule);
 
 		// Initialize ConfigService
 		const { configService } = storageModule; // actually configServiceModule
@@ -191,7 +187,7 @@ function createController(
 	 * @param {object} config - 新的配置对象
 	 */
 	function applyConfig(config) {
-		const normalized = normalizeUserConfig(config);
+		const normalized = normalizeConfig(config);
 
 		// 如果是禁用操作，立即执行
 		const newEnabled = Boolean(normalized.ui?.enableFloatingAssistant);
@@ -625,4 +621,99 @@ function createController(
 		refreshConfig,
 		applyConfigUpdate: applyConfig,
 	};
+}
+
+/**
+ * Sanitize a string array, removing invalid entries
+ * @param {any} value - The value to process
+ * @returns {string[]} Cleaned string array
+ */
+function sanitizeStringArray(value) {
+	if (!Array.isArray(value)) {
+		return [];
+	}
+	return value
+		.map((entry) => (typeof entry === "string" ? entry.trim() : ""))
+		.filter((entry) => entry.length > 0);
+}
+
+/**
+ * Normalize config object, ensuring all fields exist with correct types
+ * @param {object} rawConfig - Raw config from storage
+ * @returns {object} Normalized config object
+ */
+function normalizeConfig(rawConfig) {
+	const defaults = {
+		ui: {
+			enableFloatingAssistant: true,
+			fieldDisplayMode: "auto",
+		},
+		ankiConfig: {
+			defaultDeck: "",
+			defaultModel: "",
+			modelFields: [],
+			defaultTags: [],
+		},
+		promptTemplates: {
+			promptTemplatesByModel: {},
+			custom: "",
+		},
+		styleConfig: {},
+		language: "zh-CN",
+	};
+
+	if (!rawConfig || typeof rawConfig !== "object") {
+		return { ...defaults };
+	}
+
+	const normalized = { ...rawConfig };
+
+	// Normalize UI config
+	const ui =
+		rawConfig.ui && typeof rawConfig.ui === "object"
+			? { ...defaults.ui, ...rawConfig.ui }
+			: { ...defaults.ui };
+	ui.enableFloatingAssistant = Boolean(ui.enableFloatingAssistant);
+	normalized.ui = ui;
+
+	// Normalize Anki config
+	const ankiConfig =
+		rawConfig.ankiConfig && typeof rawConfig.ankiConfig === "object"
+			? { ...defaults.ankiConfig, ...rawConfig.ankiConfig }
+			: { ...defaults.ankiConfig };
+	ankiConfig.modelFields = sanitizeStringArray(ankiConfig.modelFields);
+	ankiConfig.defaultTags = sanitizeStringArray(ankiConfig.defaultTags);
+	normalized.ankiConfig = ankiConfig;
+
+	// Normalize Prompt templates config
+	const promptTemplates =
+		rawConfig.promptTemplates && typeof rawConfig.promptTemplates === "object"
+			? { ...defaults.promptTemplates, ...rawConfig.promptTemplates }
+			: { ...defaults.promptTemplates };
+	if (
+		!promptTemplates.promptTemplatesByModel ||
+		typeof promptTemplates.promptTemplatesByModel !== "object"
+	) {
+		promptTemplates.promptTemplatesByModel = {};
+	}
+	normalized.promptTemplates = promptTemplates;
+
+	// Normalize style config
+	const styleConfig =
+		rawConfig.styleConfig && typeof rawConfig.styleConfig === "object"
+			? { ...rawConfig.styleConfig }
+			: { ...defaults.styleConfig };
+	normalized.styleConfig = styleConfig;
+
+	// Normalize language config
+	if (typeof rawConfig.language === "string" && rawConfig.language.trim()) {
+		normalized.language = rawConfig.language.trim();
+	} else if (
+		typeof normalized.language !== "string" ||
+		!normalized.language.trim()
+	) {
+		normalized.language = defaults.language;
+	}
+
+	return normalized;
 }
