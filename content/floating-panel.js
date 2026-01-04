@@ -1215,20 +1215,26 @@ export function createFloatingPanelController(options = {}) {
 
 		currentSelection = selection ?? null;
 
+		// First, make host visible but keep wrapper invisible (opacity 0)
 		host.style.display = "block";
 		host.style.pointerEvents = "auto";
+
+		// Update position BEFORE making wrapper visible to avoid sliding animation
+		// from old position to new position
+		updatePosition(selection?.rect);
+
+		// Now make the panel visible (triggers fade-in animation)
 		wrapper.dataset.visible = "true";
 		visible = true;
 
-		// 为了防止打开面板的点击事件传播到全局监听器，
-		// 将监听器的绑定延迟到下一个微任务。
+		// Delay binding global listeners to prevent the click that opened
+		// the panel from propagating to the listener
 		windowRef.setTimeout(() => {
 			if (visible) {
 				bindGlobalListeners();
 			}
 		}, 0);
 
-		updatePosition(selection?.rect);
 		panel.focus();
 	}
 
