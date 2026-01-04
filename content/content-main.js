@@ -1,14 +1,13 @@
 // content-main.js - Floating Assistant Entry Point
 // This file initializes the floating assistant feature for the Chrome extension.
 
-import { normalizeUserConfig } from "../utils/config-normalizer.js";
-
 // Log prefix for console filtering and identification
 const LOG_PREFIX = "[floating-assistant]";
 
-// 从模块动态导入的函数，预先声明
+// Module functions loaded dynamically
 let parseTextWithFallback = null;
 let parseTextWithDynamicFieldsFallback = null;
+let normalizeUserConfig = null;
 
 let addNote = null;
 let translate = null;
@@ -61,17 +60,18 @@ function logWarn(message, payload) {
 	try {
 		// 并行加载所有必需的JS模块，以提高启动速度
 		const [
-			selectionModule, // 处理文本选择
-			floatingButtonModule, // 浮动按钮UI
-			floatingPanelModule, // 浮动面板UI
-			aiServiceModule, // AI解析服务
-			promptEngineModule, // Prompt模板引擎
-			ankiConnectModule, // AnkiConnect代理
-			i18nModule, // 多语言支持
-			templateStoreModule, // 模板存储
-			storageModule, // 存储模块
-			ankiServiceModule, // Anki服务
-			errorBoundaryModule, // 错误边界
+			selectionModule, // Text selection handling
+			floatingButtonModule, // Floating button UI
+			floatingPanelModule, // Floating panel UI
+			aiServiceModule, // AI parsing service
+			promptEngineModule, // Prompt template engine
+			ankiConnectModule, // AnkiConnect proxy
+			i18nModule, // Multi-language support
+			templateStoreModule, // Template storage
+			storageModule, // Storage module (ConfigService)
+			ankiServiceModule, // Anki service
+			errorBoundaryModule, // Error boundary
+			configNormalizerModule, // Config normalizer
 		] = await Promise.all([
 			import(chrome.runtime.getURL("content/selection.js")),
 			import(chrome.runtime.getURL("content/floating-button.js")),
@@ -84,9 +84,10 @@ function logWarn(message, payload) {
 			import(chrome.runtime.getURL("services/config-service.js")),
 			import(chrome.runtime.getURL("services/anki-service.js")),
 			import(chrome.runtime.getURL("utils/error-boundary.js")),
+			import(chrome.runtime.getURL("utils/config-normalizer.js")),
 		]);
 
-		// 从加载的模块中解构并赋值函数到顶层变量
+		// Extract and assign functions from loaded modules to top-level variables
 		const { createSelectionMonitor, isRestrictedLocation } = selectionModule;
 		const { createFloatingButtonController } = floatingButtonModule;
 		const { createFloatingPanelController } = floatingPanelModule;
@@ -96,6 +97,7 @@ function logWarn(message, payload) {
 		({ addNote } = ankiConnectModule);
 		({ translate } = i18nModule);
 		({ getActiveTemplate } = templateStoreModule);
+		({ normalizeUserConfig } = configNormalizerModule);
 
 		// Initialize ConfigService
 		const { configService } = storageModule; // actually configServiceModule
