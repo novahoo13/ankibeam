@@ -1,7 +1,7 @@
 {
 	"extension_name": {
 		"description": "扩展显示的名称。",
-		"message": "Anki单词助手"
+		"message": "AnkiBeam"
 	},
 	"extension_description": {
 		"description": "扩展在商店与清单中的简介。",
@@ -1283,7 +1283,7 @@
 	},
 	"popup_app_title": {
 		"description": "Popup 页面标题，用于 <title> 与头部标题",
-		"message": "Anki 单词助手"
+		"message": "AnkiBeam"
 	},
 	"popup_confirm_reload": {
 		"description": "严重错误后的刷新提示",

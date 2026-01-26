@@ -1,6 +1,6 @@
 # 自定义 OpenAI 兼容供应商操作指南
 
-本文说明如何在 Anki Word Assistant 中接入任意兼容 OpenAI Chat Completions API 的服务，并解释保存流程中的权限提示。
+本文说明如何在 AnkiBeam 中接入任意兼容 OpenAI Chat Completions API 的服务，并解释保存流程中的权限提示。
 
 ## 前置条件
 - 已获取目标服务的 API Key，并确认其兼容 OpenAI Chat Completions 接口。
@@ -8,7 +8,7 @@
 - Chrome 浏览器 121+，允许扩展请求可选的站点访问权限。
 
 ## 配置步骤
-1. 在浏览器地址栏输入 `chrome://extensions`，找到 Anki Word Assistant，点击“详细信息”并进入“扩展选项”或直接在扩展弹窗中打开“设置中心”。
+1. 在浏览器地址栏输入 `chrome://extensions`，找到 AnkiBeam，点击“详细信息”并进入“扩展选项”或直接在扩展弹窗中打开“设置中心”。
 2. 切换到“AI 配置”标签页，选择“OpenAI GPT”面板，填入兼容服务提供的 API Key。
 3. 在“API 地址”字段中输入自定义端点（如 `https://proxy.example.com/v1` 或 `https://example.com:8443/v1`），必要时同步更新默认模型名称。
 4. 点击“保存设置”后，Chrome 会弹出新的域名访问权限提示，请确认授权；如果拒绝，配置不会写入，需要重新保存并授权。

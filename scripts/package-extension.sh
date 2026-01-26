@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # =============================================================================
-# Anki Word Assistant - Extension Packaging Script
+# AnkiBeam - Extension Packaging Script
 # =============================================================================
 # 
 # This script creates a production-ready ZIP package for Chrome Web Store
@@ -32,7 +32,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 OUTPUT_DIR="$PROJECT_ROOT/dist"
 
 echo -e "${BLUE}========================================${NC}"
-echo -e "${BLUE}  Anki Word Assistant Packager${NC}"
+echo -e "${BLUE}  AnkiBeam Packager${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""
 
@@ -58,7 +58,7 @@ fi
 mkdir -p "$OUTPUT_DIR"
 
 # Define output filename
-OUTPUT_FILE="$OUTPUT_DIR/anki-word-assistant-v${VERSION}.zip"
+OUTPUT_FILE="$OUTPUT_DIR/ankibeam-v${VERSION}.zip"
 
 # Remove existing package if exists
 if [ -f "$OUTPUT_FILE" ]; then

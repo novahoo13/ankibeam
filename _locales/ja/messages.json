@@ -1,7 +1,7 @@
 {
 	"extension_name": {
 		"description": "Chrome 拡張の名称。",
-		"message": "Ankiワードアシスタント"
+		"message": "AnkiBeam"
 	},
 	"extension_description": {
 		"description": "Chrome 拡張の説明文。",
@@ -1231,7 +1231,7 @@
 	},
 	"popup_app_title": {
 		"description": "ポップアップページのタイトル、<title>とヘッダータイトルに使用",
-		"message": "Anki単語アシスタント"
+		"message": "AnkiBeam"
 	},
 	"popup_confirm_reload": {
 		"description": "重大なエラー後のリフレッシュヒント",
