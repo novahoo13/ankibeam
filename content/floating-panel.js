@@ -286,13 +286,11 @@ export function createFloatingPanelController(options = {}) {
   left: 0;
   pointer-events: none;
   opacity: 0;
-  transform: translate3d(0, 10px, 0);
-  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .panel-wrapper[data-visible="true"] {
   pointer-events: auto;
   opacity: 1;
-  transform: translate3d(0, 0, 0);
 }
 
 .panel {
@@ -319,7 +317,12 @@ export function createFloatingPanelController(options = {}) {
   gap: 12px;
   cursor: grab;
   
-  transition: box-shadow 0.2s ease;
+  transform: translateY(10px);
+  transition: box-shadow 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.panel-wrapper[data-visible="true"] .panel {
+  transform: translateY(0);
 }
 
 .panel:focus {
@@ -609,7 +612,7 @@ export function createFloatingPanelController(options = {}) {
 			documentRef,
 			"div",
 			"panel-title",
-			getText("popup_app_title", "Anki Word Assistant"),
+			getText("popup_app_title", "AnkiBeam"),
 		);
 
 		const templateSelect = documentRef.createElement("select");
@@ -1648,7 +1651,7 @@ export function createFloatingPanelController(options = {}) {
 		if (titleElement) {
 			titleElement.textContent = getText(
 				"popup_app_title",
-				"Anki Word Assistant",
+				"AnkiBeam",
 			);
 		}
 

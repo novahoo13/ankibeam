@@ -1,7 +1,7 @@
 /**
  * @fileoverview 设置存储管理模块
  *
- * 该模块负责处理 Anki Word Assistant 的所有配置存储操作，包括：
+ * 该模块负责处理 AnkiBeam 的所有配置存储操作，包括：
  * - 配置的保存和加载
  * - API 密钥的加密和解密
  * - 配置版本的迁移和合并
@@ -730,47 +730,28 @@ function migrateConfig(legacyConfig) {
 }
 
 /**
- * 从 Chrome 存储中读取数据
- * 兼容 Promise 和回调两种 API 形式
- * @param {string} key - 存储键名
- * @returns {Promise<Object>} 存储的数据对象
+ * Read data from Chrome storage
+ * Simplified to use only Promise API (Chrome 88+ required for Manifest V3)
+ * @param {string} key - Storage key name
+ * @returns {Promise<Object>} Stored data object
  */
 async function readFromStorage(key) {
 	if (!chrome?.storage?.local?.get) {
 		return {};
 	}
 
-	const getter = chrome.storage.local.get.bind(chrome.storage.local);
-
-	// 检查是否支持 Promise API（Chrome 新版本）
-	if (chrome.storage.local.get.length <= 1) {
-		const result = getter(key);
-		if (result && typeof result.then === "function") {
-			return result;
-		}
+	try {
+		return await chrome.storage.local.get(key);
+	} catch (error) {
+		console.error("[storage] Failed to read from storage:", error);
+		return {};
 	}
-
-	// 使用回调 API（Chrome 旧版本）
-	return new Promise((resolve, reject) => {
-		try {
-			getter(key, (value) => {
-				const lastError = chrome.runtime?.lastError;
-				if (lastError) {
-					reject(new Error(lastError.message));
-					return;
-				}
-				resolve(value);
-			});
-		} catch (error) {
-			reject(error);
-		}
-	});
 }
 
 /**
- * 向 Chrome 存储中写入数据
- * 兼容 Promise 和回调两种 API 形式
- * @param {Object} items - 要存储的数据对象
+ * Write data to Chrome storage
+ * Simplified to use only Promise API (Chrome 88+ required for Manifest V3)
+ * @param {Object} items - Data object to store
  * @returns {Promise<void>}
  */
 async function writeToStorage(items) {
@@ -778,32 +759,12 @@ async function writeToStorage(items) {
 		return;
 	}
 
-	const setter = chrome.storage.local.set.bind(chrome.storage.local);
-
-	// 检查是否支持 Promise API（Chrome 新版本）
-	if (chrome.storage.local.set.length <= 1) {
-		const result = setter(items);
-		if (result && typeof result.then === "function") {
-			await result;
-			return;
-		}
+	try {
+		await chrome.storage.local.set(items);
+	} catch (error) {
+		console.error("[storage] Failed to write to storage:", error);
+		throw error;
 	}
-
-	// 使用回调 API（Chrome 旧版本）
-	await new Promise((resolve, reject) => {
-		try {
-			setter(items, () => {
-				const lastError = chrome.runtime?.lastError;
-				if (lastError) {
-					reject(new Error(lastError.message));
-					return;
-				}
-				resolve();
-			});
-		} catch (error) {
-			reject(error);
-		}
-	});
 }
 
 /**

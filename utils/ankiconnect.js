@@ -1,8 +1,7 @@
-// ankiconnect.js - AnkiConnect API 封装
-// 详细文档: https://git.sr.ht/~foosoft/anki-connect
+// ankiconnect.js - AnkiConnect API Wrapper
+// Documentation: https://git.sr.ht/~foosoft/anki-connect
 
-const ANKI_CONNECT_URL = 'http://127.0.0.1:8765';
-const ANKI_CONNECT_VERSION = 6;
+import { ANKI_CONNECT_DEFAULT_URL, ANKI_CONNECT_VERSION } from "./constants.js";
 
 /**
  * 向 AnkiConnect 发送请求的通用函数
@@ -11,26 +10,26 @@ const ANKI_CONNECT_VERSION = 6;
  * @returns {Promise<any>} - 返回 AnkiConnect 的响应
  */
 async function invoke(action, params = {}) {
-  const response = await fetch(ANKI_CONNECT_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ action, version: ANKI_CONNECT_VERSION, params }),
-  });
+	const response = await fetch(ANKI_CONNECT_DEFAULT_URL, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ action, version: ANKI_CONNECT_VERSION, params }),
+	});
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
+	if (!response.ok) {
+		throw new Error(`HTTP error! status: ${response.status}`);
+	}
 
-  const data = await response.json();
+	const data = await response.json();
 
-  // AnkiConnect 在其响应体中报告错误
-  if (data.error) {
-    throw new Error(data.error);
-  }
-  
-  return data;
+	// AnkiConnect 在其响应体中报告错误
+	if (data.error) {
+		throw new Error(data.error);
+	}
+
+	return data;
 }
 
 /**
@@ -38,12 +37,12 @@ async function invoke(action, params = {}) {
  * @returns {Promise<{result: string, error: null}|{result: null, error: string}>}
  */
 export async function testConnection() {
-  try {
-    const response = await invoke('version');
-    return { result: response.result, error: null };
-  } catch (e) {
-    return { result: null, error: e.message };
-  }
+	try {
+		const response = await invoke("version");
+		return { result: response.result, error: null };
+	} catch (e) {
+		return { result: null, error: e.message };
+	}
 }
 
 /**
@@ -56,12 +55,12 @@ export async function testConnection() {
  * @returns {Promise<{result: number, error: null}|{result: null, error: string}>} - 返回新笔记的ID或错误
  */
 export async function addNote(noteData) {
-  try {
-    const response = await invoke('addNote', { note: noteData });
-    return { result: response.result, error: null };
-  } catch (e) {
-    return { result: null, error: e.message };
-  }
+	try {
+		const response = await invoke("addNote", { note: noteData });
+		return { result: response.result, error: null };
+	} catch (e) {
+		return { result: null, error: e.message };
+	}
 }
 
 /**
@@ -69,12 +68,12 @@ export async function addNote(noteData) {
  * @returns {Promise<{result: string[], error: null}|{result: null, error: string}>}
  */
 export async function getDeckNames() {
-  try {
-    const response = await invoke('deckNames');
-    return { result: response.result, error: null };
-  } catch (e) {
-    return { result: null, error: e.message };
-  }
+	try {
+		const response = await invoke("deckNames");
+		return { result: response.result, error: null };
+	} catch (e) {
+		return { result: null, error: e.message };
+	}
 }
 
 /**
@@ -82,12 +81,12 @@ export async function getDeckNames() {
  * @returns {Promise<{result: string[], error: null}|{result: null, error: string}>}
  */
 export async function getModelNames() {
-  try {
-    const response = await invoke('modelNames');
-    return { result: response.result, error: null };
-  } catch (e) {
-    return { result: null, error: e.message };
-  }
+	try {
+		const response = await invoke("modelNames");
+		return { result: response.result, error: null };
+	} catch (e) {
+		return { result: null, error: e.message };
+	}
 }
 
 /**
@@ -95,12 +94,12 @@ export async function getModelNames() {
  * @returns {Promise<{result: Object, error: null}|{result: null, error: string}>}
  */
 export async function getModelNamesAndIds() {
-  try {
-    const response = await invoke('modelNamesAndIds');
-    return { result: response.result, error: null };
-  } catch (e) {
-    return { result: null, error: e.message };
-  }
+	try {
+		const response = await invoke("modelNamesAndIds");
+		return { result: response.result, error: null };
+	} catch (e) {
+		return { result: null, error: e.message };
+	}
 }
 
 /**
@@ -109,10 +108,10 @@ export async function getModelNamesAndIds() {
  * @returns {Promise<{result: string[], error: null}|{result: null, error: string}>}
  */
 export async function getModelFieldNames(modelName) {
-  try {
-    const response = await invoke('modelFieldNames', { modelName: modelName });
-    return { result: response.result, error: null };
-  } catch (e) {
-    return { result: null, error: e.message };
-  }
+	try {
+		const response = await invoke("modelFieldNames", { modelName: modelName });
+		return { result: response.result, error: null };
+	} catch (e) {
+		return { result: null, error: e.message };
+	}
 }

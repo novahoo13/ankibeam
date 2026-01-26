@@ -1,7 +1,7 @@
 {
 	"extension_name": {
 		"description": "Extension name shown in the Chrome Web Store and UI.",
-		"message": "Anki Word Assistant"
+		"message": "AnkiBeam"
 	},
 	"extension_description": {
 		"description": "Extension description for manifest and store listing.",
@@ -1283,7 +1283,7 @@
 	},
 	"popup_app_title": {
 		"description": "Popup page title, used for <title> and header.",
-		"message": "Anki Word Assistant"
+		"message": "AnkiBeam"
 	},
 	"popup_confirm_reload": {
 		"description": "Refresh prompt after a critical error.",

@@ -1,11 +1,10 @@
-// content-main.js - 浮动助手入口文件
+// content-main.js - Floating Assistant Entry Point
+// This file initializes the floating assistant feature for the Chrome extension.
 
-// 日志前缀，方便在控制台过滤和识别日志
+// Log prefix for console filtering and identification
 const LOG_PREFIX = "[floating-assistant]";
-// 存储在 chrome.storage.local 中的配置键名
-const CONFIG_STORAGE_KEY = "ankiWordAssistantConfig";
 
-// 从模块动态导入的函数，预先声明
+// Module functions loaded dynamically
 let parseTextWithFallback = null;
 let parseTextWithDynamicFieldsFallback = null;
 
@@ -53,24 +52,24 @@ function logWarn(message, payload) {
 }
 
 /**
- * 启动函数 (IIFE - 立即调用函数表达式)
- * 负责异步加载所有模块并初始化内容脚本
+ * Bootstrap function (IIFE - Immediately Invoked Function Expression)
+ * Responsible for asynchronously loading all modules and initializing the content script
  */
 (async function bootstrap() {
 	try {
 		// 并行加载所有必需的JS模块，以提高启动速度
 		const [
-			selectionModule, // 处理文本选择
-			floatingButtonModule, // 浮动按钮UI
-			floatingPanelModule, // 浮动面板UI
-			aiServiceModule, // AI解析服务
-			promptEngineModule, // Prompt模板引擎
-			ankiConnectModule, // AnkiConnect代理
-			i18nModule, // 多语言支持
-			templateStoreModule, // 模板存储
-			storageModule, // 存储模块
-			ankiServiceModule, // Anki服务
-			errorBoundaryModule, // 错误边界
+			selectionModule, // Text selection handling
+			floatingButtonModule, // Floating button UI
+			floatingPanelModule, // Floating panel UI
+			aiServiceModule, // AI parsing service
+			promptEngineModule, // Prompt template engine
+			ankiConnectModule, // AnkiConnect proxy
+			i18nModule, // Multi-language support
+			templateStoreModule, // Template storage
+			storageModule, // Storage module (ConfigService)
+			ankiServiceModule, // Anki service
+			errorBoundaryModule, // Error boundary
 		] = await Promise.all([
 			import(chrome.runtime.getURL("content/selection.js")),
 			import(chrome.runtime.getURL("content/floating-button.js")),
@@ -85,7 +84,7 @@ function logWarn(message, payload) {
 			import(chrome.runtime.getURL("utils/error-boundary.js")),
 		]);
 
-		// 从加载的模块中解构并赋值函数到顶层变量
+		// Extract and assign functions from loaded modules to top-level variables
 		const { createSelectionMonitor, isRestrictedLocation } = selectionModule;
 		const { createFloatingButtonController } = floatingButtonModule;
 		const { createFloatingPanelController } = floatingPanelModule;
@@ -540,19 +539,19 @@ function createController(
 			);
 		}
 
-		result = await parseTextWithDynamicFieldsFallback(
+		const result = await parseTextWithDynamicFieldsFallback(
 			selectedText,
 			dynamicFields,
 			customPrompt,
 		);
 
-		// 将AI解析结果应用到面板的字段中
+		// Apply AI parsing results to the panel fields
 		if (floatingPanel) {
 			floatingPanel.applyFieldValues(result);
-			floatingPanel.showReady(); // 显示准备就绪状态
+			floatingPanel.showReady(); // Show ready state
 		}
 
-		logInfo("AI解析完成。", result);
+		logInfo("AI parsing completed.", result);
 	}
 
 	/**
@@ -617,7 +616,7 @@ function createController(
 		}
 	}
 
-	// 返回控制器公共API
+	// Return the controller's public API
 	return {
 		refreshConfig,
 		applyConfigUpdate: applyConfig,
@@ -625,64 +624,9 @@ function createController(
 }
 
 /**
- * 旧版加载逻辑，已被 bootstrap 中的动态加载替代
- * @deprecated
- */
-// async function loadFloatingAssistantConfig() {
-// 	const stored = await readStoredConfig();
-// 	return normalizeConfig(stored);
-// }
-
-/**
- * 读取存储的原始配置
- * @returns {Promise<object|null>} 存储的配置或null
- */
-async function readStoredConfig() {
-	if (!chrome?.storage?.local?.get) {
-		return null;
-	}
-
-	try {
-		const getter = chrome.storage.local.get.bind(chrome.storage.local);
-		let result;
-		try {
-			// 尝试使用Promise-based API
-			result = getter(CONFIG_STORAGE_KEY);
-		} catch (callError) {
-			result = null;
-		}
-
-		// 如果返回的是Promise，则等待其解析
-		if (result && typeof result.then === "function") {
-			const resolved = await result;
-			return resolved?.[CONFIG_STORAGE_KEY] ?? null;
-		}
-
-		// 否则，使用传统的回调API
-		return await new Promise((resolve, reject) => {
-			try {
-				getter(CONFIG_STORAGE_KEY, (items) => {
-					const lastError = chrome.runtime?.lastError;
-					if (lastError) {
-						reject(new Error(lastError.message));
-						return;
-					}
-					resolve(items?.[CONFIG_STORAGE_KEY] ?? null);
-				});
-			} catch (error) {
-				reject(error);
-			}
-		});
-	} catch (error) {
-		console.error(`${LOG_PREFIX} 读取存储时发生错误。`, error);
-		return null;
-	}
-}
-
-/**
- * 清理字符串数组，移除无效条目
- * @param {any} value - 待处理的值
- * @returns {string[]} 清理后的字符串数组
+ * Sanitize a string array, removing invalid entries
+ * @param {any} value - The value to process
+ * @returns {string[]} Cleaned string array
  */
 function sanitizeStringArray(value) {
 	if (!Array.isArray(value)) {
@@ -694,9 +638,9 @@ function sanitizeStringArray(value) {
 }
 
 /**
- * 规范化配置对象，确保所有字段都存在并具有正确的类型
- * @param {object} rawConfig - 从存储中读取的原始配置
- * @returns {object} 规范化后的配置对象
+ * Normalize config object, ensuring all fields exist with correct types
+ * @param {object} rawConfig - Raw config from storage
+ * @returns {object} Normalized config object
  */
 function normalizeConfig(rawConfig) {
 	const defaults = {
@@ -724,7 +668,7 @@ function normalizeConfig(rawConfig) {
 
 	const normalized = { ...rawConfig };
 
-	// 规范化UI配置
+	// Normalize UI config
 	const ui =
 		rawConfig.ui && typeof rawConfig.ui === "object"
 			? { ...defaults.ui, ...rawConfig.ui }
@@ -732,7 +676,7 @@ function normalizeConfig(rawConfig) {
 	ui.enableFloatingAssistant = Boolean(ui.enableFloatingAssistant);
 	normalized.ui = ui;
 
-	// 规范化Anki配置
+	// Normalize Anki config
 	const ankiConfig =
 		rawConfig.ankiConfig && typeof rawConfig.ankiConfig === "object"
 			? { ...defaults.ankiConfig, ...rawConfig.ankiConfig }
@@ -741,7 +685,7 @@ function normalizeConfig(rawConfig) {
 	ankiConfig.defaultTags = sanitizeStringArray(ankiConfig.defaultTags);
 	normalized.ankiConfig = ankiConfig;
 
-	// 规范化Prompt模板配置
+	// Normalize Prompt templates config
 	const promptTemplates =
 		rawConfig.promptTemplates && typeof rawConfig.promptTemplates === "object"
 			? { ...defaults.promptTemplates, ...rawConfig.promptTemplates }
@@ -754,14 +698,14 @@ function normalizeConfig(rawConfig) {
 	}
 	normalized.promptTemplates = promptTemplates;
 
-	// 规范化样式配置
+	// Normalize style config
 	const styleConfig =
 		rawConfig.styleConfig && typeof rawConfig.styleConfig === "object"
 			? { ...rawConfig.styleConfig }
 			: { ...defaults.styleConfig };
 	normalized.styleConfig = styleConfig;
 
-	// 规范化语言配置
+	// Normalize language config
 	if (typeof rawConfig.language === "string" && rawConfig.language.trim()) {
 		normalized.language = rawConfig.language.trim();
 	} else if (
