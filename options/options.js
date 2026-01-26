@@ -1090,7 +1090,7 @@ async function handleExportConfiguration() {
 			.toISOString()
 			.replace(/[:T]/g, "-")
 			.slice(0, 19);
-		const fileName = `anki-word-assistant-config-${timestamp}.json`;
+		const fileName = `ankibeam-config-${timestamp}.json`;
 		const blob = new Blob([JSON.stringify(exportData, null, 2)], {
 			type: "application/json",
 		});

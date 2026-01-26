@@ -612,7 +612,7 @@ export function createFloatingPanelController(options = {}) {
 			documentRef,
 			"div",
 			"panel-title",
-			getText("popup_app_title", "Anki Word Assistant"),
+			getText("popup_app_title", "AnkiBeam"),
 		);
 
 		const templateSelect = documentRef.createElement("select");
@@ -1651,7 +1651,7 @@ export function createFloatingPanelController(options = {}) {
 		if (titleElement) {
 			titleElement.textContent = getText(
 				"popup_app_title",
-				"Anki Word Assistant",
+				"AnkiBeam",
 			);
 		}
 

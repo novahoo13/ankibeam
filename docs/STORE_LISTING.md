@@ -8,10 +8,10 @@
 
 | 语言     | 名称                                               |
 | -------- | -------------------------------------------------- |
-| English  | Anki Word Assistant - AI-Powered Flashcard Creator |
-| 简体中文 | Anki 单词助手 - AI 智能制卡神器                    |
-| 繁體中文 | Anki 單詞助手 - AI 智慧製卡神器                    |
-| 日本語   | Anki 単語アシスタント - AI flashcard 作成ツール    |
+| English  | AnkiBeam - AI-Powered Flashcard Creator |
+| 简体中文 | AnkiBeam - AI 智能制卡神器                    |
+| 繁體中文 | AnkiBeam - AI 智慧製卡神器                    |
+| 日本語   | AnkiBeam - AI flashcard 作成ツール    |
 
 ---
 
@@ -40,9 +40,9 @@
 ### English
 
 ```
-🚀 ANKI WORD ASSISTANT - Your AI-Powered Vocabulary Learning Companion
+🚀 ANKIBEAM - Your AI-Powered Vocabulary Learning Companion
 
-Stop wasting time manually creating flashcards! Anki Word Assistant uses cutting-edge AI to transform any word or text into beautifully formatted Anki cards in seconds.
+Stop wasting time manually creating flashcards! AnkiBeam uses cutting-edge AI to transform any word or text into beautifully formatted Anki cards in seconds.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -114,7 +114,7 @@ Questions or feedback? Visit our GitHub page.
 ```
 🚀 ANKI 单词助手 - 你的 AI 智能单词卡片制作利器
 
-告别繁琐的手动制卡！Anki 单词助手利用前沿 AI 技术，秒速将任何单词或文本转换为精美的 Anki 卡片。
+告别繁琐的手动制卡！AnkiBeam利用前沿 AI 技术，秒速将任何单词或文本转换为精美的 Anki 卡片。
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -186,7 +186,7 @@ Questions or feedback? Visit our GitHub page.
 ```
 🚀 ANKI 單詞助手 - 你的 AI 智慧單詞卡片製作利器
 
-告別繁瑣的手動製卡！Anki 單詞助手運用尖端 AI 技術，秒速將任何單詞或文本轉換為精美的 Anki 卡片。
+告別繁瑣的手動製卡！AnkiBeam 運用尖端 AI 技術，秒速將任何單詞或文本轉換為精美的 Anki 卡片。
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 

@@ -1,6 +1,6 @@
 # 📦 发布指南：从零开始发布到 GitHub 和 Chrome Web Store
 
-本指南将详细介绍如何将 Anki Word Assistant 扩展发布到 GitHub 和 Chrome Web Store。
+本指南将详细介绍如何将 AnkiBeam 扩展发布到 GitHub 和 Chrome Web Store。
 
 ---
 
@@ -72,12 +72,12 @@ git push origin main
 
 ### 步骤 4: 创建 GitHub Release
 
-1. 打开 GitHub 仓库页面: https://github.com/novahoo13/anki-word-assistant
+1. 打开 GitHub 仓库页面: https://github.com/novahoo13/ankibeam
 2. 点击右侧的 **"Releases"**
 3. 点击 **"Create a new release"**
 4. 填写以下信息：
    - **Tag version**: `v1.0.0`
-   - **Release title**: `Anki Word Assistant v1.0.0`
+   - **Release title**: `AnkiBeam v1.0.0`
    - **Description**: 写上主要功能和更新说明
 5. 上传扩展的 ZIP 包（可选）
 6. 点击 **"Publish release"**
@@ -137,7 +137,7 @@ cp manifest.json dist-package/
 
 # 创建 ZIP（排除不需要的文件）
 cd dist-package
-zip -r ../anki-word-assistant-v1.0.0.zip . \
+zip -r ../ankibeam-v1.0.0.zip . \
     -x "*.DS_Store" \
     -x "*node_modules*" \
     -x "*.git*"
@@ -159,7 +159,7 @@ rm -rf dist-package
 
    **基本信息：**
 
-   - **商品名称**: Anki Word Assistant
+   - **商品名称**: AnkiBeam
    - **摘要**: AI 驱动的 Anki 单词卡片助手（最多 132 字符）
    - **详细说明**: 从 README 复制功能介绍
 

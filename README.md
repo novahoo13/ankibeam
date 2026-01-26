@@ -1,4 +1,4 @@
-# Anki Word Assistant
+# AnkiBeam
 
 一款 AI 驱动的 Chrome 扩展程序，帮助用户快速创建 Anki 单词卡片。支持多种 AI 服务商，可自定义解析模板，让单词学习更高效。
 
@@ -147,7 +147,7 @@
 ## 项目结构
 
 ```
-anki-word-assistant/
+ankibeam/
 ├── background/          # 后台服务脚本
 ├── content/             # 内容脚本（浮动助手）
 ├── popup/               # 弹窗界面
@@ -218,4 +218,4 @@ MIT License
 
 ## 反馈与支持
 
-如有问题或建议，请提交 [Issue](https://github.com/novahoo13/anki-word-assistant/issues)。
+如有问题或建议，请提交 [Issue](https://github.com/novahoo13/ankibeam/issues)。

@@ -1,10 +1,10 @@
-# Privacy Policy for Anki Word Assistant
+# Privacy Policy for AnkiBeam
 
 **Last Updated: January 3, 2026**
 
 ## Overview
 
-Anki Word Assistant is a browser extension that helps users create Anki flashcards using AI services. This privacy policy explains how the extension handles user data.
+AnkiBeam is a browser extension that helps users create Anki flashcards using AI services. This privacy policy explains how the extension handles user data.
 
 ## Data Collection
 
@@ -71,7 +71,7 @@ If we make changes to this privacy policy, we will update the "Last Updated" dat
 ## Contact
 
 For privacy-related questions, please open an issue on our GitHub repository:
-https://github.com/novahoo13/anki-word-assistant/issues
+https://github.com/novahoo13/ankibeam/issues
 
 ---
 

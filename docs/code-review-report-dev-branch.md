@@ -1,4 +1,4 @@
-# Anki Word Assistant (dev 分支) 代码审查报告
+# AnkiBeam (dev 分支) 代码审查报告
 
 **审查日期**: 2026-01-03  
 **审查分支**: `dev`  
@@ -25,7 +25,7 @@
 ### 1.3 项目结构
 
 ```
-anki-word-assistant/
+ankibeam/
 ├── background/          # 后台服务脚本 (Service Worker)
 ├── content/             # 内容脚本（浮动助手）
 ├── popup/               # 弹窗界面
@@ -536,7 +536,7 @@ export const appState = new StateStore({
 ### 5.2 建议的目录结构调整
 
 ```
-anki-word-assistant/
+ankibeam/
 ├── src/
 │   ├── background/
 │   │   └── index.js

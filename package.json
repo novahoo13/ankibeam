@@ -1,9 +1,9 @@
 {
-  "name": "anki-word-assistant",
+  "name": "ankibeam",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Browser extension for Anki word assistant",
+  "description": "Browser extension for AnkiBeam",
   "scripts": {
     "css:build": "tailwindcss -i styles/input.css -o styles/tailwind.min.css --minify",
     "css:watch": "tailwindcss -i styles/input.css -o styles/tailwind.min.css --minify --watch",

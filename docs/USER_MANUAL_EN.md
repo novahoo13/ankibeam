@@ -1,4 +1,4 @@
-# 📖 Anki Word Assistant User Manual
+# 📖 AnkiBeam User Manual
 
 **Version**: 1.0  
 **Last Updated**: January 2026
@@ -18,9 +18,9 @@
 
 ## 1. Quick Start
 
-### What is Anki Word Assistant?
+### What is AnkiBeam?
 
-Anki Word Assistant is a Chrome browser extension that:
+AnkiBeam is a Chrome browser extension that:
 
 ✅ **Auto-Parse** - Enter a word, AI generates definitions, examples, pronunciation  
 ✅ **One-Click Cards** - Sync parsed content directly to Anki  
@@ -138,7 +138,7 @@ Click extension icon      Enter text, click Parse   Click Write to Anki
 
 **Detailed Steps:**
 
-1. Click the **Anki Word Assistant** icon in Chrome toolbar
+1. Click the **AnkiBeam** icon in Chrome toolbar
 2. Enter the word or phrase in the input field
 3. (Optional) Select a parsing template from dropdown
 4. Click the **"Parse"** button
@@ -393,10 +393,10 @@ Change: Settings → Interface → Language
 
 If you encounter other issues:
 
-1. Check [GitHub Issues](https://github.com/novahoo13/anki-word-assistant/issues)
+1. Check [GitHub Issues](https://github.com/novahoo13/ankibeam/issues)
 2. Submit a new Issue describing your problem
 3. Include screenshots and reproduction steps
 
 ---
 
-_Thank you for using Anki Word Assistant! Happy learning!_ 🎓
+_Thank you for using AnkiBeam! Happy learning!_ 🎓
