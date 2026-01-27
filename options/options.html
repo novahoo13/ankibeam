@@ -1,783 +1,888 @@
-<!DOCTYPE html>
+<!doctype html>
 <!--
   AnkiBeam - Modern Options Page
 -->
 <html>
-	<head>
-		<meta charset="UTF-8" />
-		<title data-i18n="options_page_title"></title>
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="stylesheet" href="../styles/tailwind.min.css" />
-		<link rel="stylesheet" href="../styles/custom-classes.css" />
-		<script type="module" src="../utils/i18n.js"></script>
-		<style>
-			/* Custom Scrollbar for Main Area */
-			main::-webkit-scrollbar {
-				width: 8px;
-			}
-			main::-webkit-scrollbar-track {
-				background: transparent;
-			}
-			main::-webkit-scrollbar-thumb {
-				background-color: rgba(148, 163, 184, 0.3);
-				border-radius: 99px;
-				border: 2px solid transparent;
-				background-clip: content-box;
-			}
-			main::-webkit-scrollbar-thumb:hover {
-				background-color: rgba(148, 163, 184, 0.5);
-			}
+  <head>
+    <meta charset="UTF-8" />
+    <title data-i18n="options_page_title"></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../styles/tailwind.min.css" />
+    <link rel="stylesheet" href="../styles/custom-classes.css" />
+    <script type="module" src="../utils/i18n.js"></script>
+    <style>
+      /* Custom Scrollbar for Main Area */
+      main::-webkit-scrollbar {
+        width: 8px;
+      }
+      main::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      main::-webkit-scrollbar-thumb {
+        background-color: rgba(148, 163, 184, 0.3);
+        border-radius: 99px;
+        border: 2px solid transparent;
+        background-clip: content-box;
+      }
+      main::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(148, 163, 184, 0.5);
+      }
 
-			/* Animations */
-			.tab-content {
-				display: none;
-				opacity: 0;
-				transform: translateY(10px);
-				transition: opacity 0.3s ease-out, transform 0.3s ease-out;
-			}
-			.tab-content.active {
-				display: block;
-				opacity: 1;
-				transform: translateY(0);
-			}
+      /* Animations */
+      .tab-content {
+        display: none;
+        opacity: 0;
+        transform: translateY(10px);
+        transition:
+          opacity 0.3s ease-out,
+          transform 0.3s ease-out;
+      }
+      .tab-content.active {
+        display: block;
+        opacity: 1;
+        transform: translateY(0);
+      }
 
-			/* Sidebar Button Active State */
-			.settings-tab-btn.active {
-				background-color: rgb(var(--primary-500)); /* Primary Color */
-				color: white;
-				box-shadow: 0 4px 6px -1px rgba(var(--primary-500), 0.3),
-					0 2px 4px -2px rgba(var(--primary-500), 0.1);
-			}
-			.settings-tab-btn.active svg {
-				color: white;
-			}
-		</style>
-	</head>
-	<body
-		class="bg-page text-main font-sans antialiased min-h-screen flex items-center justify-center p-4 md:p-8">
-		<!-- Card Container -->
-		<div
-			class="w-full max-w-6xl bg-white/80 backdrop-blur-xl rounded-3xl shadow-float border border-white/40 flex flex-col md:flex-row overflow-hidden h-[85vh]">
-			<!-- Sidebar Navigation -->
-			<aside
-				class="md:w-64 bg-slate-50/50 border-b md:border-b-0 md:border-r border-border-light flex flex-col flex-none z-10">
-				<!-- Header -->
-				<div class="p-6 pb-2">
-					<h1
-						class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400"
-						data-i18n="options_page_heading">
-						Settings
-					</h1>
-					<p class="text-xs text-tertiary mt-1 font-medium">
-						AnkiBeam
-					</p>
-				</div>
+      /* Sidebar Button Active State */
+      .settings-tab-btn.active {
+        background-color: rgb(var(--primary-500)); /* Primary Color */
+        color: white;
+        box-shadow:
+          0 4px 6px -1px rgba(var(--primary-500), 0.3),
+          0 2px 4px -2px rgba(var(--primary-500), 0.1);
+      }
+      .settings-tab-btn.active svg {
+        color: white;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-page text-main font-sans antialiased min-h-screen flex items-center justify-center p-4 md:p-8"
+  >
+    <!-- Card Container -->
+    <div
+      class="w-full max-w-6xl bg-white/80 backdrop-blur-xl rounded-3xl shadow-float border border-white/40 flex flex-col md:flex-row overflow-hidden h-[85vh]"
+    >
+      <!-- Sidebar Navigation -->
+      <aside
+        class="md:w-64 bg-slate-50/50 border-b md:border-b-0 md:border-r border-border-light flex flex-col flex-none z-10"
+      >
+        <!-- Header -->
+        <div class="p-6 pb-2">
+          <h1
+            class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-primary-400"
+            data-i18n="options_page_heading"
+          >
+            Settings
+          </h1>
+          <p class="text-xs text-tertiary mt-1 font-medium">AnkiBeam</p>
+        </div>
 
-				<!-- Nav Links -->
-				<nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto" role="tablist">
-					<button
-						role="tab"
-						aria-selected="true"
-						aria-controls="ai-config"
-						data-tab="ai-config"
-						data-i18n-aria="options_tab_ai"
-						class="settings-tab-btn w-full flex items-center space-x-3 px-4 py-3 text-sm font-semibold text-secondary rounded-xl hover:bg-white hover:text-primary-600 hover:shadow-sm transition-all duration-200 active group">
-						<svg
-							class="w-5 h-5 text-tertiary group-hover:text-primary-500 transition-colors"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-						</svg>
-						<span data-i18n="options_tab_ai">AI Provider</span>
-					</button>
+        <!-- Nav Links -->
+        <nav class="flex-1 px-4 py-4 space-y-1 overflow-y-auto" role="tablist">
+          <button
+            role="tab"
+            aria-selected="true"
+            aria-controls="ai-config"
+            data-tab="ai-config"
+            data-i18n-aria="options_tab_ai"
+            class="settings-tab-btn w-full flex items-center space-x-3 px-4 py-3 text-sm font-semibold text-secondary rounded-xl hover:bg-white hover:text-primary-600 hover:shadow-sm transition-all duration-200 active group"
+          >
+            <svg
+              class="w-5 h-5 text-tertiary group-hover:text-primary-500 transition-colors"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+              ></path>
+            </svg>
+            <span data-i18n="options_tab_ai">AI Provider</span>
+          </button>
 
-					<button
-						role="tab"
-						aria-selected="false"
-						aria-controls="template-library"
-						data-tab="template-library"
-						data-i18n-aria="options_tab_template_library"
-						class="settings-tab-btn w-full flex items-center space-x-3 px-4 py-3 text-sm font-semibold text-secondary rounded-xl hover:bg-white hover:text-primary-600 hover:shadow-sm transition-all duration-200 group">
-						<svg
-							class="w-5 h-5 text-tertiary group-hover:text-primary-500 transition-colors"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-						</svg>
-						<span data-i18n="options_tab_template_library">Templates</span>
-					</button>
+          <button
+            role="tab"
+            aria-selected="false"
+            aria-controls="template-library"
+            data-tab="template-library"
+            data-i18n-aria="options_tab_template_library"
+            class="settings-tab-btn w-full flex items-center space-x-3 px-4 py-3 text-sm font-semibold text-secondary rounded-xl hover:bg-white hover:text-primary-600 hover:shadow-sm transition-all duration-200 group"
+          >
+            <svg
+              class="w-5 h-5 text-tertiary group-hover:text-primary-500 transition-colors"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              ></path>
+            </svg>
+            <span data-i18n="options_tab_template_library">Templates</span>
+          </button>
 
-					<!-- Style Config -->
-					<button
-						role="tab"
-						aria-selected="false"
-						aria-controls="style-config"
-						data-tab="style-config"
-						data-i18n-aria="options_tab_style"
-						class="settings-tab-btn w-full flex items-center space-x-3 px-4 py-3 text-sm font-semibold text-secondary rounded-xl hover:bg-white hover:text-primary-600 hover:shadow-sm transition-all duration-200 group">
-						<svg
-							class="w-5 h-5 text-tertiary group-hover:text-primary-500 transition-colors"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z"></path>
-						</svg>
-						<span data-i18n="options_tab_style">Appearance</span>
-					</button>
+          <!-- Style Config -->
+          <button
+            role="tab"
+            aria-selected="false"
+            aria-controls="style-config"
+            data-tab="style-config"
+            data-i18n-aria="options_tab_style"
+            class="settings-tab-btn w-full flex items-center space-x-3 px-4 py-3 text-sm font-semibold text-secondary rounded-xl hover:bg-white hover:text-primary-600 hover:shadow-sm transition-all duration-200 group"
+          >
+            <svg
+              class="w-5 h-5 text-tertiary group-hover:text-primary-500 transition-colors"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z"
+              ></path>
+            </svg>
+            <span data-i18n="options_tab_style">Appearance</span>
+          </button>
 
-					<button
-						role="tab"
-						aria-selected="false"
-						aria-controls="system-config"
-						data-tab="system-config"
-						data-i18n-aria="options_tab_system"
-						class="settings-tab-btn w-full flex items-center space-x-3 px-4 py-3 text-sm font-semibold text-secondary rounded-xl hover:bg-white hover:text-primary-600 hover:shadow-sm transition-all duration-200 group">
-						<svg
-							class="w-5 h-5 text-tertiary group-hover:text-primary-500 transition-colors"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24">
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-						</svg>
-						<span data-i18n="options_tab_system">System</span>
-					</button>
-				</nav>
+          <button
+            role="tab"
+            aria-selected="false"
+            aria-controls="system-config"
+            data-tab="system-config"
+            data-i18n-aria="options_tab_system"
+            class="settings-tab-btn w-full flex items-center space-x-3 px-4 py-3 text-sm font-semibold text-secondary rounded-xl hover:bg-white hover:text-primary-600 hover:shadow-sm transition-all duration-200 group"
+          >
+            <svg
+              class="w-5 h-5 text-tertiary group-hover:text-primary-500 transition-colors"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+              ></path>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              ></path>
+            </svg>
+            <span data-i18n="options_tab_system">System</span>
+          </button>
+        </nav>
 
-				<!-- Global Save Button (Mobile/Tablet usually, but here fixed at bottom of sidebar or main content? Let's keep it in main content footer) -->
-			</aside>
+        <!-- Global Save Button (Mobile/Tablet usually, but here fixed at bottom of sidebar or main content? Let's keep it in main content footer) -->
+      </aside>
 
-			<!-- Main Content (Scrollable) -->
-			<main class="flex-1 bg-white/50 relative overflow-y-auto">
-				<div class="max-w-4xl mx-auto p-8 pb-24">
-					<!-- Tab: AI Config -->
-					<div id="ai-config" class="tab-content active" role="tabpanel">
-						<h2
-							class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-700 to-slate-500 mb-6 flex items-center">
-							<span data-i18n="options_section_choose_provider"
-								>AI Configuration</span
-							>
-						</h2>
+      <!-- Main Content (Scrollable) -->
+      <main class="flex-1 bg-white/50 relative overflow-y-auto">
+        <div class="max-w-4xl mx-auto p-8 pb-24">
+          <!-- Tab: AI Config -->
+          <div id="ai-config" class="tab-content active" role="tabpanel">
+            <h2
+              class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-700 to-slate-500 mb-6 flex items-center"
+            >
+              <span data-i18n="options_section_choose_provider"
+                >AI Configuration</span
+              >
+            </h2>
 
-						<div
-							class="bg-card rounded-2xl shadow-card p-6 border border-border-light space-y-6 transform transition-all hover:shadow-lg">
-							<div class="space-y-2">
-								<label
-									for="ai-provider"
-									class="block text-xs font-bold uppercase tracking-wider text-secondary"
-									data-i18n="options_section_choose_provider"></label>
-								<div class="relative">
-									<select
-										id="ai-provider"
-										class="w-full p-3 bg-page border border-border-light rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary-400 focus:outline-none transition-all appearance-none"></select>
-									<div
-										class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-tertiary">
-										<svg
-											class="w-4 h-4"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24">
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M19 9l-7 7-7-7"></path>
-										</svg>
-									</div>
-								</div>
-							</div>
+            <div
+              class="bg-card rounded-2xl shadow-card p-6 border border-border-light space-y-6 transform transition-all hover:shadow-lg"
+            >
+              <div class="space-y-2">
+                <label
+                  for="ai-provider"
+                  class="block text-xs font-bold uppercase tracking-wider text-secondary"
+                  data-i18n="options_section_choose_provider"
+                ></label>
+                <div class="relative">
+                  <select
+                    id="ai-provider"
+                    class="w-full p-3 bg-page border border-border-light rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary-400 focus:outline-none transition-all appearance-none"
+                  ></select>
+                  <div
+                    class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-tertiary"
+                  >
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
 
-							<div
-								id="provider-config-container"
-								class="space-y-6"
-								data-role="provider-config-list">
-								<!-- Dynamic Provider Configs -->
-							</div>
-						</div>
-					</div>
+              <div
+                id="provider-config-container"
+                class="space-y-6"
+                data-role="provider-config-list"
+              >
+                <!-- Dynamic Provider Configs -->
+              </div>
+            </div>
+          </div>
 
-					<!-- Tab: Template Library -->
-					<div id="template-library" class="tab-content" role="tabpanel">
-						<div id="template-list-view" data-view="template-list">
-							<!-- Empty State -->
-							<div
-								id="template-empty-state"
-								class="flex flex-col items-center justify-center py-20 bg-card rounded-2xl border border-dashed border-border-hover"
-								style="display: none">
-								<div
-									class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-									<svg
-										class="w-8 h-8 text-slate-400"
-										fill="none"
-										viewBox="0 0 24 24"
-										stroke="currentColor">
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-									</svg>
-								</div>
-								<h3
-									class="text-lg font-semibold text-main mb-1"
-									data-i18n="template_library_empty_title">
-									No Templates
-								</h3>
-								<p
-									class="text-sm text-secondary mb-6"
-									data-i18n="template_library_empty_description">
-									Get started by creating your first template.
-								</p>
-								<button
-									type="button"
-									id="add-template-btn-empty"
-									class="btn-primary-lg shadow-lg hover:shadow-primary/30 transform hover:-translate-y-0.5 transition-all text-white bg-primary px-6 py-2.5 rounded-xl font-medium flex items-center gap-2"
-									data-i18n="template_library_add_button">
-									<span>+ Create Template</span>
-								</button>
-							</div>
+          <!-- Tab: Template Library -->
+          <div id="template-library" class="tab-content" role="tabpanel">
+            <div id="template-list-view" data-view="template-list">
+              <!-- Empty State -->
+              <div
+                id="template-empty-state"
+                class="flex flex-col items-center justify-center min-h-[60vh] bg-card rounded-2xl border border-dashed border-border-hover"
+                style="display: none"
+              >
+                <div
+                  class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4"
+                >
+                  <svg
+                    class="w-8 h-8 text-slate-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                </div>
+                <h3
+                  class="text-lg font-semibold text-main mb-1"
+                  data-i18n="template_library_empty_title"
+                >
+                  No Templates
+                </h3>
+                <p
+                  class="text-sm text-secondary mb-6 text-center"
+                  data-i18n="template_library_empty_description"
+                >
+                  Get started by creating your first template.
+                </p>
+                <button
+                  type="button"
+                  id="add-template-btn-empty"
+                  class="btn-primary-lg shadow-lg hover:shadow-primary/30 transform hover:-translate-y-0.5 transition-all text-white bg-primary px-6 py-2.5 rounded-xl font-medium flex items-center gap-2"
+                  data-i18n="template_library_add_button"
+                >
+                  <span>+ Create Template</span>
+                </button>
+              </div>
 
-							<!-- Template List -->
-							<div id="template-list-container">
-								<div class="flex items-center justify-between mb-8">
-									<h2
-										class="text-2xl font-bold text-main"
-										data-i18n="template_library_title">
-										Templates
-									</h2>
-									<button
-										type="button"
-										id="add-template-btn"
-										class="bg-primary hover:bg-primary-600 text-white shadow-md hover:shadow-lg transition-all px-4 py-2 rounded-xl font-medium flex items-center text-sm gap-2">
-										<svg
-											class="w-4 h-4"
-											fill="none"
-											viewBox="0 0 24 24"
-											stroke="currentColor">
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M12 4v16m8-8H4" />
-										</svg>
-										<span data-i18n="template_library_add_button">Add New</span>
-									</button>
-								</div>
-								<!-- Cards Grid -->
-								<div
-									id="template-cards-grid"
-									class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
-							</div>
-						</div>
+              <!-- Template List -->
+              <div id="template-list-container">
+                <div class="flex items-center justify-between mb-8">
+                  <h2
+                    class="text-2xl font-bold text-main"
+                    data-i18n="template_library_title"
+                  >
+                    Templates
+                  </h2>
+                  <button
+                    type="button"
+                    id="add-template-btn"
+                    class="bg-primary hover:bg-primary-600 text-white shadow-md hover:shadow-lg transition-all px-4 py-2 rounded-xl font-medium flex items-center text-sm gap-2"
+                  >
+                    <svg
+                      class="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 4v16m8-8H4"
+                      />
+                    </svg>
+                    <span data-i18n="template_library_add_button">Add New</span>
+                  </button>
+                </div>
+                <!-- Cards Grid -->
+                <div
+                  id="template-cards-grid"
+                  class="grid grid-cols-1 md:grid-cols-2 gap-5"
+                ></div>
+              </div>
+            </div>
 
-						<!-- Template Form View (Hidden by default) -->
-						<div
-							id="template-form-view"
-							data-view="template-form"
-							style="display: none">
-							<div class="flex items-center justify-between mb-6">
-								<div class="flex items-center gap-3">
-									<button
-										type="button"
-										id="template-form-cancel"
-										class="p-2 rounded-lg hover:bg-slate-100 text-secondary transition-colors">
-										<svg
-											class="w-5 h-5"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24">
-											<path
-												stroke-linecap="round"
-												stroke-linejoin="round"
-												stroke-width="2"
-												d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-										</svg>
-									</button>
-									<h2
-										id="template-form-title"
-										class="text-2xl font-bold text-main"
-										data-i18n="template_form_title_new">
-										New Template
-									</h2>
-								</div>
-							</div>
+            <!-- Template Form View (Hidden by default) -->
+            <div
+              id="template-form-view"
+              data-view="template-form"
+              style="display: none"
+            >
+              <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-3">
+                  <button
+                    type="button"
+                    id="template-form-cancel"
+                    class="p-2 rounded-lg hover:bg-slate-100 text-secondary transition-colors"
+                  >
+                    <svg
+                      class="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                      ></path>
+                    </svg>
+                  </button>
+                  <h2
+                    id="template-form-title"
+                    class="text-2xl font-bold text-main"
+                    data-i18n="template_form_title_new"
+                  >
+                    New Template
+                  </h2>
+                </div>
+              </div>
 
-							<div class="space-y-6">
-								<!-- Basic Info -->
-								<section
-									class="bg-card rounded-2xl shadow-sm border border-border-light p-6 space-y-5">
-									<h3
-										class="text-sm font-bold uppercase tracking-wider text-secondary border-b border-border-light pb-2 mb-4"
-										data-i18n="template_form_basic_info">
-										Basic Info
-									</h3>
-									<div class="grid gap-5">
-										<div>
-											<label
-												for="template-name"
-												class="block text-sm font-medium text-main mb-1.5"
-												><span data-i18n="template_form_name_label">Name</span>
-												<span class="text-red-500">*</span></label
-											>
-											<input
-												type="text"
-												id="template-name"
-												class="w-full p-3 bg-page border border-border-light rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary-400 focus:outline-none transition-all"
-												data-i18n-placeholder="template_form_name_placeholder" />
-										</div>
-										<div>
-											<label
-												for="template-description"
-												class="block text-sm font-medium text-main mb-1.5"
-												><span data-i18n="template_form_description_label"
-													>Description</span
-												>
-												<span class="text-red-500">*</span></label
-											>
-											<textarea
-												id="template-description"
-												rows="3"
-												class="w-full p-3 bg-page border border-border-light rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary-400 focus:outline-none transition-all resize-none"
-												data-i18n-placeholder="template_form_description_placeholder"></textarea>
-										</div>
-									</div>
-								</section>
+              <div class="space-y-6">
+                <!-- Basic Info -->
+                <section
+                  class="bg-card rounded-2xl shadow-sm border border-border-light p-6 space-y-5"
+                >
+                  <h3
+                    class="text-sm font-bold uppercase tracking-wider text-secondary border-b border-border-light pb-2 mb-4"
+                    data-i18n="template_form_basic_info"
+                  >
+                    Basic Info
+                  </h3>
+                  <div class="grid gap-5">
+                    <div>
+                      <label
+                        for="template-name"
+                        class="block text-sm font-medium text-main mb-1.5"
+                        ><span data-i18n="template_form_name_label">Name</span>
+                        <span class="text-red-500">*</span></label
+                      >
+                      <input
+                        type="text"
+                        id="template-name"
+                        class="w-full p-3 bg-page border border-border-light rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary-400 focus:outline-none transition-all"
+                        data-i18n-placeholder="template_form_name_placeholder"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        for="template-description"
+                        class="block text-sm font-medium text-main mb-1.5"
+                        ><span data-i18n="template_form_description_label"
+                          >Description</span
+                        >
+                        <span class="text-red-500">*</span></label
+                      >
+                      <textarea
+                        id="template-description"
+                        rows="3"
+                        class="w-full p-3 bg-page border border-border-light rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary-400 focus:outline-none transition-all resize-none"
+                        data-i18n-placeholder="template_form_description_placeholder"
+                      ></textarea>
+                    </div>
+                  </div>
+                </section>
 
-								<!-- Anki Config -->
-								<section
-									class="bg-card rounded-2xl shadow-sm border border-border-light p-6 space-y-5">
-									<div
-										class="flex items-center justify-between border-b border-border-light pb-2 mb-4">
-										<h3
-											class="text-sm font-bold uppercase tracking-wider text-secondary"
-											data-i18n="template_form_anki_section">
-											Anki Connection
-										</h3>
-										<button
-											type="button"
-											id="template-test-anki-btn"
-											class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium transition-colors"
-											data-i18n="template_form_test_anki">
-											Test Connection
-										</button>
-									</div>
-									<p
-										id="template-anki-status"
-										class="text-sm text-secondary"></p>
+                <!-- Anki Config -->
+                <section
+                  class="bg-card rounded-2xl shadow-sm border border-border-light p-6 space-y-5"
+                >
+                  <div
+                    class="flex items-center justify-between border-b border-border-light pb-2 mb-4"
+                  >
+                    <h3
+                      class="text-sm font-bold uppercase tracking-wider text-secondary"
+                      data-i18n="template_form_anki_section"
+                    >
+                      Anki Connection
+                    </h3>
+                    <button
+                      type="button"
+                      id="template-test-anki-btn"
+                      class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium transition-colors"
+                      data-i18n="template_form_test_anki"
+                    >
+                      Test Connection
+                    </button>
+                  </div>
+                  <p
+                    id="template-anki-status"
+                    class="text-sm text-secondary"
+                  ></p>
 
-									<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-										<div>
-											<label
-												for="template-deck"
-												class="block text-sm font-medium text-main mb-1.5"
-												><span data-i18n="template_form_deck_label">Deck</span>
-												<span class="text-red-500">*</span></label
-											>
-											<select
-												id="template-deck"
-												class="w-full p-3 bg-page border border-border-light rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary-400 focus:outline-none transition-all appearance-none">
-												<option
-													value=""
-													data-i18n="options_hint_test_anki_first"></option>
-											</select>
-										</div>
-										<div>
-											<label
-												for="template-model"
-												class="block text-sm font-medium text-main mb-1.5"
-												><span data-i18n="template_form_model_label"
-													>Note Type</span
-												>
-												<span class="text-red-500">*</span></label
-											>
-											<select
-												id="template-model"
-												class="w-full p-3 bg-page border border-border-light rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary-400 focus:outline-none transition-all appearance-none">
-												<option
-													value=""
-													data-i18n="options_hint_test_anki_first"></option>
-											</select>
-										</div>
-									</div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                      <label
+                        for="template-deck"
+                        class="block text-sm font-medium text-main mb-1.5"
+                        ><span data-i18n="template_form_deck_label">Deck</span>
+                        <span class="text-red-500">*</span></label
+                      >
+                      <select
+                        id="template-deck"
+                        class="w-full p-3 bg-page border border-border-light rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary-400 focus:outline-none transition-all appearance-none"
+                      >
+                        <option
+                          value=""
+                          data-i18n="options_hint_test_anki_first"
+                        ></option>
+                      </select>
+                    </div>
+                    <div>
+                      <label
+                        for="template-model"
+                        class="block text-sm font-medium text-main mb-1.5"
+                        ><span data-i18n="template_form_model_label"
+                          >Note Type</span
+                        >
+                        <span class="text-red-500">*</span></label
+                      >
+                      <select
+                        id="template-model"
+                        class="w-full p-3 bg-page border border-border-light rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary-400 focus:outline-none transition-all appearance-none"
+                      >
+                        <option
+                          value=""
+                          data-i18n="options_hint_test_anki_first"
+                        ></option>
+                      </select>
+                    </div>
+                  </div>
 
-									<div
-										id="template-field-mapping"
-										class="mt-4 pt-4 border-t border-border-light"
-										style="display: none">
-										<h4
-											class="text-sm font-semibold text-main mb-3"
-											data-i18n="template_form_fields_available">
-											Available Fields
-										</h4>
-										<div
-											id="template-field-mapping-container"
-											class="bg-page/50 border border-border-light rounded-xl p-4 text-sm"></div>
-									</div>
-								</section>
+                  <div
+                    id="template-field-mapping"
+                    class="mt-4 pt-4 border-t border-border-light"
+                    style="display: none"
+                  >
+                    <h4
+                      class="text-sm font-semibold text-main mb-3"
+                      data-i18n="template_form_fields_available"
+                    >
+                      Available Fields
+                    </h4>
+                    <div
+                      id="template-field-mapping-container"
+                      class="bg-page/50 border border-border-light rounded-xl p-4 text-sm"
+                    ></div>
+                  </div>
+                </section>
 
-								<!-- Fields Section -->
-								<section
-									id="template-fields-section"
-									class="bg-card rounded-2xl shadow-sm border border-border-light p-6 space-y-5"
-									style="display: none">
-									<h3
-										class="text-sm font-bold uppercase tracking-wider text-secondary border-b border-border-light pb-2 mb-4"
-										data-i18n="template_form_fields_section">
-										Fields Configuration
-									</h3>
-									<div>
-										<div class="flex items-center justify-between mb-3">
-											<h4
-												class="text-sm font-medium text-main"
-												data-i18n="template_form_field_select">
-												Select Fields
-											</h4>
-											<span
-												class="text-xs text-secondary"
-												data-i18n="template_form_field_select_hint"></span>
-										</div>
-										<div
-											id="template-field-selection-list"
-											class="flex flex-wrap gap-2"></div>
-									</div>
-									<div>
-										<div class="flex items-center justify-between mb-3">
-											<h4
-												class="text-sm font-medium text-main"
-												data-i18n="template_form_field_config">
-												Configure Prompts
-											</h4>
-											<span
-												class="text-xs text-secondary"
-												data-i18n="template_form_field_config_hint"></span>
-										</div>
-										<div
-											id="template-field-config-list"
-											class="space-y-4"></div>
-									</div>
-									<div class="flex justify-end pt-4">
-										<button
-											type="button"
-											id="template-generate-prompt-btn"
-											class="bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-black transition-colors"
-											data-i18n="template_form_generate_prompt">
-											Generate Prompt
-										</button>
-									</div>
-								</section>
+                <!-- Fields Section -->
+                <section
+                  id="template-fields-section"
+                  class="bg-card rounded-2xl shadow-sm border border-border-light p-6 space-y-5"
+                  style="display: none"
+                >
+                  <h3
+                    class="text-sm font-bold uppercase tracking-wider text-secondary border-b border-border-light pb-2 mb-4"
+                    data-i18n="template_form_fields_section"
+                  >
+                    Fields Configuration
+                  </h3>
+                  <div>
+                    <div class="flex items-center justify-between mb-3">
+                      <h4
+                        class="text-sm font-medium text-main"
+                        data-i18n="template_form_field_select"
+                      >
+                        Select Fields
+                      </h4>
+                      <span
+                        class="text-xs text-secondary"
+                        data-i18n="template_form_field_select_hint"
+                      ></span>
+                    </div>
+                    <div
+                      id="template-field-selection-list"
+                      class="flex flex-wrap gap-2"
+                    ></div>
+                  </div>
+                  <div>
+                    <div class="flex items-center justify-between mb-3">
+                      <h4
+                        class="text-sm font-medium text-main"
+                        data-i18n="template_form_field_config"
+                      >
+                        Configure Prompts
+                      </h4>
+                      <span
+                        class="text-xs text-secondary"
+                        data-i18n="template_form_field_config_hint"
+                      ></span>
+                    </div>
+                    <div
+                      id="template-field-config-list"
+                      class="space-y-4"
+                    ></div>
+                  </div>
+                  <div class="flex justify-end pt-4">
+                    <button
+                      type="button"
+                      id="template-generate-prompt-btn"
+                      class="bg-slate-800 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-black transition-colors"
+                      data-i18n="template_form_generate_prompt"
+                    >
+                      Generate Prompt
+                    </button>
+                  </div>
+                </section>
 
-								<!-- Prompt Section -->
-								<section
-									id="template-prompt-section"
-									class="bg-card rounded-2xl shadow-sm border border-border-light p-6 space-y-5"
-									style="display: none">
-									<h3
-										class="text-sm font-bold uppercase tracking-wider text-secondary border-b border-border-light pb-2 mb-4"
-										data-i18n="template_form_prompt_section">
-										Final Prompt
-									</h3>
-									<div>
-										<label
-											for="template-prompt"
-											class="block text-sm font-medium text-main mb-1.5"
-											><span data-i18n="template_form_prompt_label"
-												>System Prompt</span
-											>
-											<span class="text-red-500">*</span></label
-										>
-										<textarea
-											id="template-prompt"
-											rows="12"
-											class="w-full p-4 bg-slate-50 border border-border-light rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary-400 focus:outline-none transition-all font-mono text-sm leading-relaxed"
-											data-i18n-placeholder="template_form_prompt_placeholder"></textarea>
-									</div>
-								</section>
+                <!-- Prompt Section -->
+                <section
+                  id="template-prompt-section"
+                  class="bg-card rounded-2xl shadow-sm border border-border-light p-6 space-y-5"
+                  style="display: none"
+                >
+                  <h3
+                    class="text-sm font-bold uppercase tracking-wider text-secondary border-b border-border-light pb-2 mb-4"
+                    data-i18n="template_form_prompt_section"
+                  >
+                    Final Prompt
+                  </h3>
+                  <div>
+                    <label
+                      for="template-prompt"
+                      class="block text-sm font-medium text-main mb-1.5"
+                      ><span data-i18n="template_form_prompt_label"
+                        >System Prompt</span
+                      >
+                      <span class="text-red-500">*</span></label
+                    >
+                    <textarea
+                      id="template-prompt"
+                      rows="12"
+                      class="w-full p-4 bg-slate-50 border border-border-light rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary-400 focus:outline-none transition-all font-mono text-sm leading-relaxed"
+                      data-i18n-placeholder="template_form_prompt_placeholder"
+                    ></textarea>
+                  </div>
+                </section>
 
-								<!-- Bottom Actions -->
-								<div class="flex items-center justify-end gap-3 pt-6 pb-12">
-									<button
-										type="button"
-										id="template-form-cancel-bottom"
-										class="px-6 py-2.5 rounded-xl border border-border-light text-secondary font-medium hover:bg-slate-50 transition-colors"
-										data-i18n="template_form_cancel">
-										Cancel
-									</button>
-									<button
-										type="button"
-										id="template-form-save"
-										class="px-6 py-2.5 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/30 hover:bg-primary-600 hover:scale-[1.02] transition-all"
-										data-i18n="template_form_save">
-										Save Template
-									</button>
-								</div>
-							</div>
-						</div>
-					</div>
+                <!-- Bottom Actions -->
+                <div class="flex items-center justify-end gap-3 pt-6 pb-12">
+                  <button
+                    type="button"
+                    id="template-form-cancel-bottom"
+                    class="px-6 py-2.5 rounded-xl border border-border-light text-secondary font-medium hover:bg-slate-50 transition-colors"
+                    data-i18n="template_form_cancel"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    id="template-form-save"
+                    class="px-6 py-2.5 rounded-xl bg-primary text-white font-bold shadow-lg shadow-primary/30 hover:bg-primary-600 hover:scale-[1.02] transition-all"
+                    data-i18n="template_form_save"
+                  >
+                    Save Template
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
 
-					<!-- Tab: Style Config -->
-					<div id="style-config" class="tab-content" role="tabpanel">
-						<h2
-							class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-700 to-slate-500 mb-6 flex items-center">
-							<span data-i18n="options_section_style_preview">Appearance</span>
-						</h2>
+          <!-- Tab: Style Config -->
+          <div id="style-config" class="tab-content" role="tabpanel">
+            <h2
+              class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-700 to-slate-500 mb-6 flex items-center"
+            >
+              <span data-i18n="options_section_style_preview">Appearance</span>
+            </h2>
 
-						<div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
-							<div
-								class="bg-card p-5 rounded-xl border border-border-light shadow-sm">
-								<label
-									for="font-size-select"
-									class="block text-xs font-bold uppercase tracking-wider text-secondary mb-2"
-									data-i18n="options_label_font_size"
-									>Font Size</label
-								>
-								<select
-									id="font-size-select"
-									class="w-full p-2.5 bg-page border border-border-light rounded-lg text-sm focus:ring-primary/20">
-									<option value="12px" data-i18n="options_font_size_small">
-										Small
-									</option>
-									<option value="14px" data-i18n="options_font_size_medium">
-										Medium
-									</option>
-									<option value="16px" data-i18n="options_font_size_large">
-										Large
-									</option>
-									<option value="18px" data-i18n="options_font_size_xlarge">
-										Extra Large
-									</option>
-								</select>
-							</div>
-							<div
-								class="bg-card p-5 rounded-xl border border-border-light shadow-sm">
-								<label
-									for="text-align-select"
-									class="block text-xs font-bold uppercase tracking-wider text-secondary mb-2"
-									data-i18n="options_label_text_align"
-									>Align</label
-								>
-								<select
-									id="text-align-select"
-									class="w-full p-2.5 bg-page border border-border-light rounded-lg text-sm focus:ring-primary/20">
-									<option value="left" data-i18n="options_text_align_left">
-										Left
-									</option>
-									<option value="center" data-i18n="options_text_align_center">
-										Center
-									</option>
-									<option value="right" data-i18n="options_text_align_right">
-										Right
-									</option>
-								</select>
-							</div>
-							<div
-								class="bg-card p-5 rounded-xl border border-border-light shadow-sm">
-								<label
-									for="line-height-select"
-									class="block text-xs font-bold uppercase tracking-wider text-secondary mb-2"
-									data-i18n="options_label_line_height"
-									>Line Height</label
-								>
-								<select
-									id="line-height-select"
-									class="w-full p-2.5 bg-page border border-border-light rounded-lg text-sm focus:ring-primary/20">
-									<option value="1.2" data-i18n="options_line_height_compact">
-										Compact
-									</option>
-									<option value="1.4" data-i18n="options_line_height_normal">
-										Normal
-									</option>
-									<option value="1.6" data-i18n="options_line_height_loose">
-										Loose
-									</option>
-								</select>
-							</div>
-						</div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+              <div
+                class="bg-card p-5 rounded-xl border border-border-light shadow-sm"
+              >
+                <label
+                  for="font-size-select"
+                  class="block text-xs font-bold uppercase tracking-wider text-secondary mb-2"
+                  data-i18n="options_label_font_size"
+                  >Font Size</label
+                >
+                <select
+                  id="font-size-select"
+                  class="w-full p-2.5 bg-page border border-border-light rounded-lg text-sm focus:ring-primary/20"
+                >
+                  <option value="12px" data-i18n="options_font_size_small">
+                    Small
+                  </option>
+                  <option value="14px" data-i18n="options_font_size_medium">
+                    Medium
+                  </option>
+                  <option value="16px" data-i18n="options_font_size_large">
+                    Large
+                  </option>
+                  <option value="18px" data-i18n="options_font_size_xlarge">
+                    Extra Large
+                  </option>
+                </select>
+              </div>
+              <div
+                class="bg-card p-5 rounded-xl border border-border-light shadow-sm"
+              >
+                <label
+                  for="text-align-select"
+                  class="block text-xs font-bold uppercase tracking-wider text-secondary mb-2"
+                  data-i18n="options_label_text_align"
+                  >Align</label
+                >
+                <select
+                  id="text-align-select"
+                  class="w-full p-2.5 bg-page border border-border-light rounded-lg text-sm focus:ring-primary/20"
+                >
+                  <option value="left" data-i18n="options_text_align_left">
+                    Left
+                  </option>
+                  <option value="center" data-i18n="options_text_align_center">
+                    Center
+                  </option>
+                  <option value="right" data-i18n="options_text_align_right">
+                    Right
+                  </option>
+                </select>
+              </div>
+              <div
+                class="bg-card p-5 rounded-xl border border-border-light shadow-sm"
+              >
+                <label
+                  for="line-height-select"
+                  class="block text-xs font-bold uppercase tracking-wider text-secondary mb-2"
+                  data-i18n="options_label_line_height"
+                  >Line Height</label
+                >
+                <select
+                  id="line-height-select"
+                  class="w-full p-2.5 bg-page border border-border-light rounded-lg text-sm focus:ring-primary/20"
+                >
+                  <option value="1.2" data-i18n="options_line_height_compact">
+                    Compact
+                  </option>
+                  <option value="1.4" data-i18n="options_line_height_normal">
+                    Normal
+                  </option>
+                  <option value="1.6" data-i18n="options_line_height_loose">
+                    Loose
+                  </option>
+                </select>
+              </div>
+            </div>
 
-						<div
-							class="bg-card rounded-2xl border border-border-light shadow-card p-8">
-							<h3
-								class="text-sm font-bold uppercase tracking-wider text-secondary border-b border-border-light pb-2 mb-4"
-								data-i18n="options_section_style_preview">
-								Preview
-							</h3>
-							<div
-								id="style-preview"
-								class="p-6 bg-page rounded-xl border border-border-light transition-all">
-								<div id="preview-content">
-									<p
-										data-i18n="options_style_preview_sample"
-										class="mb-2 font-bold">
-										The quick brown fox jumps over the lazy dog.
-									</p>
-									<p data-i18n="options_style_preview_description">
-										This is how your text will look like in the popup window.
-									</p>
-								</div>
-							</div>
-						</div>
-					</div>
+            <div
+              class="bg-card rounded-2xl border border-border-light shadow-card p-8"
+            >
+              <h3
+                class="text-sm font-bold uppercase tracking-wider text-secondary border-b border-border-light pb-2 mb-4"
+                data-i18n="options_section_style_preview"
+              >
+                Preview
+              </h3>
+              <div
+                id="style-preview"
+                class="p-6 bg-page rounded-xl border border-border-light transition-all"
+              >
+                <div id="preview-content">
+                  <p
+                    data-i18n="options_style_preview_sample"
+                    class="mb-2 font-bold"
+                  >
+                    The quick brown fox jumps over the lazy dog.
+                  </p>
+                  <p data-i18n="options_style_preview_description">
+                    This is how your text will look like in the popup window.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
 
-					<!-- Tab: System Config -->
-					<div id="system-config" class="tab-content" role="tabpanel">
-						<h2
-							class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-700 to-slate-500 mb-6 flex items-center">
-							<span data-i18n="options_section_config_management">System</span>
-						</h2>
+          <!-- Tab: System Config -->
+          <div id="system-config" class="tab-content" role="tabpanel">
+            <h2
+              class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-700 to-slate-500 mb-6 flex items-center"
+            >
+              <span data-i18n="options_section_config_management">System</span>
+            </h2>
 
-						<div class="space-y-6">
-							<!-- Floating Assistant -->
-							<div
-								class="bg-card p-6 rounded-2xl border border-border-light shadow-sm flex items-start justify-between">
-								<div>
-									<div class="flex items-center gap-2 mb-1">
-										<h3
-											class="font-bold text-main"
-											data-i18n="options_ui_floating_assistant_label">
-											Floating Assistant
-										</h3>
-									</div>
-									<p
-										class="text-sm text-secondary"
-										data-i18n="options_ui_floating_assistant_description">
-										Show floating button when text is selected.
-									</p>
-								</div>
-								<div class="flex items-center h-8">
-									<input
-										type="checkbox"
-										id="enable-floating-assistant"
-										class="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary/40" />
-								</div>
-							</div>
+            <div class="space-y-6">
+              <!-- Floating Assistant -->
+              <div
+                class="bg-card p-6 rounded-2xl border border-border-light shadow-sm flex items-start justify-between"
+              >
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <h3
+                      class="font-bold text-main"
+                      data-i18n="options_ui_floating_assistant_label"
+                    >
+                      Floating Assistant
+                    </h3>
+                  </div>
+                  <p
+                    class="text-sm text-secondary"
+                    data-i18n="options_ui_floating_assistant_description"
+                  >
+                    Show floating button when text is selected.
+                  </p>
+                </div>
+                <div class="flex items-center h-8">
+                  <input
+                    type="checkbox"
+                    id="enable-floating-assistant"
+                    class="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary/40"
+                  />
+                </div>
+              </div>
 
-							<!-- Language -->
-							<div
-								class="bg-card p-6 rounded-2xl border border-border-light shadow-sm">
-								<label
-									for="language-select"
-									class="block text-sm font-bold text-main mb-2"
-									data-i18n="options_label_language"
-									>Language</label
-								>
-								<p
-									id="language-browser-notice"
-									class="text-xs text-tertiary mb-3"></p>
-								<select
-									id="language-select"
-									class="w-full p-3 bg-page border border-border-light rounded-xl focus:ring-2 focus:ring-primary/20">
-									<option
-										value="zh-CN"
-										data-i18n="options_language_chinese_simplified">
-										Chinese (Simplified)
-									</option>
-									<option
-										value="zh-TW"
-										data-i18n="options_language_chinese_traditional">
-										Chinese (Traditional)
-									</option>
-									<option value="ja-JP" data-i18n="options_language_japanese">
-										Japanese
-									</option>
-									<option value="en-US" data-i18n="options_language_english">
-										English
-									</option>
-								</select>
-							</div>
+              <!-- Language -->
+              <div
+                class="bg-card p-6 rounded-2xl border border-border-light shadow-sm"
+              >
+                <label
+                  for="language-select"
+                  class="block text-sm font-bold text-main mb-2"
+                  data-i18n="options_label_language"
+                  >Language</label
+                >
+                <p
+                  id="language-browser-notice"
+                  class="text-xs text-tertiary mb-3"
+                ></p>
+                <select
+                  id="language-select"
+                  class="w-full p-3 bg-page border border-border-light rounded-xl focus:ring-2 focus:ring-primary/20"
+                >
+                  <option
+                    value="zh-CN"
+                    data-i18n="options_language_chinese_simplified"
+                  >
+                    Chinese (Simplified)
+                  </option>
+                  <option
+                    value="zh-TW"
+                    data-i18n="options_language_chinese_traditional"
+                  >
+                    Chinese (Traditional)
+                  </option>
+                  <option value="ja-JP" data-i18n="options_language_japanese">
+                    Japanese
+                  </option>
+                  <option value="en-US" data-i18n="options_language_english">
+                    English
+                  </option>
+                </select>
+              </div>
 
-							<!-- Config Management -->
-							<div
-								class="bg-card p-6 rounded-2xl border border-border-light shadow-sm">
-								<h3
-									class="font-bold text-main mb-2"
-									data-i18n="options_section_config_management">
-									Data Management
-								</h3>
-								<p
-									class="text-sm text-secondary mb-5"
-									data-i18n="options_section_config_management_hint">
-									Export or import your configuration.
-								</p>
+              <!-- Config Management -->
+              <div
+                class="bg-card p-6 rounded-2xl border border-border-light shadow-sm"
+              >
+                <h3
+                  class="font-bold text-main mb-2"
+                  data-i18n="options_section_config_management"
+                >
+                  Data Management
+                </h3>
+                <p
+                  class="text-sm text-secondary mb-5"
+                  data-i18n="options_section_config_management_hint"
+                >
+                  Export or import your configuration.
+                </p>
 
-								<div class="flex flex-wrap gap-3">
-									<button
-										type="button"
-										id="export-config-btn"
-										class="px-4 py-2 bg-blue-50 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
-										data-i18n="options_button_export_config">
-										Export Config
-									</button>
+                <div class="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    id="export-config-btn"
+                    class="px-4 py-2 bg-blue-50 text-blue-600 font-semibold rounded-lg hover:bg-blue-100 transition-colors border border-blue-200"
+                    data-i18n="options_button_export_config"
+                  >
+                    Export Config
+                  </button>
 
-									<div class="relative">
-										<input
-											type="file"
-											id="import-config-input"
-											accept=".json"
-											class="hidden" />
-										<button
-											type="button"
-											id="import-config-btn"
-											class="px-4 py-2 bg-green-50 text-green-600 font-semibold rounded-lg hover:bg-green-100 transition-colors border border-green-200"
-											data-i18n="options_button_import_config">
-											Import Config
-										</button>
-									</div>
+                  <div class="relative">
+                    <input
+                      type="file"
+                      id="import-config-input"
+                      accept=".json"
+                      class="hidden"
+                    />
+                    <button
+                      type="button"
+                      id="import-config-btn"
+                      class="px-4 py-2 bg-green-50 text-green-600 font-semibold rounded-lg hover:bg-green-100 transition-colors border border-green-200"
+                      data-i18n="options_button_import_config"
+                    >
+                      Import Config
+                    </button>
+                  </div>
 
-									<button
-										type="button"
-										id="reset-config-btn"
-										class="px-4 py-2 bg-red-50 text-red-600 font-semibold rounded-lg hover:bg-red-100 transition-colors border border-red-200 ml-auto"
-										data-i18n="options_button_reset_config">
-										Reset All
-									</button>
-								</div>
-								<p
-									id="config-management-status"
-									class="text-sm text-secondary mt-3"></p>
-							</div>
-						</div>
-					</div>
-				</div>
-			</main>
+                  <button
+                    type="button"
+                    id="reset-config-btn"
+                    class="px-4 py-2 bg-red-50 text-red-600 font-semibold rounded-lg hover:bg-red-100 transition-colors border border-red-200 ml-auto"
+                    data-i18n="options_button_reset_config"
+                  >
+                    Reset All
+                  </button>
+                </div>
+                <p
+                  id="config-management-status"
+                  class="text-sm text-secondary mt-3"
+                ></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
 
-			<!-- Global Save Button Footer (Fixed at bottom right of main content area provided above via padding, but let's make it sticky) -->
-			<div
-				class="absolute bottom-0 right-0 left-0 md:left-64 bg-white/80 backdrop-blur-md border-t border-border-light p-4 flex items-center justify-between z-20">
-				<div class="flex-1 px-4">
-					<p
-						id="save-status"
-						class="text-sm text-primary font-medium animate-pulse"></p>
-				</div>
-				<button
-					id="save-btn"
-					class="px-8 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/30 hover:bg-primary-600 hover:-translate-y-0.5 active:translate-y-0 transition-all"
-					data-i18n="options_button_save">
-					Save Changes
-				</button>
-			</div>
-		</div>
+      <!-- Global Save Button Footer (Fixed at bottom right of main content area provided above via padding, but let's make it sticky) -->
+      <div
+        class="absolute bottom-0 right-0 left-0 md:left-64 bg-white/80 backdrop-blur-md border-t border-border-light p-4 flex items-center justify-between z-20"
+      >
+        <div class="flex-1 px-4">
+          <p
+            id="save-status"
+            class="text-sm text-primary font-medium animate-pulse"
+          ></p>
+        </div>
+        <button
+          id="save-btn"
+          class="px-8 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/30 hover:bg-primary-600 hover:-translate-y-0.5 active:translate-y-0 transition-all"
+          data-i18n="options_button_save"
+        >
+          Save Changes
+        </button>
+      </div>
+    </div>
 
-		<script type="module" src="options.js"></script>
-	</body>
+    <script type="module" src="options.js"></script>
+  </body>
 </html>
