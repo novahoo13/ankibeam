@@ -15,6 +15,7 @@ import {
   saveConfig,
   loadConfig,
   getDefaultConfig,
+  decryptApiKey,
 } from "../utils/storage.js";
 import {
   testConnection as testAnki,
@@ -37,6 +38,7 @@ import {
   getLocale,
   resetLocaleCache,
   whenI18nReady,
+  localizePage,
 } from "../utils/i18n.js";
 import {
   loadTemplateLibrary,
@@ -58,8 +60,18 @@ import {
  * @param {Array} [substitutions] - 替换参数数组
  * @returns {string} 翻译后的文本
  */
-const getText = (key, fallback, substitutions) =>
-  translate(key, { fallback, substitutions });
+const translationCache = new Map();
+const getText = (key, fallback, substitutions) => {
+  const cacheKey = `${getLocale()}::${key}::${
+    substitutions ? JSON.stringify(substitutions) : ""
+  }`;
+  if (translationCache.has(cacheKey)) {
+    return translationCache.get(cacheKey);
+  }
+  const value = translate(key, { fallback, substitutions });
+  translationCache.set(cacheKey, value);
+  return value;
+};
 
 /**
  * 支持的语言和消息键的对应表
@@ -121,11 +133,29 @@ function resolveCurrentLanguageName(locale) {
  */
 const actualApiKeys = Object.create(null);
 
+function clearActualApiKeys() {
+  Object.keys(actualApiKeys).forEach((key) => {
+    actualApiKeys[key] = "";
+  });
+}
+
 /**
  * 提供商 UI 组件注册表
  * @type {Map<string, Object>}
  */
 const providerUiRegistry = new Map();
+
+/**
+ * 已解密的 API Key 缓存，key = `${providerId}:${ciphertext}`
+ * @type {Map<string, string>}
+ */
+const apiKeyDecryptionCache = new Map();
+
+/**
+ * 最近一次从 storage 变更事件看到的密文缓存
+ * @type {Map<string, string>}
+ */
+const encryptedApiKeyCache = new Map();
 
 /**
  * 清单文件中声明的主机权限集合
@@ -247,6 +277,25 @@ const API_KEY_PLACEHOLDER = "********";
  * @type {boolean}
  */
 let providerEventsBound = false;
+
+/**
+ * 模板卡片事件是否已绑定
+ * @type {boolean}
+ */
+let templateCardEventsBound = false;
+
+/**
+ * 模板字段选择事件是否已绑定
+ * @type {boolean}
+ */
+let templateFieldSelectionEventsBound = false;
+
+/**
+ * Storage 变更处理节流相关
+ */
+const STORAGE_CHANGE_DEBOUNCE_MS = 500;
+let pendingConfigChange = null;
+let storageChangeTimer = null;
 
 /**
  * 规范化 API 源地址模式
@@ -857,10 +906,15 @@ function formatHealthTimestamp(value) {
  * @listens DOMContentLoaded
  */
 document.addEventListener("DOMContentLoaded", async () => {
+  if (window.__optionsPageInitialized) {
+    return;
+  }
+  window.__optionsPageInitialized = true;
+
   await whenI18nReady();
   initTabNavigation();
   initProviderUI();
-  loadAndDisplayConfig();
+  await loadAndDisplayConfig();
 
   const saveButton = document.getElementById("save-btn");
   if (saveButton) {
@@ -977,12 +1031,264 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // テンプレートリストを読み込む / Load template list
-  loadTemplateList();
+  loadTemplateList({ config: currentConfig, skipStorageReload: true });
 });
 
 // =============================================================================
 // Storage 変更監視 (Storage Change Listener) - 阶段 2.2.6
 // =============================================================================
+
+/**
+ * 生成模板库的轻量签名，用于快速判断是否有变更
+ * @param {Object} library
+ * @returns {string}
+ */
+function getTemplateLibrarySignature(library) {
+  if (!library || typeof library !== "object") {
+    return "none";
+  }
+
+  const templates = Array.isArray(library.templates) ? library.templates : [];
+  const maxUpdatedAt = templates.reduce((max, tpl) => {
+    const ts = Date.parse(tpl?.updatedAt ?? 0);
+    return Number.isFinite(ts) && ts > max ? ts : max;
+  }, 0);
+  const idsChecksum = templates
+    .map((tpl) => tpl?.id ?? "")
+    .filter(Boolean)
+    .sort()
+    .join("|");
+
+  return [
+    library.version ?? "",
+    library.defaultTemplateId ?? "",
+    templates.length,
+    maxUpdatedAt,
+    idsChecksum,
+  ].join("::");
+}
+
+/**
+ * 判断 storage 变更是否与当前配置存在实质差异
+ * @param {Object} newValue
+ * @returns {boolean}
+ */
+function hasMeaningfulConfigChange(newValue) {
+  if (!newValue) {
+    return false;
+  }
+  if (!currentConfig || typeof currentConfig !== "object") {
+    return true;
+  }
+
+  if ((newValue.version ?? "") !== (currentConfig.version ?? "")) {
+    return true;
+  }
+
+  if ((newValue.language ?? null) !== (currentConfig.language ?? null)) {
+    return true;
+  }
+
+  if (
+    (newValue?.ui?.enableFloatingAssistant ?? null) !==
+    (currentConfig?.ui?.enableFloatingAssistant ?? null)
+  ) {
+    return true;
+  }
+
+  const newStyleSig = [
+    newValue?.styleConfig?.fontSize,
+    newValue?.styleConfig?.textAlign,
+    newValue?.styleConfig?.lineHeight,
+  ].join("|");
+  const currentStyleSig = [
+    currentConfig?.styleConfig?.fontSize,
+    currentConfig?.styleConfig?.textAlign,
+    currentConfig?.styleConfig?.lineHeight,
+  ].join("|");
+  if (newStyleSig !== currentStyleSig) {
+    return true;
+  }
+
+  const newFallback = Array.isArray(newValue?.aiConfig?.fallbackOrder)
+    ? newValue.aiConfig.fallbackOrder
+    : [];
+  const currentFallback = Array.isArray(currentConfig?.aiConfig?.fallbackOrder)
+    ? currentConfig.aiConfig.fallbackOrder
+    : [];
+  if (
+    newFallback.length !== currentFallback.length ||
+    newFallback.some((id, index) => id !== currentFallback[index])
+  ) {
+    return true;
+  }
+
+  const newProvider = newValue?.aiConfig?.provider;
+  if (
+    typeof newProvider === "string" &&
+    newProvider !== currentConfig?.aiConfig?.provider
+  ) {
+    return true;
+  }
+
+  const newModels = newValue?.aiConfig?.models ?? {};
+  const currentModels = currentConfig?.aiConfig?.models ?? {};
+  if (Object.keys(newModels).length !== Object.keys(currentModels).length) {
+    return true;
+  }
+  for (const [providerId, modelState] of Object.entries(newModels)) {
+    const currentModel = currentModels[providerId] ?? {};
+    if (
+      (modelState?.modelName ?? "") !== (currentModel.modelName ?? "") ||
+      (modelState?.apiUrl ?? "") !== (currentModel.apiUrl ?? "") ||
+      (modelState?.healthStatus ?? "unknown") !==
+        (currentModel.healthStatus ?? "unknown") ||
+      (modelState?.lastHealthCheck ?? null) !==
+        (currentModel.lastHealthCheck ?? null) ||
+      (modelState?.updatedAt ?? null) !== (currentModel.updatedAt ?? null)
+    ) {
+      return true;
+    }
+  }
+
+  const newTemplateSig = getTemplateLibrarySignature(newValue.templateLibrary);
+  const currentTemplateSig = getTemplateLibrarySignature(
+    currentConfig?.templateLibrary,
+  );
+  if (newTemplateSig !== currentTemplateSig) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * 带缓存的 API Key 解密
+ * @param {string} ciphertext
+ * @param {string} providerId
+ * @returns {Promise<string>}
+ */
+async function decryptApiKeyCached(ciphertext, providerId) {
+  if (!ciphertext) {
+    return "";
+  }
+  const cacheKey = `${providerId}:${ciphertext}`;
+  if (apiKeyDecryptionCache.has(cacheKey)) {
+    return apiKeyDecryptionCache.get(cacheKey);
+  }
+  const decrypted = await decryptApiKey(ciphertext, providerId);
+  apiKeyDecryptionCache.set(cacheKey, decrypted ?? "");
+  return decrypted ?? "";
+}
+
+/**
+ * 将 storage 变更合并进当前配置（仅按需解密）
+ * @param {Object} newValue
+ * @returns {Promise<Object>}
+ */
+async function mergeIncomingConfig(newValue) {
+  const baseConfig = currentConfig ?? storageApi.getDefaultConfig();
+  const nextConfig = {
+    ...baseConfig,
+    ...newValue,
+    aiConfig: {
+      ...(baseConfig.aiConfig ?? {}),
+      ...(newValue?.aiConfig ?? {}),
+      models: { ...(baseConfig.aiConfig?.models ?? {}) },
+    },
+    templateLibrary: newValue?.templateLibrary
+      ? { ...(baseConfig.templateLibrary ?? {}), ...newValue.templateLibrary }
+      : baseConfig.templateLibrary,
+  };
+
+  const incomingModels = newValue?.aiConfig?.models ?? {};
+  for (const [providerId, incomingState] of Object.entries(incomingModels)) {
+    const previous = nextConfig.aiConfig.models[providerId] ?? {};
+    const ciphertext = incomingState?.apiKey;
+    let apiKey = previous.apiKey ?? "";
+
+    if (typeof ciphertext === "string" && ciphertext) {
+      const cachedCiphertext = encryptedApiKeyCache.get(providerId);
+      if (ciphertext !== cachedCiphertext) {
+        apiKey = await decryptApiKeyCached(ciphertext, providerId);
+        encryptedApiKeyCache.set(providerId, ciphertext);
+        actualApiKeys[providerId] = apiKey ?? "";
+      } else {
+        const cacheKey = `${providerId}:${ciphertext}`;
+        if (apiKeyDecryptionCache.has(cacheKey)) {
+          apiKey = apiKeyDecryptionCache.get(cacheKey);
+          actualApiKeys[providerId] = apiKey ?? "";
+        }
+      }
+    }
+
+    nextConfig.aiConfig.models[providerId] = {
+      ...previous,
+      ...incomingState,
+      apiKey,
+    };
+  }
+
+  return nextConfig;
+}
+
+/**
+ * 处理 storage 配置变更（带 500ms 节流）
+ * @param {Object} changeEntry
+ * @returns {Promise<void>}
+ */
+async function handleConfigChange(changeEntry) {
+  const newValue = changeEntry?.newValue;
+  if (!newValue || !hasMeaningfulConfigChange(newValue)) {
+    return;
+  }
+
+  const previousTemplateSig = getTemplateLibrarySignature(
+    currentConfig?.templateLibrary,
+  );
+  const incomingTemplateSig = getTemplateLibrarySignature(
+    newValue.templateLibrary,
+  );
+  const sections = [];
+
+  const languageChanged =
+    typeof newValue?.language === "string" &&
+    newValue.language !== currentConfig?.language;
+
+  if (newValue?.aiConfig) {
+    sections.push("providers");
+  }
+  if (newValue?.ankiConfig) {
+    sections.push("anki");
+  }
+  if (newValue?.styleConfig) {
+    sections.push("style");
+  }
+  if (newValue?.ui) {
+    sections.push("ui");
+  }
+  if (newValue?.language) {
+    sections.push("language");
+    if (languageChanged) {
+      sections.push("templates");
+      translationCache.clear();
+    }
+  }
+  if (incomingTemplateSig !== previousTemplateSig) {
+    sections.push("templates");
+  }
+
+  currentConfig = await mergeIncomingConfig(newValue);
+
+  if (languageChanged) {
+    await refreshLanguageResources();
+  }
+
+  if (sections.length > 0) {
+    const uniqueSections = Array.from(new Set(sections));
+    refreshUI({ sections: uniqueSections });
+  }
+}
 
 /**
  * Storage変更監視リスナー
@@ -992,49 +1298,22 @@ document.addEventListener("DOMContentLoaded", async () => {
  * @param {string} areaName - 存储区域名称
  * @returns {void}
  */
-chrome.storage.onChanged.addListener(async (changes, areaName) => {
-  // 仅监听 local storage
-  if (areaName !== "local") {
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName !== "local" || !changes.ankiWordAssistantConfig) {
     return;
   }
 
-  // 检查是否有 ankiWordAssistantConfig 的变更
-  if (!changes.ankiWordAssistantConfig) {
-    return;
+  pendingConfigChange = changes.ankiWordAssistantConfig;
+  if (storageChangeTimer) {
+    clearTimeout(storageChangeTimer);
   }
 
-  // 无论何种变更，都在后台静默刷新 currentConfig，确保后续保存操作基于最新数据
-  // 这样可以防止 Options 页面覆盖其他页面（如悬浮面板）所做的更改
-  try {
-    const freshConfig = await storageApi.loadConfig();
-    // 只更新数据对象，不刷新整个UI，以免打断用户填写
-    currentConfig = freshConfig;
-    // 注意：如果需要，这里也可以选择性更新 actualApiKeys，但需小心避免覆盖用户正在输入的密钥
-    // 目前策略是：handleSave 时会从 actualApiKeys (或输入框) 读取密钥，覆盖 freshConfig 中的密钥
-    // 这是正确的，因为 Options 页面是密钥的"权威来源"
-  } catch (error) {
-    console.error("[options] 同步配置失败:", error);
-  }
-
-  const oldValue = changes.ankiWordAssistantConfig.oldValue;
-  const newValue = changes.ankiWordAssistantConfig.newValue;
-
-  // 检查 templateLibrary 是否发生变化
-  const oldLibrary = oldValue?.templateLibrary;
-  const newLibrary = newValue?.templateLibrary;
-
-  // 比较两个库是否不同（简单的 JSON 字符串化比较）
-  if (JSON.stringify(oldLibrary) !== JSON.stringify(newLibrary)) {
-    // console.log(
-    // 	"[options] テンプレートライブラリの変更を検出しました。テンプレートリストを更新します",
-    // );
-
-    // 只在列表视图时刷新
-    const currentView = document.querySelector('[data-view="template-list"]');
-    if (currentView && currentView.style.display !== "none") {
-      loadTemplateList();
-    }
-  }
+  storageChangeTimer = setTimeout(() => {
+    handleConfigChange(pendingConfigChange).catch((error) =>
+      console.error("[options] 处理 storage 变更失败:", error),
+    );
+    pendingConfigChange = null;
+  }, STORAGE_CHANGE_DEBOUNCE_MS);
 });
 
 /**
@@ -1223,6 +1502,8 @@ async function handleImportConfiguration(event) {
 
     await storageApi.saveConfig(mergedConfig);
     currentConfig = mergedConfig;
+    clearActualApiKeys();
+    await refreshLanguageResources();
     updateStatus(
       "save-status",
       getText(
@@ -1231,7 +1512,10 @@ async function handleImportConfiguration(event) {
       ),
       "success",
     );
-    setTimeout(() => window.location.reload(), 1000);
+    refreshUI({
+      sections: ["providers", "templates", "anki", "style", "language", "ui"],
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   } catch (error) {
     console.error("配置导入失败:", error);
     updateStatus(
@@ -1276,12 +1560,17 @@ async function handleResetConfiguration() {
     const defaultConfig = storageApi.getDefaultConfig();
     await storageApi.saveConfig(defaultConfig);
     currentConfig = defaultConfig;
+    await refreshLanguageResources();
     updateStatus(
       "save-status",
       getText("options_reset_status_success", "配置已重置为默认值"),
       "success",
     );
-    setTimeout(() => window.location.reload(), 800);
+    clearActualApiKeys();
+    refreshUI({
+      sections: ["providers", "templates", "anki", "style", "language", "ui"],
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   } catch (error) {
     console.error("配置重置失败:", error);
     updateStatus(
@@ -1301,99 +1590,153 @@ async function handleResetConfiguration() {
  */
 async function loadAndDisplayConfig() {
   const config = await storageApi.loadConfig();
+  applyConfigToUI(config);
+}
+
+/**
+ * 将配置应用到 UI（可按需刷新部分区域）
+ * @param {Object} config - 配置对象
+ * @param {Object} [options]
+ * @param {Array<string>} [options.sections] - 需要刷新的区域；空数组表示全部
+ */
+function applyConfigToUI(config, { sections = [] } = {}) {
   currentConfig = config;
+  const refreshAll = sections.length === 0;
+  const shouldRefresh = (section) => refreshAll || sections.includes(section);
 
-  const providers = getAllProviders();
-  const aiConfig = config?.aiConfig || {};
-  const models = aiConfig.models || {};
+  if (shouldRefresh("providers")) {
+    const providers = getAllProviders();
+    const aiConfig = config?.aiConfig || {};
+    const models = aiConfig.models || {};
 
-  const providerSelect = document.getElementById("ai-provider");
-  let activeProvider = aiConfig.provider;
+    const providerSelect = document.getElementById("ai-provider");
+    let activeProvider = aiConfig.provider;
 
-  if (!providerUiRegistry.has(activeProvider || "")) {
-    const fallback =
-      providers.find((item) => providerUiRegistry.has(item.id))?.id ??
-      getDefaultProviderId();
-    activeProvider = fallback;
-  }
-
-  if (providerSelect && activeProvider) {
-    providerSelect.value = activeProvider;
-  }
-
-  providers.forEach((provider) => {
-    if (!providerUiRegistry.has(provider.id)) {
-      return;
+    if (!providerUiRegistry.has(activeProvider || "")) {
+      const fallback =
+        providers.find((item) => providerUiRegistry.has(item.id))?.id ??
+        getDefaultProviderId();
+      activeProvider = fallback;
     }
-    const modelState = models[provider.id] || {};
-    setProviderFormState(provider.id, modelState);
-  });
 
-  handleProviderChange();
+    if (providerSelect && activeProvider) {
+      providerSelect.value = activeProvider;
+    }
 
-  currentModelFields = config?.ankiConfig?.modelFields || [];
-  populateSavedAnkiOptions(config);
+    providers.forEach((provider) => {
+      if (!providerUiRegistry.has(provider.id)) {
+        return;
+      }
+      const modelState = models[provider.id] || {};
+      setProviderFormState(provider.id, modelState);
+    });
 
-  if (
-    config?.ankiConfig?.defaultModel &&
-    Array.isArray(config?.ankiConfig?.modelFields)
-  ) {
-    displaySavedModelInfo(
-      config.ankiConfig.defaultModel,
-      config.ankiConfig.modelFields,
-    );
+    handleProviderChange();
   }
 
-  const fontSizeSelect = document.getElementById("font-size-select");
-  if (fontSizeSelect) {
-    fontSizeSelect.value = config?.styleConfig?.fontSize || "14px";
-  }
+  if (shouldRefresh("anki")) {
+    currentModelFields = config?.ankiConfig?.modelFields || [];
+    populateSavedAnkiOptions(config);
 
-  const textAlignSelect = document.getElementById("text-align-select");
-  if (textAlignSelect) {
-    textAlignSelect.value = config?.styleConfig?.textAlign || "left";
-  }
-
-  const lineHeightSelect = document.getElementById("line-height-select");
-  if (lineHeightSelect) {
-    lineHeightSelect.value = config?.styleConfig?.lineHeight || "1.4";
-  }
-
-  const languageSelect = document.getElementById("language-select");
-  if (languageSelect) {
-    const savedLanguage = config?.language;
-    const resolvedLanguage =
-      typeof savedLanguage === "string" && savedLanguage.trim()
-        ? savedLanguage
-        : getLocale();
-    const options = Array.from(languageSelect.options ?? []);
-    const hasMatch = options.some(
-      (option) => option.value === resolvedLanguage,
-    );
-    if (hasMatch) {
-      languageSelect.value = resolvedLanguage;
-    } else if (options.length > 0) {
-      languageSelect.value = options[0].value;
+    if (
+      config?.ankiConfig?.defaultModel &&
+      Array.isArray(config?.ankiConfig?.modelFields)
+    ) {
+      displaySavedModelInfo(
+        config.ankiConfig.defaultModel,
+        config.ankiConfig.modelFields,
+      );
     }
   }
 
-  const currentLanguageIndicator = document.getElementById(
-    "current-language-name",
-  );
-  if (currentLanguageIndicator) {
-    currentLanguageIndicator.textContent =
-      resolveCurrentLanguageName(getLocale());
+  if (shouldRefresh("style")) {
+    const fontSizeSelect = document.getElementById("font-size-select");
+    if (fontSizeSelect) {
+      fontSizeSelect.value = config?.styleConfig?.fontSize || "14px";
+    }
+
+    const textAlignSelect = document.getElementById("text-align-select");
+    if (textAlignSelect) {
+      textAlignSelect.value = config?.styleConfig?.textAlign || "left";
+    }
+
+    const lineHeightSelect = document.getElementById("line-height-select");
+    if (lineHeightSelect) {
+      lineHeightSelect.value = config?.styleConfig?.lineHeight || "1.4";
+    }
   }
 
-  const floatingAssistantCheckbox = document.getElementById(
-    "enable-floating-assistant",
-  );
-  if (floatingAssistantCheckbox) {
-    floatingAssistantCheckbox.checked =
-      config?.ui?.enableFloatingAssistant ?? true;
+  if (shouldRefresh("language")) {
+    const languageSelect = document.getElementById("language-select");
+    if (languageSelect) {
+      const savedLanguage = config?.language;
+      const resolvedLanguage =
+        typeof savedLanguage === "string" && savedLanguage.trim()
+          ? savedLanguage
+          : getLocale();
+      const options = Array.from(languageSelect.options ?? []);
+      const hasMatch = options.some(
+        (option) => option.value === resolvedLanguage,
+      );
+      if (hasMatch) {
+        languageSelect.value = resolvedLanguage;
+      } else if (options.length > 0) {
+        languageSelect.value = options[0].value;
+      }
+    }
+
+    const currentLanguageIndicator = document.getElementById(
+      "current-language-name",
+    );
+    if (currentLanguageIndicator) {
+      currentLanguageIndicator.textContent =
+        resolveCurrentLanguageName(getLocale());
+    }
   }
 
-  // console.info('配置加载完成。');
+  if (shouldRefresh("ui")) {
+    const floatingAssistantCheckbox = document.getElementById(
+      "enable-floating-assistant",
+    );
+    if (floatingAssistantCheckbox) {
+      floatingAssistantCheckbox.checked =
+        config?.ui?.enableFloatingAssistant ?? true;
+    }
+  }
+}
+
+/**
+ * 根据当前配置刷新指定的 UI 区域
+ * @param {Object} [options]
+ * @param {Array<string>} [options.sections] - 需要刷新的区域；空表示全量
+ */
+function refreshUI({ sections = [] } = {}) {
+  if (!currentConfig || typeof currentConfig !== "object") {
+    return;
+  }
+
+  applyConfigToUI(currentConfig, { sections });
+
+  const refreshAll = sections.length === 0;
+  const refreshTemplates = refreshAll || sections.includes("templates");
+  if (refreshTemplates) {
+    loadTemplateList({
+      config: currentConfig,
+      skipStorageReload: true,
+      forceRender: true,
+    });
+  }
+}
+
+/**
+ * 刷新语言资源并重新本地化页面
+ * @returns {Promise<void>}
+ */
+async function refreshLanguageResources() {
+  translationCache.clear();
+  resetLocaleCache();
+  await whenI18nReady();
+  localizePage();
 }
 
 /**
@@ -1556,9 +1899,14 @@ async function handleSave() {
     );
 
     if (languageChanged) {
-      resetLocaleCache();
-      setTimeout(() => window.location.reload(), 800);
+      await refreshLanguageResources();
     }
+
+    const sectionsToRefresh = ["providers", "anki", "style", "language", "ui"];
+    if (languageChanged) {
+      sectionsToRefresh.push("templates");
+    }
+    refreshUI({ sections: sectionsToRefresh });
   } catch (error) {
     if (error instanceof PermissionRequestError) {
       // console.warn('[options] 域名权限请求被拒绝:', error);
@@ -2269,41 +2617,58 @@ function resetTemplateForm() {
 
 // ==================== テンプレートリスト機能 / Template List Functions ====================
 
+let renderedTemplateMap = new Map();
+let currentTemplateSignature = "";
+
 /**
- * テンプレートリストを読み込んでレンダリングする
- * Load and render the template list
+ * テンプレートリストを読み込んでレンダリングする（增量化）
+ * @param {Object} [options]
+ * @param {Object} [options.config] - 直接使用的配置对象，未提供则按需读取
+ * @param {boolean} [options.skipStorageReload=false] - 为 true 时优先使用 currentConfig
  * @returns {Promise<void>}
  */
-async function loadTemplateList() {
+async function loadTemplateList(options = {}) {
+  const {
+    config: providedConfig,
+    skipStorageReload = false,
+    forceRender = false,
+  } = options;
+
   try {
-    const config = await storageApi.loadConfig();
+    const config =
+      providedConfig ??
+      (skipStorageReload ? currentConfig : await storageApi.loadConfig());
+    if (!config) return;
+
     const templateLibrary = loadTemplateLibrary(config);
     const templates = listTemplates(config);
+    const signature = getTemplateLibrarySignature(templateLibrary);
 
     const emptyState = document.getElementById("template-empty-state");
     const listContainer = document.getElementById("template-list-container");
     const cardsGrid = document.getElementById("template-cards-grid");
 
-    if (!templates || templates.length === 0) {
-      // 空態を表示 / Show empty state
-      if (emptyState) emptyState.style.display = "flex";
-      if (listContainer) listContainer.style.display = "none";
-    } else {
-      // リストを表示 / Show list
-      if (emptyState) emptyState.style.display = "none";
-      if (listContainer) listContainer.style.display = "block";
+    if (!emptyState || !listContainer || !cardsGrid) {
+      return;
+    }
 
-      // カードをレンダリング / Render cards
-      if (cardsGrid) {
-        cardsGrid.innerHTML = "";
-        templates.forEach((template) => {
-          const card = renderTemplateCard(
-            template,
-            templateLibrary.defaultTemplateId,
-          );
-          cardsGrid.appendChild(card);
-        });
-      }
+    ensureTemplateCardEvents();
+
+    if (!templates || templates.length === 0) {
+      emptyState.style.display = "flex";
+      listContainer.style.display = "none";
+      cardsGrid.replaceChildren();
+      renderedTemplateMap = new Map();
+      currentTemplateSignature = signature;
+      return;
+    }
+
+    emptyState.style.display = "none";
+    listContainer.style.display = "block";
+
+    if (forceRender || signature !== currentTemplateSignature) {
+      updateTemplateCards(cardsGrid, templates, templateLibrary.defaultTemplateId);
+      currentTemplateSignature = signature;
     }
   } catch (error) {
     console.error("テンプレートリストの読み込みに失敗:", error);
@@ -2312,6 +2677,72 @@ async function loadTemplateList() {
       "error",
     );
   }
+}
+
+/**
+ * 增量更新模板卡片
+ * @param {HTMLElement} container
+ * @param {Array<Object>} templates
+ * @param {string|null} defaultTemplateId
+ */
+function updateTemplateCards(container, templates, defaultTemplateId) {
+  const nextMap = new Map();
+  const seen = new Set();
+
+  templates.forEach((template) => {
+    const existingEntry = renderedTemplateMap.get(template.id);
+    const nextSignature = getTemplateCardSignature(
+      template,
+      defaultTemplateId,
+    );
+    let card = existingEntry?.element;
+
+    if (!card) {
+      card = renderTemplateCard(template, defaultTemplateId);
+      container.appendChild(card);
+    } else if (existingEntry?.signature !== nextSignature) {
+      patchTemplateCard(card, template, defaultTemplateId);
+    }
+
+    nextMap.set(template.id, { element: card, signature: nextSignature });
+    seen.add(template.id);
+  });
+
+  for (const [templateId, entry] of renderedTemplateMap.entries()) {
+    if (!seen.has(templateId) && entry?.element?.remove) {
+      entry.element.remove();
+    }
+  }
+
+  renderedTemplateMap = nextMap;
+}
+
+/**
+ * 生成单个模板卡的签名，便于检测是否需要 patch
+ * @param {Object} template
+ * @param {string|null} defaultTemplateId
+ * @returns {string}
+ */
+function getTemplateCardSignature(template, defaultTemplateId) {
+  const updatedStamp = template.updatedAt
+    ? Date.parse(template.updatedAt)
+    : 0;
+  const fieldsCount = Array.isArray(template.fields)
+    ? template.fields.length
+    : 0;
+  const locale = getLocale();
+
+  return [
+    template.id,
+    template.name,
+    template.description,
+    template.deckName,
+    template.modelName,
+    fieldsCount,
+    updatedStamp,
+    defaultTemplateId === template.id ? "default" : "custom",
+    locale,
+  ].join("|");
 }
 
 /**
@@ -2342,51 +2773,60 @@ function renderTemplateCard(template, defaultTemplateId) {
   card.innerHTML = `
     <div class="flex items-start justify-between mb-4">
       <div class="flex-1">
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">${escapeHtml(
+        <h3 class="text-lg font-semibold text-gray-900 mb-2" data-template-field="name">${escapeHtml(
           template.name,
         )}</h3>
-        <p class="text-sm text-gray-600 mb-3">${escapeHtml(
+        <p class="text-sm text-gray-600 mb-3" data-template-field="description">${escapeHtml(
           template.description || "",
         )}</p>
         <div class="flex flex-wrap gap-2 text-xs text-gray-500">
-          <span class="inline-flex items-center">
+          <span class="inline-flex items-center" data-template-field="deck">
             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+              <use href="#icon-deck"></use>
             </svg>
-            ${escapeHtml(template.deckName || "-")}
+            <span data-template-field-value="deck">${escapeHtml(
+              template.deckName || "-",
+            )}</span>
           </span>
           <span class="text-gray-300">|</span>
-          <span class="inline-flex items-center">
+          <span class="inline-flex items-center" data-template-field="model">
             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              <use href="#icon-model"></use>
             </svg>
-            ${escapeHtml(template.modelName || "-")}
+            <span data-template-field-value="model">${escapeHtml(
+              template.modelName || "-",
+            )}</span>
           </span>
           <span class="text-gray-300">|</span>
-          <span class="inline-flex items-center">
+          <span class="inline-flex items-center" data-template-field="fields">
             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              <use href="#icon-fields"></use>
             </svg>
-            ${template.fields ? template.fields.length : 0} ${getText(
+            <span data-template-field-value="fields">${
+              template.fields ? template.fields.length : 0
+            } ${getText(
               "template_card_fields_count",
               "个字段",
-            )}
+            )}</span>
           </span>
         </div>
       </div>
       ${
         isDefault
-          ? `<span class="ml-4 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800" data-i18n="template_card_default_badge">${getText(
+          ? `<span class="ml-4 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800" data-template-role="default-badge" data-i18n="template_card_default_badge">${getText(
               "template_card_default_badge",
               "默认",
             )}</span>`
-          : ""
+          : `<span class="ml-4 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800" data-template-role="default-badge" style="display:none" data-i18n="template_card_default_badge">${getText(
+              "template_card_default_badge",
+              "默认",
+            )}</span>`
       }
     </div>
 
     <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-      <span class="text-xs text-gray-500">
-        ${getText("template_card_updated_at", "更新时间:")} ${formattedDate}
+      <span class="text-xs text-gray-500" data-template-field="updated-at">
+        ${getText("template_card_updated_at", "更新时间:")} <span data-template-field-value="updated-at">${formattedDate}</span>
       </span>
       <div class="flex gap-2">
         ${
@@ -2395,6 +2835,7 @@ function renderTemplateCard(template, defaultTemplateId) {
             type="button"
             class="template-set-default-btn text-sm text-blue-600 hover:text-blue-800 font-medium"
             data-template-id="${template.id}"
+            data-template-action="set-default"
             data-i18n="template_card_set_default"
           >${getText("template_card_set_default", "设为默认")}</button>`
             : ""
@@ -2403,39 +2844,134 @@ function renderTemplateCard(template, defaultTemplateId) {
           type="button"
           class="template-edit-btn text-sm text-gray-600 hover:text-gray-900 font-medium"
           data-template-id="${template.id}"
+          data-template-action="edit"
           data-i18n="template_card_edit"
         >${getText("template_card_edit", "编辑")}</button>
         <button
           type="button"
           class="template-delete-btn text-sm text-red-600 hover:text-red-800 font-medium"
           data-template-id="${template.id}"
+          data-template-action="delete"
           data-i18n="template_card_delete"
         >${getText("template_card_delete", "删除")}</button>
       </div>
     </div>
   `;
 
-  // イベントリスナーをバインド / Bind event listeners
-  const setDefaultBtn = card.querySelector(".template-set-default-btn");
-  if (setDefaultBtn) {
-    setDefaultBtn.addEventListener("click", () =>
-      handleSetDefaultTemplate(template.id),
-    );
-  }
-
-  const editBtn = card.querySelector(".template-edit-btn");
-  if (editBtn) {
-    editBtn.addEventListener("click", () => handleEditTemplate(template.id));
-  }
-
-  const deleteBtn = card.querySelector(".template-delete-btn");
-  if (deleteBtn) {
-    deleteBtn.addEventListener("click", () =>
-      handleDeleteTemplate(template.id),
-    );
-  }
-
   return card;
+}
+
+/**
+ * 对已有卡片进行补丁更新，避免整卡重建
+ * @param {HTMLElement} card
+ * @param {Object} template
+ * @param {string|null} defaultTemplateId
+ */
+function patchTemplateCard(card, template, defaultTemplateId) {
+  const isDefault = template.id === defaultTemplateId;
+  const nameEl = card.querySelector('[data-template-field="name"]');
+  if (nameEl) {
+    nameEl.textContent = template.name ?? "";
+  }
+
+  const descEl = card.querySelector('[data-template-field="description"]');
+  if (descEl) {
+    descEl.textContent = template.description ?? "";
+  }
+
+  const deckEl = card.querySelector('[data-template-field-value="deck"]');
+  if (deckEl) {
+    deckEl.textContent = template.deckName || "-";
+  }
+
+  const modelEl = card.querySelector('[data-template-field-value="model"]');
+  if (modelEl) {
+    modelEl.textContent = template.modelName || "-";
+  }
+
+  const fieldsEl = card.querySelector('[data-template-field-value="fields"]');
+  if (fieldsEl) {
+    const count = template.fields ? template.fields.length : 0;
+    fieldsEl.textContent = `${count} ${getText(
+      "template_card_fields_count",
+      "个字段",
+    )}`;
+  }
+
+  const updatedEl = card.querySelector(
+    '[data-template-field-value="updated-at"]',
+  );
+  if (updatedEl) {
+    const updatedDate = template.updatedAt
+      ? new Date(template.updatedAt)
+      : new Date();
+    updatedEl.textContent = updatedDate.toLocaleDateString(getLocale(), {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  }
+
+  const defaultBadge = card.querySelector('[data-template-role="default-badge"]');
+  if (defaultBadge) {
+    defaultBadge.style.display = isDefault ? "inline-flex" : "none";
+  }
+
+  const setDefaultBtn = card.querySelector('[data-template-action="set-default"]');
+  if (setDefaultBtn) {
+    setDefaultBtn.dataset.templateId = template.id;
+    setDefaultBtn.toggleAttribute("hidden", isDefault);
+  }
+
+  const editBtn = card.querySelector('[data-template-action="edit"]');
+  if (editBtn) {
+    editBtn.dataset.templateId = template.id;
+  }
+
+  const deleteBtn = card.querySelector('[data-template-action="delete"]');
+  if (deleteBtn) {
+    deleteBtn.dataset.templateId = template.id;
+  }
+}
+
+/**
+ * 为模板卡片容器绑定一次性事件委托
+ */
+function ensureTemplateCardEvents() {
+  if (templateCardEventsBound) {
+    return;
+  }
+  const cardsGrid = document.getElementById("template-cards-grid");
+  if (!cardsGrid) {
+    return;
+  }
+
+  cardsGrid.addEventListener("click", (event) => {
+    const actionTarget = event.target.closest("[data-template-action]");
+    if (!actionTarget || !cardsGrid.contains(actionTarget)) {
+      return;
+    }
+    const { templateAction, templateId } = actionTarget.dataset;
+    if (!templateId || !templateAction) {
+      return;
+    }
+
+    switch (templateAction) {
+      case "set-default":
+        handleSetDefaultTemplate(templateId);
+        break;
+      case "edit":
+        handleEditTemplate(templateId);
+        break;
+      case "delete":
+        handleDeleteTemplate(templateId);
+        break;
+      default:
+        break;
+    }
+  });
+
+  templateCardEventsBound = true;
 }
 
 /**
@@ -2446,20 +2982,20 @@ function renderTemplateCard(template, defaultTemplateId) {
  */
 async function handleSetDefaultTemplate(templateId) {
   try {
-    const config = await storageApi.loadConfig();
+    const config = currentConfig ?? (await storageApi.loadConfig());
     const updated = setDefaultTemplate(config, templateId);
     if (!updated) {
       throw new Error("Failed to set default template");
     }
     await storageApi.saveConfig(config);
+    currentConfig = config;
 
     showToast(
       getText("options_toast_template_set_default", "已设置为默认模板"),
       "success",
     );
 
-    // リストを再読み込み / Reload list
-    await loadTemplateList();
+    refreshUI({ sections: ["templates"] });
   } catch (error) {
     console.error("デフォルトテンプレートの設定に失敗:", error);
     showToast(
@@ -2477,7 +3013,8 @@ async function handleSetDefaultTemplate(templateId) {
  */
 async function handleEditTemplate(templateId) {
   try {
-    const config = await storageApi.loadConfig();
+    const config = currentConfig ?? (await storageApi.loadConfig());
+    currentConfig = config;
     const template = getTemplateById(config, templateId);
 
     if (!template) {
@@ -2576,7 +3113,7 @@ async function handleEditTemplate(templateId) {
  */
 async function handleDeleteTemplate(templateId) {
   try {
-    const config = await storageApi.loadConfig();
+    const config = currentConfig ?? (await storageApi.loadConfig());
     const template = getTemplateById(config, templateId);
 
     if (!template) {
@@ -2607,14 +3144,14 @@ async function handleDeleteTemplate(templateId) {
       throw new Error("Failed to delete template");
     }
     await storageApi.saveConfig(config);
+    currentConfig = config;
 
     showToast(
       getText("options_toast_template_deleted", "模板已删除"),
       "success",
     );
 
-    // リストを再読み込み / Reload list
-    await loadTemplateList();
+    refreshUI({ sections: ["templates"] });
   } catch (error) {
     console.error("テンプレートの削除に失敗:", error);
     showToast(
@@ -2674,6 +3211,9 @@ async function handleImportConfigurationFile(event) {
     });
 
     await storageApi.saveConfig(mergedConfig);
+    currentConfig = mergedConfig;
+    clearActualApiKeys();
+    await refreshLanguageResources();
     updateStatus(
       "save-status",
       getText(
@@ -2683,8 +3223,10 @@ async function handleImportConfigurationFile(event) {
       "success",
     );
 
-    // 重新加载页面配置
-    setTimeout(() => window.location.reload(), 1500);
+    refreshUI({
+      sections: ["providers", "templates", "anki", "style", "language", "ui"],
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   } catch (error) {
     console.error("配置导入失败:", error);
     updateStatus(
@@ -2934,6 +3476,14 @@ function renderTemplateFieldSelection(fields) {
   );
   if (!selectionList) return;
 
+  if (!templateFieldSelectionEventsBound) {
+    selectionList.addEventListener(
+      "change",
+      handleTemplateFieldSelectionChange,
+    );
+    templateFieldSelectionEventsBound = true;
+  }
+
   selectionList.innerHTML = "";
 
   fields.forEach((field) => {
@@ -2947,25 +3497,8 @@ function renderTemplateFieldSelection(fields) {
     checkbox.type = "checkbox";
     checkbox.value = field;
     checkbox.checked = isSelected;
+    checkbox.dataset.fieldName = field;
     checkbox.className = "mr-2";
-    checkbox.addEventListener("change", (e) => {
-      if (e.target.checked) {
-        if (!templateEditorState.selectedFields.includes(field)) {
-          templateEditorState.selectedFields.push(field);
-          // 确保字段配置对象存在
-          if (!templateEditorState.fieldConfigs[field]) {
-            templateEditorState.fieldConfigs[field] = { content: "" };
-          }
-        }
-      } else {
-        const index = templateEditorState.selectedFields.indexOf(field);
-        if (index > -1) {
-          templateEditorState.selectedFields.splice(index, 1);
-        }
-      }
-      renderTemplateFieldConfig();
-      synchronizeTemplatePrompt({ forceUpdate: false });
-    });
 
     const label = document.createElement("span");
     label.textContent = field;
@@ -2978,6 +3511,41 @@ function renderTemplateFieldSelection(fields) {
 
   // 渲染字段配置区域
   renderTemplateFieldConfig();
+}
+
+/**
+ * 模板字段选择变更处理（事件委托）
+ * @param {Event} event
+ */
+function handleTemplateFieldSelectionChange(event) {
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement)) {
+    return;
+  }
+  if (target.type !== "checkbox") {
+    return;
+  }
+  const field = target.dataset.fieldName;
+  if (!field) {
+    return;
+  }
+
+  if (target.checked) {
+    if (!templateEditorState.selectedFields.includes(field)) {
+      templateEditorState.selectedFields.push(field);
+    }
+    if (!templateEditorState.fieldConfigs[field]) {
+      templateEditorState.fieldConfigs[field] = { content: "" };
+    }
+  } else {
+    const index = templateEditorState.selectedFields.indexOf(field);
+    if (index > -1) {
+      templateEditorState.selectedFields.splice(index, 1);
+    }
+  }
+
+  renderTemplateFieldConfig();
+  synchronizeTemplatePrompt({ forceUpdate: false });
 }
 
 /**
@@ -3348,7 +3916,8 @@ async function collectTemplateFormData() {
     template.id = templateEditorState.currentTemplateId;
 
     // 读取原模板的 createdAt
-    const config = await loadConfig();
+    const config = currentConfig ?? (await storageApi.loadConfig());
+    currentConfig = config;
     const originalTemplate = getTemplateById(
       config,
       templateEditorState.currentTemplateId,
@@ -3389,13 +3958,14 @@ async function handleTemplateSave() {
     const templateData = await collectTemplateFormData();
 
     // 加载当前配置
-    const config = await loadConfig();
+    const config = currentConfig ?? (await storageApi.loadConfig());
 
     // 保存模板（会自动处理新增/更新逻辑）
     const savedTemplate = saveTemplate(config, templateData);
 
     // 保存配置到 storage
     await saveConfig(config);
+    currentConfig = config;
 
     // 显示成功消息
     updateTemplateStatus(
@@ -3406,8 +3976,8 @@ async function handleTemplateSave() {
     // 短暂延迟后切换回列表视图
     setTimeout(() => {
       switchTemplateView("list");
-      loadTemplateList(); // 刷新模板列表
-    }, 800);
+      refreshUI({ sections: ["templates"] });
+    }, 400);
   } catch (error) {
     console.error("保存模板失败:", error);
     updateTemplateStatus(

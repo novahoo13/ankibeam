@@ -28,18 +28,29 @@
         background-color: rgba(148, 163, 184, 0.5);
       }
 
-      /* Animations */
+      /* Tab stack to reduce layout thrash */
+      .tab-stack {
+        position: relative;
+        min-height: 60vh;
+      }
       .tab-content {
-        display: none;
+        position: absolute;
+        inset: 0;
+        width: 100%;
         opacity: 0;
-        transform: translateY(10px);
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateY(8px);
         transition:
-          opacity 0.3s ease-out,
-          transform 0.3s ease-out;
+          opacity 0.25s ease-out,
+          transform 0.25s ease-out,
+          visibility 0.25s ease-out;
       }
       .tab-content.active {
-        display: block;
+        position: relative;
         opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
         transform: translateY(0);
       }
 
@@ -59,6 +70,54 @@
   <body
     class="bg-page text-main font-sans antialiased min-h-screen flex items-center justify-center p-4 md:p-8"
   >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="hidden"
+      style="position: absolute; width: 0; height: 0; overflow: hidden"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <symbol
+        id="icon-deck"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path
+          d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+        ></path>
+      </symbol>
+      <symbol
+        id="icon-model"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path
+          d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+        ></path>
+      </symbol>
+      <symbol
+        id="icon-fields"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path
+          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+        ></path>
+      </symbol>
+    </svg>
+
     <!-- Card Container -->
     <div
       class="w-full max-w-6xl bg-white/80 backdrop-blur-xl rounded-3xl shadow-float border border-white/40 flex flex-col md:flex-row overflow-hidden h-[85vh]"
@@ -189,7 +248,7 @@
 
       <!-- Main Content (Scrollable) -->
       <main class="flex-1 bg-white/50 relative overflow-y-auto">
-        <div class="max-w-4xl mx-auto p-8 pb-24">
+        <div class="max-w-4xl mx-auto p-8 pb-24 tab-stack relative">
           <!-- Tab: AI Config -->
           <div id="ai-config" class="tab-content active" role="tabpanel">
             <h2
