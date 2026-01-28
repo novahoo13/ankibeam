@@ -1,123 +1,66 @@
 #!/bin/bash
 
-# =============================================================================
 # AnkiBeam - Extension Packaging Script
-# =============================================================================
-# 
-# This script creates a production-ready ZIP package for Chrome Web Store
-# 
+#
 # Usage:
 #   ./scripts/package-extension.sh [version]
 #
 # Examples:
 #   ./scripts/package-extension.sh          # Uses version from manifest.json
 #   ./scripts/package-extension.sh 1.0.1    # Overrides with specified version
-#
-# =============================================================================
 
-set -e  # Exit on error
+set -e
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-# Get script directory and project root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-
-# Output directory
 OUTPUT_DIR="$PROJECT_ROOT/dist"
+STAGING_DIR="$OUTPUT_DIR/_staging"
 
-echo -e "${BLUE}========================================${NC}"
-echo -e "${BLUE}  AnkiBeam Packager${NC}"
-echo -e "${BLUE}========================================${NC}"
-echo ""
-
-# Navigate to project root
 cd "$PROJECT_ROOT"
 
-# Get version from manifest.json or command line
+# Get version
 if [ -n "$1" ]; then
     VERSION="$1"
-    echo -e "${YELLOW}Using specified version: $VERSION${NC}"
 else
     VERSION=$(grep '"version"' manifest.json | sed 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
-    echo -e "${GREEN}Using manifest version: $VERSION${NC}"
 fi
 
-# Validate version
 if [ -z "$VERSION" ]; then
-    echo -e "${RED}Error: Could not determine version${NC}"
+    echo "Error: Could not determine version"
     exit 1
 fi
 
-# Create output directory
-mkdir -p "$OUTPUT_DIR"
+echo "Packaging AnkiBeam v${VERSION}..."
 
-# Define output filename
+# Clean previous build
+rm -rf "$STAGING_DIR"
+mkdir -p "$STAGING_DIR"
+
+# Copy extension files to staging
+cp manifest.json LICENSE PRIVACY.md "$STAGING_DIR/"
+cp -r background content icons options popup services utils _locales "$STAGING_DIR/"
+
+# Copy only CSS files from styles (not source maps)
+mkdir -p "$STAGING_DIR/styles"
+cp styles/*.css "$STAGING_DIR/styles/"
+
+# Remove test files from staging
+find "$STAGING_DIR" -name '*.test.js' -delete
+find "$STAGING_DIR" -name '*.map' -delete
+
+# Create zip
 OUTPUT_FILE="$OUTPUT_DIR/ankibeam-v${VERSION}.zip"
+rm -f "$OUTPUT_FILE"
+cd "$STAGING_DIR"
+zip -r "$OUTPUT_FILE" . -x '*.DS_Store' '*__MACOSX*'
+cd "$PROJECT_ROOT"
 
-# Remove existing package if exists
-if [ -f "$OUTPUT_FILE" ]; then
-    echo -e "${YELLOW}Removing existing package...${NC}"
-    rm "$OUTPUT_FILE"
-fi
+# Clean staging
+rm -rf "$STAGING_DIR"
 
+# Report
 echo ""
-echo -e "${BLUE}Packaging extension...${NC}"
-echo ""
-
-# Create ZIP with only required files
-zip -r "$OUTPUT_FILE" \
-    manifest.json \
-    LICENSE \
-    PRIVACY.md \
-    README.md \
-    background/ \
-    content/ \
-    icons/ \
-    options/ \
-    popup/ \
-    services/ \
-    styles/*.css \
-    styles/*.min.css \
-    utils/ \
-    _locales/ \
-    -x "*.DS_Store" \
-    -x "*__MACOSX*" \
-    -x "*.map" \
-    -x "*test*" \
-    -x "*.test.js" \
-    -x "*node_modules*" \
-    -x "*.git*" \
-    -x "*dist*" \
-    -x "scripts/*" \
-    -x "docs/*" \
-    -x "*.md" \
-    -x "LICENSE" \
-    -x "PRIVACY.md" \
-    -x "README.md"
-
-# Re-add specific markdown files (we excluded all .md above to avoid docs/)
-zip "$OUTPUT_FILE" LICENSE PRIVACY.md README.md 2>/dev/null || true
-
-# Show package info
-echo ""
-echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}  ✅ Package created successfully!${NC}"
-echo -e "${GREEN}========================================${NC}"
-echo ""
-echo -e "📦 Output: ${BLUE}$OUTPUT_FILE${NC}"
-echo -e "📏 Size:   $(du -h "$OUTPUT_FILE" | cut -f1)"
-echo ""
-
-# List package contents
-echo -e "${YELLOW}Package contents:${NC}"
+echo "Package created: $OUTPUT_FILE"
+echo "Size: $(du -h "$OUTPUT_FILE" | cut -f1)"
+echo "Contents:"
 unzip -l "$OUTPUT_FILE" | tail -n +4 | head -n -2 | awk '{print "  " $4}'
-
-echo ""
-echo -e "${GREEN}Ready to upload to Chrome Web Store!${NC}"
-echo ""
