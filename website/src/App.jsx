@@ -23,6 +23,8 @@ import {
 } from "lucide-react";
 
 const GITHUB_URL = "https://github.com/novahoo13/ankibeam";
+const RELEASES_URL = `${GITHUB_URL}/releases/latest`;
+const PRIVACY_URL = `${GITHUB_URL}/blob/main/PRIVACY.md`;
 const ANKI_URL = "https://apps.ankiweb.net/";
 
 const MockupWindow = ({ children, className = "" }) => (
@@ -146,7 +148,9 @@ function App() {
               GitHub
             </a>
             <a
-              href="#"
+              href={RELEASES_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="bg-slate-900 text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10 flex items-center gap-2"
             >
               <Download className="w-4 h-4 sm:hidden" />
@@ -189,7 +193,9 @@ function App() {
 
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
                 <a
-                  href="#"
+                  href={RELEASES_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-full sm:w-auto px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:-translate-y-0.5"
                 >
                   <Chrome className="w-5 h-5" />
@@ -586,7 +592,9 @@ function App() {
                 {t("getting_started.step3_desc")}
               </p>
               <a
-                href="#"
+                href={RELEASES_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="mt-4 text-emerald-600 text-sm font-medium flex items-center gap-1 hover:text-emerald-700 transition-colors"
               >
                 {t("getting_started.step3_link")}
@@ -614,7 +622,9 @@ function App() {
               {t("cta.desc")}
             </p>
             <a
-              href="#"
+              href={RELEASES_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-semibold transition-all shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/30 hover:-translate-y-0.5"
             >
               <Chrome className="w-5 h-5" />
@@ -658,7 +668,9 @@ function App() {
               {t("footer.links.issues")}
             </a>
             <a
-              href="#"
+              href={PRIVACY_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="hover:text-emerald-600 transition-colors"
             >
               {t("footer.links.privacy")}
