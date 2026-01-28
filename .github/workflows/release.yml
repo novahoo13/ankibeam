@@ -1,0 +1,37 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify manifest version matches tag
+        run: |
+          manifest_version=$(grep '"version"' manifest.json | sed 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
+          tag_version="${{ steps.version.outputs.version }}"
+          if [ "$manifest_version" != "$tag_version" ]; then
+            echo "ERROR: manifest.json version ($manifest_version) does not match tag (v$tag_version)"
+            exit 1
+          fi
+
+      - name: Package extension
+        run: bash scripts/package-extension.sh
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/ankibeam-v${{ steps.version.outputs.version }}.zip
+          generate_release_notes: true
