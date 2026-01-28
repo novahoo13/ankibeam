@@ -1015,16 +1015,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     templateModelSelect.addEventListener("change", handleTemplateModelChange);
   }
 
-  const templateGeneratePromptBtn = document.getElementById(
-    "template-generate-prompt-btn",
-  );
-  if (templateGeneratePromptBtn) {
-    templateGeneratePromptBtn.addEventListener(
-      "click",
-      handleTemplateGeneratePrompt,
-    );
-  }
-
   const templateFormSaveBtn = document.getElementById("template-form-save");
   if (templateFormSaveBtn) {
     templateFormSaveBtn.addEventListener("click", handleTemplateSave);
@@ -2591,14 +2581,8 @@ function resetTemplateForm() {
   // フィールド関連をクリア / Clear field sections
   const fieldMapping = document.getElementById("template-field-mapping");
   const fieldsSection = document.getElementById("template-fields-section");
-  const promptSection = document.getElementById("template-prompt-section");
   if (fieldMapping) fieldMapping.style.display = "none";
   if (fieldsSection) fieldsSection.style.display = "none";
-  if (promptSection) promptSection.style.display = "none";
-
-  // Promptテキストエリアをクリア / Clear prompt textarea
-  const promptTextarea = document.getElementById("template-prompt");
-  if (promptTextarea) promptTextarea.value = "";
 
   // ステータスメッセージをクリア / Clear status messages
   const ankiStatus = document.getElementById("template-anki-status");
@@ -3034,11 +3018,8 @@ async function handleEditTemplate(templateId) {
     const descInput = document.getElementById("template-description");
     const deckSelect = document.getElementById("template-deck");
     const modelSelect = document.getElementById("template-model");
-    const promptTextarea = document.getElementById("template-prompt");
-
     if (nameInput) nameInput.value = template.name || "";
     if (descInput) descInput.value = template.description || "";
-    if (promptTextarea) promptTextarea.value = template.prompt || "";
 
     // フォームタイトルを更新 / Update form title
     const formTitle = document.getElementById("template-form-title");
@@ -3408,7 +3389,6 @@ async function handleTemplateModelChange() {
   if (!modelName) {
     document.getElementById("template-field-mapping").style.display = "none";
     document.getElementById("template-fields-section").style.display = "none";
-    document.getElementById("template-prompt-section").style.display = "none";
     templateEditorState.availableFields = [];
     templateEditorState.modelId = null;
     return;
@@ -3458,7 +3438,6 @@ async function handleTemplateModelChange() {
     console.error("字段获取失败:", error);
     document.getElementById("template-field-mapping").style.display = "none";
     document.getElementById("template-fields-section").style.display = "none";
-    document.getElementById("template-prompt-section").style.display = "none";
     templateEditorState.availableFields = [];
   }
 }
@@ -3545,7 +3524,6 @@ function handleTemplateFieldSelectionChange(event) {
   }
 
   renderTemplateFieldConfig();
-  synchronizeTemplatePrompt({ forceUpdate: false });
 }
 
 /**
@@ -3594,85 +3572,12 @@ function renderTemplateFieldConfig() {
         templateEditorState.fieldConfigs[field] = {};
       }
       templateEditorState.fieldConfigs[field].content = e.target.value;
-      synchronizeTemplatePrompt({ forceUpdate: false });
     });
 
     card.appendChild(fieldHeader);
     card.appendChild(textarea);
     configList.appendChild(card);
   });
-}
-
-/**
- * テンプレート用のPrompt生成
- * Generate prompt for template
- * @description 根据选中的字段和配置生成 Prompt
- * @returns {void}
- */
-function handleTemplateGeneratePrompt() {
-  const selectedFields = templateEditorState.selectedFields || [];
-  if (selectedFields.length === 0) {
-    updateTemplateStatus(
-      getText(
-        "options_prompt_error_no_fields",
-        "请先选择至少一个字段，然后再生成 Prompt。",
-      ),
-      "info",
-    );
-    return;
-  }
-
-  // 显示 Prompt 编辑区域
-  const promptSection = document.getElementById("template-prompt-section");
-  if (promptSection) {
-    promptSection.style.display = "block";
-  }
-
-  // 生成并填充 Prompt
-  synchronizeTemplatePrompt({ forceUpdate: true });
-
-  updateTemplateStatus(
-    getText("template_form_prompt_generated", "Prompt 已生成"),
-    "success",
-  );
-}
-
-/**
- * テンプレート用のPrompt同期
- * Synchronize generated prompt for template
- * @description 同步生成的 Prompt 到模板编辑器
- * @param {Object} [options={}] - 配置选项
- * @param {boolean} [options.forceUpdate=false] - 是否强制更新
- * @returns {boolean} 是否更新了 Prompt
- */
-function synchronizeTemplatePrompt(options = {}) {
-  const { forceUpdate = false } = options;
-  const promptTextarea = document.getElementById("template-prompt");
-
-  if (!promptTextarea) {
-    return false;
-  }
-
-  const generatedPrompt = generateTemplatePrompt();
-  const trimmedGenerated = (generatedPrompt || "").trim();
-  const trimmedCurrent = (promptTextarea.value || "").trim();
-
-  if (!trimmedGenerated) {
-    if (forceUpdate && promptTextarea.value) {
-      promptTextarea.value = "";
-      return true;
-    }
-    return false;
-  }
-
-  if (forceUpdate || !trimmedCurrent) {
-    if (trimmedCurrent !== trimmedGenerated) {
-      promptTextarea.value = generatedPrompt;
-      return true;
-    }
-  }
-
-  return false;
 }
 
 /**
@@ -3851,14 +3756,6 @@ function validateTemplateForm() {
     }
   });
 
-  // 验证 Prompt
-  const prompt = document.getElementById("template-prompt")?.value?.trim();
-  if (!prompt) {
-    errors.push(
-      getText("template_form_validation_prompt", "请输入或生成 Prompt"),
-    );
-  }
-
   return {
     valid: errors.length === 0,
     errors: errors,
@@ -3877,8 +3774,7 @@ async function collectTemplateFormData() {
     document.getElementById("template-description")?.value?.trim() || "";
   const deckName = document.getElementById("template-deck")?.value || "";
   const modelName = document.getElementById("template-model")?.value || "";
-  const prompt =
-    document.getElementById("template-prompt")?.value?.trim() || "";
+  const prompt = generateTemplatePrompt();
 
   // 从 templateEditorState 获取 modelId
   const modelId = templateEditorState.modelId || null;
