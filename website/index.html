@@ -8,13 +8,111 @@
       href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%2310b981%22><polygon points=%2212 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2%22/></svg>"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AnkiBeam - AI Flashcards Assistant</title>
+    <meta name="description" content="AnkiBeam is a free, open-source Chrome extension that uses AI (Gemini, Claude, GPT) to instantly create Anki flashcards from any webpage. Select text, get definitions, examples, phonetics, and etymology, then send cards to Anki with one click." />
+    <meta name="keywords" content="Anki, flashcards, AI, Chrome extension, spaced repetition, vocabulary, language learning, Gemini, Claude, GPT, AnkiConnect" />
+    <link rel="canonical" href="https://ankibeam.com" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="AnkiBeam — AI-Powered Anki Flashcard Assistant" />
+    <meta property="og:description" content="Free Chrome extension to create Anki flashcards with AI. Supports Gemini, Claude, and GPT. Select text on any webpage, get rich definitions, and send to Anki in one click." />
+    <meta property="og:url" content="https://ankibeam.com" />
+    <meta property="og:site_name" content="AnkiBeam" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="zh_CN" />
+    <meta property="og:locale:alternate" content="zh_TW" />
+    <meta property="og:locale:alternate" content="ja_JP" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="AnkiBeam — AI-Powered Anki Flashcard Assistant" />
+    <meta name="twitter:description" content="Free Chrome extension to create Anki flashcards with AI. Supports Gemini, Claude, and GPT." />
+
+    <title>AnkiBeam — AI-Powered Anki Flashcard Assistant</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "AnkiBeam",
+        "alternateName": "AnkiBeam - AI Flashcards Assistant",
+        "url": "https://ankibeam.com",
+        "downloadUrl": "https://github.com/novahoo13/ankibeam/releases",
+        "applicationCategory": "BrowserExtension",
+        "operatingSystem": "Chrome, Edge",
+        "softwareVersion": "1.0.0",
+        "license": "https://opensource.org/licenses/MIT",
+        "isAccessibleForFree": true,
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "author": {
+          "@type": "Organization",
+          "name": "AnkiBeam",
+          "url": "https://ankibeam.com"
+        },
+        "description": "AnkiBeam is a free, open-source Chrome extension that uses AI (Google Gemini, Anthropic Claude, OpenAI GPT) to instantly create Anki flashcards from any webpage. Select text, get AI-generated definitions, examples, phonetics, and etymology, then send cards to Anki with one click.",
+        "featureList": [
+          "AI-powered definitions, examples, phonetics, and etymology",
+          "Multi-model support: Google Gemini, Anthropic Claude, OpenAI GPT",
+          "Automatic failover between AI providers",
+          "Floating assistant for in-page card creation",
+          "Customizable templates and prompts",
+          "AnkiConnect integration for direct card export",
+          "AES-256-GCM encrypted local API key storage",
+          "Multi-language UI: English, 简体中文, 繁體中文, 日本語"
+        ],
+        "screenshot": "https://ankibeam.com/og-image.png",
+        "keywords": "Anki, flashcards, AI, Chrome extension, spaced repetition, vocabulary, language learning"
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is AnkiBeam?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "AnkiBeam is a free, open-source Chrome extension that uses AI (Gemini, Claude, GPT) to instantly create Anki flashcards from any webpage. It generates definitions, examples, phonetics, and etymology automatically."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is AnkiBeam free?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes, AnkiBeam is completely free and open-source (MIT license). Users only pay for their own AI API usage. Google Gemini offers a generous free tier."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What AI models does AnkiBeam support?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "AnkiBeam supports Google Gemini, Anthropic Claude, and OpenAI GPT. It features automatic failover—if one provider is unavailable, it seamlessly switches to another."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my data safe with AnkiBeam?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. AnkiBeam stores API keys locally with AES-256-GCM encryption. There is no cloud storage, no data collection, and no account registration required. All processing happens on your device."
+            }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
