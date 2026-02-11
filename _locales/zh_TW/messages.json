@@ -1679,7 +1679,7 @@
 	},
 	"prompt_engine_requirements_body": {
 		"description": "動態 Prompt 要求說明",
-		"message": "\n\n要求:\n- 輸出有效JSON格式\n- 只能使用欄位: $FIELDS$\n- 可部分輸出，但欄位名必須準確",
+		"message": "\n\n要求:\n- 輸出有效JSON格式\n- 只能使用欄位: $FIELDS$\n- 每個欄位的值必須是純文字字串，不要使用巢狀的物件或陣列\n- 可部分輸出，但欄位名必須準確",
 		"placeholders": {
 			"FIELDS": {
 				"content": "$1",

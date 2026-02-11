@@ -1756,7 +1756,7 @@
 	},
 	"prompt_engine_requirements_body": {
 		"description": "Dynamic Prompt requirements description.",
-		"message": "\n\nRequirements:\n- Output in valid JSON format\n- Only use fields: $FIELDS$\n- Partial output is acceptable, but field names must be accurate",
+		"message": "\n\nRequirements:\n- Output in valid JSON format\n- Only use fields: $FIELDS$\n- Each field value MUST be a plain text string, do NOT use nested objects or arrays\n- Partial output is acceptable, but field names must be accurate",
 		"placeholders": {
 			"FIELDS": {
 				"content": "$1",
