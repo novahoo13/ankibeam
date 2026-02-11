@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>AnkiBeam Promo Assets</title>
+		<style>
+			@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+			:root {
+				--primary-500: #10b981;
+				--primary-600: #059669;
+				--primary-700: #047857;
+				--bg-page: #f8fafc;
+				--text-main: #0f172a;
+				--text-secondary: #475569;
+				--glass-border: rgba(255, 255, 255, 0.2);
+			}
+
+			body {
+				font-family: "Inter", sans-serif;
+				background-color: #333;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				gap: 50px;
+				padding: 50px;
+				margin: 0;
+			}
+
+			.asset-label {
+				color: #fff;
+				margin-bottom: 10px;
+				font-size: 14px;
+				opacity: 0.7;
+			}
+
+			.promo-container {
+				position: relative;
+				overflow: hidden;
+				box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+				flex-shrink: 0;
+			}
+
+			/* --- Small Promo Tile (440x280) --- */
+			#small-promo {
+				width: 440px;
+				height: 280px;
+				border-radius: 12px;
+				background: linear-gradient(135deg, #10b981, #059669);
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				color: white;
+			}
+
+			#small-promo::before {
+				content: "";
+				position: absolute;
+				width: 300px;
+				height: 300px;
+				background: radial-gradient(
+					circle,
+					rgba(255, 255, 255, 0.1) 0%,
+					transparent 70%
+				);
+				top: -100px;
+				left: -100px;
+			}
+
+			#small-promo .logo {
+				width: 80px;
+				height: 80px;
+				background: white;
+				border-radius: 20px;
+				padding: 12px;
+				box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+				margin-bottom: 16px;
+				position: relative;
+				z-index: 10;
+			}
+
+			#small-promo h1 {
+				font-size: 36px;
+				font-weight: 700;
+				margin: 0;
+				letter-spacing: -0.02em;
+				text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+				position: relative;
+				z-index: 10;
+			}
+
+			/* --- Marquee Promo Tile (920x680) --- */
+			#marquee-promo {
+				width: 920px;
+				height: 680px;
+				border-radius: 0px; /* Chrome store might cut corners, but image usually square */
+				background: linear-gradient(135deg, #0f172a 0%, #064e3b 100%);
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 0 80px;
+				position: relative;
+			}
+
+			/* Abstract Background Shapes */
+			.shape {
+				position: absolute;
+				border-radius: 50%;
+				filter: blur(80px);
+				opacity: 0.6;
+				z-index: 0;
+			}
+			.shape-1 {
+				width: 500px;
+				height: 500px;
+				background: #10b981;
+				top: -100px;
+				right: -100px;
+				opacity: 0.3;
+			}
+			.shape-2 {
+				width: 400px;
+				height: 400px;
+				background: #3b82f6;
+				bottom: -100px;
+				left: -100px;
+				opacity: 0.2;
+			}
+
+			.marquee-content {
+				z-index: 10;
+				color: white;
+				max-width: 400px;
+			}
+
+			.marquee-content h1 {
+				font-size: 64px;
+				font-weight: 800;
+				line-height: 1.1;
+				margin: 0 0 24px 0;
+				letter-spacing: -0.03em;
+				background: linear-gradient(to right, #fff, #a7f3d0);
+				-webkit-background-clip: text;
+				-webkit-text-fill-color: transparent;
+			}
+
+			.marquee-content p {
+				font-size: 24px;
+				font-weight: 400;
+				color: #cbd5e1;
+				line-height: 1.5;
+				margin: 0;
+			}
+
+			/* UI Mockup */
+			.ui-mockup-wrapper {
+				position: relative;
+				z-index: 10;
+				transform: perspective(1000px) rotateY(-15deg) rotateX(5deg);
+				box-shadow:
+					50px 50px 80px -20px rgba(0, 0, 0, 0.5),
+					0 0 0 1px rgba(255, 255, 255, 0.1);
+				border-radius: 20px;
+			}
+
+			.ui-mockup {
+				width: 320px;
+				height: 500px; /* Shortened slightly for aspect */
+				background: #f8fafc;
+				border-radius: 20px;
+				overflow: hidden;
+				display: flex;
+				flex-direction: column;
+				font-size: 14px;
+			}
+
+			/* Header Mock */
+			.mock-header {
+				padding: 16px;
+				background: rgba(255, 255, 255, 0.9);
+				border-bottom: 1px solid #e2e8f0;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+			}
+			.mock-title {
+				font-weight: 700;
+				color: #10b981;
+			}
+			.mock-dots {
+				display: flex;
+				gap: 4px;
+			}
+			.mock-dot {
+				width: 8px;
+				height: 8px;
+				border-radius: 50%;
+				background: #cbd5e1;
+			}
+
+			/* Body Mock */
+			.mock-body {
+				padding: 16px;
+				flex: 1;
+				display: flex;
+				flex-direction: column;
+				gap: 16px;
+			}
+
+			.mock-input {
+				width: 100%;
+				height: 80px;
+				background: white;
+				border: 1px solid #e2e8f0;
+				border-radius: 12px;
+				padding: 12px;
+				box-sizing: border-box;
+				box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+			}
+
+			.mock-input-line {
+				height: 8px;
+				background: #e2e8f0;
+				border-radius: 4px;
+				width: 80%;
+				margin-bottom: 8px;
+			}
+			.mock-input-line-2 {
+				height: 8px;
+				background: #e2e8f0;
+				border-radius: 4px;
+				width: 60%;
+			}
+
+			.mock-btn {
+				width: 100%;
+				height: 40px;
+				background: #10b981;
+				border-radius: 10px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				color: white;
+				font-weight: 600;
+				box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
+			}
+
+			/* Result Card Mock */
+			.mock-card {
+				background: white;
+				border: 1px solid #e2e8f0;
+				border-radius: 12px;
+				padding: 12px;
+				display: flex;
+				flex-direction: column;
+				gap: 8px;
+			}
+			.mock-card-title {
+				height: 10px;
+				width: 40%;
+				background: #0f172a;
+				border-radius: 4px;
+				opacity: 0.8;
+			}
+			.mock-card-text {
+				height: 8px;
+				width: 90%;
+				background: #94a3b8;
+				border-radius: 4px;
+				opacity: 0.5;
+			}
+		</style>
+	</head>
+	<body>
+		<div style="text-align: center">
+			<div class="asset-label">Small Promo Tile (440x280)</div>
+			<div id="small-promo" class="promo-container">
+				<img src="icons/icon128.png" class="logo" alt="" />
+				<h1>AnkiBeam</h1>
+			</div>
+			<button
+				onclick="downloadImage('small-promo', 'small-promo-tile.png')"
+				style="margin-top: 10px; padding: 8px 16px; cursor: pointer">
+				Download PNG
+			</button>
+		</div>
+
+		<div style="text-align: center">
+			<div class="asset-label">Marquee Promo Tile (920x680)</div>
+			<div id="marquee-promo" class="promo-container" style="text-align: left">
+				<div class="shape shape-1"></div>
+				<div class="shape shape-2"></div>
+
+				<div class="marquee-content">
+					<h1>AI-Powered<br />Anki Cards</h1>
+					<p>Generate vocabulary cards instantly with context.</p>
+				</div>
+
+				<div class="ui-mockup-wrapper">
+					<div class="ui-mockup">
+						<div class="mock-header">
+							<span class="mock-title">Anki Assistant</span>
+							<div class="mock-dots" style="display: flex; gap: 4px">
+								<div class="mock-dot"></div>
+								<div class="mock-dot"></div>
+								<div class="mock-dot"></div>
+							</div>
+						</div>
+						<div class="mock-body">
+							<div
+								style="
+									font-size: 10px;
+									color: #64748b;
+									font-weight: 600;
+									margin-bottom: 4px;
+								">
+								INPUT
+							</div>
+							<div class="mock-input">
+								<div class="mock-input-line"></div>
+								<div class="mock-input-line-2" style="margin-top: 8px"></div>
+							</div>
+							<div class="mock-btn" style="margin-top: 16px">
+								Parse & Generate
+							</div>
+
+							<div
+								style="
+									font-size: 10px;
+									color: #64748b;
+									font-weight: 600;
+									margin-top: 24px;
+									margin-bottom: 8px;
+								">
+								RESULTS
+							</div>
+							<div class="mock-card">
+								<div class="mock-card-title" style="background: #10b981"></div>
+								<div
+									class="mock-card-text"
+									style="width: 90%; margin-top: 8px"></div>
+								<div
+									class="mock-card-text"
+									style="width: 70%; margin-top: 4px"></div>
+							</div>
+							<div class="mock-card" style="margin-top: 12px">
+								<div class="mock-card-title" style="background: #10b981"></div>
+								<div
+									class="mock-card-text"
+									style="width: 85%; margin-top: 8px"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<button
+				onclick="downloadImage('marquee-promo', 'marquee-promo-tile.png')"
+				style="margin-top: 10px; padding: 8px 16px; cursor: pointer">
+				Download PNG
+			</button>
+		</div>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+		<script>
+			function downloadImage(elementId, filename) {
+				const element = document.getElementById(elementId);
+				html2canvas(element, { useCORS: true, backgroundColor: null }).then(
+					(canvas) => {
+						const link = document.createElement("a");
+						link.download = filename;
+						link.href = canvas.toDataURL();
+						link.click();
+					},
+				);
+			}
+		</script>
+	</body>
+</html>
