@@ -1,7 +1,7 @@
 {
 	"extension_name": {
 		"description": "Chrome 拡張の名称。",
-		"message": "Ankiワードアシスタント"
+		"message": "AnkiBeam"
 	},
 	"extension_description": {
 		"description": "Chrome 拡張の説明文。",
@@ -1231,7 +1231,7 @@
 	},
 	"popup_app_title": {
 		"description": "ポップアップページのタイトル、<title>とヘッダータイトルに使用",
-		"message": "Anki単語アシスタント"
+		"message": "AnkiBeam"
 	},
 	"popup_confirm_reload": {
 		"description": "重大なエラー後のリフレッシュヒント",
@@ -1679,7 +1679,7 @@
 	},
 	"prompt_engine_requirements_body": {
 		"description": "動的プロンプト要件の説明",
-		"message": "\n\n要件:\n- 有効なJSON形式で出力\n- フィールドのみ使用可能: $FIELDS$\n- 部分的な出力も可能ですが、フィールド名は正確でなければなりません",
+		"message": "\n\n要件:\n- 有効なJSON形式で出力\n- フィールドのみ使用可能: $FIELDS$\n- 各フィールドの値はプレーンテキスト文字列でなければなりません。ネストされたオブジェクトや配列は使用しないでください\n- 部分的な出力も可能ですが、フィールド名は正確でなければなりません",
 		"placeholders": {
 			"FIELDS": {
 				"content": "$1",

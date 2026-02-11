@@ -1,7 +1,7 @@
 /**
  * @fileoverview 设置存储管理模块
  *
- * 该模块负责处理 Anki Word Assistant 的所有配置存储操作，包括：
+ * 该模块负责处理 AnkiBeam 的所有配置存储操作，包括：
  * - 配置的保存和加载
  * - API 密钥的加密和解密
  * - 配置版本的迁移和合并
@@ -13,10 +13,10 @@
  */
 
 import {
-	getAllProviders,
-	getDefaultProviderId,
-	getFallbackOrder,
-	getProviderById,
+  getAllProviders,
+  getDefaultProviderId,
+  getFallbackOrder,
+  getProviderById,
 } from "./providers.config.js";
 
 /** @const {string} 存储配置的键名 */
@@ -37,10 +37,10 @@ const IV_LENGTH = 12;
  * @const {Object.<string, string>}
  */
 const LEGACY_PROVIDER_ID_MAP = Object.freeze({
-	gemini: "google",
-	claude: "anthropic",
-	claude3: "anthropic",
-	gpt: "openai",
+  gemini: "google",
+  claude: "anthropic",
+  claude3: "anthropic",
+  gpt: "openai",
 });
 
 /**
@@ -55,14 +55,14 @@ const VALID_HEALTH_STATUSES = new Set(["unknown", "healthy", "error"]);
  * @returns {Object} 包含默认值的模型状态对象
  */
 function buildDefaultModelState(provider) {
-	return {
-		apiKey: "", // API 密钥（加密存储）
-		modelName: provider.defaultModel ?? "", // 模型名称
-		apiUrl: getDefaultApiUrl(provider), // API 端点 URL
-		healthStatus: "unknown", // 健康状态: unknown/healthy/error
-		lastHealthCheck: null, // 最后一次健康检查时间戳
-		lastErrorMessage: "", // 最后一次错误信息
-	};
+  return {
+    apiKey: "", // API 密钥（加密存储）
+    modelName: provider.defaultModel ?? "", // 模型名称
+    apiUrl: getDefaultApiUrl(provider), // API 端点 URL
+    healthStatus: "unknown", // 健康状态: unknown/healthy/error
+    lastHealthCheck: null, // 最后一次健康检查时间戳
+    lastErrorMessage: "", // 最后一次错误信息
+  };
 }
 
 /**
@@ -72,15 +72,15 @@ function buildDefaultModelState(provider) {
  * @returns {string} 默认的 API URL
  */
 function getDefaultApiUrl(provider) {
-	const base = provider.api.baseUrl;
-	switch (provider.id) {
-		case "google":
-			return `${base}/models`;
-		case "anthropic":
-			return `${base}/messages`;
-		default:
-			return base;
-	}
+  const base = provider.api.baseUrl;
+  switch (provider.id) {
+    case "google":
+      return `${base}/models`;
+    case "anthropic":
+      return `${base}/messages`;
+    default:
+      return base;
+  }
 }
 
 /**
@@ -89,48 +89,48 @@ function getDefaultApiUrl(provider) {
  * @returns {Object} 完整的默认配置对象
  */
 function buildDefaultConfig() {
-	const providers = getAllProviders();
-	const models = {};
-	// 为每个提供商初始化默认模型状态
-	for (const provider of providers) {
-		models[provider.id] = buildDefaultModelState(provider);
-	}
+  const providers = getAllProviders();
+  const models = {};
+  // 为每个提供商初始化默认模型状态
+  for (const provider of providers) {
+    models[provider.id] = buildDefaultModelState(provider);
+  }
 
-	return {
-		version: CONFIG_VERSION, // 配置版本号
-		aiConfig: {
-			provider: getDefaultProviderId(), // 当前使用的提供商 ID
-			models, // 各提供商的模型配置
-			fallbackOrder: Array.from(getFallbackOrder()), // 提供商回退顺序
-		},
-		promptTemplates: {
-			custom: "", // 自定义提示词模板
-			promptTemplatesByModel: {}, // 按模型分类的提示词模板
-		},
-		ankiConfig: {
-			defaultDeck: "", // 默认牌组
-			defaultModel: "", // 默认笔记模板
-			modelFields: [], // 笔记模板字段
-			defaultTags: [], // 默认标签
-		},
-		templateLibrary: {
-			version: 1, // テンプレートライブラリのバージョン
-			defaultTemplateId: null, // デフォルトテンプレートID
-			templates: {}, // テンプレート一覧（ID -> テンプレートオブジェクト）
-		},
-		ui: {
-			fieldDisplayMode: "auto", // 字段显示模式
-			enableFloatingAssistant: true, // 是否启用悬浮助手
-			activeTemplateId: null, // アクティブテンプレートID
-			templateSelectionSource: null, // テンプレート選択元("popup"|"floating"|"options")
-		},
-		styleConfig: {
-			fontSize: "14px", // 字体大小
-			textAlign: "left", // 文本对齐方式
-			lineHeight: "1.4", // 行高
-		},
-		language: "zh-CN", // 界面语言
-	};
+  return {
+    version: CONFIG_VERSION, // 配置版本号
+    aiConfig: {
+      provider: getDefaultProviderId(), // 当前使用的提供商 ID
+      models, // 各提供商的模型配置
+      fallbackOrder: Array.from(getFallbackOrder()), // 提供商回退顺序
+    },
+    promptTemplates: {
+      custom: "", // 自定义提示词模板
+      promptTemplatesByModel: {}, // 按模型分类的提示词模板
+    },
+    ankiConfig: {
+      defaultDeck: "", // 默认牌组
+      defaultModel: "", // 默认笔记模板
+      modelFields: [], // 笔记模板字段
+      defaultTags: [], // 默认标签
+    },
+    templateLibrary: {
+      version: 1, // テンプレートライブラリのバージョン
+      defaultTemplateId: null, // デフォルトテンプレートID
+      templates: {}, // テンプレート一覧（ID -> テンプレートオブジェクト）
+    },
+    ui: {
+      fieldDisplayMode: "auto", // 字段显示模式
+      enableFloatingAssistant: true, // 是否启用悬浮助手
+      activeTemplateId: null, // アクティブテンプレートID
+      templateSelectionSource: null, // テンプレート選択元("popup"|"floating"|"options")
+    },
+    styleConfig: {
+      fontSize: "14px", // 字体大小
+      textAlign: "left", // 文本对齐方式
+      lineHeight: "1.4", // 行高
+    },
+    language: "zh-CN", // 界面语言
+  };
 }
 
 /**
@@ -140,27 +140,27 @@ function buildDefaultConfig() {
  * @returns {string|null} 规范化后的提供商 ID，如果无效则返回 null
  */
 function normalizeProviderId(providerId) {
-	if (typeof providerId !== "string") {
-		return null;
-	}
-	const trimmed = providerId.trim().toLowerCase();
-	if (!trimmed) {
-		return null;
-	}
-	// 尝试直接匹配提供商
-	const provider = getProviderById(trimmed);
-	if (provider) {
-		return provider.id;
-	}
-	// 尝试使用旧版别名映射
-	const alias = LEGACY_PROVIDER_ID_MAP[trimmed];
-	if (alias) {
-		const aliasedProvider = getProviderById(alias);
-		if (aliasedProvider) {
-			return aliasedProvider.id;
-		}
-	}
-	return null;
+  if (typeof providerId !== "string") {
+    return null;
+  }
+  const trimmed = providerId.trim().toLowerCase();
+  if (!trimmed) {
+    return null;
+  }
+  // 尝试直接匹配提供商
+  const provider = getProviderById(trimmed);
+  if (provider) {
+    return provider.id;
+  }
+  // 尝试使用旧版别名映射
+  const alias = LEGACY_PROVIDER_ID_MAP[trimmed];
+  if (alias) {
+    const aliasedProvider = getProviderById(alias);
+    if (aliasedProvider) {
+      return aliasedProvider.id;
+    }
+  }
+  return null;
 }
 
 /**
@@ -171,11 +171,11 @@ function normalizeProviderId(providerId) {
  * @returns {string} 有效的提供商 ID
  */
 function determineActiveProvider(rawProvider, defaultProvider) {
-	const canonical = normalizeProviderId(rawProvider);
-	if (canonical) {
-		return canonical;
-	}
-	return defaultProvider ?? getDefaultProviderId();
+  const canonical = normalizeProviderId(rawProvider);
+  if (canonical) {
+    return canonical;
+  }
+  return defaultProvider ?? getDefaultProviderId();
 }
 
 /**
@@ -185,22 +185,22 @@ function determineActiveProvider(rawProvider, defaultProvider) {
  * @returns {Uint8Array} 加密盐值
  */
 function getEncryptionSalt(providerId) {
-	const canonical = normalizeProviderId(providerId) ?? getDefaultProviderId();
-	const provider = getProviderById(canonical);
-	if (provider?.encryptionSalt instanceof Uint8Array) {
-		return provider.encryptionSalt;
-	}
-	console.warn(
-		`[storage] 提供商 ${
-			providerId ?? "unknown"
-		} 的加密盐值未找到，使用默认提供商。`,
-	);
-	const fallback = getProviderById(getDefaultProviderId());
-	if (fallback?.encryptionSalt instanceof Uint8Array) {
-		return fallback.encryptionSalt;
-	}
-	// 如果都找不到，返回一个空的 16 字节数组
-	return new Uint8Array(16);
+  const canonical = normalizeProviderId(providerId) ?? getDefaultProviderId();
+  const provider = getProviderById(canonical);
+  if (provider?.encryptionSalt instanceof Uint8Array) {
+    return provider.encryptionSalt;
+  }
+  // console.warn(
+  // 	`[storage] 提供商 ${
+  // 		providerId ?? "unknown"
+  // 	} 的加密盐值未找到，使用默认提供商。`,
+  // );
+  const fallback = getProviderById(getDefaultProviderId());
+  if (fallback?.encryptionSalt instanceof Uint8Array) {
+    return fallback.encryptionSalt;
+  }
+  // 如果都找不到，返回一个空的 16 字节数组
+  return new Uint8Array(16);
 }
 
 /**
@@ -210,11 +210,11 @@ function getEncryptionSalt(providerId) {
  * @returns {string} 规范化后的状态值，默认为 "unknown"
  */
 function normalizeHealthStatus(status) {
-	if (typeof status !== "string") {
-		return "unknown";
-	}
-	const normalized = status.trim().toLowerCase();
-	return VALID_HEALTH_STATUSES.has(normalized) ? normalized : "unknown";
+  if (typeof status !== "string") {
+    return "unknown";
+  }
+  const normalized = status.trim().toLowerCase();
+  return VALID_HEALTH_STATUSES.has(normalized) ? normalized : "unknown";
 }
 
 /**
@@ -223,14 +223,14 @@ function normalizeHealthStatus(status) {
  * @returns {string|null} 清理后的 URL，如果无效则返回 null
  */
 function sanitizeApiUrl(rawUrl) {
-	if (typeof rawUrl !== "string") {
-		return null;
-	}
-	const trimmed = rawUrl.trim();
-	if (!trimmed) {
-		return null;
-	}
-	return trimmed;
+  if (typeof rawUrl !== "string") {
+    return null;
+  }
+  const trimmed = rawUrl.trim();
+  if (!trimmed) {
+    return null;
+  }
+  return trimmed;
 }
 
 /**
@@ -240,13 +240,13 @@ function sanitizeApiUrl(rawUrl) {
  * @returns {string|undefined} 错误消息，如果都不存在则返回 undefined
  */
 function pickLastErrorMessage(modelState) {
-	if (typeof modelState.lastErrorMessage === "string") {
-		return modelState.lastErrorMessage;
-	}
-	if (typeof modelState.healthMessage === "string") {
-		return modelState.healthMessage;
-	}
-	return undefined;
+  if (typeof modelState.lastErrorMessage === "string") {
+    return modelState.lastErrorMessage;
+  }
+  if (typeof modelState.healthMessage === "string") {
+    return modelState.healthMessage;
+  }
+  return undefined;
 }
 
 /**
@@ -258,48 +258,48 @@ function pickLastErrorMessage(modelState) {
  * @returns {Object} 合并后的模型状态
  */
 function mergeModelState(baseState, rawState, provider) {
-	if (!rawState || typeof rawState !== "object") {
-		return { ...baseState };
-	}
+  if (!rawState || typeof rawState !== "object") {
+    return { ...baseState };
+  }
 
-	const merged = { ...baseState };
+  const merged = { ...baseState };
 
-	// 合并 API 密钥
-	if (typeof rawState.apiKey === "string") {
-		merged.apiKey = rawState.apiKey;
-	}
+  // 合并 API 密钥
+  if (typeof rawState.apiKey === "string") {
+    merged.apiKey = rawState.apiKey;
+  }
 
-	// 合并模型名称（去除首尾空格）
-	if (typeof rawState.modelName === "string" && rawState.modelName.trim()) {
-		merged.modelName = rawState.modelName.trim();
-	}
+  // 合并模型名称（去除首尾空格）
+  if (typeof rawState.modelName === "string" && rawState.modelName.trim()) {
+    merged.modelName = rawState.modelName.trim();
+  }
 
-	// 合并 API URL（清理并验证）
-	const overrideUrl = sanitizeApiUrl(rawState.apiUrl);
-	if (overrideUrl) {
-		merged.apiUrl = overrideUrl;
-	}
+  // 合并 API URL（清理并验证）
+  const overrideUrl = sanitizeApiUrl(rawState.apiUrl);
+  if (overrideUrl) {
+    merged.apiUrl = overrideUrl;
+  }
 
-	// 规范化健康状态
-	merged.healthStatus = normalizeHealthStatus(rawState.healthStatus);
+  // 规范化健康状态
+  merged.healthStatus = normalizeHealthStatus(rawState.healthStatus);
 
-	// 合并最后健康检查时间
-	if (rawState.lastHealthCheck === null) {
-		merged.lastHealthCheck = null;
-	} else if (
-		typeof rawState.lastHealthCheck === "number" &&
-		Number.isFinite(rawState.lastHealthCheck)
-	) {
-		merged.lastHealthCheck = rawState.lastHealthCheck;
-	}
+  // 合并最后健康检查时间
+  if (rawState.lastHealthCheck === null) {
+    merged.lastHealthCheck = null;
+  } else if (
+    typeof rawState.lastHealthCheck === "number" &&
+    Number.isFinite(rawState.lastHealthCheck)
+  ) {
+    merged.lastHealthCheck = rawState.lastHealthCheck;
+  }
 
-	// 提取并合并错误消息
-	const errorMessage = pickLastErrorMessage(rawState);
-	if (errorMessage !== undefined) {
-		merged.lastErrorMessage = errorMessage;
-	}
+  // 提取并合并错误消息
+  const errorMessage = pickLastErrorMessage(rawState);
+  if (errorMessage !== undefined) {
+    merged.lastErrorMessage = errorMessage;
+  }
 
-	return merged;
+  return merged;
 }
 
 /**
@@ -309,40 +309,40 @@ function mergeModelState(baseState, rawState, provider) {
  * @returns {Array<string>} 规范化后的回退顺序数组
  */
 function normalizeFallbackOrder(order) {
-	const baseOrder = Array.from(getFallbackOrder());
-	const normalized = [];
-	const seen = new Set();
+  const baseOrder = Array.from(getFallbackOrder());
+  const normalized = [];
+  const seen = new Set();
 
-	// 处理用户提供的顺序
-	if (Array.isArray(order)) {
-		for (const rawId of order) {
-			const canonical = normalizeProviderId(rawId);
-			// 跳过无效的提供商 ID
-			if (!canonical) {
-				continue;
-			}
-			// 跳过不在基础顺序中的提供商
-			if (!baseOrder.includes(canonical)) {
-				continue;
-			}
-			// 跳过重复的提供商
-			if (seen.has(canonical)) {
-				continue;
-			}
-			seen.add(canonical);
-			normalized.push(canonical);
-		}
-	}
+  // 处理用户提供的顺序
+  if (Array.isArray(order)) {
+    for (const rawId of order) {
+      const canonical = normalizeProviderId(rawId);
+      // 跳过无效的提供商 ID
+      if (!canonical) {
+        continue;
+      }
+      // 跳过不在基础顺序中的提供商
+      if (!baseOrder.includes(canonical)) {
+        continue;
+      }
+      // 跳过重复的提供商
+      if (seen.has(canonical)) {
+        continue;
+      }
+      seen.add(canonical);
+      normalized.push(canonical);
+    }
+  }
 
-	// 添加用户未指定的提供商（按基础顺序）
-	for (const providerId of baseOrder) {
-		if (!seen.has(providerId)) {
-			seen.add(providerId);
-			normalized.push(providerId);
-		}
-	}
+  // 添加用户未指定的提供商（按基础顺序）
+  for (const providerId of baseOrder) {
+    if (!seen.has(providerId)) {
+      seen.add(providerId);
+      normalized.push(providerId);
+    }
+  }
 
-	return normalized;
+  return normalized;
 }
 
 /**
@@ -353,41 +353,41 @@ function normalizeFallbackOrder(order) {
  * @returns {Object} 合并后的 AI 配置
  */
 function mergeAiConfig(baseAiConfig, legacyAiConfig = {}) {
-	const merged = {
-		provider: determineActiveProvider(
-			legacyAiConfig.provider,
-			baseAiConfig.provider,
-		),
-		fallbackOrder: normalizeFallbackOrder(legacyAiConfig.fallbackOrder),
-		models: { ...baseAiConfig.models },
-	};
+  const merged = {
+    provider: determineActiveProvider(
+      legacyAiConfig.provider,
+      baseAiConfig.provider,
+    ),
+    fallbackOrder: normalizeFallbackOrder(legacyAiConfig.fallbackOrder),
+    models: { ...baseAiConfig.models },
+  };
 
-	// 合并旧配置中的模型状态
-	const legacyModels = legacyAiConfig.models;
-	if (legacyModels && typeof legacyModels === "object") {
-		for (const [rawId, rawState] of Object.entries(legacyModels)) {
-			const canonical = normalizeProviderId(rawId);
-			if (!canonical) {
-				continue;
-			}
-			const provider = getProviderById(canonical);
-			if (!provider) {
-				continue;
-			}
-			const baseState =
-				merged.models[canonical] ?? buildDefaultModelState(provider);
-			merged.models[canonical] = mergeModelState(baseState, rawState, provider);
-		}
-	}
+  // 合并旧配置中的模型状态
+  const legacyModels = legacyAiConfig.models;
+  if (legacyModels && typeof legacyModels === "object") {
+    for (const [rawId, rawState] of Object.entries(legacyModels)) {
+      const canonical = normalizeProviderId(rawId);
+      if (!canonical) {
+        continue;
+      }
+      const provider = getProviderById(canonical);
+      if (!provider) {
+        continue;
+      }
+      const baseState =
+        merged.models[canonical] ?? buildDefaultModelState(provider);
+      merged.models[canonical] = mergeModelState(baseState, rawState, provider);
+    }
+  }
 
-	// 确保所有提供商都有模型状态
-	for (const provider of getAllProviders()) {
-		if (!merged.models[provider.id]) {
-			merged.models[provider.id] = buildDefaultModelState(provider);
-		}
-	}
+  // 确保所有提供商都有模型状态
+  for (const provider of getAllProviders()) {
+    if (!merged.models[provider.id]) {
+      merged.models[provider.id] = buildDefaultModelState(provider);
+    }
+  }
 
-	return merged;
+  return merged;
 }
 
 /**
@@ -397,29 +397,29 @@ function mergeAiConfig(baseAiConfig, legacyAiConfig = {}) {
  * @returns {Object} 合并后的模板配置
  */
 function mergePromptTemplates(baseTemplates, legacyTemplates) {
-	const merged = {
-		...baseTemplates,
-		...legacyTemplates,
-		promptTemplatesByModel: {
-			...(baseTemplates.promptTemplatesByModel || {}),
-			...(legacyTemplates?.promptTemplatesByModel || {}),
-		},
-	};
+  const merged = {
+    ...baseTemplates,
+    ...legacyTemplates,
+    promptTemplatesByModel: {
+      ...(baseTemplates.promptTemplatesByModel || {}),
+      ...(legacyTemplates?.promptTemplatesByModel || {}),
+    },
+  };
 
-	// 确保 custom 字段是字符串
-	if (typeof merged.custom !== "string") {
-		merged.custom = baseTemplates.custom;
-	}
+  // 确保 custom 字段是字符串
+  if (typeof merged.custom !== "string") {
+    merged.custom = baseTemplates.custom;
+  }
 
-	// 确保 promptTemplatesByModel 是有效对象
-	if (
-		!merged.promptTemplatesByModel ||
-		typeof merged.promptTemplatesByModel !== "object"
-	) {
-		merged.promptTemplatesByModel = {};
-	}
+  // 确保 promptTemplatesByModel 是有效对象
+  if (
+    !merged.promptTemplatesByModel ||
+    typeof merged.promptTemplatesByModel !== "object"
+  ) {
+    merged.promptTemplatesByModel = {};
+  }
 
-	return merged;
+  return merged;
 }
 
 /**
@@ -429,34 +429,34 @@ function mergePromptTemplates(baseTemplates, legacyTemplates) {
  * @returns {Object} 合并后的 Anki 配置
  */
 function mergeAnkiConfig(baseConfig, legacyConfig) {
-	const merged = {
-		...baseConfig,
-		...(legacyConfig && typeof legacyConfig === "object" ? legacyConfig : {}),
-	};
+  const merged = {
+    ...baseConfig,
+    ...(legacyConfig && typeof legacyConfig === "object" ? legacyConfig : {}),
+  };
 
-	// 确保 modelFields 是数组
-	if (!Array.isArray(merged.modelFields)) {
-		merged.modelFields = Array.isArray(baseConfig.modelFields)
-			? [...baseConfig.modelFields]
-			: [];
-	}
+  // 确保 modelFields 是数组
+  if (!Array.isArray(merged.modelFields)) {
+    merged.modelFields = Array.isArray(baseConfig.modelFields)
+      ? [...baseConfig.modelFields]
+      : [];
+  }
 
-	// 确保 defaultTags 是数组
-	if (!Array.isArray(merged.defaultTags)) {
-		merged.defaultTags = Array.isArray(baseConfig.defaultTags)
-			? [...baseConfig.defaultTags]
-			: [];
-	}
+  // 确保 defaultTags 是数组
+  if (!Array.isArray(merged.defaultTags)) {
+    merged.defaultTags = Array.isArray(baseConfig.defaultTags)
+      ? [...baseConfig.defaultTags]
+      : [];
+  }
 
-	// 确保 promptTemplatesByModel 是有效对象
-	if (
-		!merged.promptTemplatesByModel ||
-		typeof merged.promptTemplatesByModel !== "object"
-	) {
-		merged.promptTemplatesByModel = {};
-	}
+  // 确保 promptTemplatesByModel 是有效对象
+  if (
+    !merged.promptTemplatesByModel ||
+    typeof merged.promptTemplatesByModel !== "object"
+  ) {
+    merged.promptTemplatesByModel = {};
+  }
 
-	return merged;
+  return merged;
 }
 
 /**
@@ -466,13 +466,13 @@ function mergeAnkiConfig(baseConfig, legacyConfig) {
  * @returns {Object} 合并后的样式配置
  */
 function mergeStyleConfig(baseStyle, legacyStyle) {
-	if (!legacyStyle || typeof legacyStyle !== "object") {
-		return { ...baseStyle };
-	}
-	return {
-		...baseStyle,
-		...legacyStyle,
-	};
+  if (!legacyStyle || typeof legacyStyle !== "object") {
+    return { ...baseStyle };
+  }
+  return {
+    ...baseStyle,
+    ...legacyStyle,
+  };
 }
 
 /**
@@ -482,36 +482,36 @@ function mergeStyleConfig(baseStyle, legacyStyle) {
  * @returns {Object} 合并后的 UI 配置
  */
 function mergeUiConfig(baseUi, legacyUi) {
-	if (!legacyUi || typeof legacyUi !== "object") {
-		return { ...baseUi };
-	}
-	const merged = {
-		...baseUi,
-		...legacyUi,
-	};
-	// 验证 fieldDisplayMode 字段
-	if (typeof merged.fieldDisplayMode !== "string") {
-		merged.fieldDisplayMode = baseUi.fieldDisplayMode;
-	}
-	// 验证 enableFloatingAssistant 字段
-	if (typeof merged.enableFloatingAssistant !== "boolean") {
-		merged.enableFloatingAssistant = baseUi.enableFloatingAssistant;
-	}
-	// 验证 activeTemplateId 字段
-	if (
-		merged.activeTemplateId !== null &&
-		typeof merged.activeTemplateId !== "string"
-	) {
-		merged.activeTemplateId = baseUi.activeTemplateId;
-	}
-	// 验证 templateSelectionSource 字段
-	if (
-		merged.templateSelectionSource !== null &&
-		typeof merged.templateSelectionSource !== "string"
-	) {
-		merged.templateSelectionSource = baseUi.templateSelectionSource;
-	}
-	return merged;
+  if (!legacyUi || typeof legacyUi !== "object") {
+    return { ...baseUi };
+  }
+  const merged = {
+    ...baseUi,
+    ...legacyUi,
+  };
+  // 验证 fieldDisplayMode 字段
+  if (typeof merged.fieldDisplayMode !== "string") {
+    merged.fieldDisplayMode = baseUi.fieldDisplayMode;
+  }
+  // 验证 enableFloatingAssistant 字段
+  if (typeof merged.enableFloatingAssistant !== "boolean") {
+    merged.enableFloatingAssistant = baseUi.enableFloatingAssistant;
+  }
+  // 验证 activeTemplateId 字段
+  if (
+    merged.activeTemplateId !== null &&
+    typeof merged.activeTemplateId !== "string"
+  ) {
+    merged.activeTemplateId = baseUi.activeTemplateId;
+  }
+  // 验证 templateSelectionSource 字段
+  if (
+    merged.templateSelectionSource !== null &&
+    typeof merged.templateSelectionSource !== "string"
+  ) {
+    merged.templateSelectionSource = baseUi.templateSelectionSource;
+  }
+  return merged;
 }
 
 /**
@@ -521,30 +521,30 @@ function mergeUiConfig(baseUi, legacyUi) {
  * @returns {Object} 合并后的テンプレートライブラリ配置
  */
 function mergeTemplateLibrary(baseLibrary, legacyLibrary) {
-	if (!legacyLibrary || typeof legacyLibrary !== "object") {
-		return { ...baseLibrary };
-	}
+  if (!legacyLibrary || typeof legacyLibrary !== "object") {
+    return { ...baseLibrary };
+  }
 
-	const merged = {
-		version:
-			typeof legacyLibrary.version === "number"
-				? legacyLibrary.version
-				: baseLibrary.version,
-		defaultTemplateId:
-			typeof legacyLibrary.defaultTemplateId === "string"
-				? legacyLibrary.defaultTemplateId
-				: legacyLibrary.defaultTemplateId === null
-				? null
-				: baseLibrary.defaultTemplateId,
-		templates: {},
-	};
+  const merged = {
+    version:
+      typeof legacyLibrary.version === "number"
+        ? legacyLibrary.version
+        : baseLibrary.version,
+    defaultTemplateId:
+      typeof legacyLibrary.defaultTemplateId === "string"
+        ? legacyLibrary.defaultTemplateId
+        : legacyLibrary.defaultTemplateId === null
+          ? null
+          : baseLibrary.defaultTemplateId,
+    templates: {},
+  };
 
-	// テンプレート一覧をマージ
-	if (legacyLibrary.templates && typeof legacyLibrary.templates === "object") {
-		merged.templates = { ...legacyLibrary.templates };
-	}
+  // テンプレート一覧をマージ
+  if (legacyLibrary.templates && typeof legacyLibrary.templates === "object") {
+    merged.templates = { ...legacyLibrary.templates };
+  }
 
-	return merged;
+  return merged;
 }
 
 /**
@@ -554,39 +554,39 @@ function mergeTemplateLibrary(baseLibrary, legacyLibrary) {
  * @returns {Object} 合并后的完整配置对象
  */
 function mergeConfigWithDefaults(legacyConfig = {}) {
-	const baseConfig = buildDefaultConfig();
-	const merged = {
-		...baseConfig,
-		aiConfig: mergeAiConfig(baseConfig.aiConfig, legacyConfig.aiConfig),
-		promptTemplates: mergePromptTemplates(
-			baseConfig.promptTemplates,
-			legacyConfig.promptTemplates,
-		),
-		ankiConfig: mergeAnkiConfig(baseConfig.ankiConfig, legacyConfig.ankiConfig),
-		templateLibrary: mergeTemplateLibrary(
-			baseConfig.templateLibrary,
-			legacyConfig.templateLibrary,
-		),
-		styleConfig: mergeStyleConfig(
-			baseConfig.styleConfig,
-			legacyConfig.styleConfig,
-		),
-		ui: mergeUiConfig(baseConfig.ui, legacyConfig.ui),
-		language:
-			typeof legacyConfig.language === "string"
-				? legacyConfig.language
-				: baseConfig.language,
-	};
+  const baseConfig = buildDefaultConfig();
+  const merged = {
+    ...baseConfig,
+    aiConfig: mergeAiConfig(baseConfig.aiConfig, legacyConfig.aiConfig),
+    promptTemplates: mergePromptTemplates(
+      baseConfig.promptTemplates,
+      legacyConfig.promptTemplates,
+    ),
+    ankiConfig: mergeAnkiConfig(baseConfig.ankiConfig, legacyConfig.ankiConfig),
+    templateLibrary: mergeTemplateLibrary(
+      baseConfig.templateLibrary,
+      legacyConfig.templateLibrary,
+    ),
+    styleConfig: mergeStyleConfig(
+      baseConfig.styleConfig,
+      legacyConfig.styleConfig,
+    ),
+    ui: mergeUiConfig(baseConfig.ui, legacyConfig.ui),
+    language:
+      typeof legacyConfig.language === "string"
+        ? legacyConfig.language
+        : baseConfig.language,
+  };
 
-	// 保留旧配置中未被处理的自定义字段
-	for (const [key, value] of Object.entries(legacyConfig)) {
-		if (key in merged) {
-			continue;
-		}
-		merged[key] = value;
-	}
+  // 保留旧配置中未被处理的自定义字段
+  for (const [key, value] of Object.entries(legacyConfig)) {
+    if (key in merged) {
+      continue;
+    }
+    merged[key] = value;
+  }
 
-	return merged;
+  return merged;
 }
 
 /**
@@ -596,32 +596,32 @@ function mergeConfigWithDefaults(legacyConfig = {}) {
  * @returns {Promise<CryptoKey>} 派生的加密密钥
  */
 async function getDerivedKey(providerId = getDefaultProviderId()) {
-	const encoder = new TextEncoder();
-	// 导入密钥材料
-	const keyMaterial = await crypto.subtle.importKey(
-		"raw",
-		encoder.encode(ENCRYPTION_KEY_MATERIAL),
-		{ name: "PBKDF2" },
-		false,
-		["deriveKey"],
-	);
+  const encoder = new TextEncoder();
+  // 导入密钥材料
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(ENCRYPTION_KEY_MATERIAL),
+    { name: "PBKDF2" },
+    false,
+    ["deriveKey"],
+  );
 
-	// 获取提供商特定的盐值
-	const salt = getEncryptionSalt(providerId);
+  // 获取提供商特定的盐值
+  const salt = getEncryptionSalt(providerId);
 
-	// 使用 PBKDF2 派生加密密钥
-	return crypto.subtle.deriveKey(
-		{
-			name: "PBKDF2",
-			salt,
-			iterations: 100000, // 迭代次数
-			hash: "SHA-256", // 哈希算法
-		},
-		keyMaterial,
-		{ name: "AES-GCM", length: 256 }, // 生成 256 位 AES-GCM 密钥
-		true,
-		["encrypt", "decrypt"],
-	);
+  // 使用 PBKDF2 派生加密密钥
+  return crypto.subtle.deriveKey(
+    {
+      name: "PBKDF2",
+      salt,
+      iterations: 100000, // 迭代次数
+      hash: "SHA-256", // 哈希算法
+    },
+    keyMaterial,
+    { name: "AES-GCM", length: 256 }, // 生成 256 位 AES-GCM 密钥
+    true,
+    ["encrypt", "decrypt"],
+  );
 }
 
 /**
@@ -632,31 +632,31 @@ async function getDerivedKey(providerId = getDefaultProviderId()) {
  * @returns {Promise<string|null>} Base64 编码的加密结果，如果密钥为空则返回 null
  */
 export async function encryptApiKey(key, providerId = getDefaultProviderId()) {
-	if (!key) {
-		return null;
-	}
+  if (!key) {
+    return null;
+  }
 
-	// 获取派生密钥
-	const derivedKey = await getDerivedKey(providerId);
-	// 生成随机初始化向量
-	const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
-	const encoder = new TextEncoder();
-	const encodedKey = encoder.encode(key);
+  // 获取派生密钥
+  const derivedKey = await getDerivedKey(providerId);
+  // 生成随机初始化向量
+  const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
+  const encoder = new TextEncoder();
+  const encodedKey = encoder.encode(key);
 
-	// 使用 AES-GCM 加密
-	const ciphertext = await crypto.subtle.encrypt(
-		{ name: "AES-GCM", iv },
-		derivedKey,
-		encodedKey,
-	);
+  // 使用 AES-GCM 加密
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv },
+    derivedKey,
+    encodedKey,
+  );
 
-	// 将 IV 和密文组合
-	const combined = new Uint8Array(iv.length + ciphertext.byteLength);
-	combined.set(iv, 0);
-	combined.set(new Uint8Array(ciphertext), iv.length);
+  // 将 IV 和密文组合
+  const combined = new Uint8Array(iv.length + ciphertext.byteLength);
+  combined.set(iv, 0);
+  combined.set(new Uint8Array(ciphertext), iv.length);
 
-	// Base64 编码
-	return btoa(String.fromCharCode.apply(null, combined));
+  // Base64 编码
+  return btoa(String.fromCharCode.apply(null, combined));
 }
 
 /**
@@ -667,39 +667,39 @@ export async function encryptApiKey(key, providerId = getDefaultProviderId()) {
  * @returns {Promise<string|null>} 解密后的 API 密钥，解密失败则返回 null
  */
 export async function decryptApiKey(
-	encryptedBase64,
-	providerId = getDefaultProviderId(),
+  encryptedBase64,
+  providerId = getDefaultProviderId(),
 ) {
-	if (!encryptedBase64) {
-		return null;
-	}
+  if (!encryptedBase64) {
+    return null;
+  }
 
-	try {
-		// 获取派生密钥
-		const derivedKey = await getDerivedKey(providerId);
+  try {
+    // 获取派生密钥
+    const derivedKey = await getDerivedKey(providerId);
 
-		// Base64 解码并分离 IV 和密文
-		const combined = new Uint8Array(
-			atob(encryptedBase64)
-				.split("")
-				.map((c) => c.charCodeAt(0)),
-		);
-		const iv = combined.slice(0, IV_LENGTH);
-		const ciphertext = combined.slice(IV_LENGTH);
+    // Base64 解码并分离 IV 和密文
+    const combined = new Uint8Array(
+      atob(encryptedBase64)
+        .split("")
+        .map((c) => c.charCodeAt(0)),
+    );
+    const iv = combined.slice(0, IV_LENGTH);
+    const ciphertext = combined.slice(IV_LENGTH);
 
-		// 使用 AES-GCM 解密
-		const decrypted = await crypto.subtle.decrypt(
-			{ name: "AES-GCM", iv },
-			derivedKey,
-			ciphertext,
-		);
+    // 使用 AES-GCM 解密
+    const decrypted = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv },
+      derivedKey,
+      ciphertext,
+    );
 
-		const decoder = new TextDecoder();
-		return decoder.decode(decrypted);
-	} catch (error) {
-		console.error(`[storage] 提供商 ${providerId} 的 API 密钥解密失败:`, error);
-		return null;
-	}
+    const decoder = new TextDecoder();
+    return decoder.decode(decrypted);
+  } catch (error) {
+    console.error(`[storage] 提供商 ${providerId} 的 API 密钥解密失败:`, error);
+    return null;
+  }
 }
 
 /**
@@ -709,101 +709,62 @@ export async function decryptApiKey(
  * @returns {Object} 迁移后的配置对象
  */
 function migrateConfig(legacyConfig) {
-	if (!legacyConfig) {
-		return buildDefaultConfig();
-	}
+  if (!legacyConfig) {
+    return buildDefaultConfig();
+  }
 
-	const needsMigration = legacyConfig.version !== CONFIG_VERSION;
-	if (needsMigration) {
-		console.info("[storage] 检测到旧版配置，正在更新架构。");
-	}
+  const needsMigration = legacyConfig.version !== CONFIG_VERSION;
+  if (needsMigration) {
+    // console.info("[storage] 检测到旧版配置，正在更新架构。");
+  }
 
-	// 将旧配置与默认配置合并
-	const merged = mergeConfigWithDefaults(legacyConfig);
-	merged.version = CONFIG_VERSION;
+  // 将旧配置与默认配置合并
+  const merged = mergeConfigWithDefaults(legacyConfig);
+  merged.version = CONFIG_VERSION;
 
-	if (needsMigration) {
-		console.info("[storage] 配置迁移完成。");
-	}
+  if (needsMigration) {
+    // console.info("[storage] 配置迁移完成。");
+  }
 
-	return merged;
+  return merged;
 }
 
 /**
- * 从 Chrome 存储中读取数据
- * 兼容 Promise 和回调两种 API 形式
- * @param {string} key - 存储键名
- * @returns {Promise<Object>} 存储的数据对象
+ * Read data from Chrome storage
+ * Simplified to use only Promise API (Chrome 88+ required for Manifest V3)
+ * @param {string} key - Storage key name
+ * @returns {Promise<Object>} Stored data object
  */
 async function readFromStorage(key) {
-	if (!chrome?.storage?.local?.get) {
-		return {};
-	}
+  if (!chrome?.storage?.local?.get) {
+    return {};
+  }
 
-	const getter = chrome.storage.local.get.bind(chrome.storage.local);
-
-	// 检查是否支持 Promise API（Chrome 新版本）
-	if (chrome.storage.local.get.length <= 1) {
-		const result = getter(key);
-		if (result && typeof result.then === "function") {
-			return result;
-		}
-	}
-
-	// 使用回调 API（Chrome 旧版本）
-	return new Promise((resolve, reject) => {
-		try {
-			getter(key, (value) => {
-				const lastError = chrome.runtime?.lastError;
-				if (lastError) {
-					reject(new Error(lastError.message));
-					return;
-				}
-				resolve(value);
-			});
-		} catch (error) {
-			reject(error);
-		}
-	});
+  try {
+    return await chrome.storage.local.get(key);
+  } catch (error) {
+    console.error("[storage] Failed to read from storage:", error);
+    return {};
+  }
 }
 
 /**
- * 向 Chrome 存储中写入数据
- * 兼容 Promise 和回调两种 API 形式
- * @param {Object} items - 要存储的数据对象
+ * Write data to Chrome storage
+ * Simplified to use only Promise API (Chrome 88+ required for Manifest V3)
+ * @param {Object} items - Data object to store
  * @returns {Promise<void>}
  */
 async function writeToStorage(items) {
-	if (!chrome?.storage?.local?.set) {
-		return;
-	}
+  if (!chrome?.storage?.local?.set) {
+    return;
+  }
 
-	const setter = chrome.storage.local.set.bind(chrome.storage.local);
-
-	// 检查是否支持 Promise API（Chrome 新版本）
-	if (chrome.storage.local.set.length <= 1) {
-		const result = setter(items);
-		if (result && typeof result.then === "function") {
-			await result;
-			return;
-		}
-	}
-
-	// 使用回调 API（Chrome 旧版本）
-	await new Promise((resolve, reject) => {
-		try {
-			setter(items, () => {
-				const lastError = chrome.runtime?.lastError;
-				if (lastError) {
-					reject(new Error(lastError.message));
-					return;
-				}
-				resolve();
-			});
-		} catch (error) {
-			reject(error);
-		}
-	});
+  try {
+    await chrome.storage.local.set(items);
+  } catch (error) {
+    console.error("[storage] Failed to write to storage:", error);
+    throw error;
+  }
 }
 
 /**
@@ -818,30 +779,30 @@ async function writeToStorage(items) {
  * @returns {Promise<void>}
  */
 export async function saveConfig(config) {
-	// 深拷贝配置对象
-	const clone = JSON.parse(JSON.stringify(config));
-	// 迁移到最新版本
-	const canonical = migrateConfig(clone);
+  // 深拷贝配置对象
+  const clone = JSON.parse(JSON.stringify(config));
+  // 迁移到最新版本
+  const canonical = migrateConfig(clone);
 
-	canonical.version = CONFIG_VERSION;
+  canonical.version = CONFIG_VERSION;
 
-	// 加密所有提供商的 API 密钥
-	if (canonical.aiConfig?.models) {
-		for (const [providerId, modelState] of Object.entries(
-			canonical.aiConfig.models,
-		)) {
-			const apiKey = modelState?.apiKey;
-			if (apiKey) {
-				canonical.aiConfig.models[providerId].apiKey = await encryptApiKey(
-					apiKey,
-					providerId,
-				);
-			}
-		}
-	}
+  // 加密所有提供商的 API 密钥
+  if (canonical.aiConfig?.models) {
+    for (const [providerId, modelState] of Object.entries(
+      canonical.aiConfig.models,
+    )) {
+      const apiKey = modelState?.apiKey;
+      if (apiKey) {
+        canonical.aiConfig.models[providerId].apiKey = await encryptApiKey(
+          apiKey,
+          providerId,
+        );
+      }
+    }
+  }
 
-	// 写入存储
-	await writeToStorage({ [CONFIG_KEY]: canonical });
+  // 写入存储
+  await writeToStorage({ [CONFIG_KEY]: canonical });
 }
 
 /**
@@ -855,46 +816,46 @@ export async function saveConfig(config) {
  * @returns {Promise<Object>} 加载并处理后的配置对象
  */
 export async function loadConfig() {
-	try {
-		const result = await readFromStorage(CONFIG_KEY);
-		let config = result[CONFIG_KEY];
+  try {
+    const result = await readFromStorage(CONFIG_KEY);
+    let config = result[CONFIG_KEY];
 
-		if (!config) {
-			console.info("[storage] 未找到已保存的配置，返回默认值。");
-			return buildDefaultConfig();
-		}
+    if (!config) {
+      // console.info("[storage] 未找到已保存的配置，返回默认值。");
+      return buildDefaultConfig();
+    }
 
-		// 迁移到最新版本
-		const migrated = migrateConfig(config);
+    // 迁移到最新版本
+    const migrated = migrateConfig(config);
 
-		// 解密所有提供商的 API 密钥
-		if (migrated.aiConfig?.models) {
-			for (const [providerId, modelState] of Object.entries(
-				migrated.aiConfig.models,
-			)) {
-				const encryptedKey = modelState?.apiKey;
-				if (!encryptedKey) {
-					continue;
-				}
+    // 解密所有提供商的 API 密钥
+    if (migrated.aiConfig?.models) {
+      for (const [providerId, modelState] of Object.entries(
+        migrated.aiConfig.models,
+      )) {
+        const encryptedKey = modelState?.apiKey;
+        if (!encryptedKey) {
+          continue;
+        }
 
-				try {
-					const decrypted = await decryptApiKey(encryptedKey, providerId);
-					migrated.aiConfig.models[providerId].apiKey = decrypted ?? "";
-				} catch (error) {
-					console.warn(
-						`[storage] 提供商 ${providerId} 的 API 密钥解密失败，已初始化为空字符串。`,
-						error,
-					);
-					migrated.aiConfig.models[providerId].apiKey = "";
-				}
-			}
-		}
+        try {
+          const decrypted = await decryptApiKey(encryptedKey, providerId);
+          migrated.aiConfig.models[providerId].apiKey = decrypted ?? "";
+        } catch (error) {
+          // console.warn(
+          // 	`[storage] 提供商 ${providerId} 的 API 密钥解密失败，已初始化为空字符串。`,
+          // 	error,
+          // );
+          migrated.aiConfig.models[providerId].apiKey = "";
+        }
+      }
+    }
 
-		return migrated;
-	} catch (error) {
-		console.error("[storage] 配置加载时发生错误:", error);
-		return buildDefaultConfig();
-	}
+    return migrated;
+  } catch (error) {
+    console.error("[storage] 配置加载时发生错误:", error);
+    return buildDefaultConfig();
+  }
 }
 
 /**
@@ -903,5 +864,5 @@ export async function loadConfig() {
  * @returns {Object} 默认配置对象
  */
 export function getDefaultConfig() {
-	return buildDefaultConfig();
+  return buildDefaultConfig();
 }

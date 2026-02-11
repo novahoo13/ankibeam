@@ -1,10 +1,12 @@
-// background.js - 后台服务工作线程
-// 该文件作为 Chrome 扩展的后台服务工作线程运行。
-// 主要职责是处理来自内容脚本 (content script) 的消息，特别是与 AnkiConnect 的交互，以绕过浏览器的 CORS 限制。
+// background.js - Background Service Worker
+// This file runs as the Chrome extension's background service worker.
+// Primary responsibility: Handle messages from content scripts, especially AnkiConnect
+// interactions, to bypass browser CORS restrictions.
 
-// 定义 AnkiConnect 服务器的默认 URL 和 API 版本。
-const ANKI_CONNECT_URL = 'http://127.0.0.1:8765';
-const ANKI_CONNECT_VERSION = 6;
+import {
+  ANKI_CONNECT_DEFAULT_URL,
+  ANKI_CONNECT_VERSION,
+} from "../utils/constants.js";
 
 /**
  * 向本地运行的 AnkiConnect 服务器发送请求。
@@ -14,11 +16,11 @@ const ANKI_CONNECT_VERSION = 6;
  * @returns {Promise<any>} - 返回一个 Promise，解析为 AnkiConnect 的响应数据，如果发生错误则拒绝。
  */
 async function invokeAnkiConnect(action, params = {}) {
-  // 发送 POST 请求到 AnkiConnect URL
-  const response = await fetch(ANKI_CONNECT_URL, {
-    method: 'POST',
+  // Send POST request to AnkiConnect URL
+  const response = await fetch(ANKI_CONNECT_DEFAULT_URL, {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     // 请求体包含动作、API 版本和参数
     body: JSON.stringify({ action, version: ANKI_CONNECT_VERSION, params }),
@@ -47,7 +49,7 @@ async function invokeAnkiConnect(action, params = {}) {
  */
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // 只处理类型为 'ankiConnect' 的消息，忽略其他消息
-  if (message.type !== 'ankiConnect') {
+  if (message.type !== "ankiConnect") {
     return false; // 返回 false 表示此监听器不处理此消息
   }
 
@@ -72,4 +74,4 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 // 后台服务工作线程初始化完成时在控制台输出一条消息，用于调试。
-console.log('[background] Background service worker initialized');
+// console.log("[background] Background service worker initialized");

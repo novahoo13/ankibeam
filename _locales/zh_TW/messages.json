@@ -1,7 +1,7 @@
 {
 	"extension_name": {
 		"description": "擴充功能顯示的名稱。",
-		"message": "Anki 單字助手"
+		"message": "AnkiBeam"
 	},
 	"extension_description": {
 		"description": "擴充功能在商店與清單上的簡介。",
@@ -1231,7 +1231,7 @@
 	},
 	"popup_app_title": {
 		"description": "Popup 頁面標題，用於 <title> 與頭部標題",
-		"message": "Anki 單字助手"
+		"message": "AnkiBeam"
 	},
 	"popup_confirm_reload": {
 		"description": "嚴重錯誤後的刷新提示",
@@ -1679,7 +1679,7 @@
 	},
 	"prompt_engine_requirements_body": {
 		"description": "動態 Prompt 要求說明",
-		"message": "\n\n要求:\n- 輸出有效JSON格式\n- 只能使用欄位: $FIELDS$\n- 可部分輸出，但欄位名必須準確",
+		"message": "\n\n要求:\n- 輸出有效JSON格式\n- 只能使用欄位: $FIELDS$\n- 每個欄位的值必須是純文字字串，不要使用巢狀的物件或陣列\n- 可部分輸出，但欄位名必須準確",
 		"placeholders": {
 			"FIELDS": {
 				"content": "$1",

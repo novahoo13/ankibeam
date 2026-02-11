@@ -103,16 +103,16 @@ async function loadMessagesForLocale(locale) {
     const url = chrome.runtime.getURL(`_locales/${folderName}/messages.json`);
     const response = await fetch(url);
     if (!response.ok) {
-      console.warn(`为语言区域 ${locale} (文件夹: ${folderName}) 加载消息失败`);
+      // console.warn(`为语言区域 ${locale} (文件夹: ${folderName}) 加载消息失败`);
       return null;
     }
     const messages = await response.json();
     return messages;
   } catch (error) {
-    console.warn(
-      `为语言区域 ${locale} (文件夹: ${folderName}) 加载消息时出错:`,
-      error
-    );
+    // console.warn(
+    //   `为语言区域 ${locale} (文件夹: ${folderName}) 加载消息时出错:`,
+    //   error
+    // );
     return null;
   }
 }
@@ -188,7 +188,7 @@ function applyCustomSubstitutions(entry, substitutions) {
         if (
           Object.prototype.hasOwnProperty.call(
             namedPlaceholderMap,
-            placeholderName
+            placeholderName,
           )
         ) {
           const index = namedPlaceholderMap[placeholderName];
@@ -198,7 +198,7 @@ function applyCustomSubstitutions(entry, substitutions) {
           return "";
         }
         return fullMatch;
-      }
+      },
     );
 
     // 替换数字占位符 (例如 $1, $2)
@@ -215,7 +215,7 @@ function applyCustomSubstitutions(entry, substitutions) {
       const placeholder = `$${index + 1}`;
       message = message.replace(
         new RegExp(`\\${placeholder}`, "g"),
-        substitution
+        substitution,
       );
     });
   }
@@ -272,7 +272,7 @@ async function loadUserLanguageSetting() {
       return config.language.trim();
     }
   } catch (error) {
-    console.warn("加载用户语言设置失败:", error);
+    // console.warn("加载用户语言设置失败:", error);
   }
   return null;
 }
@@ -340,7 +340,7 @@ function isSupportedLocale(locale) {
   try {
     return Intl.DateTimeFormat.supportedLocalesOf([locale]).length > 0;
   } catch (error) {
-    console.warn("Intl.DateTimeFormat.supportedLocalesOf 调用失败:", error);
+    // console.warn("Intl.DateTimeFormat.supportedLocalesOf 调用失败:", error);
     return false;
   }
 }
@@ -371,13 +371,13 @@ export async function setPageLanguage() {
         if (messages) {
           customMessages = messages;
           customMessagesLocale = normalized;
-          console.log(`已为语言区域加载自定义消息: ${normalized}`);
+          // console.log(`已为语言区域加载自定义消息: ${normalized}`);
         } else {
           customMessages = null;
           customMessagesLocale = null;
-          console.warn(
-            `未找到语言区域 ${normalized} 的 messages.json 文件，将回退到 chrome.i18n`
-          );
+          // console.warn(
+          //   `未找到语言区域 ${normalized} 的 messages.json 文件，将回退到 chrome.i18n`
+          // );
         }
         return;
       }
@@ -391,7 +391,7 @@ export async function setPageLanguage() {
       }
     }
   } catch (error) {
-    console.warn("设置页面语言失败:", error);
+    // console.warn("设置页面语言失败:", error);
   }
 }
 
@@ -481,7 +481,7 @@ export function getLocale() {
         candidates.push(uiLang);
       }
     } catch (error) {
-      console.warn("chrome.i18n.getUILanguage 调用失败:", error);
+      // console.warn("chrome.i18n.getUILanguage 调用失败:", error);
     }
   }
 
@@ -605,7 +605,7 @@ if (typeof document !== "undefined") {
       await setPageLanguage();
       localizePage();
     } catch (error) {
-      console.warn("i18n 初始化失败:", error);
+      // console.warn("i18n 初始化失败:", error);
     } finally {
       // 无论成功与否，都表示 i18n 流程已结束
       resolveI18nInitialization();

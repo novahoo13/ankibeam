@@ -14,13 +14,13 @@
 import { loadConfig, saveConfig } from "./storage.js";
 import { buildIntegratedPrompt, validateAIOutput } from "./prompt-engine.js";
 import {
-	DEFAULT_HEALTH_CHECK,
-	DEFAULT_RETRY_POLICY,
-	buildRequestConfig,
-	getAllProviders,
-	getDefaultProviderId,
-	getFallbackOrder,
-	getProviderById,
+  DEFAULT_HEALTH_CHECK,
+  DEFAULT_RETRY_POLICY,
+  buildRequestConfig,
+  getAllProviders,
+  getDefaultProviderId,
+  getFallbackOrder,
+  getProviderById,
 } from "./providers.config.js";
 import { translate, createI18nError } from "./i18n.js";
 
@@ -32,7 +32,7 @@ import { translate, createI18nError } from "./i18n.js";
  * @returns {string} 国际化后的文本。
  */
 const getText = (key, fallback, substitutions) =>
-	translate(key, { fallback, substitutions });
+  translate(key, { fallback, substitutions });
 
 /** @type {Set<string>} - 有效的提供商健康状态集合。 */
 const VALID_HEALTH_STATUSES = new Set(["healthy", "error", "unknown"]);
@@ -44,14 +44,14 @@ const VALID_HEALTH_STATUSES = new Set(["healthy", "error", "unknown"]);
  * @throws {I18nError} 如果提供商ID未知。
  */
 function ensureProvider(providerId) {
-	const provider = getProviderById(providerId);
-	if (!provider) {
-		throw createI18nError("ai_service_error_unknown_provider", {
-			fallback: `未知的AI提供商: ${providerId}`,
-			substitutions: [providerId],
-		});
-	}
-	return provider;
+  const provider = getProviderById(providerId);
+  if (!provider) {
+    throw createI18nError("ai_service_error_unknown_provider", {
+      fallback: `未知的AI提供商: ${providerId}`,
+      substitutions: [providerId],
+    });
+  }
+  return provider;
 }
 
 /**
@@ -60,11 +60,11 @@ function ensureProvider(providerId) {
  * @returns {{retryPolicy: object, healthCheck: object}} 运行时配置。
  */
 function resolveRuntime(providerConfig) {
-	const runtime = providerConfig.runtime ?? {};
-	return {
-		retryPolicy: runtime.retryPolicy ?? DEFAULT_RETRY_POLICY,
-		healthCheck: runtime.healthCheck ?? DEFAULT_HEALTH_CHECK,
-	};
+  const runtime = providerConfig.runtime ?? {};
+  return {
+    retryPolicy: runtime.retryPolicy ?? DEFAULT_RETRY_POLICY,
+    healthCheck: runtime.healthCheck ?? DEFAULT_HEALTH_CHECK,
+  };
 }
 
 /**
@@ -75,29 +75,29 @@ function resolveRuntime(providerConfig) {
  * @returns {string|null} 清理后的Base URL或null。
  */
 function resolveOverrideBaseUrl(providerConfig, storedUrl) {
-	if (!storedUrl || typeof storedUrl !== "string") {
-		return null;
-	}
+  if (!storedUrl || typeof storedUrl !== "string") {
+    return null;
+  }
 
-	const trimmed = storedUrl.trim();
-	if (!trimmed) {
-		return null;
-	}
+  const trimmed = storedUrl.trim();
+  if (!trimmed) {
+    return null;
+  }
 
-	// API端点后缀映射
-	const suffixMap = {
-		google: "/models",
-		openai: "/chat/completions",
-		anthropic: "/messages",
-	};
+  // API端点后缀映射
+  const suffixMap = {
+    google: "/models",
+    openai: "/chat/completions",
+    anthropic: "/messages",
+  };
 
-	const suffix = suffixMap[providerConfig.id];
-	if (suffix && trimmed.endsWith(suffix)) {
-		// 移除后缀，以获得纯净的Base URL
-		return trimmed.slice(0, -suffix.length);
-	}
+  const suffix = suffixMap[providerConfig.id];
+  if (suffix && trimmed.endsWith(suffix)) {
+    // 移除后缀，以获得纯净的Base URL
+    return trimmed.slice(0, -suffix.length);
+  }
 
-	return trimmed;
+  return trimmed;
 }
 
 /**
@@ -107,26 +107,26 @@ function resolveOverrideBaseUrl(providerConfig, storedUrl) {
  * @returns {string} 清理后的文本。
  */
 function cleanAIResponse(raw) {
-	if (typeof raw !== "string") {
-		return "";
-	}
+  if (typeof raw !== "string") {
+    return "";
+  }
 
-	let text = raw.trim();
-	if (!text) {
-		return "";
-	}
+  let text = raw.trim();
+  if (!text) {
+    return "";
+  }
 
-	// 如果响应被包裹在Markdown代码块中，则移除它们
-	if (text.startsWith("```")) {
-		const lines = text.split(/\r?\n/);
-		lines.shift(); // 移除开头的```
-		while (lines.length && lines[lines.length - 1].trim() === "```") {
-			lines.pop(); // 移除结尾的```
-		}
-		text = lines.join("\n").trim();
-	}
+  // 如果响应被包裹在Markdown代码块中，则移除它们
+  if (text.startsWith("```")) {
+    const lines = text.split(/\r?\n/);
+    lines.shift(); // 移除开头的```
+    while (lines.length && lines[lines.length - 1].trim() === "```") {
+      lines.pop(); // 移除结尾的```
+    }
+    text = lines.join("\n").trim();
+  }
 
-	return text;
+  return text;
 }
 
 /**
@@ -137,25 +137,25 @@ function cleanAIResponse(raw) {
  * @throws {I18nError} 如果响应为空或无法解析为JSON。
  */
 function parseJsonResponse(raw) {
-	if (!raw || typeof raw !== "string") {
-		throw createI18nError("ai_service_error_empty_response", {
-			fallback: "AI响应体为空",
-		});
-	}
+  if (!raw || typeof raw !== "string") {
+    throw createI18nError("ai_service_error_empty_response", {
+      fallback: "AI响应体为空",
+    });
+  }
 
-	try {
-		// 尝试直接解析
-		return JSON.parse(raw);
-	} catch (error) {
-		// 如果失败，尝试在文本中寻找被包裹的JSON对象
-		const match = raw.match(/\{[\s\S]*\}/);
-		if (match) {
-			return JSON.parse(match[0]);
-		}
-		throw createI18nError("ai_service_error_parse_json", {
-			fallback: "无法将AI响应解析为JSON",
-		});
-	}
+  try {
+    // 尝试直接解析
+    return JSON.parse(raw);
+  } catch (error) {
+    // 如果失败，尝试在文本中寻找被包裹的JSON对象
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (match) {
+      return JSON.parse(match[0]);
+    }
+    throw createI18nError("ai_service_error_parse_json", {
+      fallback: "无法将AI响应解析为JSON",
+    });
+  }
 }
 
 /**
@@ -165,16 +165,16 @@ function parseJsonResponse(raw) {
  * @returns {number} 延迟的毫秒数。
  */
 function computeRetryDelay(policy, attemptIndex) {
-	if (!policy) {
-		return 0;
-	}
-	const base = Math.max(0, Number(policy.baseDelayMs) || 0);
-	if (base === 0) {
-		return 0;
-	}
-	const factor = Number(policy.backoffFactor) || 1;
-	// 实现指数退避
-	return Math.round(base * Math.pow(factor, Math.max(0, attemptIndex - 1)));
+  if (!policy) {
+    return 0;
+  }
+  const base = Math.max(0, Number(policy.baseDelayMs) || 0);
+  if (base === 0) {
+    return 0;
+  }
+  const factor = Number(policy.backoffFactor) || 1;
+  // 实现指数退避
+  return Math.round(base * Math.pow(factor, Math.max(0, attemptIndex - 1)));
 }
 
 /**
@@ -183,10 +183,10 @@ function computeRetryDelay(policy, attemptIndex) {
  * @returns {Promise<void>}
  */
 function defaultSleep(delayMs) {
-	if (!delayMs || delayMs <= 0) {
-		return Promise.resolve();
-	}
-	return new Promise((resolve) => setTimeout(resolve, delayMs));
+  if (!delayMs || delayMs <= 0) {
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => setTimeout(resolve, delayMs));
 }
 
 /**
@@ -196,109 +196,109 @@ function defaultSleep(delayMs) {
  * @throws {I18nError} 如果请求失败或响应无效。
  */
 async function executeConfiguredRequest(context) {
-	const {
-		providerConfig,
-		apiKey,
-		modelName,
-		prompt,
-		options = {},
-		overrideBaseUrl = null,
-	} = context;
+  const {
+    providerConfig,
+    apiKey,
+    modelName,
+    prompt,
+    options = {},
+    overrideBaseUrl = null,
+  } = context;
 
-	const requestContext = {
-		apiKey,
-		modelName,
-		prompt,
-		options,
-		provider: providerConfig,
-		overrideBaseUrl,
-	};
+  const requestContext = {
+    apiKey,
+    modelName,
+    prompt,
+    options,
+    provider: providerConfig,
+    overrideBaseUrl,
+  };
 
-	let response;
-	const { url, init, responseParser, errorParser } = buildRequestConfig(
-		providerConfig,
-		requestContext,
-	);
+  let response;
+  const { url, init, responseParser, errorParser } = buildRequestConfig(
+    providerConfig,
+    requestContext,
+  );
 
-	try {
-		response = await fetch(url, init);
-	} catch (error) {
-		throw createI18nError("ai_service_error_request_failed", {
-			fallback: `${providerConfig.label} 请求失败: ${error.message}`,
-			substitutions: [providerConfig.label, error.message],
-		});
-	}
+  try {
+    response = await fetch(url, init);
+  } catch (error) {
+    throw createI18nError("ai_service_error_request_failed", {
+      fallback: `${providerConfig.label} 请求失败: ${error.message}`,
+      substitutions: [providerConfig.label, error.message],
+    });
+  }
 
-	let bodyText = "";
-	try {
-		bodyText = await response.text();
-	} catch (error) {
-		// 读取响应体失败，bodyText保持为空
-		bodyText = "";
-	}
+  let bodyText = "";
+  try {
+    bodyText = await response.text();
+  } catch (error) {
+    // 读取响应体失败，bodyText保持为空
+    bodyText = "";
+  }
 
-	let parsedBody = null;
-	if (bodyText) {
-		try {
-			parsedBody = JSON.parse(bodyText);
-		} catch (error) {
-			if (response.ok) {
-				// 响应成功但JSON解析失败，这是一个问题
-				throw createI18nError("ai_service_error_parse_failed", {
-					fallback: `${providerConfig.label} 响应解析失败: ${error.message}`,
-					substitutions: [providerConfig.label, error.message],
-				});
-			}
-		}
-	}
+  let parsedBody = null;
+  if (bodyText) {
+    try {
+      parsedBody = JSON.parse(bodyText);
+    } catch (error) {
+      if (response.ok) {
+        // 响应成功但JSON解析失败，这是一个问题
+        throw createI18nError("ai_service_error_parse_failed", {
+          fallback: `${providerConfig.label} 响应解析失败: ${error.message}`,
+          substitutions: [providerConfig.label, error.message],
+        });
+      }
+    }
+  }
 
-	if (!response.ok) {
-		let message = `${response.status} ${response.statusText}`.trim();
+  if (!response.ok) {
+    let message = `${response.status} ${response.statusText}`.trim();
 
-		if (typeof errorParser === "function") {
-			try {
-				const parsedMessage = errorParser({
-					response,
-					data: parsedBody,
-					provider: providerConfig,
-					requestContext,
-				});
-				if (parsedMessage) {
-					message = parsedMessage;
-				}
-			} catch {
-				// 即使 errorParser 失败也使用默认消息
-			}
-		} else if (parsedBody?.error?.message) {
-			message = parsedBody.error.message;
-		}
+    if (typeof errorParser === "function") {
+      try {
+        const parsedMessage = errorParser({
+          response,
+          data: parsedBody,
+          provider: providerConfig,
+          requestContext,
+        });
+        if (parsedMessage) {
+          message = parsedMessage;
+        }
+      } catch {
+        // 即使 errorParser 失败也使用默认消息
+      }
+    } else if (parsedBody?.error?.message) {
+      message = parsedBody.error.message;
+    }
 
-		throw createI18nError("ai_service_error_request_failed", {
-			fallback: `${providerConfig.label} 请求失败: ${message}`,
-			substitutions: [providerConfig.label, message],
-		});
-	}
+    throw createI18nError("ai_service_error_request_failed", {
+      fallback: `${providerConfig.label} 请求失败: ${message}`,
+      substitutions: [providerConfig.label, message],
+    });
+  }
 
-	let content = bodyText;
-	if (typeof responseParser === "function") {
-		content = responseParser({
-			data: parsedBody,
-			provider: providerConfig,
-			prompt,
-			options,
-			modelName,
-			responseBody: bodyText,
-		});
-	}
+  let content = bodyText;
+  if (typeof responseParser === "function") {
+    content = responseParser({
+      data: parsedBody,
+      provider: providerConfig,
+      prompt,
+      options,
+      modelName,
+      responseBody: bodyText,
+    });
+  }
 
-	if (!content || typeof content !== "string" || !content.trim()) {
-		throw createI18nError("ai_service_error_empty_body", {
-			fallback: `${providerConfig.label} 响应体为空`,
-			substitutions: [providerConfig.label],
-		});
-	}
+  if (!content || typeof content !== "string" || !content.trim()) {
+    throw createI18nError("ai_service_error_empty_body", {
+      fallback: `${providerConfig.label} 响应体为空`,
+      substitutions: [providerConfig.label],
+    });
+  }
 
-	return cleanAIResponse(content);
+  return cleanAIResponse(content);
 }
 
 /**
@@ -307,7 +307,7 @@ async function executeConfiguredRequest(context) {
  * @returns {Promise<string>} AI响应。
  */
 async function callOpenAICompatible(context) {
-	return executeConfiguredRequest(context);
+  return executeConfiguredRequest(context);
 }
 
 /**
@@ -316,7 +316,7 @@ async function callOpenAICompatible(context) {
  * @returns {Promise<string>} AI响应。
  */
 async function callGoogleGenerative(context) {
-	return executeConfiguredRequest(context);
+  return executeConfiguredRequest(context);
 }
 
 /**
@@ -325,14 +325,14 @@ async function callGoogleGenerative(context) {
  * @returns {Promise<string>} AI响应。
  */
 async function callAnthropicMessages(context) {
-	return executeConfiguredRequest(context);
+  return executeConfiguredRequest(context);
 }
 
 /** @type {Map<string, Function>} - API兼容模式与执行函数的注册表。 */
 const EXECUTOR_REGISTRY = new Map([
-	["openai-compatible", callOpenAICompatible],
-	["google-generative", callGoogleGenerative],
-	["anthropic-messages", callAnthropicMessages],
+  ["openai-compatible", callOpenAICompatible],
+  ["google-generative", callGoogleGenerative],
+  ["anthropic-messages", callAnthropicMessages],
 ]);
 
 /**
@@ -341,9 +341,9 @@ const EXECUTOR_REGISTRY = new Map([
  * @returns {Promise<string>} AI响应。
  */
 async function invokeExecutor(context) {
-	const compatMode = context?.providerConfig?.compatMode ?? "openai-compatible";
-	const executor = EXECUTOR_REGISTRY.get(compatMode) ?? callOpenAICompatible;
-	return executor(context);
+  const compatMode = context?.providerConfig?.compatMode ?? "openai-compatible";
+  const executor = EXECUTOR_REGISTRY.get(compatMode) ?? callOpenAICompatible;
+  return executor(context);
 }
 
 /**
@@ -354,21 +354,21 @@ async function invokeExecutor(context) {
  * @returns {Promise<void>}
  */
 async function updateProviderHealth(providerId, status, errorMessage = "") {
-	const config = await loadConfig();
-	const models = config?.aiConfig?.models;
-	if (!models?.[providerId]) {
-		return;
-	}
+  const config = await loadConfig();
+  const models = config?.aiConfig?.models;
+  if (!models?.[providerId]) {
+    return;
+  }
 
-	const normalized = VALID_HEALTH_STATUSES.has(status) ? status : "unknown";
-	models[providerId] = {
-		...models[providerId],
-		healthStatus: normalized,
-		lastHealthCheck: new Date().toISOString(),
-		lastErrorMessage: normalized === "error" ? errorMessage ?? "" : "",
-	};
+  const normalized = VALID_HEALTH_STATUSES.has(status) ? status : "unknown";
+  models[providerId] = {
+    ...models[providerId],
+    healthStatus: normalized,
+    lastHealthCheck: new Date().toISOString(),
+    lastErrorMessage: normalized === "error" ? (errorMessage ?? "") : "",
+  };
 
-	await saveConfig(config);
+  await saveConfig(config);
 }
 
 /**
@@ -378,48 +378,48 @@ async function updateProviderHealth(providerId, status, errorMessage = "") {
  * @throws {I18nError} 如果配置或API密钥缺失。
  */
 async function loadActiveProviderState(requestedProviderId = null) {
-	const config = await loadConfig();
-	const activeProviderId =
-		requestedProviderId ?? config?.aiConfig?.provider ?? getDefaultProviderId();
-	const providerConfig = ensureProvider(activeProviderId);
+  const config = await loadConfig();
+  const activeProviderId =
+    requestedProviderId ?? config?.aiConfig?.provider ?? getDefaultProviderId();
+  const providerConfig = ensureProvider(activeProviderId);
 
-	const models = config?.aiConfig?.models ?? {};
-	const modelState = models[activeProviderId];
+  const models = config?.aiConfig?.models ?? {};
+  const modelState = models[activeProviderId];
 
-	if (!modelState) {
-		throw createI18nError("ai_service_error_missing_provider_config", {
-			fallback: `找不到提供商配置: ${activeProviderId}`,
-			substitutions: [activeProviderId],
-		});
-	}
+  if (!modelState) {
+    throw createI18nError("ai_service_error_missing_provider_config", {
+      fallback: `找不到提供商配置: ${activeProviderId}`,
+      substitutions: [activeProviderId],
+    });
+  }
 
-	if (!modelState.apiKey) {
-		throw createI18nError("ai_service_error_missing_api_key_active", {
-			fallback: `提供商 ${activeProviderId} 的API密钥未配置`,
-			substitutions: [activeProviderId],
-		});
-	}
+  if (!modelState.apiKey) {
+    throw createI18nError("ai_service_error_missing_api_key_active", {
+      fallback: `提供商 ${activeProviderId} 的API密钥未配置`,
+      substitutions: [activeProviderId],
+    });
+  }
 
-	const modelName =
-		modelState.modelName ||
-		providerConfig.defaultModel ||
-		providerConfig.testModel;
+  const modelName =
+    modelState.modelName ||
+    providerConfig.defaultModel ||
+    providerConfig.testModel;
 
-	if (!modelName) {
-		throw createI18nError("ai_service_error_missing_default_model_active", {
-			fallback: `提供商 ${activeProviderId} 缺少默认模型配置`,
-			substitutions: [activeProviderId],
-		});
-	}
+  if (!modelName) {
+    throw createI18nError("ai_service_error_missing_default_model_active", {
+      fallback: `提供商 ${activeProviderId} 缺少默认模型配置`,
+      substitutions: [activeProviderId],
+    });
+  }
 
-	return {
-		config,
-		providerId: activeProviderId,
-		providerConfig,
-		modelState,
-		apiKey: modelState.apiKey,
-		modelName,
-	};
+  return {
+    config,
+    providerId: activeProviderId,
+    providerConfig,
+    modelState,
+    apiKey: modelState.apiKey,
+    modelName,
+  };
 }
 
 /**
@@ -428,26 +428,26 @@ async function loadActiveProviderState(requestedProviderId = null) {
  * @returns {string[]} 提供商ID的有序列表。
  */
 function buildFallbackSequence(config) {
-	const sequence = [];
-	const add = (id) => {
-		if (id && !sequence.includes(id)) {
-			sequence.push(id);
-		}
-	};
+  const sequence = [];
+  const add = (id) => {
+    if (id && !sequence.includes(id)) {
+      sequence.push(id);
+    }
+  };
 
-	// 优先使用当前激活的提供商
-	add(config?.aiConfig?.provider ?? getDefaultProviderId());
+  // 优先使用当前激活的提供商
+  add(config?.aiConfig?.provider ?? getDefaultProviderId());
 
-	// 添加用户配置的备用顺序
-	const storedFallback = Array.isArray(config?.aiConfig?.fallbackOrder)
-		? config.aiConfig.fallbackOrder
-		: [];
-	storedFallback.forEach(add);
+  // 添加用户配置的备用顺序
+  const storedFallback = Array.isArray(config?.aiConfig?.fallbackOrder)
+    ? config.aiConfig.fallbackOrder
+    : [];
+  storedFallback.forEach(add);
 
-	// 添加系统默认的备用顺序
-	getFallbackOrder().forEach(add);
+  // 添加系统默认的备用顺序
+  getFallbackOrder().forEach(add);
 
-	return sequence;
+  return sequence;
 }
 
 /**
@@ -459,27 +459,27 @@ function buildFallbackSequence(config) {
  * @throws {Error|I18nError} 如果所有尝试都失败。
  */
 async function runWithRetry(context, retryPolicy, sleepFn = defaultSleep) {
-	const attempts = Math.max(1, retryPolicy?.maxAttempts ?? 1);
-	let lastError = null;
+  const attempts = Math.max(1, retryPolicy?.maxAttempts ?? 1);
+  let lastError = null;
 
-	for (let attempt = 1; attempt <= attempts; attempt += 1) {
-		try {
-			return await invokeExecutor(context);
-		} catch (error) {
-			lastError = error instanceof Error ? error : new Error(String(error));
-			if (attempt < attempts) {
-				const delay = computeRetryDelay(retryPolicy, attempt);
-				await sleepFn(delay);
-			}
-		}
-	}
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      return await invokeExecutor(context);
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      if (attempt < attempts) {
+        const delay = computeRetryDelay(retryPolicy, attempt);
+        await sleepFn(delay);
+      }
+    }
+  }
 
-	if (lastError) {
-		throw lastError;
-	}
-	throw createI18nError("ai_service_error_request_generic", {
-		fallback: "AI请求失败",
-	});
+  if (lastError) {
+    throw lastError;
+  }
+  throw createI18nError("ai_service_error_request_generic", {
+    fallback: "AI请求失败",
+  });
 }
 
 /**
@@ -494,46 +494,46 @@ async function runWithRetry(context, retryPolicy, sleepFn = defaultSleep) {
  * @throws {I18nError} 如果配置不完整或请求失败。
  */
 export async function callProviderAPI(
-	providerId,
-	apiKey,
-	modelName,
-	prompt,
-	options = {},
+  providerId,
+  apiKey,
+  modelName,
+  prompt,
+  options = {},
 ) {
-	const providerConfig = ensureProvider(providerId);
-	if (!apiKey) {
-		throw createI18nError("ai_service_error_missing_api_key", {
-			fallback: `提供商 ${providerId} 的API密钥未配置`,
-			substitutions: [providerId],
-		});
-	}
+  const providerConfig = ensureProvider(providerId);
+  if (!apiKey) {
+    throw createI18nError("ai_service_error_missing_api_key", {
+      fallback: `提供商 ${providerId} 的API密钥未配置`,
+      substitutions: [providerId],
+    });
+  }
 
-	const config = await loadConfig();
-	const modelState = config?.aiConfig?.models?.[providerId] ?? {};
+  const config = await loadConfig();
+  const modelState = config?.aiConfig?.models?.[providerId] ?? {};
 
-	const effectiveModelName =
-		modelName ||
-		modelState.modelName ||
-		providerConfig.defaultModel ||
-		providerConfig.testModel;
+  const effectiveModelName =
+    modelName ||
+    modelState.modelName ||
+    providerConfig.defaultModel ||
+    providerConfig.testModel;
 
-	if (!effectiveModelName) {
-		throw createI18nError("ai_service_error_missing_default_model", {
-			fallback: `提供商 ${providerId} 缺少默认模型配置`,
-			substitutions: [providerId],
-		});
-	}
+  if (!effectiveModelName) {
+    throw createI18nError("ai_service_error_missing_default_model", {
+      fallback: `提供商 ${providerId} 缺少默认模型配置`,
+      substitutions: [providerId],
+    });
+  }
 
-	const executionContext = {
-		providerConfig,
-		apiKey,
-		modelName: effectiveModelName,
-		prompt,
-		options: options ?? {},
-		overrideBaseUrl: resolveOverrideBaseUrl(providerConfig, modelState.apiUrl),
-	};
+  const executionContext = {
+    providerConfig,
+    apiKey,
+    modelName: effectiveModelName,
+    prompt,
+    options: options ?? {},
+    overrideBaseUrl: resolveOverrideBaseUrl(providerConfig, modelState.apiUrl),
+  };
 
-	return invokeExecutor(executionContext);
+  return invokeExecutor(executionContext);
 }
 
 /**
@@ -544,27 +544,27 @@ export async function callProviderAPI(
  * @returns {string} 构建完成的提示。
  */
 export function buildPrompt(inputText, template) {
-	const defaultPromptTemplate = getText(
-		"ai_service_prompt_classic",
-		`将以下词典查询结果转换为用于Anki卡片的结构化数据。\n返回一个只包含 \"front\" 和 \"back\" 字段的纯JSON对象。不要添加额外的注释或代码围栏。\nJSON示例:\n{\n  \"front\": \"单词\",\n  \"back\": \"包含原始格式的完整查询结果\"\n}\n\n源文本:\n---\n$INPUT$\n---\n`,
-		[inputText],
-	);
+  const defaultPromptTemplate = getText(
+    "ai_service_prompt_classic",
+    `将以下词典查询结果转换为用于Anki卡片的结构化数据。\n返回一个只包含 \"front\" 和 \"back\" 字段的纯JSON对象。不要添加额外的注释或代码围栏。\nJSON示例:\n{\n  \"front\": \"单词\",\n  \"back\": \"包含原始格式的完整查询结果\"\n}\n\n源文本:\n---\n$INPUT$\n---\n`,
+    [inputText],
+  );
 
-	if (template && template.trim().length > 0) {
-		if (template.includes("{{INPUT_TEXT}}")) {
-			return template.replace("{{INPUT_TEXT}}", inputText);
-		}
+  if (template && template.trim().length > 0) {
+    if (template.includes("{{INPUT_TEXT}}")) {
+      return template.replace("{{INPUT_TEXT}}", inputText);
+    }
 
-		console.warn(
-			getText(
-				"ai_service_warn_missing_input_placeholder",
-				"自定义提示缺少 {{INPUT_TEXT}} 占位符。已将输入文本附加到末尾。",
-			),
-		);
-		return `${template}\n\n${inputText}`;
-	}
+    // console.warn(
+    // 	getText(
+    // 		"ai_service_warn_missing_input_placeholder",
+    // 		"自定义提示缺少 {{INPUT_TEXT}} 占位符。已将输入文本附加到末尾。",
+    // 	),
+    // );
+    return `${template}\n\n${inputText}`;
+  }
 
-	return defaultPromptTemplate;
+  return defaultPromptTemplate;
 }
 
 /**
@@ -577,95 +577,95 @@ export function buildPrompt(inputText, template) {
  * @throws {I18nError} 如果所有提供商都失败。
  */
 export async function parseTextWithFallback(
-	inputText,
-	promptTemplate,
-	runtimeOverrides = {},
+  inputText,
+  promptTemplate,
+  runtimeOverrides = {},
 ) {
-	const config = await loadConfig();
-	const prompt = buildPrompt(inputText, promptTemplate);
-	const sequence = buildFallbackSequence(config);
-	const errors = [];
+  const config = await loadConfig();
+  const prompt = buildPrompt(inputText, promptTemplate);
+  const sequence = buildFallbackSequence(config);
+  const errors = [];
 
-	for (const providerId of sequence) {
-		let providerConfig;
-		try {
-			providerConfig = ensureProvider(providerId);
-		} catch (error) {
-			errors.push(error instanceof Error ? error : new Error(String(error)));
-			continue;
-		}
+  for (const providerId of sequence) {
+    let providerConfig;
+    try {
+      providerConfig = ensureProvider(providerId);
+    } catch (error) {
+      errors.push(error instanceof Error ? error : new Error(String(error)));
+      continue;
+    }
 
-		const modelState = config?.aiConfig?.models?.[providerId];
-		if (!modelState?.apiKey) {
-			errors.push(
-				createI18nError("ai_service_error_missing_api_key", {
-					fallback: `提供商 ${providerId} 的API密钥未配置`,
-					substitutions: [providerId],
-				}),
-			);
-			continue;
-		}
+    const modelState = config?.aiConfig?.models?.[providerId];
+    if (!modelState?.apiKey) {
+      errors.push(
+        createI18nError("ai_service_error_missing_api_key", {
+          fallback: `提供商 ${providerId} 的API密钥未配置`,
+          substitutions: [providerId],
+        }),
+      );
+      continue;
+    }
 
-		const modelName =
-			modelState.modelName ||
-			providerConfig.defaultModel ||
-			providerConfig.testModel;
+    const modelName =
+      modelState.modelName ||
+      providerConfig.defaultModel ||
+      providerConfig.testModel;
 
-		if (!modelName) {
-			errors.push(
-				createI18nError("ai_service_error_missing_default_model", {
-					fallback: `提供商 ${providerId} 缺少默认模型配置`,
-					substitutions: [providerId],
-				}),
-			);
-			continue;
-		}
+    if (!modelName) {
+      errors.push(
+        createI18nError("ai_service_error_missing_default_model", {
+          fallback: `提供商 ${providerId} 缺少默认模型配置`,
+          substitutions: [providerId],
+        }),
+      );
+      continue;
+    }
 
-		const runtime = resolveRuntime(providerConfig);
-		const executionContext = {
-			providerConfig,
-			apiKey: modelState.apiKey,
-			modelName,
-			prompt,
-			options: {
-				temperature: runtimeOverrides.temperature ?? 0.3,
-				maxTokens: runtimeOverrides.maxTokens ?? 2000,
-				...(runtimeOverrides.requestOptions ?? {}),
-			},
-			overrideBaseUrl: resolveOverrideBaseUrl(
-				providerConfig,
-				modelState.apiUrl,
-			),
-		};
+    const runtime = resolveRuntime(providerConfig);
+    const executionContext = {
+      providerConfig,
+      apiKey: modelState.apiKey,
+      modelName,
+      prompt,
+      options: {
+        temperature: runtimeOverrides.temperature ?? 0.3,
+        maxTokens: runtimeOverrides.maxTokens ?? 2000,
+        ...(runtimeOverrides.requestOptions ?? {}),
+      },
+      overrideBaseUrl: resolveOverrideBaseUrl(
+        providerConfig,
+        modelState.apiUrl,
+      ),
+    };
 
-		try {
-			const text = await runWithRetry(
-				executionContext,
-				runtime.retryPolicy,
-				runtimeOverrides.sleep ?? defaultSleep,
-			);
-			await updateProviderHealth(providerId, "healthy");
-			return parseJsonResponse(text);
-		} catch (error) {
-			await updateProviderHealth(
-				providerId,
-				"error",
-				error instanceof Error ? error.message : String(error),
-			);
-			errors.push(error instanceof Error ? error : new Error(String(error)));
-		}
-	}
+    try {
+      const text = await runWithRetry(
+        executionContext,
+        runtime.retryPolicy,
+        runtimeOverrides.sleep ?? defaultSleep,
+      );
+      await updateProviderHealth(providerId, "healthy");
+      return parseJsonResponse(text);
+    } catch (error) {
+      await updateProviderHealth(
+        providerId,
+        "error",
+        error instanceof Error ? error.message : String(error),
+      );
+      errors.push(error instanceof Error ? error : new Error(String(error)));
+    }
+  }
 
-	if (errors.length > 0) {
-		throw createI18nError("ai_service_error_request_with_message", {
-			fallback: `AI请求失败: ${errors[errors.length - 1].message}`,
-			substitutions: [errors[errors.length - 1].message],
-		});
-	}
+  if (errors.length > 0) {
+    throw createI18nError("ai_service_error_request_with_message", {
+      fallback: `AI请求失败: ${errors[errors.length - 1].message}`,
+      substitutions: [errors[errors.length - 1].message],
+    });
+  }
 
-	throw createI18nError("ai_service_error_no_provider_available", {
-		fallback: "AI请求失败: 没有可用的提供商",
-	});
+  throw createI18nError("ai_service_error_no_provider_available", {
+    fallback: "AI请求失败: 没有可用的提供商",
+  });
 }
 
 /**
@@ -677,98 +677,98 @@ export async function parseTextWithFallback(
  * @returns {Promise<{success: boolean, message: string}>} 连接测试的结果。
  */
 export async function testConnection(
-	providerId,
-	apiKey,
-	modelName,
-	apiUrl = null,
+  providerId,
+  apiKey,
+  modelName,
+  apiUrl = null,
 ) {
-	let providerConfig;
-	try {
-		providerConfig = ensureProvider(providerId);
-	} catch (error) {
-		return {
-			success: false,
-			message: getText(
-				"ai_service_connection_test_failed_with_reason",
-				`连接测试失败: ${
-					error instanceof Error ? error.message : String(error)
-				}`,
-				[error instanceof Error ? error.message : String(error)],
-			),
-		};
-	}
+  let providerConfig;
+  try {
+    providerConfig = ensureProvider(providerId);
+  } catch (error) {
+    return {
+      success: false,
+      message: getText(
+        "ai_service_connection_test_failed_with_reason",
+        `连接测试失败: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+        [error instanceof Error ? error.message : String(error)],
+      ),
+    };
+  }
 
-	if (!apiKey) {
-		return {
-			success: false,
-			message: getText(
-				"ai_service_connection_test_failed_missing_key",
-				"连接测试失败: API密钥未配置",
-			),
-		};
-	}
+  if (!apiKey) {
+    return {
+      success: false,
+      message: getText(
+        "ai_service_connection_test_failed_missing_key",
+        "连接测试失败: API密钥未配置",
+      ),
+    };
+  }
 
-	try {
-		const config = await loadConfig();
-		const modelState = config?.aiConfig?.models?.[providerId] ?? {};
-		const runtime = resolveRuntime(providerConfig);
+  try {
+    const config = await loadConfig();
+    const modelState = config?.aiConfig?.models?.[providerId] ?? {};
+    const runtime = resolveRuntime(providerConfig);
 
-		const targetModel =
-			modelName ||
-			modelState.modelName ||
-			providerConfig.testModel ||
-			providerConfig.defaultModel;
+    const targetModel =
+      modelName ||
+      modelState.modelName ||
+      providerConfig.testModel ||
+      providerConfig.defaultModel;
 
-		if (!targetModel) {
-			throw createI18nError("ai_service_error_missing_default_model", {
-				fallback: `${providerConfig.label} 缺少默认模型配置`,
-				substitutions: [providerConfig.label],
-			});
-		}
+    if (!targetModel) {
+      throw createI18nError("ai_service_error_missing_default_model", {
+        fallback: `${providerConfig.label} 缺少默认模型配置`,
+        substitutions: [providerConfig.label],
+      });
+    }
 
-		const executionContext = {
-			providerConfig,
-			apiKey,
-			modelName: targetModel,
-			prompt: runtime.healthCheck?.prompt ?? DEFAULT_HEALTH_CHECK.prompt,
-			options: {
-				...(runtime.healthCheck?.options ?? DEFAULT_HEALTH_CHECK.options),
-			},
-			overrideBaseUrl: resolveOverrideBaseUrl(
-				providerConfig,
-				apiUrl || modelState.apiUrl,
-			),
-		};
+    const executionContext = {
+      providerConfig,
+      apiKey,
+      modelName: targetModel,
+      prompt: runtime.healthCheck?.prompt ?? DEFAULT_HEALTH_CHECK.prompt,
+      options: {
+        ...(runtime.healthCheck?.options ?? DEFAULT_HEALTH_CHECK.options),
+      },
+      overrideBaseUrl: resolveOverrideBaseUrl(
+        providerConfig,
+        apiUrl || modelState.apiUrl,
+      ),
+    };
 
-		await runWithRetry(executionContext, runtime.retryPolicy);
-		await updateProviderHealth(providerId, "healthy");
+    await runWithRetry(executionContext, runtime.retryPolicy);
+    await updateProviderHealth(providerId, "healthy");
 
-		return {
-			success: true,
-			message: getText(
-				"ai_service_connection_test_success",
-				`${providerConfig.label} 连接测试成功`,
-				[providerConfig.label],
-			),
-		};
-	} catch (error) {
-		await updateProviderHealth(
-			providerId,
-			"error",
-			error instanceof Error ? error.message : String(error),
-		);
+    return {
+      success: true,
+      message: getText(
+        "ai_service_connection_test_success",
+        `${providerConfig.label} 连接测试成功`,
+        [providerConfig.label],
+      ),
+    };
+  } catch (error) {
+    await updateProviderHealth(
+      providerId,
+      "error",
+      error instanceof Error ? error.message : String(error),
+    );
 
-		return {
-			success: false,
-			message: getText(
-				"ai_service_connection_test_failed_with_reason",
-				`连接测试失败: ${
-					error instanceof Error ? error.message : String(error)
-				}`,
-				[error instanceof Error ? error.message : String(error)],
-			),
-		};
-	}
+    return {
+      success: false,
+      message: getText(
+        "ai_service_connection_test_failed_with_reason",
+        `连接测试失败: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+        [error instanceof Error ? error.message : String(error)],
+      ),
+    };
+  }
 }
 
 /**
@@ -781,132 +781,117 @@ export async function testConnection(
  * @throws {I18nError} 如果解析失败或验证不通过。
  */
 async function runDynamicParsing(
-	inputText,
-	fieldNames,
-	customTemplate,
-	maxRetries = 2,
+  inputText,
+  fieldNames,
+  customTemplate,
+  maxRetries = 2,
 ) {
-	if (!Array.isArray(fieldNames) || fieldNames.length === 0) {
-		throw createI18nError("popup_status_no_fields_parse", {
-			fallback: "没有配置用于解析的字段。请先在选项中更新模板。",
-		});
-	}
+  if (!Array.isArray(fieldNames) || fieldNames.length === 0) {
+    throw createI18nError("popup_status_no_fields_parse", {
+      fallback: "没有配置用于解析的字段。请先在选项中更新模板。",
+    });
+  }
 
-	const { providerConfig, modelState, apiKey, modelName } =
-		await loadActiveProviderState();
-	const runtime = resolveRuntime(providerConfig);
+  const { providerConfig, modelState, apiKey, modelName } =
+    await loadActiveProviderState();
+  const runtime = resolveRuntime(providerConfig);
 
-	const attemptLimit = Math.max(
-		Math.max(0, maxRetries) + 1,
-		runtime.retryPolicy?.maxAttempts ?? 1,
-	);
+  const attemptLimit = Math.max(
+    Math.max(0, maxRetries) + 1,
+    runtime.retryPolicy?.maxAttempts ?? 1,
+  );
 
-	const prompt = buildIntegratedPrompt(inputText, fieldNames, customTemplate);
-	const overrideBaseUrl = resolveOverrideBaseUrl(
-		providerConfig,
-		modelState.apiUrl,
-	);
+  const prompt = buildIntegratedPrompt(inputText, fieldNames, customTemplate);
+  const overrideBaseUrl = resolveOverrideBaseUrl(
+    providerConfig,
+    modelState.apiUrl,
+  );
 
-	let lastError = null;
+  let lastError = null;
 
-	for (let attempt = 1; attempt <= attemptLimit; attempt += 1) {
-		try {
-			// 在重试时稍微降低 temperature 以获得更稳定的输出
-			const temperature =
-				attempt === 1 ? 0.3 : Math.max(0.1, 0.3 - 0.1 * (attempt - 1));
+  for (let attempt = 1; attempt <= attemptLimit; attempt += 1) {
+    try {
+      // 在重试时稍微降低 temperature 以获得更稳定的输出
+      const temperature =
+        attempt === 1 ? 0.3 : Math.max(0.1, 0.3 - 0.1 * (attempt - 1));
 
-			const text = await invokeExecutor({
-				providerConfig,
-				apiKey,
-				modelName,
-				prompt,
-				options: {
-					temperature,
-					maxTokens: 2000,
-				},
-				overrideBaseUrl,
-			});
+      const text = await invokeExecutor({
+        providerConfig,
+        apiKey,
+        modelName,
+        prompt,
+        options: {
+          temperature,
+          maxTokens: 2000,
+        },
+        overrideBaseUrl,
+      });
 
-			const validation = validateAIOutput(text, fieldNames);
+      const validation = validateAIOutput(text, fieldNames);
 
-			if (!validation.isValid) {
-				const fallbackDetail = (validation.invalidFields ?? []).join(", ");
-				const message =
-					validation.error ||
-					getText(
-						"ai_service_error_output_invalid_fields",
-						`输出包含无效字段: ${fallbackDetail}`,
-						[fallbackDetail],
-					);
-				throw createI18nError("ai_service_error_output_invalid_fields", {
-					fallback: message,
-					substitutions: [fallbackDetail],
-				});
-			}
+      if (!validation.isValid) {
+        const fallbackDetail = (validation.invalidFields ?? []).join(", ");
+        const message =
+          validation.error ||
+          getText(
+            "ai_service_error_output_invalid_fields",
+            `输出包含无效字段: ${fallbackDetail}`,
+            [fallbackDetail],
+          );
+        throw createI18nError("ai_service_error_output_invalid_fields", {
+          fallback: message,
+          substitutions: [fallbackDetail],
+        });
+      }
 
-			if (!validation.hasContent) {
-				throw createI18nError("ai_service_error_output_all_empty", {
-					fallback: "AI输出仅包含空字段。请检查输入文本或重试。",
-				});
-			}
+      if (!validation.hasContent) {
+        throw createI18nError("ai_service_error_output_all_empty", {
+          fallback: "AI输出仅包含空字段。请检查输入文本或重试。",
+        });
+      }
 
-			await updateProviderHealth(providerConfig.id, "healthy");
-			return validation.parsedData;
-		} catch (error) {
-			lastError = error instanceof Error ? error : new Error(String(error));
+      await updateProviderHealth(providerConfig.id, "healthy");
+      return validation.parsedData;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
 
-			if (attempt < attemptLimit) {
-				const delay = computeRetryDelay(runtime.retryPolicy, attempt);
-				await defaultSleep(delay);
-				continue;
-			}
+      if (attempt < attemptLimit) {
+        const delay = computeRetryDelay(runtime.retryPolicy, attempt);
+        await defaultSleep(delay);
+        continue;
+      }
 
-			await updateProviderHealth(providerConfig.id, "error", lastError.message);
+      await updateProviderHealth(providerConfig.id, "error", lastError.message);
 
-			throw createI18nError("ai_service_error_parse_fail_message", {
-				fallback: `AI解析失败: ${lastError.message}`,
-				substitutions: [lastError.message],
-			});
-		}
-	}
+      throw createI18nError("ai_service_error_parse_fail_message", {
+        fallback: `AI解析失败: ${lastError.message}`,
+        substitutions: [lastError.message],
+      });
+    }
+  }
 
-	throw createI18nError("ai_service_error_parse_fail_unknown", {
-		fallback: "AI解析失败: 未知错误",
-	});
+  throw createI18nError("ai_service_error_parse_fail_unknown", {
+    fallback: "AI解析失败: 未知错误",
+  });
 }
 
 /**
- * 使用动态字段和集成提示来解析文本。
+ * Parse text using dynamic fields and integrated prompts.
  * @export
- * @param {string} inputText - 输入文本。
- * @param {string[]} fieldNames - 需要解析的字段名数组。
- * @param {string} customTemplate - 自定义提示模板。
- * @param {number} [maxRetries=2] - 最大重试次数。
- * @returns {Promise<object>} 解析后的数据对象。
+ * @param {string} inputText - The input text to parse.
+ * @param {string[]} fieldNames - Array of field names to extract.
+ * @param {string} customTemplate - Custom prompt template.
+ * @param {number} [maxRetries=2] - Maximum retry attempts.
+ * @returns {Promise<object>} Parsed data object.
  */
 export async function parseTextWithDynamicFields(
-	inputText,
-	fieldNames,
-	customTemplate,
-	maxRetries = 2,
+  inputText,
+  fieldNames,
+  customTemplate,
+  maxRetries = 2,
 ) {
-	return runDynamicParsing(inputText, fieldNames, customTemplate, maxRetries);
+  return runDynamicParsing(inputText, fieldNames, customTemplate, maxRetries);
 }
 
-/**
- * `parseTextWithDynamicFields` 的备用导出，功能相同。
- * @export
- * @param {string} inputText - 输入文本。
- * @param {string[]} fieldNames - 需要解析的字段名数组。
- * @param {string} customTemplate - 自定义提示模板。
- * @param {number} [maxRetries=2] - 最大重试次数。
- * @returns {Promise<object>} 解析后的数据对象。
- */
-export async function parseTextWithDynamicFieldsFallback(
-	inputText,
-	fieldNames,
-	customTemplate,
-	maxRetries = 2,
-) {
-	return runDynamicParsing(inputText, fieldNames, customTemplate, maxRetries);
-}
+// Alias export for backward compatibility (same as parseTextWithDynamicFields)
+export { parseTextWithDynamicFields as parseTextWithDynamicFieldsFallback };

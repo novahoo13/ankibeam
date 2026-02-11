@@ -1,13 +1,13 @@
 /**
- * @fileoverview テンプレートストア管理モジュール
+ * @fileoverview Template Store Management Module
  *
- * このモジュールは解析テンプレートライブラリの管理を担当し、以下の機能を提供する:
- * - テンプレートのCRUD操作(作成、読取、更新、削除)
- * - デフォルトテンプレートの設定と取得
- * - アクティブテンプレートの設定と取得
- * - テンプレート一覧の取得とソート
+ * This module manages the template library for parsing templates, providing:
+ * - CRUD operations for templates (Create, Read, Update, Delete)
+ * - Default template setting and retrieval
+ * - Active template setting and retrieval
+ * - Template listing and sorting
  *
- * テンプレートライブラリの構造:
+ * Template Library Structure:
  * {
  *   version: 1,
  *   defaultTemplateId: string|null,
@@ -22,387 +22,400 @@
  */
 
 /**
- * 空のテンプレートライブラリ構造を構築
- * @returns {Object} デフォルトのテンプレートライブラリ構造
+ * Build an empty template library structure
+ * @returns {Object} Default template library structure
  */
 function buildEmptyTemplateLibrary() {
-  return {
-    version: 1,
-    defaultTemplateId: null,
-    templates: {},
-  };
+	return {
+		version: 1,
+		defaultTemplateId: null,
+		templates: {},
+	};
 }
 
 /**
- * 設定オブジェクトからテンプレートライブラリを読み込む
- * 存在しない場合は空のライブラリを返す
- * @param {Object} config - 設定オブジェクト
- * @returns {Object} テンプレートライブラリ
+ * Load template library from configuration object
+ * Returns empty library if not present
+ * @param {Object} config - Configuration object
+ * @returns {Object} Template library
  */
 export function loadTemplateLibrary(config) {
-  if (!config || typeof config !== "object") {
-    return buildEmptyTemplateLibrary();
-  }
+	if (!config || typeof config !== "object") {
+		return buildEmptyTemplateLibrary();
+	}
 
-  const library = config.templateLibrary;
+	const library = config.templateLibrary;
 
-  // テンプレートライブラリが存在しない場合
-  if (!library || typeof library !== "object") {
-    return buildEmptyTemplateLibrary();
-  }
+	// Template library does not exist
+	if (!library || typeof library !== "object") {
+		return buildEmptyTemplateLibrary();
+	}
 
-  // 基本構造を検証して返却
-  return {
-    version: typeof library.version === "number" ? library.version : 1,
-    defaultTemplateId:
-      typeof library.defaultTemplateId === "string"
-        ? library.defaultTemplateId
-        : null,
-    templates:
-      library.templates && typeof library.templates === "object"
-        ? library.templates
-        : {},
-  };
+	// Validate and return basic structure
+	return {
+		version: typeof library.version === "number" ? library.version : 1,
+		defaultTemplateId:
+			typeof library.defaultTemplateId === "string"
+				? library.defaultTemplateId
+				: null,
+		templates:
+			library.templates && typeof library.templates === "object"
+				? library.templates
+				: {},
+	};
 }
 
 /**
- * テンプレートIDによりテンプレートを取得
- * @param {Object} config - 設定オブジェクト
- * @param {string} templateId - テンプレートID
- * @returns {Object|null} テンプレートオブジェクト、存在しない場合はnull
+ * Get template by ID
+ * @param {Object} config - Configuration object
+ * @param {string} templateId - Template ID
+ * @returns {Object|null} Template object, or null if not found
  */
 export function getTemplateById(config, templateId) {
-  if (!templateId || typeof templateId !== "string") {
-    return null;
-  }
+	if (!templateId || typeof templateId !== "string") {
+		return null;
+	}
 
-  const library = loadTemplateLibrary(config);
-  const template = library.templates[templateId];
+	const library = loadTemplateLibrary(config);
+	const template = library.templates[templateId];
 
-  if (!template || typeof template !== "object") {
-    return null;
-  }
+	if (!template || typeof template !== "object") {
+		return null;
+	}
 
-  return template;
+	return template;
 }
 
 /**
- * 一意なテンプレートIDを生成
- * @returns {string} "tpl_" + タイムスタンプ形式のID
+ * Generate a unique template ID
+ * @returns {string} ID in "tpl_" + timestamp format
  */
 function generateTemplateId() {
-  return `tpl_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+	return `tpl_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
 /**
- * 現在のISO 8601形式のタイムスタンプを取得
- * @returns {string} ISO 8601形式のタイムスタンプ
+ * Get current ISO 8601 formatted timestamp
+ * @returns {string} ISO 8601 formatted timestamp
  */
 function getCurrentTimestamp() {
-  return new Date().toISOString();
+	return new Date().toISOString();
 }
 
 /**
- * テンプレートオブジェクトを正規化
- * 必須フィールドの検証とデフォルト値の設定を行う
- * @param {Object} template - テンプレートオブジェクト
- * @param {boolean} isNew - 新規作成かどうか
- * @returns {Object} 正規化されたテンプレート
+ * Normalize a template object
+ * Validates required fields and sets default values
+ * @param {Object} template - Template object
+ * @param {boolean} isNew - Whether this is a new template
+ * @returns {Object} Normalized template
  */
 function normalizeTemplate(template, isNew = false) {
-  if (!template || typeof template !== "object") {
-    throw new Error("テンプレートオブジェクトが無効です");
-  }
+	if (!template || typeof template !== "object") {
+		throw new Error("Template object is invalid");
+	}
 
-  // 必須フィールドの検証
-  if (!template.name || typeof template.name !== "string" || !template.name.trim()) {
-    throw new Error("テンプレート名は必須です");
-  }
+	// Validate required fields
+	if (
+		!template.name ||
+		typeof template.name !== "string" ||
+		!template.name.trim()
+	) {
+		throw new Error("Template name is required");
+	}
 
-  if (!template.deckName || typeof template.deckName !== "string") {
-    throw new Error("デッキ名は必須です");
-  }
+	if (!template.deckName || typeof template.deckName !== "string") {
+		throw new Error("Deck name is required");
+	}
 
-  if (!template.modelName || typeof template.modelName !== "string") {
-    throw new Error("モデル名は必須です");
-  }
+	if (!template.modelName || typeof template.modelName !== "string") {
+		throw new Error("Model name is required");
+	}
 
-  if (!Array.isArray(template.fields) || template.fields.length === 0) {
-    throw new Error("少なくとも1つのフィールドが必要です");
-  }
+	if (!Array.isArray(template.fields) || template.fields.length === 0) {
+		throw new Error("At least one field is required");
+	}
 
-  const now = getCurrentTimestamp();
+	const now = getCurrentTimestamp();
 
-  const normalized = {
-    id: isNew ? generateTemplateId() : template.id,
-    name: template.name.trim(),
-    description: typeof template.description === "string" ? template.description.trim() : "",
-    deckName: template.deckName.trim(),
-    modelName: template.modelName.trim(),
-    modelId: typeof template.modelId === "number" ? template.modelId : null,
-    fields: normalizeTemplateFields(template.fields),
-    prompt: typeof template.prompt === "string" ? template.prompt : "",
-    createdAt: isNew ? now : (template.createdAt || now),
-    updatedAt: now,
-  };
+	const normalized = {
+		id: isNew ? generateTemplateId() : template.id,
+		name: template.name.trim(),
+		description:
+			typeof template.description === "string"
+				? template.description.trim()
+				: "",
+		deckName: template.deckName.trim(),
+		modelName: template.modelName.trim(),
+		modelId: typeof template.modelId === "number" ? template.modelId : null,
+		fields: normalizeTemplateFields(template.fields),
+		prompt: typeof template.prompt === "string" ? template.prompt : "",
+		createdAt: isNew ? now : template.createdAt || now,
+		updatedAt: now,
+	};
 
-  return normalized;
+	return normalized;
 }
 
 /**
- * テンプレートのフィールド配列を正規化
- * 各フィールドの必須項目を検証し、order順にソートする
- * @param {Array} fields - フィールド配列
- * @returns {Array} 正規化されたフィールド配列
+ * Normalize template field array
+ * Validates each field's required items and sorts by order
+ * @param {Array} fields - Field array
+ * @returns {Array} Normalized field array
  */
 export function normalizeTemplateFields(fields) {
-  if (!Array.isArray(fields)) {
-    return [];
-  }
+	if (!Array.isArray(fields)) {
+		return [];
+	}
 
-  const normalized = fields.map((field, index) => {
-    if (!field || typeof field !== "object") {
-      throw new Error(`フィールド[${index}]が無効です`);
-    }
+	const normalized = fields.map((field, index) => {
+		if (!field || typeof field !== "object") {
+			throw new Error(`Field[${index}] is invalid`);
+		}
 
-    if (!field.name || typeof field.name !== "string") {
-      throw new Error(`フィールド[${index}]の名前が無効です`);
-    }
+		if (!field.name || typeof field.name !== "string") {
+			throw new Error(`Field[${index}] name is invalid`);
+		}
 
-    return {
-      name: field.name.trim(),
-      label: typeof field.label === "string" ? field.label.trim() : field.name.trim(),
-      parseInstruction: typeof field.parseInstruction === "string" ? field.parseInstruction.trim() : "",
-      order: typeof field.order === "number" ? field.order : index,
-      isRequired: typeof field.isRequired === "boolean" ? field.isRequired : false,
-      aiStrategy: field.aiStrategy === "manual" ? "manual" : "auto",
-    };
-  });
+		return {
+			name: field.name.trim(),
+			label:
+				typeof field.label === "string"
+					? field.label.trim()
+					: field.name.trim(),
+			parseInstruction:
+				typeof field.parseInstruction === "string"
+					? field.parseInstruction.trim()
+					: "",
+			order: typeof field.order === "number" ? field.order : index,
+			isRequired:
+				typeof field.isRequired === "boolean" ? field.isRequired : false,
+			aiStrategy: field.aiStrategy === "manual" ? "manual" : "auto",
+		};
+	});
 
-  // order順にソート
-  normalized.sort((a, b) => a.order - b.order);
+	// Sort by order
+	normalized.sort((a, b) => a.order - b.order);
 
-  return normalized;
+	return normalized;
 }
 
 /**
- * テンプレートを保存または更新
- * 新規作成の場合はIDとタイムスタンプを自動生成し、
- * ライブラリが空の場合は自動的にデフォルトテンプレートに設定する
- * @param {Object} config - 設定オブジェクト(直接変更される)
- * @param {Object} template - 保存するテンプレート
- * @returns {Object} 保存されたテンプレート
+ * Save or update a template
+ * For new templates, ID and timestamp are auto-generated.
+ * If the library is empty, the template is automatically set as default.
+ * @param {Object} config - Configuration object (modified directly)
+ * @param {Object} template - Template to save
+ * @returns {Object} Saved template
  */
 export function saveTemplate(config, template) {
-  if (!config || typeof config !== "object") {
-    throw new Error("設定オブジェクトが無効です");
-  }
+	if (!config || typeof config !== "object") {
+		throw new Error("Configuration object is invalid");
+	}
 
-  // テンプレートライブラリが存在しない場合は初期化
-  if (!config.templateLibrary) {
-    config.templateLibrary = buildEmptyTemplateLibrary();
-  }
+	// Initialize template library if not present
+	if (!config.templateLibrary) {
+		config.templateLibrary = buildEmptyTemplateLibrary();
+	}
 
-  const library = config.templateLibrary;
-  const isNew = !template.id || !library.templates[template.id];
+	const library = config.templateLibrary;
+	const isNew = !template.id || !library.templates[template.id];
 
-  // テンプレートを正規化
-  const normalized = normalizeTemplate(template, isNew);
+	// Normalize template
+	const normalized = normalizeTemplate(template, isNew);
 
-  // テンプレートを保存
-  library.templates[normalized.id] = normalized;
+	// Save template
+	library.templates[normalized.id] = normalized;
 
-  // ライブラリが空だった場合、このテンプレートをデフォルトに設定
-  if (isNew && Object.keys(library.templates).length === 1) {
-    library.defaultTemplateId = normalized.id;
-  }
+	// If library was empty, set this template as default
+	if (isNew && Object.keys(library.templates).length === 1) {
+		library.defaultTemplateId = normalized.id;
+	}
 
-  return normalized;
+	return normalized;
 }
 
 /**
- * テンプレートを削除
- * デフォルトテンプレートまたはアクティブテンプレートの場合は自動的にクリアする
- * @param {Object} config - 設定オブジェクト(直接変更される)
- * @param {string} templateId - 削除するテンプレートID
- * @returns {boolean} 削除成功時true
+ * Delete a template
+ * If it's the default or active template, it will be automatically cleared
+ * @param {Object} config - Configuration object (modified directly)
+ * @param {string} templateId - Template ID to delete
+ * @returns {boolean} True if deletion was successful
  */
 export function deleteTemplate(config, templateId) {
-  if (!config || typeof config !== "object") {
-    throw new Error("設定オブジェクトが無効です");
-  }
+	if (!config || typeof config !== "object") {
+		throw new Error("Configuration object is invalid");
+	}
 
-  if (!templateId || typeof templateId !== "string") {
-    throw new Error("テンプレートIDが無効です");
-  }
+	if (!templateId || typeof templateId !== "string") {
+		throw new Error("Template ID is invalid");
+	}
 
-  const library = loadTemplateLibrary(config);
+	const library = loadTemplateLibrary(config);
 
-  // テンプレートが存在しない場合
-  if (!library.templates[templateId]) {
-    return false;
-  }
+	// Template does not exist
+	if (!library.templates[templateId]) {
+		return false;
+	}
 
-  // テンプレートを削除
-  delete library.templates[templateId];
+	// Delete template
+	delete library.templates[templateId];
 
-  // デフォルトテンプレートの場合はクリア
-  if (library.defaultTemplateId === templateId) {
-    library.defaultTemplateId = null;
-  }
+	// Clear if it's the default template
+	if (library.defaultTemplateId === templateId) {
+		library.defaultTemplateId = null;
+	}
 
-  // アクティブテンプレートの場合はクリア
-  if (config.ui?.activeTemplateId === templateId) {
-    if (!config.ui) {
-      config.ui = {};
-    }
-    config.ui.activeTemplateId = null;
-  }
+	// Clear if it's the active template
+	if (config.ui?.activeTemplateId === templateId) {
+		if (!config.ui) {
+			config.ui = {};
+		}
+		config.ui.activeTemplateId = null;
+	}
 
-  // ライブラリを更新
-  config.templateLibrary = library;
+	// Update library
+	config.templateLibrary = library;
 
-  return true;
+	return true;
 }
 
 /**
- * デフォルトテンプレートを設定
- * @param {Object} config - 設定オブジェクト(直接変更される)
- * @param {string|null} templateId - テンプレートID、nullの場合はクリア
- * @returns {boolean} 設定成功時true
+ * Set the default template
+ * @param {Object} config - Configuration object (modified directly)
+ * @param {string|null} templateId - Template ID, or null to clear
+ * @returns {boolean} True if setting was successful
  */
 export function setDefaultTemplate(config, templateId) {
-  if (!config || typeof config !== "object") {
-    throw new Error("設定オブジェクトが無効です");
-  }
+	if (!config || typeof config !== "object") {
+		throw new Error("Configuration object is invalid");
+	}
 
-  // テンプレートライブラリが存在しない場合は初期化
-  if (!config.templateLibrary) {
-    config.templateLibrary = buildEmptyTemplateLibrary();
-  }
+	// Initialize template library if not present
+	if (!config.templateLibrary) {
+		config.templateLibrary = buildEmptyTemplateLibrary();
+	}
 
-  const library = config.templateLibrary;
+	const library = config.templateLibrary;
 
-  // nullの場合はクリア
-  if (templateId === null) {
-    library.defaultTemplateId = null;
-    return true;
-  }
+	// If null, clear the default
+	if (templateId === null) {
+		library.defaultTemplateId = null;
+		return true;
+	}
 
-  if (typeof templateId !== "string") {
-    throw new Error("テンプレートIDが無効です");
-  }
+	if (typeof templateId !== "string") {
+		throw new Error("Template ID is invalid");
+	}
 
-  // テンプレートが存在するか確認
-  if (!library.templates[templateId]) {
-    throw new Error(`テンプレートID "${templateId}" が見つかりません`);
-  }
+	// Verify template exists
+	if (!library.templates[templateId]) {
+		throw new Error(`Template ID "${templateId}" not found`);
+	}
 
-  library.defaultTemplateId = templateId;
-  return true;
+	library.defaultTemplateId = templateId;
+	return true;
 }
 
 /**
- * アクティブテンプレートを設定
- * @param {Object} config - 設定オブジェクト(直接変更される)
- * @param {string|null} templateId - テンプレートID、nullの場合はクリア
- * @param {string} source - 変更元("popup"|"floating"|"options"等)
- * @returns {boolean} 設定成功時true
+ * Set the active template
+ * @param {Object} config - Configuration object (modified directly)
+ * @param {string|null} templateId - Template ID, or null to clear
+ * @param {string} source - Source of change ("popup"|"floating"|"options", etc.)
+ * @returns {boolean} True if setting was successful
  */
 export function setActiveTemplate(config, templateId, source = "unknown") {
-  if (!config || typeof config !== "object") {
-    throw new Error("設定オブジェクトが無効です");
-  }
+	if (!config || typeof config !== "object") {
+		throw new Error("Configuration object is invalid");
+	}
 
-  // ui設定が存在しない場合は初期化
-  if (!config.ui) {
-    config.ui = {};
-  }
+	// Initialize UI config if not present
+	if (!config.ui) {
+		config.ui = {};
+	}
 
-  // nullの場合はクリア
-  if (templateId === null) {
-    config.ui.activeTemplateId = null;
-    config.ui.templateSelectionSource = source;
-    return true;
-  }
+	// If null, clear the active template
+	if (templateId === null) {
+		config.ui.activeTemplateId = null;
+		config.ui.templateSelectionSource = source;
+		return true;
+	}
 
-  if (typeof templateId !== "string") {
-    throw new Error("テンプレートIDが無効です");
-  }
+	if (typeof templateId !== "string") {
+		throw new Error("Template ID is invalid");
+	}
 
-  const library = loadTemplateLibrary(config);
+	const library = loadTemplateLibrary(config);
 
-  // テンプレートが存在するか確認
-  if (!library.templates[templateId]) {
-    throw new Error(`テンプレートID "${templateId}" が見つかりません`);
-  }
+	// Verify template exists
+	if (!library.templates[templateId]) {
+		throw new Error(`Template ID "${templateId}" not found`);
+	}
 
-  config.ui.activeTemplateId = templateId;
-  config.ui.templateSelectionSource = source;
-  return true;
+	config.ui.activeTemplateId = templateId;
+	config.ui.templateSelectionSource = source;
+	return true;
 }
 
 /**
- * テンプレート一覧を取得
- * updatedAtの降順(新しい順)でソートして返す
- * @param {Object} config - 設定オブジェクト
- * @returns {Array} テンプレート配列
+ * Get list of templates
+ * Returns sorted by updatedAt in descending order (newest first)
+ * @param {Object} config - Configuration object
+ * @returns {Array} Template array
  */
 export function listTemplates(config) {
-  const library = loadTemplateLibrary(config);
-  const templates = Object.values(library.templates);
+	const library = loadTemplateLibrary(config);
+	const templates = Object.values(library.templates);
 
-  // updatedAtの降順でソート
-  templates.sort((a, b) => {
-    const timeA = new Date(a.updatedAt || a.createdAt || 0).getTime();
-    const timeB = new Date(b.updatedAt || b.createdAt || 0).getTime();
-    return timeB - timeA;
-  });
+	// Sort by updatedAt in descending order
+	templates.sort((a, b) => {
+		const timeA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+		const timeB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+		return timeB - timeA;
+	});
 
-  return templates;
+	return templates;
 }
 
 /**
- * アクティブテンプレートを取得
- * activeTemplateIdが設定されている場合はそれを、
- * なければdefaultTemplateIdを使用する
- * @param {Object} config - 設定オブジェクト
- * @returns {Object|null} テンプレートオブジェクト、存在しない場合はnull
+ * Get the active template
+ * Uses activeTemplateId if set, otherwise uses defaultTemplateId
+ * @param {Object} config - Configuration object
+ * @returns {Object|null} Template object, or null if not found
  */
 export function getActiveTemplate(config) {
-  if (!config || typeof config !== "object") {
-    return null;
-  }
+	if (!config || typeof config !== "object") {
+		return null;
+	}
 
-  const library = loadTemplateLibrary(config);
+	const library = loadTemplateLibrary(config);
 
-  // アクティブテンプレートIDを取得
-  const activeId = config.ui?.activeTemplateId;
-  if (activeId && library.templates[activeId]) {
-    return library.templates[activeId];
-  }
+	// Get active template ID
+	const activeId = config.ui?.activeTemplateId;
+	if (activeId && library.templates[activeId]) {
+		return library.templates[activeId];
+	}
 
-  // デフォルトテンプレートIDを取得
-  const defaultId = library.defaultTemplateId;
-  if (defaultId && library.templates[defaultId]) {
-    return library.templates[defaultId];
-  }
+	// Get default template ID
+	const defaultId = library.defaultTemplateId;
+	if (defaultId && library.templates[defaultId]) {
+		return library.templates[defaultId];
+	}
 
-  return null;
+	return null;
 }
 
 /**
- * デフォルトテンプレートを取得
- * @param {Object} config - 設定オブジェクト
- * @returns {Object|null} テンプレートオブジェクト、存在しない場合はnull
+ * Get the default template
+ * @param {Object} config - Configuration object
+ * @returns {Object|null} Template object, or null if not found
  */
 export function getDefaultTemplate(config) {
-  const library = loadTemplateLibrary(config);
-  const defaultId = library.defaultTemplateId;
+	const library = loadTemplateLibrary(config);
+	const defaultId = library.defaultTemplateId;
 
-  if (!defaultId) {
-    return null;
-  }
+	if (!defaultId) {
+		return null;
+	}
 
-  return library.templates[defaultId] || null;
+	return library.templates[defaultId] || null;
 }

@@ -1,18 +1,18 @@
 {
-  "name": "anki-word-assistant",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "description": "Browser extension for Anki word assistant",
-  "scripts": {
-    "css:build": "tailwindcss -i styles/input.css -o styles/tailwind.min.css --minify",
-    "css:watch": "tailwindcss -i styles/input.css -o styles/tailwind.min.css --minify --watch",
-    "dev": "npm run css:watch",
-    "test": "node --test \"tests/**/*.test.js\""
-  },
-  "devDependencies": {
-    "jsdom": "^27.0.0",
-    "tailwindcss": "^3.4.13",
-    "undici": "^7.16.0"
-  }
+	"name": "ankibeam",
+	"version": "1.0.1",
+	"private": true,
+	"type": "module",
+	"description": "Browser extension for AnkiBeam",
+	"scripts": {
+		"css:build": "tailwindcss -i styles/input.css -o styles/tailwind.min.css --minify",
+		"css:watch": "tailwindcss -i styles/input.css -o styles/tailwind.min.css --minify --watch",
+		"dev": "npm run css:watch",
+		"test": "node --test \"tests/**/*.test.js\""
+	},
+	"devDependencies": {
+		"jsdom": "^27.0.0",
+		"tailwindcss": "^3.4.13",
+		"undici": "^7.16.0"
+	}
 }

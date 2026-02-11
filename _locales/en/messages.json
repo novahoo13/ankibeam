@@ -1,7 +1,7 @@
 {
 	"extension_name": {
 		"description": "Extension name shown in the Chrome Web Store and UI.",
-		"message": "Anki Word Assistant"
+		"message": "AnkiBeam"
 	},
 	"extension_description": {
 		"description": "Extension description for manifest and store listing.",
@@ -1283,7 +1283,7 @@
 	},
 	"popup_app_title": {
 		"description": "Popup page title, used for <title> and header.",
-		"message": "Anki Word Assistant"
+		"message": "AnkiBeam"
 	},
 	"popup_confirm_reload": {
 		"description": "Refresh prompt after a critical error.",
@@ -1756,7 +1756,7 @@
 	},
 	"prompt_engine_requirements_body": {
 		"description": "Dynamic Prompt requirements description.",
-		"message": "\n\nRequirements:\n- Output in valid JSON format\n- Only use fields: $FIELDS$\n- Partial output is acceptable, but field names must be accurate",
+		"message": "\n\nRequirements:\n- Output in valid JSON format\n- Only use fields: $FIELDS$\n- Each field value MUST be a plain text string, do NOT use nested objects or arrays\n- Partial output is acceptable, but field names must be accurate",
 		"placeholders": {
 			"FIELDS": {
 				"content": "$1",

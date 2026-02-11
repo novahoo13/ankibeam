@@ -61,7 +61,7 @@ def build_entries(builder: MessageBuilder) -> None:
     # Popup - static labels
     builder.add(
         "popup_app_title",
-        "Anki 单词助手",
+        "AnkiBeam",
         "Popup 页面标题，用于 <title> 与头部标题",
     )
     builder.add(

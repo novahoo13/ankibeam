@@ -16,6 +16,8 @@ const getText = (key, fallback, substitutions) =>
 export function buildIntegratedPrompt(userInput, fieldNames, customTemplate) {
 	const defaultTemplate = customTemplate || getDefaultIntegratedTemplate();
 
+	let prompt;
+
 	// 检查是否为自定义prompt（不使用占位符系统）
 	if (
 		customTemplate &&
@@ -23,30 +25,30 @@ export function buildIntegratedPrompt(userInput, fieldNames, customTemplate) {
 		!customTemplate.includes("{{INPUT_TEXT}}") &&
 		!customTemplate.includes("{{FIELD_SCHEMA}}")
 	) {
-		// 对于完全自定义的prompt，直接在末尾追加用户输入
-		return getText(
+		// 对于完全自定义的prompt，在末尾追加用户输入
+		prompt = getText(
 			"prompt_engine_custom_template_header",
 			"$TEMPLATE$\n-------------------------------\n以下是本次输入的内容：$INPUT$",
 			[customTemplate, userInput],
 		);
+	} else {
+		// 生成动态字段schema（用于占位符模式）
+		const fieldSchema = generateFieldSchema(fieldNames);
+
+		// 替换模板变量
+		prompt = defaultTemplate
+			.replace(/\{\{INPUT_TEXT\}\}/g, userInput)
+			.replace(/\{\{FIELD_SCHEMA\}\}/g, fieldSchema)
+			.replace(
+				/\{\{AVAILABLE_FIELDS\}\}/g,
+				fieldNames.map((f) => `"${f}"`).join(", "),
+			);
 	}
 
-	// 生成动态字段schema（用于占位符模式）
-	const fieldSchema = generateFieldSchema(fieldNames);
-
-	// 替换模板变量
-	let prompt = defaultTemplate
-		.replace(/\{\{INPUT_TEXT\}\}/g, userInput)
-		.replace(/\{\{FIELD_SCHEMA\}\}/g, fieldSchema)
-		.replace(
-			/\{\{AVAILABLE_FIELDS\}\}/g,
-			fieldNames.map((f) => `"${f}"`).join(", "),
-		);
-
-	// 添加JSON格式强制约束（仅用于默认模板）
+	// 添加JSON格式强制约束（对所有模式生效，包括自定义prompt）
 	prompt += getText(
 		"prompt_engine_requirements_body",
-		"\n\n要求:\n- 输出有效JSON格式\n- 只能使用字段: $FIELDS$\n- 可部分输出，但字段名必须准确",
+		"\n\n要求:\n- 输出有效JSON格式\n- 只能使用字段: $FIELDS$\n- 每个字段的值必须是纯文本字符串，不要使用嵌套的对象或数组\n- 可部分输出，但字段名必须准确",
 		[fieldNames.join(", ")],
 	);
 

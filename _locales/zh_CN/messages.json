@@ -1,7 +1,7 @@
 {
 	"extension_name": {
 		"description": "扩展显示的名称。",
-		"message": "Anki单词助手"
+		"message": "AnkiBeam"
 	},
 	"extension_description": {
 		"description": "扩展在商店与清单中的简介。",
@@ -1283,7 +1283,7 @@
 	},
 	"popup_app_title": {
 		"description": "Popup 页面标题，用于 <title> 与头部标题",
-		"message": "Anki 单词助手"
+		"message": "AnkiBeam"
 	},
 	"popup_confirm_reload": {
 		"description": "严重错误后的刷新提示",
@@ -1756,7 +1756,7 @@
 	},
 	"prompt_engine_requirements_body": {
 		"description": "动态 Prompt 要求说明",
-		"message": "\n\n要求:\n- 输出有效JSON格式\n- 只能使用字段: $FIELDS$\n- 可部分输出，但字段名必须准确",
+		"message": "\n\n要求:\n- 输出有效JSON格式\n- 只能使用字段: $FIELDS$\n- 每个字段的值必须是纯文本字符串，不要使用嵌套的对象或数组\n- 可部分输出，但字段名必须准确",
 		"placeholders": {
 			"FIELDS": {
 				"content": "$1",

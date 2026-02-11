@@ -121,7 +121,7 @@ function renderTemplateSelector() {
 	const emptyState = document.getElementById("template-empty-state");
 
 	if (!templateSelect || !emptyState) {
-		console.warn("[popup] Template selector elements not found");
+		// console.warn("[popup] Template selector elements not found");
 		return;
 	}
 
@@ -193,7 +193,7 @@ async function handleTemplateChange(templateId) {
 		const template = getActiveTemplate();
 
 		if (!template) {
-			console.warn(`[popup] Template ${templateId} not found`);
+			// console.warn(`[popup] Template ${templateId} not found`);
 			return;
 		}
 
@@ -214,7 +214,7 @@ async function handleTemplateChange(templateId) {
 			hideReparseNotice();
 		}
 
-		console.log(`[popup] Template changed to: ${template.name}`);
+		// console.log(`[popup] Template changed to: ${template.name}`);
 	} catch (error) {
 		console.error("[popup] Failed to change template:", error);
 		errorBoundary.handleError(error, "template");
@@ -797,8 +797,8 @@ function fillDynamicFields(aiResult, fieldNames) {
 
 			// 尝试从AI结果中获取值（不区分大小写）
 			// 优先精确匹配，其次小写匹配
-			let value = aiResult[fieldName] || "";
-			if (!value) {
+			let value = aiResult[fieldName] ?? "";
+			if (!value && value !== 0) {
 				const lowerFieldName = fieldName.toLowerCase();
 				const resultKey = Object.keys(aiResult).find(
 					(k) => k.toLowerCase() === lowerFieldName,
@@ -806,6 +806,16 @@ function fillDynamicFields(aiResult, fieldNames) {
 				if (resultKey) {
 					value = aiResult[resultKey];
 				}
+			}
+
+			// 确保 value 是字符串（防止嵌套对象/数组变成 "[object Object]"）
+			if (value !== null && value !== undefined && typeof value !== "string") {
+				value =
+					typeof value === "object"
+						? JSON.stringify(value, null, 2)
+						: String(value);
+			} else {
+				value = value ?? "";
 			}
 
 			// 设置值并触发输入事件以更新UI（如自适应高度）

@@ -286,13 +286,11 @@ export function createFloatingPanelController(options = {}) {
   left: 0;
   pointer-events: none;
   opacity: 0;
-  transform: translate3d(0, 10px, 0);
-  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .panel-wrapper[data-visible="true"] {
   pointer-events: auto;
   opacity: 1;
-  transform: translate3d(0, 0, 0);
 }
 
 .panel {
@@ -319,7 +317,12 @@ export function createFloatingPanelController(options = {}) {
   gap: 12px;
   cursor: grab;
   
-  transition: box-shadow 0.2s ease;
+  transform: translateY(10px);
+  transition: box-shadow 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.panel-wrapper[data-visible="true"] .panel {
+  transform: translateY(0);
 }
 
 .panel:focus {
@@ -609,7 +612,7 @@ export function createFloatingPanelController(options = {}) {
 			documentRef,
 			"div",
 			"panel-title",
-			getText("popup_app_title", "Anki Word Assistant"),
+			getText("popup_app_title", "AnkiBeam"),
 		);
 
 		const templateSelect = documentRef.createElement("select");
@@ -1511,10 +1514,22 @@ export function createFloatingPanelController(options = {}) {
 			if (!fieldName) return;
 
 			// Use the value from the result, or empty string if missing
-			const value = values[fieldName];
-			// Only update if value is present or explicit empty string
-			// (mimicking popup logic: const value = aiResult[fieldName] || "";)
-			input.value = String(value ?? "");
+			const rawValue = values[fieldName];
+			// 确保 value 是字符串（防止嵌套对象/数组变成 "[object Object]"）
+			let value;
+			if (
+				rawValue !== null &&
+				rawValue !== undefined &&
+				typeof rawValue !== "string"
+			) {
+				value =
+					typeof rawValue === "object"
+						? JSON.stringify(rawValue, null, 2)
+						: String(rawValue);
+			} else {
+				value = rawValue ?? "";
+			}
+			input.value = value;
 			autoResize(input);
 		});
 	}
@@ -1646,10 +1661,7 @@ export function createFloatingPanelController(options = {}) {
 		// 更新面板标题
 		const titleElement = shadowRoot.querySelector(".panel-title");
 		if (titleElement) {
-			titleElement.textContent = getText(
-				"popup_app_title",
-				"Anki Word Assistant",
-			);
+			titleElement.textContent = getText("popup_app_title", "AnkiBeam");
 		}
 
 		// 更新固定按钮的aria-label

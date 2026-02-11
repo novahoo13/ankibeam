@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Allow: /llms.txt
+Allow: /for-llms.html
+
+Sitemap: https://ankibeam.com/sitemap.xml
