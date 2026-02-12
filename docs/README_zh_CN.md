@@ -10,9 +10,14 @@
 - **浮动助手** — 在任意网页选中文本，一键调用 AI 解析并写入 Anki
 - **自定义模板** — 灵活配置输出字段，适配不同的 Anki 笔记类型
 - **多 AI 服务商支持** —
-  - Google Gemini（默认：`gemini-2.5-flash`）
+  - Google Gemini（默认：`gemini-3-flash-preview`）
   - OpenAI GPT（默认：`gpt-5.2`）
-  - Anthropic Claude（默认：`claude-sonnet-4-5`）
+  - Anthropic Claude（默认：`claude-opus-4-6`）
+  - Groq（默认：`llama-3.3-70b-versatile`）
+  - DeepSeek（默认：`deepseek-chat`）
+  - Zhipu AI 智谱（默认：`glm-4`）
+  - Alibaba Qwen 通义千问（默认：`qwen-max`）
+  - Moonshot AI 月之暗面（默认：`kimi-k2.5`）
 - **自动故障转移** — 主服务商不可用时，自动切换到备用服务商
 - **多语言界面** — English、简体中文、繁體中文、日本語
 
