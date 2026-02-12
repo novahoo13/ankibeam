@@ -10,9 +10,14 @@
 - **浮動助手** — 在任意網頁選取文字，一鍵呼叫 AI 解析並寫入 Anki
 - **自訂範本** — 彈性設定輸出欄位，適配不同的 Anki 筆記類型
 - **多 AI 供應商支援** —
-  - Google Gemini（預設：`gemini-2.5-flash`）
+  - Google Gemini（預設：`gemini-3-flash-preview`）
   - OpenAI GPT（預設：`gpt-5.2`）
-  - Anthropic Claude（預設：`claude-sonnet-4-5`）
+  - Anthropic Claude（預設：`claude-opus-4-6`）
+  - Groq（預設：`llama-3.3-70b-versatile`）
+  - DeepSeek（預設：`deepseek-chat`）
+  - Zhipu AI 智譜（預設：`glm-4`）
+  - Alibaba Qwen 通義千問（預設：`qwen-max`）
+  - Moonshot AI 月之暗面（預設：`kimi-k2.5`）
 - **自動故障轉移** — 主供應商無法使用時，自動切換至備用供應商
 - **多語言介面** — English、简体中文、繁體中文、日本語
 

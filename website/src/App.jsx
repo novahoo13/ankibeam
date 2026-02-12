@@ -326,6 +326,56 @@ const PrivacyPage = () => {
 							Anthropic's Privacy Policy
 						</a>
 					</li>
+					<li>
+						<strong>Groq</strong> (if configured): Subject to{" "}
+						<a
+							href="https://groq.com/privacy-policy/"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-emerald-600 hover:text-emerald-500">
+							Groq's Privacy Policy
+						</a>
+					</li>
+					<li>
+						<strong>DeepSeek</strong> (if configured): Subject to{" "}
+						<a
+							href="https://www.deepseek.com/privacy"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-emerald-600 hover:text-emerald-500">
+							DeepSeek's Privacy Policy
+						</a>
+					</li>
+					<li>
+						<strong>Zhipu AI</strong> (if configured): Subject to{" "}
+						<a
+							href="https://open.bigmodel.cn/privacy"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-emerald-600 hover:text-emerald-500">
+							Zhipu AI's Privacy Policy
+						</a>
+					</li>
+					<li>
+						<strong>Alibaba Qwen</strong> (if configured): Subject to{" "}
+						<a
+							href="https://terms.alicdn.com/legal-agreement/terms/suit_bu1_ali_cloud/suit_bu1_ali_cloud202112071948_78672.html"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-emerald-600 hover:text-emerald-500">
+							Alibaba Cloud's Privacy Policy
+						</a>
+					</li>
+					<li>
+						<strong>Moonshot AI</strong> (if configured): Subject to{" "}
+						<a
+							href="https://www.moonshot.cn/privacy"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-emerald-600 hover:text-emerald-500">
+							Moonshot AI's Privacy Policy
+						</a>
+					</li>
 				</ul>
 				<p className="text-slate-600 mb-2">
 					The extension also communicates with:

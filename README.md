@@ -10,9 +10,14 @@ An AI-powered assistant to help create Anki cards from dictionary lookup results
 - **Floating Assistant** — Select text on any webpage to instantly parse and save to Anki with one click
 - **Custom Templates** — Flexibly configure output fields to match different Anki note types
 - **Multiple AI Providers** —
-  - Google Gemini (default: `gemini-2.5-flash`)
+  - Google Gemini (default: `gemini-3-flash-preview`)
   - OpenAI GPT (default: `gpt-5.2`)
-  - Anthropic Claude (default: `claude-sonnet-4-5`)
+  - Anthropic Claude (default: `claude-opus-4-6`)
+  - Groq (default: `llama-3.3-70b-versatile`)
+  - DeepSeek (default: `deepseek-chat`)
+  - Zhipu AI (default: `glm-4`)
+  - Alibaba Qwen (default: `qwen-max`)
+  - Moonshot AI (default: `kimi-k2.5`)
 - **Automatic Failover** — Seamlessly switches to a backup provider when the primary one is unavailable
 - **Multilingual UI** — English, 简体中文, 繁體中文, 日本語
 

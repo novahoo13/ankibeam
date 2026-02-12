@@ -32,6 +32,11 @@ When you use this extension, your input text is sent to the AI service **you hav
 - **Google Gemini** (if configured): Subject to [Google's Privacy Policy](https://policies.google.com/privacy)
 - **OpenAI** (if configured): Subject to [OpenAI's Privacy Policy](https://openai.com/privacy/)
 - **Anthropic Claude** (if configured): Subject to [Anthropic's Privacy Policy](https://www.anthropic.com/privacy)
+- **Groq** (if configured): Subject to [Groq's Privacy Policy](https://groq.com/privacy-policy/)
+- **DeepSeek** (if configured): Subject to [DeepSeek's Privacy Policy](https://www.deepseek.com/privacy)
+- **Zhipu AI** (if configured): Subject to [Zhipu AI's Privacy Policy](https://open.bigmodel.cn/privacy)
+- **Alibaba Qwen** (if configured): Subject to [Alibaba Cloud's Privacy Policy](https://terms.alicdn.com/legal-agreement/terms/suit_bu1_ali_cloud/suit_bu1_ali_cloud202112071948_78672.html)
+- **Moonshot AI** (if configured): Subject to [Moonshot AI's Privacy Policy](https://www.moonshot.cn/privacy)
 
 The extension also communicates with:
 

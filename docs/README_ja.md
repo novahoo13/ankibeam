@@ -10,9 +10,14 @@
 - **フローティングアシスタント** — 任意のWebページでテキストを選択し、ワンクリックでAI解析してAnkiに書き込み
 - **カスタムテンプレート** — 出力フィールドを柔軟に設定し、さまざまなAnkiノートタイプに対応
 - **複数のAIプロバイダーに対応** —
-  - Google Gemini（デフォルト：`gemini-2.5-flash`）
+  - Google Gemini（デフォルト：`gemini-3-flash-preview`）
   - OpenAI GPT（デフォルト：`gpt-5.2`）
-  - Anthropic Claude（デフォルト：`claude-sonnet-4-5`）
+  - Anthropic Claude（デフォルト：`claude-opus-4-6`）
+  - Groq（デフォルト：`llama-3.3-70b-versatile`）
+  - DeepSeek（デフォルト：`deepseek-chat`）
+  - Zhipu AI（デフォルト：`glm-4`）
+  - Alibaba Qwen（デフォルト：`qwen-max`）
+  - Moonshot AI（デフォルト：`kimi-k2.5`）
 - **自動フェイルオーバー** — メインプロバイダーが利用できない場合、バックアッププロバイダーに自動切り替え
 - **多言語UI** — English、简体中文、繁體中文、日本語
 
