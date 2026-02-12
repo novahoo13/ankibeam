@@ -64,7 +64,7 @@ const GROQ_SALT = new Uint8Array([
  * @private
  */
 const ZHIPU_SALT = new Uint8Array([
-  12, 34, 56, 78, 90, 12, 34, 56, 78, 90, 12, 34, 56, 78, 90, 12,
+  180, 247, 26, 199, 88, 28, 151, 70, 118, 55, 169, 193, 25, 248, 252, 199,
 ]);
 
 /**
@@ -110,10 +110,10 @@ const DEFAULT_PROVIDER_ID = "google";
  */
 const FALLBACK_ORDER = Object.freeze([
   "google",
-  "deepseek",
   "openai",
   "anthropic",
   "groq",
+  "deepseek",
   "zhipu",
   "qwen",
   "moonshot",
@@ -206,14 +206,14 @@ const PROVIDERS = Object.freeze([
     /** @type {string} 兼容模式标识 */
     compatMode: "google-generative",
     /** @type {string} 默认使用的模型 */
-    defaultModel: "gemini-2.5-flash",
+    defaultModel: "gemini-3-flash-preview",
     /** @type {string} 用于健康检查的测试模型 */
-    testModel: "gemini-2.5-flash-lite",
+    testModel: "gemini-2.5-flash",
     /** @type {Array<string>} 支持的模型列表 */
     supportedModels: [
-      "gemini-2.5-pro",
+      "gemini-3-pro-preview",
+      "gemini-3-flash-preview",
       "gemini-2.5-flash",
-      "gemini-2.5-flash-lite",
     ],
     /**
      * API 配置
@@ -374,7 +374,7 @@ const PROVIDERS = Object.freeze([
     /** @type {string} 用于健康检查的测试模型 */
     testModel: "gpt-5-mini",
     /** @type {Array<string>} 支持的模型列表 */
-    supportedModels: ["gpt-5.2", "gpt-5-mini", "gpt-4o", "gpt-4o-mini"],
+    supportedModels: ["gpt-5.2", "gpt-5-mini", "o3-mini"],
     /**
      * API 配置
      * @type {Object}
@@ -480,13 +480,13 @@ const PROVIDERS = Object.freeze([
     /** @type {string} 兼容模式标识 */
     compatMode: "anthropic-messages",
     /** @type {string} 默认使用的模型 */
-    defaultModel: "claude-sonnet-4-5",
+    defaultModel: "claude-opus-4-6",
     /** @type {string} 用于健康检查的测试模型 */
     testModel: "claude-haiku-4-5",
     /** @type {Array<string>} 支持的模型列表 */
     supportedModels: [
+      "claude-opus-4-6",
       "claude-sonnet-4-5",
-      "claude-opus-4-5",
       "claude-haiku-4-5",
     ],
     /**
@@ -575,106 +575,6 @@ const PROVIDERS = Object.freeze([
       docsUrl: "https://docs.anthropic.com/claude/reference/messages_post",
       /** @type {string} API 密钥管理面板链接 */
       dashboardUrl: "https://console.anthropic.com/settings/keys",
-    }),
-    /**
-     * 运行时配置
-     * @type {Object}
-     */
-    runtime: Object.freeze({
-      /** @type {Object} 重试策略 */
-      retryPolicy: DEFAULT_RETRY_POLICY,
-      /** @type {Object} 健康检查配置 */
-      healthCheck: DEFAULT_HEALTH_CHECK,
-    }),
-  }),
-  /**
-   * DeepSeek 提供商配置
-   * @type {Object}
-   */
-  Object.freeze({
-    /** @type {string} 提供商唯一标识符 */
-    id: "deepseek",
-    /** @type {string} 提供商显示名称 */
-    label: "DeepSeek",
-    /** @type {string} 兼容模式标识 */
-    compatMode: "openai-compatible",
-    /** @type {string} 默认使用的模型 */
-    defaultModel: "deepseek-chat",
-    /** @type {string} 用于健康检查的测试模型 */
-    testModel: "deepseek-chat",
-    /** @type {Array<string>} 支持的模型列表 */
-    supportedModels: ["deepseek-chat", "deepseek-reasoner"],
-    /**
-     * API 配置
-     * @type {Object}
-     */
-    api: {
-      /** @type {string} API 基础 URL */
-      baseUrl: normalizeBaseUrl("https://api.deepseek.com"),
-      /**
-       * 构建 API 路径
-       * @returns {string} API 路径
-       */
-      pathBuilder: () => "/chat/completions",
-      /**
-       * 构建请求头
-       * @param {Object} context - 上下文对象
-       * @param {string} context.apiKey - API 密钥
-       * @returns {Object} 请求头对象
-       */
-      headers: ({ apiKey }) => ({
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      }),
-      /**
-       * 构建请求负载(payload) - 复用 OpenAI 结构
-       * @param {Object} context - 上下文对象
-       * @returns {Object} 请求负载对象
-       */
-      payloadBuilder: ({ modelName, prompt, options = {} }) => {
-        const payload = {
-          model: modelName,
-          messages: options.messages ?? [
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          temperature: options.temperature ?? 0.3,
-          max_tokens: options.maxTokens ?? 2000,
-        };
-        if (options.responseFormat) {
-          payload.response_format = options.responseFormat;
-        }
-        if (options.extraPayload) {
-          Object.assign(payload, options.extraPayload);
-        }
-        return payload;
-      },
-      /**
-       * 解析 API 响应 - 复用 OpenAI 结构
-       * @param {Object} context - 上下文对象
-       * @returns {string} 提取的文本内容
-       */
-      responseParser: ({ data }) => data?.choices?.[0]?.message?.content ?? "",
-    },
-    /** @type {Uint8Array} API 密钥加密使用的盐值 */
-    encryptionSalt: DEEPSEEK_SALT,
-    /** @type {Array<string>} 需要的主机权限(用于 manifest) */
-    hostPermissions: Object.freeze(["https://api.deepseek.com/*"]),
-    /**
-     * UI 相关配置
-     * @type {Object}
-     */
-    ui: Object.freeze({
-      /** @type {string} API 密钥输入框的标签 */
-      apiKeyLabel: "DeepSeek API Key",
-      /** @type {string} API 密钥输入框的占位符 */
-      apiKeyPlaceholder: "sk-...",
-      /** @type {string} API 文档链接 */
-      docsUrl: "https://platform.deepseek.com/api-docs",
-      /** @type {string} API 密钥管理面板链接 */
-      dashboardUrl: "https://platform.deepseek.com/api_keys",
     }),
     /**
      * 运行时配置
@@ -780,6 +680,106 @@ const PROVIDERS = Object.freeze([
       docsUrl: "https://console.groq.com/docs/api-reference",
       /** @type {string} API 密钥管理面板链接 */
       dashboardUrl: "https://console.groq.com/keys",
+    }),
+    /**
+     * 运行时配置
+     * @type {Object}
+     */
+    runtime: Object.freeze({
+      /** @type {Object} 重试策略 */
+      retryPolicy: DEFAULT_RETRY_POLICY,
+      /** @type {Object} 健康检查配置 */
+      healthCheck: DEFAULT_HEALTH_CHECK,
+    }),
+  }),
+  /**
+   * DeepSeek 提供商配置
+   * @type {Object}
+   */
+  Object.freeze({
+    /** @type {string} 提供商唯一标识符 */
+    id: "deepseek",
+    /** @type {string} 提供商显示名称 */
+    label: "DeepSeek",
+    /** @type {string} 兼容模式标识 */
+    compatMode: "openai-compatible",
+    /** @type {string} 默认使用的模型 */
+    defaultModel: "deepseek-chat",
+    /** @type {string} 用于健康检查的测试模型 */
+    testModel: "deepseek-chat",
+    /** @type {Array<string>} 支持的模型列表 */
+    supportedModels: ["deepseek-chat", "deepseek-reasoner"],
+    /**
+     * API 配置
+     * @type {Object}
+     */
+    api: {
+      /** @type {string} API 基础 URL */
+      baseUrl: normalizeBaseUrl("https://api.deepseek.com"),
+      /**
+       * 构建 API 路径
+       * @returns {string} API 路径
+       */
+      pathBuilder: () => "/chat/completions",
+      /**
+       * 构建请求头
+       * @param {Object} context - 上下文对象
+       * @param {string} context.apiKey - API 密钥
+       * @returns {Object} 请求头对象
+       */
+      headers: ({ apiKey }) => ({
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      }),
+      /**
+       * 构建请求负载(payload) - 复用 OpenAI 结构
+       * @param {Object} context - 上下文对象
+       * @returns {Object} 请求负载对象
+       */
+      payloadBuilder: ({ modelName, prompt, options = {} }) => {
+        const payload = {
+          model: modelName,
+          messages: options.messages ?? [
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          temperature: options.temperature ?? 0.3,
+          max_tokens: options.maxTokens ?? 2000,
+        };
+        if (options.responseFormat) {
+          payload.response_format = options.responseFormat;
+        }
+        if (options.extraPayload) {
+          Object.assign(payload, options.extraPayload);
+        }
+        return payload;
+      },
+      /**
+       * 解析 API 响应 - 复用 OpenAI 结构
+       * @param {Object} context - 上下文对象
+       * @returns {string} 提取的文本内容
+       */
+      responseParser: ({ data }) => data?.choices?.[0]?.message?.content ?? "",
+    },
+    /** @type {Uint8Array} API 密钥加密使用的盐值 */
+    encryptionSalt: DEEPSEEK_SALT,
+    /** @type {Array<string>} 需要的主机权限(用于 manifest) */
+    hostPermissions: Object.freeze(["https://api.deepseek.com/*"]),
+    /**
+     * UI 相关配置
+     * @type {Object}
+     */
+    ui: Object.freeze({
+      /** @type {string} API 密钥输入框的标签 */
+      apiKeyLabel: "DeepSeek API Key",
+      /** @type {string} API 密钥输入框的占位符 */
+      apiKeyPlaceholder: "sk-...",
+      /** @type {string} API 文档链接 */
+      docsUrl: "https://platform.deepseek.com/api-docs",
+      /** @type {string} API 密钥管理面板链接 */
+      dashboardUrl: "https://platform.deepseek.com/api_keys",
     }),
     /**
      * 运行时配置

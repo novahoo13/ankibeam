@@ -55,6 +55,7 @@ Add support for popular and region-specific AI providers to AnkiBeam, enhancing 
 
 - **Base URL**: `https://api.moonshot.cn/v1`
 - **Models**:
+  - `kimi-k2.5` (Default, released 2026-01-27, multimodal + 256K context)
   - `moonshot-v1-8k` (Stable)
   - `moonshot-v1-32k`
   - `moonshot-v1-128k`
