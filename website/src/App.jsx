@@ -23,7 +23,8 @@ import {
 } from "lucide-react";
 
 const GITHUB_URL = "https://github.com/novahoo13/ankibeam";
-const RELEASES_URL = `${GITHUB_URL}/releases/latest`;
+const RELEASES_URL =
+	"https://chromewebstore.google.com/detail/ankibeam/nkgkdenhnjdmlojanmnfeijhhfkjcibm";
 const PRIVACY_URL = "#privacy";
 const ANKI_URL = "https://apps.ankiweb.net/";
 

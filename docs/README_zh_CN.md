@@ -23,10 +23,17 @@
 
 ## 📦 安装
 
-### 前置条件
+### 从 Chrome 网上应用店安装（推荐）
+
+1. **[立即获取](https://chromewebstore.google.com/detail/ankibeam/nkgkdenhnjdmlojanmnfeijhhfkjcibm)**
+2. 点击 **添加至 Chrome**
+
+### 手动安装（开发者）
+
+1. 下载或克隆本项目代码
 
 1. **Anki 桌面版** — [下载 Anki](https://apps.ankiweb.net/)
-2. **AnkiConnect 插件** — 在 Anki 中安装 AnkiConnect 插件
+1. **AnkiConnect 插件** — 在 Anki 中安装 AnkiConnect 插件
    - 打开 Anki → 工具 → 插件 → 获取插件
    - 输入插件代码：`2055492159`
    - 重启 Anki

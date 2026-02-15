@@ -23,10 +23,17 @@
 
 ## 📦 インストール
 
-### 前提条件
+### Chrome ウェブストアからインストール（推奨）
+
+1. **[今すぐ入手](https://chromewebstore.google.com/detail/ankibeam/nkgkdenhnjdmlojanmnfeijhhfkjcibm)**
+2. **Chrome に追加** をクリック
+
+### 手動インストール（開発者向け）
+
+1. このリポジトリをダウンロードまたはクローン
 
 1. **Ankiデスクトップ版** — [Ankiをダウンロード](https://apps.ankiweb.net/)
-2. **AnkiConnectプラグイン** — AnkiにAnkiConnectプラグインをインストール
+1. **AnkiConnectプラグイン** — AnkiにAnkiConnectプラグインをインストール
    - Ankiを開く → ツール → アドオン → アドオンを取得
    - コードを入力：`2055492159`
    - Ankiを再起動
