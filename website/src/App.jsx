@@ -95,27 +95,29 @@ const Navbar = ({ scrolled, t, i18n, changeLanguage }) => (
 					<button className="p-2 text-slate-500 hover:text-emerald-600 transition-colors rounded-full hover:bg-slate-100">
 						<Languages className="w-5 h-5" />
 					</button>
-					<div className="absolute right-0 mt-2 w-32 bg-white border border-slate-100 rounded-lg shadow-xl py-1 hidden group-hover:block divide-y divide-slate-100">
-						<button
-							onClick={() => changeLanguage("en")}
-							className={`block w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 hover:text-emerald-600 transition-colors ${i18n.language.startsWith("en") ? "text-emerald-600 font-medium" : "text-slate-600"}`}>
-							English
-						</button>
-						<button
-							onClick={() => changeLanguage("zh-CN")}
-							className={`block w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 hover:text-emerald-600 transition-colors ${i18n.language === "zh-CN" ? "text-emerald-600 font-medium" : "text-slate-600"}`}>
-							简体中文
-						</button>
-						<button
-							onClick={() => changeLanguage("zh-TW")}
-							className={`block w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 hover:text-emerald-600 transition-colors ${i18n.language === "zh-TW" ? "text-emerald-600 font-medium" : "text-slate-600"}`}>
-							繁體中文
-						</button>
-						<button
-							onClick={() => changeLanguage("ja")}
-							className={`block w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 hover:text-emerald-600 transition-colors ${i18n.language === "ja" ? "text-emerald-600 font-medium" : "text-slate-600"}`}>
-							日本語
-						</button>
+					<div className="absolute right-0 top-full pt-2 w-32 hidden group-hover:block">
+						<div className="bg-white border border-slate-100 rounded-lg shadow-xl py-1 divide-y divide-slate-100">
+							<button
+								onClick={() => changeLanguage("en")}
+								className={`block w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 hover:text-emerald-600 transition-colors ${i18n.language.startsWith("en") ? "text-emerald-600 font-medium" : "text-slate-600"}`}>
+								English
+							</button>
+							<button
+								onClick={() => changeLanguage("zh-CN")}
+								className={`block w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 hover:text-emerald-600 transition-colors ${i18n.language === "zh-CN" ? "text-emerald-600 font-medium" : "text-slate-600"}`}>
+								简体中文
+							</button>
+							<button
+								onClick={() => changeLanguage("zh-TW")}
+								className={`block w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 hover:text-emerald-600 transition-colors ${i18n.language === "zh-TW" ? "text-emerald-600 font-medium" : "text-slate-600"}`}>
+								繁體中文
+							</button>
+							<button
+								onClick={() => changeLanguage("ja")}
+								className={`block w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 hover:text-emerald-600 transition-colors ${i18n.language === "ja" ? "text-emerald-600 font-medium" : "text-slate-600"}`}>
+								日本語
+							</button>
+						</div>
 					</div>
 				</div>
 				<a
