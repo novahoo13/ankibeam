@@ -50,6 +50,8 @@
 
 ### Popup 彈窗模式
 
+![Popup 彈窗模式演示](Images/demo-popup-mode.gif)
+
 1. 點選 Chrome 工具列中的 AnkiBeam 圖示
 2. 在輸入框中輸入要查詢的單字或短語
 3. 點選「解析」按鈕，AI 自動產生內容
@@ -57,6 +59,8 @@
 5. 點選「寫入 Anki」儲存卡片
 
 ### 浮動助手模式
+
+![浮動助手模式演示](Images/demo-floating-mode.gif)
 
 1. 在任意網頁中選取一段文字
 2. 點選彈出的浮動按鈕

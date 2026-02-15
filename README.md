@@ -50,6 +50,8 @@ An AI-powered assistant to help create Anki cards from dictionary lookup results
 
 ### Popup Mode
 
+![Popup Mode Demo](docs/Images/demo-popup-mode.gif)
+
 1. Click the AnkiBeam icon in the Chrome toolbar
 2. Enter a word or phrase in the input box
 3. Click **Parse** to generate AI content
@@ -57,6 +59,8 @@ An AI-powered assistant to help create Anki cards from dictionary lookup results
 5. Click **Write to Anki** to save the card
 
 ### Floating Assistant
+
+![Floating Assistant Demo](docs/Images/demo-floating-mode.gif)
 
 1. Select any text on a webpage
 2. Click the floating button that appears
