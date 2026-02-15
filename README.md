@@ -23,10 +23,17 @@ An AI-powered assistant to help create Anki cards from dictionary lookup results
 
 ## 📦 Installation
 
-### Prerequisites
+### Install from Chrome Web Store (Recommended)
+
+1. **[Get it now](https://chromewebstore.google.com/detail/ankibeam/nkgkdenhnjdmlojanmnfeijhhfkjcibm)**
+2. Click **Add to Chrome**
+
+### Manual Installation (Developer)
+
+1. Download or clone this repository
 
 1. **Anki Desktop** — [Download Anki](https://apps.ankiweb.net/)
-2. **AnkiConnect Plugin** — Install the AnkiConnect plugin in Anki
+1. **AnkiConnect Plugin** — Install the AnkiConnect plugin in Anki
    - Open Anki → Tools → Add-ons → Get Add-ons
    - Enter the code: `2055492159`
    - Restart Anki

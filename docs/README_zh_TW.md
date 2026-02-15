@@ -23,10 +23,17 @@
 
 ## 📦 安裝
 
-### 前置條件
+### 從 Chrome 線上應用程式商店安裝（推薦）
+
+1. **[立即取得](https://chromewebstore.google.com/detail/ankibeam/nkgkdenhnjdmlojanmnfeijhhfkjcibm)**
+2. 點選 **加到 Chrome**
+
+### 手動安裝（開發者）
+
+1. 下載或複製本專案程式碼
 
 1. **Anki 桌面版** — [下載 Anki](https://apps.ankiweb.net/)
-2. **AnkiConnect 外掛** — 在 Anki 中安裝 AnkiConnect 外掛
+1. **AnkiConnect 外掛** — 在 Anki 中安裝 AnkiConnect 外掛
    - 開啟 Anki → 工具 → 附加元件 → 取得附加元件
    - 輸入外掛代碼：`2055492159`
    - 重新啟動 Anki
