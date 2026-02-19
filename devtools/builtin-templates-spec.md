@@ -295,14 +295,82 @@ Phase 5: 写入流程集成
 
 ---
 
-## 八、开放问题清单（TODO）
+## 八、Anki 数据模型与 AnkiBeam 模板的概念对齐
+
+> 本节记录一次关键的设计讨论（2026-02-19）
+
+### 8.1 Anki 的原生数据模型
+
+Anki 自带 6 种内置 Note Type（全新安装即有）：
+
+| Note Type | 说明 |
+|-----------|------|
+| Basic | Front + Back，最基础 |
+| Basic (and reversed card) | 自动生成正反两张卡 |
+| Basic (optional reversed card) | 可选是否反转 |
+| Basic (type in the answer) | 正面带输入框，可与答案比对 |
+| Cloze | 填空题格式 `{{c1::xxx}}` |
+| Image Occlusion | 图片遮挡（Anki 23.10+ 内置） |
+
+**关键事实**：Deck 是纯粹的组织容器，不限制其中 Note Type 的种类。同一个 Deck 里可以同时存放 Basic 卡、Cloze 卡和任意自定义 Note Type 的卡，这是完全正常的 Anki 使用方式。
+
+```
+Deck（Japanese Learning）
+├── Note（Basic）         ← Front/Back 简单问答
+├── Note（Cloze）         ← 填空题
+└── Note（AnkiBeam - Vocabulary）← 自定义多字段
+```
+
+### 8.2 AnkiBeam 模板的本质
+
+AnkiBeam 的 Template 是一个三合一的绑定包：
+
+```
+AnkiBeam Template = Deck（目的地）× Note Type（结构）× AI 解析配置（提取规则）
+```
+
+这意味着：**同一个 Deck，不同 Note Type = 需要不同的 AnkiBeam 模板**。
+
+例如用户想在同一个 `Japanese` Deck 里存两类内容：
+
+| 用途 | AnkiBeam 模板 | 对应 Deck | 对应 Note Type |
+|------|--------------|-----------|----------------|
+| 词汇卡 | 模板 A | Japanese | Vocabulary Model |
+| 语法卡 | 模板 B | Japanese | Grammar Model |
+
+### 8.3 当前设计的合理性
+
+**合理之处**：模板作为原子操作单元，用户选中文字后只需选一个模板，不必分两步选 Note Type 和 Deck，操作流程简洁。
+
+**潜在问题**：若用户有大量 Deck × Note Type 组合，模板数量会线性增长，管理成本上升。（当前阶段暂不解决）
+
+### 8.4 对内置模板设计的影响：Deck 绑定问题
+
+内置模板必须回答的一个设计问题——**Deck 该怎么处理**：
+
+**选项 A：内置模板绑定专属 Deck**
+- 内置模板自动使用 `AnkiBeam` 作为 Deck 名
+- 优点：零配置，真正即插即用
+- 缺点：用户若想放进自己的 Deck，需手动改模板配置
+
+**选项 B：内置模板只定义 Note Type + AI 解析，Deck 由用户填写**
+- 内置的部分只是卡片结构和 AI 解析方式，目的地由用户决定
+- 优点：灵活，不强制创建新 Deck
+- 缺点：第一次使用仍需配置，无法做到零配置
+
+> **待决策**：倾向选项 A（绑定专属 `AnkiBeam` Deck），理由是与"即插即用"目标一致；
+> 用户后续可以在模板配置里自行修改 Deck 名。
+
+---
+
+## 九、开放问题清单（TODO）
 
 - [ ] 支持哪些语言的内置模板？每种语言的字段和卡片样式如何设计？
 - [ ] 内置模板的存储方案确认（纯代码 / 存 storage / 混合）
 - [ ] Options 页面的 UI 方案确认（方案 A 还是方案 B）
 - [ ] `createModel` 对同名 Model 的行为测试
 - [ ] 悬浮面板是否有模板切换器 UI？
-- [ ] 内置 Deck 名称定为 `AnkiBeam`？还是按语言区分？
+- [ ] **Deck 绑定方案确认**（选项 A 绑定专属 Deck / 选项 B 用户自填）← 新增
 - [ ] 内置模板的 CSS 和卡片 HTML 设计（需要 UI 设计决策）
 
 ---
