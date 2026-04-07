@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AnkiBeam Account Login</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #eff6f1;
+        --card: rgba(255, 255, 255, 0.96);
+        --border: rgba(15, 23, 42, 0.08);
+        --text: #0f172a;
+        --muted: #64748b;
+        --emerald: #059669;
+        --emerald-strong: #047857;
+        --emerald-soft: rgba(5, 150, 105, 0.12);
+        --error: #dc2626;
+        --error-soft: rgba(220, 38, 38, 0.12);
+        --shadow:
+          0 28px 60px rgba(15, 23, 42, 0.12),
+          0 8px 20px rgba(15, 23, 42, 0.06);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        font-family:
+          "Segoe UI", "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(52, 211, 153, 0.18), transparent 28%),
+          radial-gradient(circle at bottom right, rgba(15, 23, 42, 0.08), transparent 30%),
+          linear-gradient(180deg, #f8fafc 0%, var(--bg) 100%);
+        color: var(--text);
+      }
+
+      .shell {
+        width: min(100%, 440px);
+        padding: 28px;
+        border-radius: 28px;
+        border: 1px solid var(--border);
+        background: var(--card);
+        box-shadow: var(--shadow);
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .eyebrow::before {
+        content: "";
+        width: 12px;
+        height: 12px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+        box-shadow: 0 0 0 6px var(--emerald-soft);
+      }
+
+      h1 {
+        margin: 18px 0 8px;
+        font-size: 30px;
+        line-height: 1.08;
+      }
+
+      p {
+        margin: 0;
+      }
+
+      .lead {
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .status {
+        margin-top: 20px;
+        padding: 14px 16px;
+        border-radius: 18px;
+        border: 1px solid rgba(5, 150, 105, 0.16);
+        background: rgba(248, 250, 252, 0.92);
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .status[data-tone="loading"] {
+        border-color: rgba(5, 150, 105, 0.18);
+        background: rgba(5, 150, 105, 0.06);
+      }
+
+      .status[data-tone="success"] {
+        border-color: rgba(5, 150, 105, 0.24);
+        background: rgba(5, 150, 105, 0.1);
+      }
+
+      .status[data-tone="error"] {
+        border-color: rgba(220, 38, 38, 0.2);
+        background: var(--error-soft);
+        color: #991b1b;
+      }
+
+      .stack {
+        display: grid;
+        gap: 14px;
+        margin-top: 24px;
+      }
+
+      .button,
+      .input {
+        width: 100%;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        font: inherit;
+      }
+
+      .button {
+        appearance: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 52px;
+        padding: 0 18px;
+        cursor: pointer;
+        font-weight: 700;
+        transition:
+          transform 0.16s ease,
+          box-shadow 0.16s ease,
+          background 0.16s ease;
+      }
+
+      .button:hover {
+        transform: translateY(-1px);
+      }
+
+      .button[disabled] {
+        cursor: wait;
+        transform: none;
+        opacity: 0.72;
+      }
+
+      .button-google {
+        background: #0f172a;
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 16px 28px rgba(15, 23, 42, 0.18);
+      }
+
+      .button-google:hover {
+        background: #111827;
+      }
+
+      .button-email {
+        background: linear-gradient(135deg, var(--emerald) 0%, var(--emerald-strong) 100%);
+        color: white;
+        border-color: transparent;
+        box-shadow: 0 16px 28px rgba(5, 150, 105, 0.18);
+      }
+
+      .button-email:hover {
+        background: linear-gradient(135deg, #10b981 0%, var(--emerald) 100%);
+      }
+
+      .separator {
+        margin: 24px 0 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .separator::before,
+      .separator::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: rgba(15, 23, 42, 0.08);
+      }
+
+      .field {
+        display: grid;
+        gap: 8px;
+      }
+
+      .field label {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--muted);
+      }
+
+      .input {
+        min-height: 48px;
+        padding: 0 14px;
+        background: rgba(248, 250, 252, 0.9);
+      }
+
+      .input:focus {
+        outline: 2px solid rgba(5, 150, 105, 0.18);
+        border-color: rgba(5, 150, 105, 0.32);
+      }
+
+      .hint {
+        margin-top: 18px;
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  </head>
+  <body>
+    <main class="shell">
+      <div class="eyebrow">AnkiBeam Pro</div>
+      <h1>Continue in the extension</h1>
+      <p class="lead">
+        Sign in once here, then AnkiBeam will hand the session back to your extension tab.
+      </p>
+
+      <section id="status" class="status hidden" aria-live="polite"></section>
+
+      <div class="stack">
+        <button id="google-button" class="button button-google" type="button">
+          Continue with Google
+        </button>
+      </div>
+
+      <div class="separator">or use email</div>
+
+      <form id="email-form" class="stack" novalidate>
+        <div class="field">
+          <label for="email">Email</label>
+          <input
+            id="email"
+            name="email"
+            class="input"
+            type="email"
+            autocomplete="email"
+            placeholder="you@example.com"
+            required
+          />
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input
+            id="password"
+            name="password"
+            class="input"
+            type="password"
+            autocomplete="current-password"
+            placeholder="Your password"
+            required
+          />
+        </div>
+        <button id="email-button" class="button button-email" type="submit">
+          Sign in with Email
+        </button>
+      </form>
+
+      <p class="hint">
+        Keep this tab open until AnkiBeam switches back to the extension automatically.
+      </p>
+    </main>
+
+    <script>
+      const ENVIRONMENTS = Object.freeze({
+        staging: Object.freeze({
+          siteOrigin: "http://localhost:5173",
+          workerBaseUrl: "https://ankibeam-api-staging.adanddyeah.workers.dev",
+          supabaseUrl: "https://yzvkixhmowqwksqoeqad.supabase.co",
+          supabaseAnonKey:
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6dmtpeGhtb3dxd2tzcW9lcWFkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5OTk0MjUsImV4cCI6MjA4OTU3NTQyNX0.THVxzqm1NgiiuL6LRJUAzmjq68LLCxC2Krew_BP5sbM",
+        }),
+        production: Object.freeze({
+          siteOrigin: "https://ankibeam.com",
+          workerBaseUrl: "https://api.ankibeam.com",
+          supabaseUrl: "https://vsdgtpegfgfreaslhtqk.supabase.co",
+          supabaseAnonKey:
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZzZGd0cGVnZmdmcmVhc2xodHFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NTQ0MjUsImV4cCI6MjA5MDEzMDQyNX0.6SxhSGLFNQ0hfc8VTcPZDadNcaDApzfIan_qSPTn3mo",
+        }),
+      });
+
+      const elements = {
+        status: document.getElementById("status"),
+        googleButton: document.getElementById("google-button"),
+        emailButton: document.getElementById("email-button"),
+        emailForm: document.getElementById("email-form"),
+        email: document.getElementById("email"),
+        password: document.getElementById("password"),
+      };
+
+      function detectEnvironment() {
+        return window.location.origin === ENVIRONMENTS.production.siteOrigin
+          ? "production"
+          : "staging";
+      }
+
+      const currentEnvironment = detectEnvironment();
+      const currentConfig = ENVIRONMENTS[currentEnvironment];
+      const supabaseClient = window.supabase.createClient(
+        currentConfig.supabaseUrl,
+        currentConfig.supabaseAnonKey,
+      );
+
+      const params = new URLSearchParams(window.location.search);
+      const exchangeSessionId = params.get("exchange_session_id");
+      const extensionId = params.get("extension_id");
+
+      function setBusy(isBusy) {
+        elements.googleButton.disabled = isBusy;
+        elements.emailButton.disabled = isBusy;
+        elements.email.disabled = isBusy;
+        elements.password.disabled = isBusy;
+      }
+
+      function setStatus(tone, message) {
+        elements.status.textContent = message;
+        elements.status.dataset.tone = tone;
+        elements.status.classList.remove("hidden");
+      }
+
+      function clearStatus() {
+        elements.status.textContent = "";
+        elements.status.classList.add("hidden");
+      }
+
+      function getSessionExpiry(session) {
+        if (typeof session.expires_at === "number") {
+          return session.expires_at;
+        }
+
+        if (typeof session.expires_in === "number") {
+          return Math.floor(Date.now() / 1000) + session.expires_in;
+        }
+
+        return null;
+      }
+
+      function validateParams() {
+        if (!exchangeSessionId) {
+          throw new Error("Missing exchange_session_id. Please restart sign-in from the extension.");
+        }
+
+        if (!extensionId) {
+          throw new Error("Missing extension_id. Please restart sign-in from the extension.");
+        }
+      }
+
+      function ensureExchangeParams() {
+        try {
+          validateParams();
+          return true;
+        } catch (error) {
+          setStatus(
+            "error",
+            error?.message ||
+              "The callback page is missing the required extension handoff parameters.",
+          );
+          setBusy(true);
+          return false;
+        }
+      }
+
+      function buildReturnUrl(exchangeCode) {
+        return `chrome-extension://${extensionId}/auth/auth-complete.html?code=${encodeURIComponent(exchangeCode)}`;
+      }
+
+      async function issueCodeAndReturn(session) {
+        validateParams();
+
+        setBusy(true);
+        setStatus("loading", "Linking your account back to the extension...");
+
+        const response = await fetch(
+          `${currentConfig.workerBaseUrl}/api/auth/exchange/issue-code`,
+          {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              exchange_session_id: exchangeSessionId,
+              access_token: session.access_token,
+              refresh_token: session.refresh_token,
+              expires_at: getSessionExpiry(session),
+            }),
+          },
+        );
+
+        const payload = await response.json().catch(() => null);
+        if (!response.ok) {
+          const message =
+            payload?.error?.message ||
+            payload?.message ||
+            `Worker rejected the auth exchange with status ${response.status}.`;
+          throw new Error(message);
+        }
+
+        setStatus("success", "Sign-in accepted. Returning to the extension...");
+        window.location.assign(buildReturnUrl(payload.exchange_code));
+      }
+
+      async function handleGoogleSignIn() {
+        try {
+          clearStatus();
+          if (!ensureExchangeParams()) {
+            return;
+          }
+          setBusy(true);
+          setStatus("loading", "Redirecting to Google...");
+
+          const redirectTo = window.location.href;
+          const { data, error } = await supabaseClient.auth.signInWithOAuth({
+            provider: "google",
+            options: { redirectTo },
+          });
+
+          if (error) {
+            throw error;
+          }
+
+          if (data?.url) {
+            window.location.assign(data.url);
+          }
+        } catch (error) {
+          setStatus("error", error.message || "Google sign-in could not be started.");
+          setBusy(false);
+        }
+      }
+
+      async function handleEmailSignIn(event) {
+        event.preventDefault();
+
+        try {
+          clearStatus();
+          if (!ensureExchangeParams()) {
+            return;
+          }
+          setBusy(true);
+          setStatus("loading", "Signing in with email...");
+
+          const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: elements.email.value.trim(),
+            password: elements.password.value,
+          });
+
+          if (error) {
+            throw error;
+          }
+
+          if (!data?.session) {
+            throw new Error("Supabase did not return a session.");
+          }
+
+          await issueCodeAndReturn(data.session);
+        } catch (error) {
+          setStatus("error", error.message || "Email sign-in failed.");
+          setBusy(false);
+        }
+      }
+
+      async function bootstrapExistingSession() {
+        try {
+          if (!ensureExchangeParams()) {
+            return;
+          }
+          const {
+            data: { session },
+          } = await supabaseClient.auth.getSession();
+
+          if (session?.access_token && session?.refresh_token) {
+            await issueCodeAndReturn(session);
+          }
+        } catch (error) {
+          setStatus("error", error.message || "The callback page could not be initialized.");
+          setBusy(false);
+        }
+      }
+
+      elements.googleButton.addEventListener("click", () => {
+        void handleGoogleSignIn();
+      });
+
+      elements.emailForm.addEventListener("submit", (event) => {
+        void handleEmailSignIn(event);
+      });
+
+      function initializeCallbackPage() {
+        if (!ensureExchangeParams()) {
+          return;
+        }
+
+        setBusy(false);
+        if (window.location.hash === "#email-form") {
+          elements.email.focus();
+        }
+        void bootstrapExistingSession();
+      }
+
+      initializeCallbackPage();
+    </script>
+  </body>
+</html>
